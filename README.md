@@ -8,7 +8,7 @@
 
 ## 홈페이지
 
-Cloudflare Pages 연동 준비 중입니다. 실제 배포 주소가 정해지면 이곳에 연결합니다.
+[홈페이지에서 읽기](https://llm-systems-engineering.pages.dev)
 
 ## 학습 목차
 
