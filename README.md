@@ -10,4 +10,4 @@
 
 ## 글 목록
 
-- [LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일](https://post-introduction-mdx-previe.llm-systems-engineering.pages.dev/posts/llm-systems-engineering-introduction/) · 초안 미리보기
+- [LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일](https://llm-systems-engineering.pages.dev/posts/llm-systems-engineering-introduction/)

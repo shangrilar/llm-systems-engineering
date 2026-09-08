@@ -10,4 +10,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 
 ## Articles
 
-- [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://post-introduction-mdx-previe.llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/) · Draft preview
+- [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/)
