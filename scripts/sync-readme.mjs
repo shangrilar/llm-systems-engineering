@@ -1,37 +1,37 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync('site.config.json', 'utf8'));
 const posts = JSON.parse(readFileSync('src/data/posts.json', 'utf8'));
-const lines = posts.map(p => config.url ? `- [${p.title}](${config.url.replace(/\/$/, '')}/posts/${p.slug}/) — ${p.track}` : `- ${p.title} — ${p.track} (Cloudflare 연동 후 홈페이지 링크 연결)`);
-const text = `# LLM Systems Engineering
+const base = config.url.replace(/\/$/, '');
+for (const locale of ['ko', 'en']) {
+  const korean = locale === 'ko';
+  const prefix = korean ? '' : '/en';
+  const lines = posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl))
+    .sort((a, b) => a.order - b.order)
+    .map(p => {
+      const article = p.locales[locale];
+      const articleBase = article.published ? base : p.previewUrl.replace(/\/$/, '');
+      const status = article.published ? '' : (korean ? ' · 초안 미리보기' : ' · Draft preview');
+      return `- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`;
+    });
+  const text = `# LLM Systems Engineering
 
-모델·하드웨어·워크로드로 배우는 한국어 LLM 시스템 엔지니어링.
+${korean ? '**한국어** | [English](README.en.md)' : '[한국어](README.md) | **English**'}
 
-기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training 순서로 학습합니다.
+${korean
+  ? '모델·하드웨어·워크로드라는 세 가지 관점으로 LLM 실행 시스템을 이해하는 학습 자료입니다.'
+  : 'Learning materials for understanding LLM execution systems through three perspectives: models, hardware, and workloads.'}
 
-설명과 시각화는 홈페이지에서, 실행 코드는 이 저장소에서 확인합니다.
+${korean
+  ? '공통 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training 순서로 원리, 실행 과정, 성능 측정과 최적화를 다룹니다.'
+  : 'The series covers principles, execution, performance measurement, and optimization in this order: shared concepts → inference → training (pretraining and SFT) → RL-based post-training.'}
 
-## 홈페이지
+${korean
+  ? '글과 그림은 [홈페이지](' + base + '/)에서, 관련 실습 코드는 이 저장소에서 제공합니다. 한국어 원문과 영어 번역을 함께 제공합니다.'
+  : 'Read articles and figures on the [website](' + base + '/en/). Related example code belongs in this repository. Articles are written in Korean with English translations.'}
 
-${config.url ? `[홈페이지에서 읽기](${config.url})` : 'Cloudflare Pages 연동 준비 중입니다. 실제 배포 주소가 정해지면 이곳에 연결합니다.'}
+## ${korean ? '글 목록' : 'Articles'}
 
-## 학습 목차
-
-${lines.join('\n') || '첫 글 준비 중.'}
-
-## 로컬 실행
-
-Node 22.22.1 기준입니다.
-
-\`\`\`sh
-npm ci
-npm run dev
-\`\`\`
-
-빌드: \`npm run build\` · 결과: \`dist/\`
-
-## 발행
-
-새 글은 브랜치와 Draft PR에서 작성하고, 미리보기 확인 후 main에 병합합니다.
-[작업 지침](AGENTS.md) · [Cloudflare 연동](docs/cloudflare-setup.md)
+${lines.join('\n') || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
 `;
-writeFileSync('README.md', text);
+  writeFileSync(korean ? 'README.md' : 'README.en.md', text);
+}
