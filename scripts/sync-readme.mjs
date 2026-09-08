@@ -27,6 +27,11 @@ ${korean
 ## ${korean ? '글 목록' : 'Articles'}
 
 ${lines.join('\n') || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
+## ${korean ? '인용' : 'Citation'}
+
+${korean
+  ? '글이나 그림을 참고하셨다면 저자 **jungjun hur**, 글 제목과 해당 글의 링크를 출처로 남겨주세요. 프로젝트 전체의 인용 정보는 [CITATION.cff](CITATION.cff)를 참고해주세요.'
+  : 'When citing an article or figure, please credit **jungjun hur** and include the article title and URL. For the project as a whole, see [CITATION.cff](CITATION.cff).'}
 `;
   writeFileSync(korean ? 'README.md' : 'README.en.md', text);
 }
