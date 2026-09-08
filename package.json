@@ -1,1 +1,32 @@
-{"name":"llm-systems-engineering","version":"0.1.0","private":true,"type":"module","engines":{"node":">=22.12.0"},"scripts":{"dev":"astro dev","build":"astro build","preview":"astro preview","sync:readme":"node scripts/sync-readme.mjs"},"dependencies":{"astro":"7.3.1"}}
+{
+  "name": "llm-systems-engineering",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "BUILD_PROFILE=preview astro dev",
+    "build": "node --import tsx scripts/build.ts",
+    "preview": "astro preview",
+    "sync:readme": "node scripts/sync-readme.mjs",
+    "check": "tsc --noEmit && node --import tsx scripts/check.ts",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "verify:build": "node --import tsx scripts/verify-build.ts"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^8.0.0",
+    "astro": "7.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.1",
+    "node": "22.22.1",
+    "prettier": "^3.8.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
