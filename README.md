@@ -11,3 +11,9 @@
 ## 글 목록
 
 - [LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일](https://llm-systems-engineering.pages.dev/posts/llm-systems-engineering-introduction/)
+
+### 공통
+
+#### 모델
+
+- [LLM의 전체 구조: 임베딩 층에서 LM Head까지](https://llm-systems-engineering.pages.dev/posts/embedding-to-lm-head/)

@@ -11,3 +11,9 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 ## Articles
 
 - [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/)
+
+### Shared Concepts
+
+#### Models
+
+- [The Structure of an LLM: From the Embedding Layer to the LM Head](https://llm-systems-engineering.pages.dev/en/posts/embedding-to-lm-head/)
