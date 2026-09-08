@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 
 const slug='llm-systems-engineering-introduction';
 for(const locale of ['ko','en'])
-  test(`${locale}: draft article, localized image and language navigation`,async({page})=>{
+  test(`${locale}: published article, localized image and language navigation`,async({page})=>{
     const errors:string[]=[];
     page.on('pageerror',error=>errors.push(error.message));
     const prefix=locale==='en'?'/en':'';
@@ -13,7 +13,8 @@ for(const locale of ['ko','en'])
     await page.locator(`a.post-link[href="${path}"]`).click();
     await expect(page.locator('article h1')).toHaveCount(1);
     await expect(page.locator('html')).toHaveAttribute('lang',locale);
-    await expect(page.locator('article header')).toContainText(locale==='ko'?'초안':'Draft');
+    await expect(page.locator('article header')).not.toContainText(locale==='ko'?'초안':'Draft');
+    await expect(page.locator('article header')).not.toContainText('Translation awaiting review');
     const picture=page.locator('.prose img');
     await expect(picture).toHaveAttribute('src',new RegExp(`venn${locale==='en'?'-en':''}\\.png$`));
     for(const width of [360,768,1280]){
