@@ -17,6 +17,7 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 #### Models
 
 - [The Structure of an LLM: From the Embedding Layer to the LM Head](https://llm-systems-engineering.pages.dev/en/posts/embedding-to-lm-head/)
+- [The Flow Through a Decoder Block: Residual Connections and RMSNorm](https://llm-systems-engineering.pages.dev/en/posts/residual-and-rmsnorm/)
 
 ## Citation
 
