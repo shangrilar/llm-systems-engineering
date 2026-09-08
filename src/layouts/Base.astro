@@ -1,7 +1,10 @@
 ---
 import '../styles/global.css';
 import config from '../../site.config.json';
-const { title = config.title, description = '모델, 하드웨어, 워크로드로 배우는 LLM 시스템 엔지니어링.' } = Astro.props;
-const canonical = config.url ? new URL(Astro.url.pathname, config.url).href : undefined;
+import {localeFromPath,home,shell} from '../i18n/index';
+const locale=localeFromPath(Astro.url.pathname),t=shell[locale];
+const {title=config.title,description=t.description,alternate}=Astro.props;
+const canonical=config.url?new URL(Astro.url.pathname,config.url).href:undefined;
+const other=locale==='ko'?'en':'ko';const alternatePath=alternate??(Astro.url.pathname==='/'||Astro.url.pathname==='/en/'?home(other):undefined);
 ---
-<!doctype html><html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>{title}</title><meta name="description" content={description}/>{canonical && <link rel="canonical" href={canonical}/>}<meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/></head><body><a class="skip" href="#main">본문으로 건너뛰기</a><header class="site-header"><a class="brand" href="/">LLM / SYSTEMS</a><nav aria-label="주 메뉴"><a href="/#learn">학습 경로</a><a href="/#articles">글 목록</a><a href={config.repository}>GitHub ↗</a></nav></header><main id="main"><slot/></main><footer>LLM Systems Engineering · 작은 예제에서 큰 시스템으로.<a href={config.repository}>원고와 코드 ↗</a></footer></body></html>
+<!doctype html><html lang={locale}><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>{title}</title><meta name="description" content={description}/>{canonical&&<link rel="canonical" href={canonical}/>}<meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/>{alternatePath&&config.url&&<><link rel="alternate" hreflang={locale} href={canonical}/><link rel="alternate" hreflang={other} href={new URL(alternatePath,config.url).href}/></>}</head><body><a class="skip" href="#main">{t.skip}</a><header class="site-header"><a class="brand" href={home(locale)}>LLM / SYSTEMS</a><nav aria-label={t.nav}><a href={`${home(locale)}#learn`}>{t.learn}</a><a href={`${home(locale)}#articles`}>{t.articles}</a>{alternatePath&&<a href={alternatePath} lang={other}>{other==='en'?'English':'한국어'}</a>}<a href={config.repository}>GitHub ↗</a></nav></header><main id="main"><slot/></main><footer>LLM Systems Engineering · {t.footer}<a href={config.repository}>{t.source} ↗</a></footer></body></html>

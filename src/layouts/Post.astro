@@ -1,6 +1,12 @@
 ---
-import Base from './Base.astro';
-import config from '../../site.config.json';
-const { frontmatter } = Astro.props;
+import {buildProfile,translationIsStale} from '../../scripts/content';
+import Base from './Base.astro';import config from '../../site.config.json';import catalog from '../data/posts.json';
+import {localeFromPath,home,postUrl,shell} from '../i18n/index';
+const {frontmatter}=Astro.props,locale=localeFromPath(Astro.url.pathname),t=shell[locale],other=locale==='ko'?'en':'ko';
+const posts=(catalog as any[]).filter(a=>a.locales[locale]?.published).sort((a,b)=>a.order-b.order);const article=(catalog as any[]).find(a=>a.articleId===frontmatter.articleId),position=posts.indexOf(article);
+const alternate=article?.locales[other]&&(buildProfile()==='preview'||article.locales[other].published)?postUrl(other,article.locales[other].slug):undefined;
+const title=article?.locales[locale]?.title??frontmatter.title,description=article?.locales[locale]?.description??frontmatter.description;
+const stale=locale==='en'&&article&&translationIsStale(article);
+const draft=article&&!article.locales[locale]?.published;
 ---
-<Base title={`${frontmatter.title} | LLM Systems Engineering`} description={frontmatter.description}><article class="article"><header class="article-header"><a href="/#learn">← 학습 경로</a><p class="eyebrow">{frontmatter.track} · {frontmatter.date}</p><h1>{frontmatter.title}</h1><p class="lede">{frontmatter.description}</p></header><div class="prose"><slot/></div><aside class="article-end"><p>궁금한 점이나 정정할 내용이 있나요?</p><a href={`${config.repository}/issues`}>GitHub에서 의견 남기기 ↗</a><a href="/#articles">글 목록으로 돌아가기 →</a></aside></article></Base>
+<Base title={`${title} | LLM Systems Engineering`} description={description} alternate={alternate}><article class="article"><header class="article-header"><a href={`${home(locale)}#learn`}>{t.back}</a><p class="eyebrow">{frontmatter.track??article?.track} · {article?.date??frontmatter.date}</p><h1>{title}</h1><p class="lede">{description}</p>{draft&&<p role="status">{locale==='ko'?'초안 · 발행 전 검토 중입니다.':'Draft · Pending publication review.'}</p>}{stale&&<p role="status">Translation awaiting review.</p>}</header><div class="prose"><slot/></div><nav aria-label={locale==='ko'?'이전과 다음 글':'Previous and next articles'}>{position>0&&<a href={postUrl(locale,posts[position-1].locales[locale].slug)}>← {posts[position-1].locales[locale].title}</a>}{position>=0&&position<posts.length-1&&<a href={postUrl(locale,posts[position+1].locales[locale].slug)}>{posts[position+1].locales[locale].title} →</a>}</nav><aside class="article-end"><p>{t.feedback}</p><a href={`${config.repository}/issues`}>{t.issue}</a><a href={`${home(locale)}#articles`}>{t.list}</a></aside></article></Base>

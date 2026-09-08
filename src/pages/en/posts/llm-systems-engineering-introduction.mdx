@@ -1,0 +1,71 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: llm-systems-engineering-introduction
+title: "LLM Systems Engineering: Connecting Models, Hardware, and Workloads"
+description: "An introduction to understanding execution systems through models, hardware, and workloads, and the learning path for this series."
+track: Foundations
+date: 2026-09-08
+---
+
+Open-weight models are improving rapidly. Models such as GLM, Kimi, and DeepSeek have caught up with frontier models with a lag of just a few months. Open-weight models give companies a foundation for building specialized models or serving models themselves. Against this backdrop, LLM systems engineering, including inference engineering, is becoming increasingly important.
+
+## What Is LLM Systems Engineering?
+
+LLM systems engineering is the work of designing and optimizing how a model's computations run on available hardware to meet a task's requirements for quality, speed, and scale.
+
+Even with the same model and GPUs, execution outcomes can vary depending on how requests are batched, where data is stored, and how computation is distributed across devices. To understand these choices, this series uses three perspectives: **models, hardware, and workloads**.
+
+## Models, Hardware, and Workloads—and Execution Systems
+
+![A Venn diagram with three overlapping circles labeled Model, Hardware, and Workload, and Execution System at their shared intersection.](/images/llm-systems-engineering-introduction/model-hardware-workload-venn-en.png)
+
+### Models: What Computation and State Are Required?
+
+A model defines the form of computation used to process inputs. Which operations run, in what order, what data they read, and what state they maintain all depend on the model.
+
+For example, attention, a core component of LLMs, affects how relationships between tokens are computed. An MoE architecture includes computation that selects which experts will process an input. Understanding a model means examining the demands these structures place on its execution.
+
+### Hardware: What Resources and Constraints Exist?
+
+Hardware is the physical foundation on which computation runs. Execution is affected not only by a GPU's compute performance but also by memory capacity and bandwidth, and by the network connecting multiple devices.
+
+Even when computation is fast, the required data may not arrive quickly enough. A model that does not fit on a single GPU must be distributed across devices, making data exchange between them another consideration.
+
+Understanding hardware means identifying the resources available and the constraints involved in using them.
+
+### Workloads: What Work Is Performed, and Under What Conditions?
+
+A workload describes the work performed with a model, along with its scale, patterns, and goals. This includes input and output lengths, the number of concurrent requests, and acceptable waiting times.
+
+**Inference** is the work of running a model to generate outputs. Reading a long document to produce a short summary has different execution characteristics from generating a long piece of code from a short request. A real-time service where users wait for responses also has different goals from bulk processing where results can arrive later. For tasks such as agents that alternate between model calls and tool execution, dependencies between calls and the total task duration also matter.
+
+**Training** is the work of updating a model's parameters using data. Pretraining and SFT involve a forward pass, loss computation, backpropagation, and parameter updates. The model and data scale determine memory and computation requirements. When multiple devices are involved, how computation and state are partitioned becomes important.
+
+**RL-based post-training** connects generation, evaluation, and training in a feedback loop. The model generates outputs or actions, updates its policy based on reward evaluation, and then generates again using the updated model. This requires attention not only to the efficiency of inference and training individually, but also to data transfer and model weight synchronization between the two processes.
+
+### Execution Systems: How Do We Respond to These Three Conditions?
+
+An execution system is software that performs the computation a model requires on hardware while meeting the workload's goals. This includes execution mechanisms such as kernels, memory management, parallelism, and scheduling.
+
+Projects such as vLLM, SGLang, and TensorRT-LLM serve this role for inference; Megatron-LM and TorchTitan for training; and Miles, slime, NeMo RL, and verl for RL-based post-training. They cover different scopes. Some, such as RL frameworks, connect inference and training engines to coordinate the overall workflow.
+
+The important point is that **a good execution strategy is not determined by the model or hardware alone**.
+
+Whenever we examine a feature of execution software in this series, we will consider the conditions its design responds to. It is important to connect **what the model requires, what the hardware constrains, and what the workload aims to achieve**.
+
+## The Learning Path Ahead
+
+The series follows this sequence: **shared foundations → inference → training → RL-based post-training**.
+
+| Stage | Topics |
+| --- | --- |
+| **Shared foundations** | Tensors and matrix operations, basic model computation, GPUs and memory, data movement, and performance measurement |
+| **Inference** | Input processing and token generation, the KV cache, request scheduling and batching, and distributed inference |
+| **Training** | How pretraining and SFT run, backpropagation and parameter updates, memory management, and distributed training |
+| **RL-based post-training** | Connecting generation, reward evaluation, and policy updates; resource allocation and weight synchronization |
+
+SFT is generally considered part of post-training. To build an understanding of execution step by step, this series covers pretraining and SFT in the training section, then examines RL-based post-training, where generation and training are connected, in a separate section.
+
+Each article will start with a small example and explain the underlying principles and execution process. Even when an article focuses on one of the three perspectives—models, hardware, or workloads—we will also examine how the other two influence execution.
+
+Through this approach, we will build a foundation for understanding design decisions, forming hypotheses about bottlenecks, and testing them through measurement, even when encountering a new model or framework.
