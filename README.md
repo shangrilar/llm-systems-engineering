@@ -10,7 +10,8 @@
 
 ## 글 목록
 
-첫 글을 준비하고 있습니다.
+- [LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일](https://post-introduction-mdx-previe.llm-systems-engineering.pages.dev/posts/llm-systems-engineering-introduction/) · 초안 미리보기
+
 ## 인용
 
 글이나 그림을 참고하셨다면 저자 **jungjun hur**, 글 제목과 해당 글의 링크를 출처로 남겨주세요. 프로젝트 전체의 인용 정보는 [CITATION.cff](CITATION.cff)를 참고해주세요.

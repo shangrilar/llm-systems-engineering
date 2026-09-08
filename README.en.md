@@ -10,7 +10,8 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 
 ## Articles
 
-The first article is in preparation.
+- [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://post-introduction-mdx-previe.llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/) · Draft preview
+
 ## Citation
 
 When citing an article or figure, please credit **jungjun hur** and include the article title and URL. For the project as a whole, see [CITATION.cff](CITATION.cff).
