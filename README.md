@@ -28,4 +28,4 @@ npm run dev
 ## 발행
 
 새 글은 브랜치와 Draft PR에서 작성하고, 미리보기 확인 후 main에 병합합니다.
-[작업 지침](AGENTS.md) · [Cloudflare 연동](docs/cloudflare-setup.md)
+[Cloudflare 연동](docs/cloudflare-setup.md)

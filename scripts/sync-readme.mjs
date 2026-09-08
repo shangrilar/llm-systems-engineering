@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync('site.config.json', 'utf8'));
 const posts = JSON.parse(readFileSync('src/data/posts.json', 'utf8'));
-const lines = posts.map(p => config.url ? `- [${p.title}](${config.url.replace(/\/$/, '')}/posts/${p.slug}/) — ${p.track}` : `- ${p.title} — ${p.track} (Cloudflare 연동 후 홈페이지 링크 연결)`);
+const lines = posts.filter(p=>p.locales.ko.published).sort((a,b)=>a.order-b.order).map(p => {
+ const base=config.url.replace(/\/$/, '');const ko=p.locales.ko,en=p.locales.en;
+ return `- [${ko.title}](${base}/posts/${ko.slug}/)${en?.published ? ` · [English](${base}/en/posts/${en.slug}/)` : ''} — ${p.track}`;
+});
 const text = `# LLM Systems Engineering
 
 모델·하드웨어·워크로드로 배우는 한국어 LLM 시스템 엔지니어링.
@@ -32,6 +35,6 @@ npm run dev
 ## 발행
 
 새 글은 브랜치와 Draft PR에서 작성하고, 미리보기 확인 후 main에 병합합니다.
-[작업 지침](AGENTS.md) · [Cloudflare 연동](docs/cloudflare-setup.md)
+[Cloudflare 연동](docs/cloudflare-setup.md)
 `;
 writeFileSync('README.md', text);

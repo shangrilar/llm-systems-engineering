@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "articleId": "llm-systems-engineering-introduction",
+    "order": 1,
+    "track": "기초",
+    "date": "2026-09-08",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "llm-systems-engineering-introduction",
+        "title": "LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일",
+        "description": "모델·하드웨어·워크로드로 실행 시스템을 이해하는 관점과 시리즈의 학습 순서를 소개합니다.",
+        "published": false
+      },
+      "en": {
+        "slug": "llm-systems-engineering-introduction",
+        "title": "LLM Systems Engineering: Connecting Models, Hardware, and Workloads",
+        "description": "An introduction to understanding execution systems through models, hardware, and workloads, and the learning path for this series.",
+        "published": false,
+        "sourceRevision": "77092b884827d25f6d474ea4da038437061561a918144c667db7e14f7ffbe55c",
+        "translationStatus": "draft"
+      }
+    }
+  }
+]
