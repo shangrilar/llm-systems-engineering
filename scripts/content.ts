@@ -9,6 +9,7 @@ export type Translation = {
   sourceRevision?: string;
   translationStatus?: "draft" | "reviewed";
   reviewNote?: string;
+  readmePath?: string[];
 };
 export type Article = {
   articleId: string;
