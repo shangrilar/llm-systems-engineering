@@ -2,7 +2,7 @@
   {
     "articleId": "llm-systems-engineering-introduction",
     "order": 1,
-    "track": "기초",
+    "track": "공통",
     "date": "2026-09-08",
     "figureIds": [],
     "locales": {
@@ -17,7 +17,7 @@
         "title": "LLM Systems Engineering: Connecting Models, Hardware, and Workloads",
         "description": "An introduction to understanding execution systems through models, hardware, and workloads, and the learning path for this series.",
         "published": false,
-        "sourceRevision": "77092b884827d25f6d474ea4da038437061561a918144c667db7e14f7ffbe55c",
+        "sourceRevision": "b3f1b2506896514548f7496768ffed12f808c159dd49f85d45c54861fd87e5f4",
         "translationStatus": "draft"
       }
     }

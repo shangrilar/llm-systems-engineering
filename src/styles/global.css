@@ -3,3 +3,8 @@
 
 /* Article images fit the reading column while keeping their aspect ratio. */
 .prose img{display:block;max-width:100%;height:auto;margin:28px auto}
+
+.site-header{display:grid;grid-template-columns:1fr auto auto}
+.language-switch{font:inherit;font-size:14px;color:inherit;background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px;cursor:pointer}
+.language-switch:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media(max-width:600px){.site-header{grid-template-columns:1fr auto;align-items:center;gap:14px}.site-header nav{grid-column:1/-1;grid-row:2}.language-switch{grid-column:2;grid-row:1}}
