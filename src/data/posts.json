@@ -54,5 +54,37 @@
         "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values."
       }
     }
+  },
+  {
+    "articleId": "residual-and-rmsnorm",
+    "order": 3,
+    "track": "공통",
+    "date": "2026-09-09",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "residual-and-rmsnorm",
+        "title": "디코더 블록의 기본 흐름: Residual과 RMSNorm",
+        "description": "Residual stream을 중심으로 디코더 블록의 구조를 살펴보고, d차원 벡터의 덧셈과 RMSNorm의 계산을 설명합니다.",
+        "published": true,
+        "readmePath": [
+          "공통",
+          "모델"
+        ]
+      },
+      "en": {
+        "slug": "residual-and-rmsnorm",
+        "title": "The Flow Through a Decoder Block: Residual Connections and RMSNorm",
+        "description": "Explore a decoder block around its residual stream, then follow vector addition and RMSNorm across each token’s d components.",
+        "published": true,
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "sourceRevision": "02ab2806526191bd8e8cec365ba8992522c36b40a2af55af555dd273c7059940",
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples."
+      }
+    }
   }
 ]
