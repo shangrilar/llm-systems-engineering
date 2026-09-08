@@ -5,14 +5,26 @@ const base = config.url.replace(/\/$/, '');
 for (const locale of ['ko', 'en']) {
   const korean = locale === 'ko';
   const prefix = korean ? '' : '/en';
-  const lines = posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl))
-    .sort((a, b) => a.order - b.order)
-    .map(p => {
+  const root = { links: [], children: new Map() };
+  for (const p of posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl))
+    .sort((a, b) => a.order - b.order)) {
       const article = p.locales[locale];
       const articleBase = article.published ? base : p.previewUrl.replace(/\/$/, '');
       const status = article.published ? '' : (korean ? ' · 초안 미리보기' : ' · Draft preview');
-      return `- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`;
-    });
+      let group = root;
+      for (const heading of article.readmePath ?? []) {
+        if (!group.children.has(heading)) group.children.set(heading, { links: [], children: new Map() });
+        group = group.children.get(heading);
+      }
+      group.links.push(`- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`);
+  }
+  function renderGroup(group, depth = 3) {
+    const sections = group.links.length ? [group.links.join('\n')] : [];
+    for (const [heading, child] of group.children)
+      sections.push(`${'#'.repeat(depth)} ${heading}\n\n${renderGroup(child, depth + 1)}`);
+    return sections.join('\n\n');
+  }
+  const articles = renderGroup(root);
   const text = `# LLM Systems Engineering
 
 ${korean ? '**한국어** | [English](README.en.md)' : '[한국어](README.md) | **English**'}
@@ -31,7 +43,7 @@ ${korean
 
 ## ${korean ? '글 목록' : 'Articles'}
 
-${lines.join('\n') || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
+${articles || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
 
 ## ${korean ? '인용' : 'Citation'}
 

@@ -22,5 +22,37 @@
         "reviewNote": "Korean and English bodies compared for publication on 2026-09-08; model, hardware, workload definitions and learning roadmap match."
       }
     }
+  },
+  {
+    "articleId": "embedding-to-lm-head",
+    "order": 2,
+    "track": "공통",
+    "date": "2026-09-09",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "embedding-to-lm-head",
+        "title": "LLM의 전체 구조: 임베딩 층에서 LM Head까지",
+        "description": "텍스트가 토큰 ID와 벡터를 거쳐 어휘별 점수로 바뀌는 흐름과 임베딩 층, 디코더 블록, LM Head의 역할을 살펴봅니다.",
+        "published": true,
+        "readmePath": [
+          "공통",
+          "모델"
+        ]
+      },
+      "en": {
+        "slug": "embedding-to-lm-head",
+        "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
+        "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
+        "published": true,
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "sourceRevision": "13f934401570aff874f35212651c6709fefb84d80502338155890d96d65e51b7",
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values."
+      }
+    }
   }
 ]
