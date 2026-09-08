@@ -1,31 +1,13 @@
 # LLM Systems Engineering
 
-모델·하드웨어·워크로드로 배우는 한국어 LLM 시스템 엔지니어링.
+**한국어** | [English](README.en.md)
 
-기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training 순서로 학습합니다.
+모델·하드웨어·워크로드라는 세 가지 관점으로 LLM 실행 시스템을 이해하는 학습 자료입니다.
 
-설명과 시각화는 홈페이지에서, 실행 코드는 이 저장소에서 확인합니다.
+공통 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training 순서로 원리, 실행 과정, 성능 측정과 최적화를 다룹니다.
 
-## 홈페이지
+글과 그림은 [홈페이지](https://llm-systems-engineering.pages.dev/)에서, 관련 실습 코드는 이 저장소에서 제공합니다. 한국어 원문과 영어 번역을 함께 제공합니다.
 
-[홈페이지에서 읽기](https://llm-systems-engineering.pages.dev)
+## 글 목록
 
-## 학습 목차
-
-첫 글 준비 중.
-
-## 로컬 실행
-
-Node 22.22.1 기준입니다.
-
-```sh
-npm ci
-npm run dev
-```
-
-빌드: `npm run build` · 결과: `dist/`
-
-## 발행
-
-새 글은 브랜치와 Draft PR에서 작성하고, 미리보기 확인 후 main에 병합합니다.
-[Cloudflare 연동](docs/cloudflare-setup.md)
+첫 글을 준비하고 있습니다.

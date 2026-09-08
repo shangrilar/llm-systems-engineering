@@ -7,4 +7,13 @@ const {title=config.title,description=t.description,alternate}=Astro.props;
 const canonical=config.url?new URL(Astro.url.pathname,config.url).href:undefined;
 const other=locale==='ko'?'en':'ko';const alternatePath=alternate??(Astro.url.pathname==='/'||Astro.url.pathname==='/en/'?home(other):undefined);
 ---
-<!doctype html><html lang={locale}><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>{title}</title><meta name="description" content={description}/>{canonical&&<link rel="canonical" href={canonical}/>}<meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/>{alternatePath&&config.url&&<><link rel="alternate" hreflang={locale} href={canonical}/><link rel="alternate" hreflang={other} href={new URL(alternatePath,config.url).href}/></>}</head><body><a class="skip" href="#main">{t.skip}</a><header class="site-header"><a class="brand" href={home(locale)}>LLM / SYSTEMS</a><nav aria-label={t.nav}><a href={`${home(locale)}#learn`}>{t.learn}</a><a href={`${home(locale)}#articles`}>{t.articles}</a>{alternatePath&&<a href={alternatePath} lang={other}>{other==='en'?'English':'한국어'}</a>}<a href={config.repository}>GitHub ↗</a></nav></header><main id="main"><slot/></main><footer>LLM Systems Engineering · {t.footer}<a href={config.repository}>{t.source} ↗</a></footer></body></html>
+<!doctype html><html lang={locale}><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>{title}</title><meta name="description" content={description}/>{canonical&&<link rel="canonical" href={canonical}/>}<meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/>{alternatePath&&config.url&&<><link rel="alternate" hreflang={locale} href={canonical}/><link rel="alternate" hreflang={other} href={new URL(alternatePath,config.url).href}/></>}</head><body><a class="skip" href="#main">{t.skip}</a><header class="site-header"><a class="brand" href={home(locale)}>LLM / SYSTEMS</a><nav aria-label={t.nav}><a href={`${home(locale)}#learn`}>{t.learn}</a><a href={`${home(locale)}#articles`}>{t.articles}</a><a href={config.repository}>GitHub ↗</a></nav>{alternatePath&&<select class="language-switch" aria-label={t.language}>
+<option value={locale==='ko'?Astro.url.pathname:alternatePath} selected={locale==='ko'} lang="ko">한국어</option>
+<option value={locale==='en'?Astro.url.pathname:alternatePath} selected={locale==='en'} lang="en">English</option>
+</select>}</header><main id="main"><slot/></main><footer>LLM Systems Engineering · {t.footer}<a href={config.repository}>{t.source} ↗</a></footer></body></html>
+
+<script>
+  document.querySelectorAll<HTMLSelectElement>('.language-switch').forEach((select) => {
+    select.addEventListener('change', () => window.location.assign(select.value));
+  });
+</script>
