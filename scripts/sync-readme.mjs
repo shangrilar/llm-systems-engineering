@@ -5,9 +5,14 @@ const base = config.url.replace(/\/$/, '');
 for (const locale of ['ko', 'en']) {
   const korean = locale === 'ko';
   const prefix = korean ? '' : '/en';
-  const lines = posts.filter(p => p.locales[locale]?.published)
+  const lines = posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl))
     .sort((a, b) => a.order - b.order)
-    .map(p => `- [${p.locales[locale].title}](${base}${prefix}/posts/${p.locales[locale].slug}/)`);
+    .map(p => {
+      const article = p.locales[locale];
+      const articleBase = article.published ? base : p.previewUrl.replace(/\/$/, '');
+      const status = article.published ? '' : (korean ? ' · 초안 미리보기' : ' · Draft preview');
+      return `- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`;
+    });
   const text = `# LLM Systems Engineering
 
 ${korean ? '**한국어** | [English](README.en.md)' : '[한국어](README.md) | **English**'}

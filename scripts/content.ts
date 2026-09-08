@@ -17,6 +17,7 @@ export type Article = {
   date: string;
   locales: { ko: Translation; en?: Translation };
   figureIds?: string[];
+  previewUrl?: string;
 };
 export const revision = (source: string, figures: unknown) =>
   createHash("sha256")
