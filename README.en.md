@@ -12,6 +12,12 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 
 - [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/)
 
+### Shared Concepts
+
+#### Models
+
+- [The Structure of an LLM: From the Embedding Layer to the LM Head](https://llm-systems-engineering.pages.dev/en/posts/embedding-to-lm-head/)
+
 ## Citation
 
 When citing an article or figure, please credit **jungjun hur** and include the article title and URL. For the project as a whole, see [CITATION.cff](CITATION.cff).

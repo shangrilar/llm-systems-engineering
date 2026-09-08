@@ -12,6 +12,12 @@
 
 - [LLM 시스템 엔지니어링: 모델, 하드웨어, 워크로드를 연결하는 일](https://llm-systems-engineering.pages.dev/posts/llm-systems-engineering-introduction/)
 
+### 공통
+
+#### 모델
+
+- [LLM의 전체 구조: 임베딩 층에서 LM Head까지](https://llm-systems-engineering.pages.dev/posts/embedding-to-lm-head/)
+
 ## 인용
 
 글이나 그림을 참고하셨다면 저자 **jungjun hur**, 글 제목과 해당 글의 링크를 출처로 남겨주세요. 프로젝트 전체의 인용 정보는 [CITATION.cff](CITATION.cff)를 참고해주세요.
