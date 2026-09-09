@@ -20,3 +20,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [The Flow Through a Decoder Block: Residual Connections and RMSNorm](https://llm-systems-engineering.pages.dev/en/posts/residual-and-rmsnorm/)
 - [Attention and MLP: Information Across Tokens and Transformations Within a Token](https://llm-systems-engineering.pages.dev/en/posts/attention-and-mlp/)
 - [Attention Projections: Q, K, V and Multiple Heads](https://llm-systems-engineering.pages.dev/en/posts/attention-projections/)
+- [Core Attention: Combining Information Across Tokens](https://llm-systems-engineering.pages.dev/en/posts/core-attention/)
