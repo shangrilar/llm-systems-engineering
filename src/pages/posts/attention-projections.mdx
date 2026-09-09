@@ -1,0 +1,54 @@
+---
+layout: ../../layouts/Post.astro
+articleId: attention-projections
+title: "Attention의 projection: Q·K·V와 멀티 헤드"
+description: "Q·K·V projection과 멀티 헤드의 구성을 살펴보고, 출력 projection이 같은 토큰의 여러 head 결과를 조합하는 과정을 설명합니다."
+track: 공통
+date: 2026-09-09
+---
+
+지난 글에서는 Attention이 토큰 사이의 정보를 결합하고, MLP는 각 토큰의 벡터에 독립적으로 적용된다는 점을 살펴봤습니다. 이번 글에서는 Attention의 입력과 출력 쪽에서 이루어지는 **projection**을 살펴보겠습니다. 입력에서 Q·K·V를 만드는 과정, 그 안에서 여러 head를 구분하는 방식, 그리고 head들의 결과를 조합하는 출력 projection까지 이어서 설명하겠습니다.
+
+## Attention의 전체 흐름
+
+Attention은 크게 **Q·K·V projection → Core Attention → 출력 projection**으로 나누어 볼 수 있습니다. Q·K·V projection은 같은 입력 벡터에서 서로 다른 역할을 하는 세 벡터를 만듭니다. Core Attention은 이 벡터들을 사용해 토큰 사이의 관계를 계산하고 정보를 모읍니다. 출력 projection은 그 결과를 다시 변환해 Residual stream에 더할 벡터를 만듭니다. 그림 1에서는 Core Attention의 내부 계산을 생략하고, 입력과 출력만 표시했습니다.
+
+[![입력 X에서 Q, K, V를 각각 계산하고 Core Attention에 전달합니다. Attention 결과 H에 출력 projection을 적용해 Y를 만듭니다. X, Q, K, V, H, Y는 모두 3행 8열 형태입니다.](/images/attention-projections/01-attention-overview.png)](/images/attention-projections/01-attention-overview.png)
+
+지난 글처럼 입력 X의 **한 행은 토큰 하나의 벡터**입니다. 토큰 수가 T이고 모델 차원이 d라면 X는 T × d 형태입니다. 여기서는 기본적인 MHA(Multi-Head Attention)를 기준으로, Q·K·V 각각의 전체 차원이 d인 구성을 사용하겠습니다. 그림에서는 T = 3, d = 8이므로 X와 Q·K·V는 모두 3 × 8 형태입니다. 배치 축은 생략했습니다.
+
+Core Attention의 결과 H와 출력 projection을 거친 Y도 같은 T × d 형태입니다. **입출력의 형태는 같지만, 계산을 거치면서 각 성분의 값은 달라집니다.** 이번 글에서는 양쪽의 projection과 그 사이를 오가는 벡터의 형태에 집중하겠습니다.
+
+이 세 단계 중 **토큰 사이의 정보를 결합하는 계산은 Core Attention에서 이루어집니다.** Q·K·V projection과 출력 projection은 각 토큰의 벡터에 독립적으로 적용됩니다. 출력 projection이 조합하는 것은 같은 토큰 위치의 여러 head 결과입니다.
+
+## Q·K·V: 같은 입력, 서로 다른 가중치
+
+Q, K, V는 각각 **Query, Key, Value**의 약자입니다. Query와 Key는 어떤 토큰의 정보를 얼마나 반영할지 계산하는 데 사용하고, Value는 그 비중에 따라 모을 정보를 담습니다. 이 세 벡터는 모두 같은 입력에서 출발하지만 서로 다른 가중치로 계산합니다. 가중치 행렬을 Wq, Wk, Wv라고 하면 각각 `Q = X × Wq`, `K = X × Wk`, `V = X × Wv`입니다.
+
+[![동일한 3행 8열 입력 X에 서로 다른 8행 8열 가중치 Wq, Wk, Wv를 곱해 Q, K, V를 만듭니다. 입력과 출력의 세 번째 행을 강조하고, 가중치와 출력의 열은 두 head에 대응하는 색으로 구분합니다.](/images/attention-projections/02-qkv-projections.png)](/images/attention-projections/02-qkv-projections.png)
+
+이 예시에서 각 가중치 행렬은 d × d, 즉 8 × 8입니다. X의 한 행에 있는 여덟 성분과 가중치 행렬의 열 하나를 위치별로 곱한 뒤 더하면, 출력 성분 하나가 만들어집니다. 여덟 개의 열에 대해 계산하므로 출력도 여덟 성분입니다. **같은 X라도 Wq, Wk, Wv가 서로 다른 가중치이므로, Q·K·V는 서로 다르게 변환된 벡터가 됩니다.** 그림의 점은 학습 가능한 가중치를 나타내며, 실제 수치와 bias는 생략했습니다.
+
+그림에서 강조한 세 번째 행을 따라가면, 토큰 3의 입력으로 Q·K·V 각각의 세 번째 행을 계산합니다. 다른 토큰에도 같은 방식으로 계산하며, **각 projection의 가중치는 모든 토큰에 동일하게 적용됩니다.** 그림의 파란색과 초록색은 출력 성분을 두 head로 구분한 표시입니다. 가중치의 앞 네 열은 첫 번째 head의 성분을 만들고, 뒤 네 열은 두 번째 head의 성분을 만듭니다.
+
+## 멀티 헤드: 한 벡터 안의 여러 묶음
+
+**멀티 헤드**(Multi-Head)는 Attention 계산을 여러 head에서 각각 수행하는 구조입니다. 각 head는 서로 다른 projection 가중치로 만든 Q·K·V를 사용하므로, 토큰 사이의 관계를 서로 다른 방식으로 계산할 수 있습니다. 그림 2에서 Q·K·V를 두 가지 색으로 구분한 것은 각 head에 해당하는 성분을 표시한 것입니다. 그림 3에서는 토큰 하나의 Q·K·V를 확대해 보겠습니다.
+
+[![토큰 하나의 Q, K, V를 각각 여덟 성분으로 표시합니다. 앞의 네 성분은 Head 1, 뒤의 네 성분은 Head 2입니다. 각 벡터의 전체 d차원은 유지됩니다.](/images/attention-projections/03-head-segments.png)](/images/attention-projections/03-head-segments.png)
+
+모델 차원이 d이고 head 수가 h일 때, 이 구성에서는 head 하나의 차원 dh가 `d / h`입니다. 그림에서는 d = 8, h = 2이므로 dh = 4입니다. Q의 앞 네 성분은 Head 1, 뒤 네 성분은 Head 2에 해당하며, K와 V도 같은 방식으로 구분합니다. 전체 토큰을 함께 보면 **T × d를 T × h × dh로 보는 것**입니다. `3 × 8`을 `3 × 2 × 4`로 나타내는 reshape이며, 이 구분 자체에 추가 행렬 곱은 없습니다.
+
+각 head는 입력 벡터의 d개 성분 전체를 사용하며, 서로 다른 가중치로 계산됩니다.
+
+## 출력 projection: 여러 head의 결과를 조합하기
+
+Core Attention의 결과 H에는 각 토큰에 대한 여러 head의 결과가 함께 담겨 있습니다. 이 예시에서는 head마다 네 성분씩, 토큰 하나당 총 여덟 성분이므로 H도 입력과 같은 T × d, 즉 3 × 8 형태입니다.
+
+[![두 head의 결과가 담긴 H에 8행 8열 가중치 Wo를 곱해 출력 Y를 만듭니다. Wo의 위쪽 네 행과 아래쪽 네 행은 각각 입력 head에 대응합니다. Y는 같은 위치의 Residual 입력 R에 더해집니다.](/images/attention-projections/04-output-projection.png)](/images/attention-projections/04-output-projection.png)
+
+출력 projection은 `Y = H × Wo`로 계산합니다. H가 T × d이고 Wo가 d × d이므로 Y도 T × d입니다. 출력의 한 성분을 만들 때는 H의 한 행과 Wo의 열 하나 전체를 사용합니다. 따라서 **같은 토큰에 대해 계산된 여러 head의 결과 성분이 하나의 가중합에 함께 참여합니다.** 각 head가 모아 온 정보를 학습된 가중치로 조합해 새로운 벡터를 만드는 것입니다.
+
+Wo는 모든 토큰에 동일하게 적용됩니다. 이렇게 얻은 d차원 출력 Y를 같은 위치의 Residual 입력 R에 더하면, `R + Y`가 다음 단계로 이어집니다.
+
+이번 글에서는 같은 입력에서 Q·K·V를 만들고, 그 성분들을 여러 head로 구분한 뒤, head들의 결과를 출력 projection으로 조합하는 흐름을 살펴봤습니다. **Q·K·V projection은 각 head에서 사용할 벡터를 만들고, 출력 projection은 각 head의 결과를 조합합니다.** 다음 글에서는 이번에 생략했던 Core Attention의 내부 계산을 살펴보겠습니다. Head 하나를 기준으로 Q와 K로 점수를 계산하고, 그 점수를 가중치로 바꿔 V를 모으는 과정을 설명하겠습니다.

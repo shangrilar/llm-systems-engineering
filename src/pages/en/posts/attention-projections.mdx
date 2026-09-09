@@ -1,0 +1,54 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: attention-projections
+title: "Attention Projections: Q, K, V and Multiple Heads"
+description: "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token."
+track: 공통
+date: 2026-09-09
+---
+
+In the previous article, we saw that Attention combines information across tokens, while an MLP operates independently on each token’s vector. This article looks at the **projections** on the input and output sides of Attention. We will follow how the input becomes Q, K and V, how multiple heads are grouped within these vectors, and how the output projection combines the results from the heads.
+
+## The Overall Flow of Attention
+
+We can divide Attention into **Q, K and V projections → Core Attention → output projection**. The Q, K and V projections create three vectors with different roles from the same input vector. Core Attention uses these vectors to compute relationships between tokens and gather information. The output projection transforms that result into a vector to add to the residual stream. Figure 1 omits the internal computation of Core Attention and shows only its inputs and output.
+
+[![Q, K and V are computed separately from input X and passed to Core Attention. The output projection transforms the Attention result H into Y. X, Q, K, V, H and Y all have three rows and eight columns.](/images/attention-projections/en/01-attention-overview.png)](/images/attention-projections/en/01-attention-overview.png)
+
+As in the previous article, **each row of input X is one token’s vector**. With T tokens and model dimension d, X has shape T × d. We will use a basic MHA (Multi-Head Attention) configuration in which Q, K and V each have a total dimension of d. In the figures, T = 3 and d = 8, so X, Q, K and V all have shape 3 × 8. The batch dimension is omitted.
+
+The Core Attention result H and the output projection result Y also have shape T × d. **The input and output shapes stay the same, but the computations transform the values of their components.** This article focuses on the projections on either side and the shapes of the vectors that pass between them.
+
+Of these three stages, **Core Attention performs the computation that combines information across tokens.** The Q, K and V projections and the output projection operate independently on each token’s vector. What the output projection combines is the results of multiple heads at the same token position.
+
+## Q, K and V: Same Input, Different Weights
+
+Q, K and V stand for **Query, Key and Value**. Query and Key are used to determine how much information to take from each token, while Value holds the information to gather according to those weights. All three vectors start from the same input, but are computed with different weights. Writing the weight matrices as Wq, Wk and Wv gives `Q = X × Wq`, `K = X × Wk` and `V = X × Wv`.
+
+[![The same three-by-eight input X is multiplied by different eight-by-eight weight matrices Wq, Wk and Wv to produce Q, K and V. The third input and output rows are highlighted, and the columns of the weights and outputs are colored to indicate two heads.](/images/attention-projections/en/02-qkv-projections.png)](/images/attention-projections/en/02-qkv-projections.png)
+
+In this example, each weight matrix has shape d × d, or 8 × 8. Multiplying the eight components in one row of X by the corresponding entries in one column of the weight matrix and adding the products produces one output component. Repeating this for eight columns gives eight output components. **Even with the same X, Wq, Wk and Wv contain different weights, so Q, K and V are differently transformed vectors.** The dots in the figures represent learnable weights; their actual values and biases are omitted.
+
+Following the highlighted third row, the input for token 3 produces the third row of Q, K and V. The other tokens are processed in the same way, and **each projection’s weights are applied identically to every token**. Blue and green distinguish the output components belonging to the two heads. The first four columns of each weight matrix produce the first head’s components, and the last four columns produce the second head’s components.
+
+## Multiple Heads: Groups Within a Vector
+
+**Multi-head** Attention performs Attention computations separately in multiple heads. Each head uses Q, K and V produced with different projection weights, so it can compute relationships between tokens in a different way. The two colors in Q, K and V in Figure 2 mark the components belonging to each head. Figure 3 zooms in on Q, K and V for a single token.
+
+[![Q, K and V for one token each contain eight components. The first four belong to Head 1 and the last four to Head 2. Each vector retains its total dimension d.](/images/attention-projections/en/03-head-segments.png)](/images/attention-projections/en/03-head-segments.png)
+
+With model dimension d and h heads, the dimension dh of one head in this configuration is `d / h`. In the figures, d = 8 and h = 2, so dh = 4. The first four components of Q belong to Head 1 and the last four to Head 2; K and V are grouped in the same way. For all tokens together, this means **viewing T × d as T × h × dh**. It is a reshape from `3 × 8` to `3 × 2 × 4`, and this grouping itself requires no additional matrix multiplication.
+
+Each head uses all d components of the input vector and is computed with different weights.
+
+## Output Projection: Combining Results From Multiple Heads
+
+The Core Attention result H contains the results of multiple heads for each token. In this example, each head contributes four components, giving eight components per token. H therefore has the same shape as the input: T × d, or 3 × 8.
+
+[![H, which contains the results of two heads, is multiplied by the eight-by-eight weight matrix Wo to produce Y. The top four and bottom four rows of Wo correspond to the input heads. Y is added to residual input R at the same token position.](/images/attention-projections/en/04-output-projection.png)](/images/attention-projections/en/04-output-projection.png)
+
+The output projection computes `Y = H × Wo`. H has shape T × d and Wo has shape d × d, so Y also has shape T × d. Computing one output component uses an entire row of H and an entire column of Wo. As a result, **components from multiple heads for the same token participate in a single weighted sum**. Learned weights combine the information gathered by each head into a new vector.
+
+Wo is applied identically to every token. Adding the resulting d-dimensional output Y to residual input R at the same position gives `R + Y`, which passes to the next stage.
+
+In this article, we followed how the same input becomes Q, K and V, how their components are grouped into multiple heads, and how the output projection combines the heads’ results. **The Q, K and V projections create the vectors each head will use, and the output projection combines the results from the heads.** In the next article, we will examine the internal computation of Core Attention that we left out here. We will focus on one head and explain how Q and K produce scores, how those scores become weights, and how those weights are used to gather V.
