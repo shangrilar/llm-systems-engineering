@@ -20,6 +20,7 @@
 - [디코더 블록의 기본 흐름: Residual과 RMSNorm](https://llm-systems-engineering.pages.dev/posts/residual-and-rmsnorm/)
 - [Attention과 MLP: 토큰 사이의 정보와 토큰 내부의 변환](https://llm-systems-engineering.pages.dev/posts/attention-and-mlp/)
 - [Attention의 projection: Q·K·V와 멀티 헤드](https://llm-systems-engineering.pages.dev/posts/attention-projections/)
+- [Core Attention: 토큰 사이의 정보 조합하기](https://llm-systems-engineering.pages.dev/posts/core-attention/)
 
 ## 인용
 
