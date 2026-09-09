@@ -118,5 +118,37 @@
         "sourceRevision": "68a848973732657619e166c9431edb1aaf5e88ccfbf4f5d695d5cf8985f2034a"
       }
     }
+  },
+  {
+    "articleId": "attention-projections",
+    "order": 5,
+    "track": "공통",
+    "date": "2026-09-09",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "attention-projections",
+        "title": "Attention의 projection: Q·K·V와 멀티 헤드",
+        "description": "Q·K·V projection과 멀티 헤드의 구성을 살펴보고, 출력 projection이 같은 토큰의 여러 head 결과를 조합하는 과정을 설명합니다.",
+        "readmePath": [
+          "공통",
+          "모델"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "attention-projections",
+        "title": "Attention Projections: Q, K, V and Multiple Heads",
+        "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "09828dbd7128e18d922ce8e0df9bffaa8b12920a50918c265aeb332b8a2c31f4",
+        "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected."
+      }
+    }
   }
 ]

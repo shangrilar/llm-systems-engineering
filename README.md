@@ -19,6 +19,7 @@
 - [LLM의 전체 구조: 임베딩 층에서 LM Head까지](https://llm-systems-engineering.pages.dev/posts/embedding-to-lm-head/)
 - [디코더 블록의 기본 흐름: Residual과 RMSNorm](https://llm-systems-engineering.pages.dev/posts/residual-and-rmsnorm/)
 - [Attention과 MLP: 토큰 사이의 정보와 토큰 내부의 변환](https://llm-systems-engineering.pages.dev/posts/attention-and-mlp/)
+- [Attention의 projection: Q·K·V와 멀티 헤드](https://llm-systems-engineering.pages.dev/posts/attention-projections/)
 
 ## 인용
 
