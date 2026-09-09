@@ -150,5 +150,37 @@
         "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected."
       }
     }
+  },
+  {
+    "articleId": "core-attention",
+    "order": 6,
+    "track": "공통",
+    "date": "2026-09-09",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "core-attention",
+        "title": "Core Attention: 토큰 사이의 정보 조합하기",
+        "description": "Head별 Core Attention의 흐름을 따라 QKᵀ, 스케일링, Causal mask, Softmax, Value 가중합을 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "모델"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "core-attention",
+        "title": "Core Attention: Combining Information Across Tokens",
+        "description": "Follow Core Attention within each head through QKᵀ, scaling, a causal mask, Softmax, and a weighted sum of Value vectors.",
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a79dd82e7ca1b6357bdf83af8960878d09e7430a91244ad4bfb19cd5de6102e2",
+        "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately."
+      }
+    }
   }
 ]
