@@ -86,5 +86,37 @@
         "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples."
       }
     }
+  },
+  {
+    "articleId": "attention-and-mlp",
+    "order": 4,
+    "track": "공통",
+    "date": "2026-09-09",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "attention-and-mlp",
+        "title": "Attention과 MLP: 토큰 사이의 정보와 토큰 내부의 변환",
+        "description": "Attention과 MLP의 역할을 비교하고, 행렬 곱부터 기본 MLP와 Gated MLP의 내부 계산까지 살펴봅니다.",
+        "published": true,
+        "readmePath": [
+          "공통",
+          "모델"
+        ]
+      },
+      "en": {
+        "slug": "attention-and-mlp",
+        "title": "Attention and MLP: Information Across Tokens and Transformations Within a Token",
+        "description": "Compare Attention and MLP, then explore matrix multiplication and the computations inside basic and gated MLPs.",
+        "published": true,
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1.",
+        "sourceRevision": "68a848973732657619e166c9431edb1aaf5e88ccfbf4f5d695d5cf8985f2034a"
+      }
+    }
   }
 ]
