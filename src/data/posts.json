@@ -182,5 +182,37 @@
         "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately."
       }
     }
+  },
+  {
+    "articleId": "rope",
+    "order": 7,
+    "track": "공통",
+    "date": "2026-09-10",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "rope",
+        "title": "RoPE: 토큰 위치를 Attention에 반영하기",
+        "description": "Q와 K의 성분을 토큰 위치에 따라 회전하는 방법과, 상대 위치가 Attention 점수에 반영되는 과정을 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "모델"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "rope",
+        "title": "RoPE: Incorporating Token Positions into Attention",
+        "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "953b5c665dc4c3bd6307ad40920c0307e375883f38bcaf908f9007c3297904d3",
+        "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately."
+      }
+    }
   }
 ]

@@ -1,0 +1,22 @@
+/* The package font includes the MATH table and Greek glyphs. Define an
+   unrestricted face so its Latin-only default CSS does not omit math symbols. */
+@font-face {
+  font-family: 'LLM Math';
+  src: url('@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.prose math[display='block'] {
+  font-family: 'LLM Math', math;
+  font-size: 1.2em;
+  line-height: normal;
+  margin: 28px 0;
+  padding: 8px 0;
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+  .prose math[display='block'] { font-size: 1.05em; }
+}
