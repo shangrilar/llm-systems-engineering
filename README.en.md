@@ -21,3 +21,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [Attention and MLP: Information Across Tokens and Transformations Within a Token](https://llm-systems-engineering.pages.dev/en/posts/attention-and-mlp/)
 - [Attention Projections: Q, K, V and Multiple Heads](https://llm-systems-engineering.pages.dev/en/posts/attention-projections/)
 - [Core Attention: Combining Information Across Tokens](https://llm-systems-engineering.pages.dev/en/posts/core-attention/)
+- [RoPE: Incorporating Token Positions into Attention](https://llm-systems-engineering.pages.dev/en/posts/rope/)

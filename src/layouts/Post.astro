@@ -1,5 +1,6 @@
 ---
 import {buildProfile,translationIsStale} from '../../scripts/content';
+import '../styles/math.css';
 import Base from './Base.astro';import config from '../../site.config.json';import catalog from '../data/posts.json';
 import {localeFromPath,home,postUrl,shell} from '../i18n/index';
 const {frontmatter}=Astro.props,locale=localeFromPath(Astro.url.pathname),t=shell[locale],other=locale==='ko'?'en':'ko';
