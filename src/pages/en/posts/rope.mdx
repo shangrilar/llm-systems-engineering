@@ -1,0 +1,80 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rope
+title: "RoPE: Incorporating Token Positions into Attention"
+description: "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores."
+track: 공통
+date: 2026-09-10
+---
+
+In the previous article, we explored how Core Attention computes scores between tokens using Q and K, then gathers V using weights derived from those scores. In this article, we will examine **RoPE (Rotary Position Embedding), which incorporates token positions into this computation**. It rotates the components of Q and K according to their positions, so that position differences are reflected when the two vectors are compared.
+
+## How is position reflected in the computations so far?
+
+In the decoder block we have explored so far, RMSNorm, MLP, and residual addition are applied independently to each token. Within Attention, Q, K, and V projections and the output projection also transform components of the same token. **Core Attention is where vectors from different tokens are compared and their information is gathered.** Within it, QKᵀ computes scores between tokens, and PV computes a weighted sum of their Value vectors.
+
+[![Narrow the decoder block down to Attention and Core Attention. QK transpose computes scores, the causal mask limits access, and PV computes a weighted sum of Values. Token 1 is two positions before token 3, while token 2 is one position before it.](/images/rope/en/01-why-position.png)](/images/rope/en/01-why-position.png)
+
+The dot product of Q and K multiplies corresponding components of the two vectors and adds the products. **The dot-product calculation itself has no term that directly specifies where the two tokens are or how many positions apart they are.** If the same Q and K are used unchanged, their dot product is the same wherever they are placed.
+
+The causal mask defines which positions can be attended to based on their order. In Figure 1, token 3 can attend to both tokens 1 and 2, but token 1 is two positions earlier and token 2 is one position earlier. The mask allows both positions; **it does not directly encode position differences in the scores.** RoPE is a way to incorporate these differences into the comparison of Q and K.
+
+## RoPE is applied to Q and K
+
+RoPE is applied **before Q and K produced by the projections are multiplied**. As in the previous article, we will use an MHA configuration with T = 3 tokens, model dimension d = 8, and h = 2 heads. Each head has dimension dh = 4, and its Q, K, and V each have shape 3 × 4. Figure 2 focuses on Head 1.
+
+[![Apply RoPE to Head 1's Q and K according to token positions 0, 1, and 2. Q and K retain their 3 × 4 shape, while V passes unchanged to Core Attention. The results from all heads are then concatenated and passed to the output projection.](/images/rope/en/02-rope-location.png)](/images/rope/en/02-rope-location.png)
+
+We will count positions from zero: token 1 is at position 0, token 2 at position 1, and token 3 at position 2. Let Q′ and K′ denote the results of transforming each token's Q and K according to its own position. **RoPE preserves the vector dimension dh, and it is not applied to V.** Core Attention then computes scores using Q′ and K′ and gathers V using weights derived from those scores.
+
+RoPE itself does not retrieve another token's vector. It uses only each token's Q or K and that token's position, and the same procedure applies to the other heads. **The position-dependent transformation is performed independently for each token; the transformed vectors are compared in Q′K′ᵀ.**
+
+## Rotating a pair of components
+
+What does it mean to rotate a vector? RoPE **groups the components of a head's vector into pairs and treats each pair as the coordinates of a vector in a plane**. In our dh = 4 example, the four components form two pairs. Figure 3 focuses on one of them: `[a, b] = [1, 1]`.
+
+[![Treat the two components [1, 1] as a vector in a plane and rotate it by 30 degrees. The resulting components are approximately [0.366, 1.366], and the vector's length is preserved. The formulas show how cosine and sine produce the two output components.](/images/rope/en/03-pair-rotation.png)](/images/rope/en/03-pair-rotation.png)
+
+Rotating this vector by 30° changes its components to approximately `[0.366, 1.366]`. **Rotation changes the two component values but preserves the vector's length.** The computation combines the original components using the cosine and sine of the rotation angle. As shown in Figure 3, the first output is `a cos α − b sin α`, and the second is `a sin α + b cos α`. The 30° angle in the figure was chosen to make the change easy to see.
+
+## Choosing the rotation angle by token position and component pair
+
+RoPE determines its rotation angles from **the token position and the rotation rate of each component pair**. For a given pair, moving one position forward adds a fixed angle to its rotation. Different component pairs within a vector have different rotation rates. To illustrate this distinction, Figure 4 uses 30° per position for the first pair and 10° per position for the second.
+
+[![Rotate the same input [1, 1, 1, −1] at positions 0, 1, and 2. The first component pair rotates by 0, 30, and 60 degrees; the second rotates by 0, 10, and 20 degrees. Together, the two pairs still contain four components.](/images/rope/en/04-position-and-pairs.png)](/images/rope/en/04-position-and-pairs.png)
+
+Token 1 is at position 0, so both pairs have a rotation angle of 0°. Token 2 is at position 1, so the angles are 30° and 10°; token 3 is at position 2, so they are 60° and 20°. Blue and green distinguish **two component pairs within the same head**, rather than different heads. The figure holds the input fixed to compare only the effect of position.
+
+Basic RoPE defines the rotation rate of each component pair using the following formula. Here, dh is the dimension of the head vector being rotated, and the pair index i runs from 0 to `dh/2 − 1`. B is the base that determines the distribution of rotation rates; the [original RoPE paper](https://arxiv.org/html/2104.09864v5#S3.SS2.SSS2) uses 10,000.
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Theta i equals B raised to minus 2i over dh."><mrow><msub><mi>θ</mi><mi>i</mi></msub><mo>=</mo><msup><mi>B</mi><mrow><mo>−</mo><mfrac><mrow><mn>2</mn><mi>i</mi></mrow><msub><mi>d</mi><mi>h</mi></msub></mfrac></mrow></msup></mrow></math>
+
+θᵢ is **the additional rotation angle applied to component pair i for each step forward in position**, measured in radians. For example, with dh = 4 and B = 10,000, θ₀ for the first pair is 1, and θ₁ for the second pair is 0.01. The figure's 30° and 10° are illustrative values, not the values from this configuration. The angle applied at token position p is:
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="The rotation angle at position p for pair i equals p times theta i."><mrow><msub><mi>α</mi><mrow><mi>p</mi><mo>,</mo><mi>i</mi></mrow></msub><mo>=</mo><mi>p</mi><msub><mi>θ</mi><mi>i</mi></msub></mrow></math>
+
+For component pair i of Q or K, written as `[a, b]`, we substitute this angle into the rotation formula from Figure 3. Written as a matrix multiplication, it becomes the following. **The token position p determines how far to rotate, and the pair index i determines which rotation rate to use.**
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="The rotated pair a prime, b prime equals a two-by-two rotation matrix times a, b. The first row is cos of p theta i and minus sin of p theta i; the second row is sin of p theta i and cos of p theta i."><mrow><mo stretchy="true" minsize="2.4em">[</mo><mtable><mtr><mtd><mi>a′</mi></mtd></mtr><mtr><mtd><mi>b′</mi></mtd></mtr></mtable><mo stretchy="true" minsize="2.4em">]</mo><mo>=</mo><mo stretchy="true" minsize="2.4em">[</mo><mtable columnspacing="0.7em"><mtr><mtd><mi mathvariant="normal">cos</mi><mo>(</mo><mi>p</mi><msub><mi>θ</mi><mi>i</mi></msub><mo>)</mo></mtd><mtd><mo>−</mo><mi mathvariant="normal">sin</mi><mo>(</mo><mi>p</mi><msub><mi>θ</mi><mi>i</mi></msub><mo>)</mo></mtd></mtr><mtr><mtd><mi mathvariant="normal">sin</mi><mo>(</mo><mi>p</mi><msub><mi>θ</mi><mi>i</mi></msub><mo>)</mo></mtd><mtd><mi mathvariant="normal">cos</mi><mo>(</mo><mi>p</mi><msub><mi>θ</mi><mi>i</mi></msub><mo>)</mo></mtd></mtr></mtable><mo stretchy="true" minsize="2.4em">]</mo><mo stretchy="true" minsize="2.4em">[</mo><mtable><mtr><mtd><mi>a</mi></mtd></mtr><mtr><mtd><mi>b</mi></mtd></mtr></mtable><mo stretchy="true" minsize="2.4em">]</mo></mrow></math>
+
+## Rotating by absolute position, comparing by relative position
+
+Each vector is rotated according to its own position, so how does the difference between two token positions enter the comparison? Figure 5 compares **two cases with the same Q and K before rotation**. For one component pair, Q is `[1, 0]`, K is `[1, 1]`, and the rotation rate is 30° per position. Here we consider only the position-dependent rotations and dot products, before applying a mask.
+
+[![On the left, Q is at position 0 and K at position 1. On the right, Q is at position 1 and K at position 2. K position minus Q position is 1 in both cases. Rotating both Q and K by another 30 degrees preserves their 75-degree angle and dot product of approximately 0.366.](/images/rope/en/05-relative-position.png)](/images/rope/en/05-relative-position.png)
+
+On the left, Q is at position 0 and K at position 1, so their rotations are 0° and 30°. On the right, Q is at position 1 and K at position 2, so their rotations are 30° and 60°. **The right-hand case is the result of rotating both vectors on the left by another 30°.** Rotating both vectors by the same angle changes their individual directions but preserves the angle between them. Their lengths are also preserved, so the dot product is approximately 0.366 in both cases.
+
+The **token positions differ by one in both cases**. On the left, `K position − Q position = 1 − 0 = 1`; on the right, it is `2 − 1 = 1`. For component pair i, the difference between the applied rotation angles is also the same: `(K position − Q position) × θᵢ`. RoPE rotates each vector according to its absolute position, but the positional effect on their dot product takes this relative form. The same principle applies to the full Q–K dot product, which sums the dot products of all component pairs.
+
+## Position information changes Attention scores
+
+Let us return to the Q and K used in the previous article. Figure 6 **compares scores before and after applying RoPE to the same Q and K**. The token positions are 0, 1, and 2, using the same illustrative rotation rates of 30° and 10° as in Figure 4. In both score matrices, each dot product is divided by √dh = 2.
+
+[![Compare scores before and after applying RoPE to the previous article's Q and K. Token 3's score row changes from [1, 0, 3] to approximately [0.866, −0.430, 3]. A causal mask and Softmax are then applied before computing the weighted sum of V.](/images/rope/en/06-attention-scores.png)](/images/rope/en/06-attention-scores.png)
+
+For token 3, the score row changes from `[1, 0, 3]` to approximately `[0.866, −0.430, 3]`. The first two values are scores against tokens 1 and 2, and the last is the score against itself. **Q and K at the same position receive the same rotation, so the self-score is preserved.** Q and K at different positions receive different rotation angles, changing those scores in this example.
+
+The remaining computation is the same as in the previous article. The causal mask limits which tokens can be attended to, Softmax computes weights, and V is aggregated with those weights. V itself is unchanged, but **the scores computed from Q and K with position information determine how much each Value contributes**.
+
+RoPE groups each token's Q and K components into pairs and rotates them according to position. The input and output dimensions stay the same, and the rotation itself is computed independently for each token. Comparing the transformed Q and K makes **both their content and the relative position of the two tokens contribute to the Attention score**.
