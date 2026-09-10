@@ -310,5 +310,37 @@
         "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "gpu-architecture",
+    "order": 11,
+    "track": "공통",
+    "date": "2026-09-10",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-architecture",
+        "title": "GPU 구조: 연산 장치와 메모리",
+        "description": "SM과 CUDA Core·Tensor Core, GPU 메모리의 구성을 살펴보고, 용량·대역폭·접근 지연을 모델 실행의 문제와 연결합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-architecture",
+        "title": "GPU Architecture: Compute Units and Memory",
+        "description": "Explore SMs, CUDA Cores, Tensor Cores, and GPU memory, then connect capacity, bandwidth, and access latency to running a model.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision.",
+        "sourceRevision": "e33bc047ae6ed1f1fc1f080c2c56da928c160079484f59c2a027fad9ee7840c7"
+      }
+    }
   }
 ]

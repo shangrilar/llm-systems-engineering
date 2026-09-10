@@ -1,0 +1,23 @@
+.prose .gpu-memory-table table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+.prose .gpu-memory-table th,
+.prose .gpu-memory-table td {
+  min-width: 0;
+  vertical-align: top;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+.prose .gpu-memory-table th:first-child {
+  width: 30%;
+}
+@media (max-width: 600px) {
+  .prose .gpu-memory-table th,
+  .prose .gpu-memory-table td {
+    padding: 10px 7px;
+    font-size: 13px;
+    word-break: normal;
+  }
+}
