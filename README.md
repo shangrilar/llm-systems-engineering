@@ -23,6 +23,7 @@
 - [Core Attention: 토큰 사이의 정보 조합하기](https://llm-systems-engineering.pages.dev/posts/core-attention/)
 - [RoPE: 토큰 위치를 Attention에 반영하기](https://llm-systems-engineering.pages.dev/posts/rope/)
 - [MoE: 토큰마다 사용할 MLP 선택하기](https://llm-systems-engineering.pages.dev/posts/moe/)
+- [모델 전체 흐름 다시 보기](https://llm-systems-engineering.pages.dev/posts/model-summary/)
 
 ## 인용
 

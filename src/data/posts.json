@@ -246,5 +246,37 @@
         "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately."
       }
     }
+  },
+  {
+    "articleId": "model-summary",
+    "order": 9,
+    "track": "공통",
+    "date": "2026-09-10",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "model-summary",
+        "title": "모델 전체 흐름 다시 보기",
+        "description": "Embedding부터 LM Head까지 구성 요소를 연결하고, Attention과 MLP·MoE의 역할과 토큰 사이의 정보가 합쳐지는 위치를 정리합니다.",
+        "readmePath": [
+          "공통",
+          "모델"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "model-summary",
+        "title": "Revisiting the Flow Through the Model",
+        "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "published": true,
+        "sourceRevision": "bf7518c438ede54b639422cb71d953095cc72e791f6a22e70b705d42a2809150",
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately."
+      }
+    }
   }
 ]
