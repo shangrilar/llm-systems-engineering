@@ -1,0 +1,58 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-summary
+title: "Revisiting the Flow Through the Model"
+description: "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens."
+track: 공통
+date: 2026-09-10
+---
+
+In the first article of the model series, we placed decoder blocks between the Embedding layer and the LM Head and saw that each block has d-dimensional inputs and outputs. We then went inside the block to explore the residual stream, RMSNorm, Attention, MLP, RoPE, and MoE. In this article, **we will connect these components to review the flow through the whole model.** We will follow how vectors change along the way and where information from different tokens is combined.
+
+## From the whole model to a decoder block
+
+Once the tokenizer converts text into token IDs, the Embedding layer retrieves the d-dimensional vector for each ID. With T tokens, stacking these vectors as rows gives an input of **shape T × d**. This input passes through N decoder blocks in sequence, then through a final RMSNorm and the LM Head to produce vocabulary scores called logits.
+
+[![The whole model on the left runs from token IDs through Embedding, N decoder blocks, final RMSNorm, and the LM Head. The right expands one block around its residual stream, adding the results of an RMSNorm–Attention branch and an RMSNorm–MLP or MoE branch.](/images/model-summary/en/01-model-and-block.png)](/images/model-summary/en/01-model-and-block.png)
+
+The right side of Figure 1 shows the inside of one decoder block. **The central residual stream sends its input to a side path, then adds the result computed along that path.** The first path applies RMSNorm followed by Attention, and the second applies RMSNorm followed by an MLP or MoE. RMSNorm adjusts the scale of each token vector, and Attention and the MLP compute their transformations from the normalized inputs.
+
+Both paths return d-dimensional results, which are added to the residual stream at the same token positions. **The token count T and model dimension d stay the same through the block, but the vector values change.** One block’s output becomes the next block’s input, and this process repeats N times.
+
+The final block’s output also passes through RMSNorm before reaching the LM Head. The LM Head transforms each d-dimensional token vector into Vocab size scores, so the full output has shape **T × Vocab size**. The decoder blocks transform the vector at each token position, and the final step uses that vector to compute scores for the next token.
+
+## Connecting the computations inside Attention
+
+At the input to Attention, **Q, K, and V projections** transform each token vector into three vectors. Q and K are used to compute scores between tokens, while V holds the information to be gathered using weights derived from those scores. Figure 2 uses the same MHA configuration as the earlier articles: T = 3 tokens, model dimension d = 8, and h = 2 heads.
+
+[![A 3-by-8 input is projected into Q, K, and V, then separated into two heads. Each head applies RoPE to Q and K, followed by score computation and scaling, masking, Softmax, and PV. The two heads’ results are concatenated at matching token positions, then passed through the output projection.](/images/model-summary/en/02-attention-connected.png)](/images/model-summary/en/02-attention-connected.png)
+
+The projected Q, K, and V each have shape 3 × 8. Separating each vector’s eight components into two heads gives a per-head dimension dₕ of 4, so **each head computes with Q, K, and V of shape 3 × 4.** RoPE is applied to Q and K according to token position. The rotated results are Q′ and K′ in the figure, and their dimensions stay the same. V is passed to Core Attention without rotation.
+
+**Core Attention** first computes Q′K′ᵀ and divides it by √dₕ. Comparing three tokens against one another gives a 3 × 3 score matrix. A causal mask restricts the positions each token can attend to, and Softmax is applied to each row to produce the weights P. Finally, **PV computes the weighted sum of the Value vectors each token attends to.** P has shape 3 × 3 and V has shape 3 × 4, so each head’s result has shape 3 × 4.
+
+The two heads’ results are **concatenated at matching token positions.** Each token has two groups of four components, so the full result H is 3 × 8 again. The output projection combines the head results for each token using learned weights. This 3 × 8 result returns to the first residual addition in Figure 1.
+
+## Per-token transformations: MLP and MoE
+
+After the Attention result is added to the residual stream, RMSNorm is applied, followed by the MLP. **A dense MLP applies the same MLP to every token, while MoE selects which experts to use for each token.** Figure 3 shows the two structures side by side for a single token input x.
+
+[![The gated MLP on the left multiplies the Gate projection and SiLU result elementwise with the Up projection result, then applies the Down projection. MoE on the right sends the same input x to the experts selected by the Router and takes a weighted sum of their results. A shared expert result may also be added. Both structures produce d-dimensional outputs.](/images/model-summary/en/03-mlp-and-moe.png)](/images/model-summary/en/03-mlp-and-moe.png)
+
+The **gated MLP** on the left sends the same d-dimensional input to the Gate and Up projections. Each path produces an m-dimensional vector, and SiLU is applied on the Gate path. Multiplying matching components of the two results lets the Gate path’s values modulate the Up path’s components. The Down projection transforms this m-dimensional result back to d dimensions.
+
+In **MoE** on the right, the Router uses input x to select experts and determine weights. The figure selects E1 and E3, and both experts receive the same x. Each expert is a gated MLP like the one on the left, but they use different weights. Combine multiplies each expert’s d-dimensional result by its Router weight and adds the results. **Even when multiple experts are used, the results being combined belong to the same token.**
+
+Some models also include a **shared expert**, shown by the dashed path. The shared expert is applied to every token regardless of the Router’s selection, and its result is added to the routed expert result for the same token. The final output remains d-dimensional when a shared expert is included. Both the dense MLP and MoE send this output to the second residual addition in Figure 1.
+
+## Where is information combined across tokens?
+
+Now let us look at the entire decoder block by token position. The three columns in Figure 4 are the paths for tokens 1, 2, and 3. **In the structure we have explored, Core Attention is where vectors from different tokens are compared and their information is combined.** The other stages compute within each token position.
+
+[![Three token paths run down side by side. Connections between tokens appear only inside Core Attention: token 1’s result uses token 1, token 2’s result uses tokens 1 and 2, and token 3’s result uses tokens 1, 2, and 3. The other operations work within each token position.](/images/model-summary/en/04-token-dependencies.png)](/images/model-summary/en/04-token-dependencies.png)
+
+Before Core Attention, RMSNorm and the Q, K, and V projections compute separately for each token. RoPE also rotates each token’s Q and K using that token’s position. Core Attention then gathers Values within the range allowed by the causal mask: **token 1 gathers its own Value, token 2 gathers the Values of tokens 1 and 2, and token 3 gathers the Values of tokens 1, 2, and 3.** This is where connections from several tokens converge on a result at one position in the figure.
+
+The stages after Core Attention do not combine results from different token positions either. Concat and the output projection combine **head results for the same token**, and MoE’s Combine combines **expert results for the same token**. Residual addition also adds vectors at the same position. At the end of the block, there is once again a d-dimensional vector for each token position.
+
+Across the model, the residual stream continues through the blocks, with transformation results from Attention and an MLP or MoE added along the way. Within this flow, Core Attention combines information across tokens, while the other operations process vectors at each position. In the hardware series, we will revisit this flow to explore how each computation can be divided for parallel execution and where data is read and written.
