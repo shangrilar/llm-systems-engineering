@@ -25,6 +25,10 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [MoE: Choosing Which MLPs to Use for Each Token](https://llm-systems-engineering.pages.dev/en/posts/moe/)
 - [Revisiting the Flow Through the Model](https://llm-systems-engineering.pages.dev/en/posts/model-summary/)
 
+#### Hardware
+
+- [CPU and GPU: Two Devices That Execute Model Computation](https://llm-systems-engineering.pages.dev/en/posts/cpu-and-gpu/)
+
 ## Citation
 
 When citing an article or figure, please credit **jungjun hur** and include the article title and URL. For the project as a whole, see [CITATION.cff](CITATION.cff).

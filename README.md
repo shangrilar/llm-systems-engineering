@@ -25,6 +25,10 @@
 - [MoE: 토큰마다 사용할 MLP 선택하기](https://llm-systems-engineering.pages.dev/posts/moe/)
 - [모델 전체 흐름 다시 보기](https://llm-systems-engineering.pages.dev/posts/model-summary/)
 
+#### 하드웨어
+
+- [CPU와 GPU: 모델의 계산을 실행하는 두 장치](https://llm-systems-engineering.pages.dev/posts/cpu-and-gpu/)
+
 ## 인용
 
 글이나 그림을 참고하셨다면 저자 **jungjun hur**, 글 제목과 해당 글의 링크를 출처로 남겨주세요. 프로젝트 전체의 인용 정보는 [CITATION.cff](CITATION.cff)를 참고해주세요.
