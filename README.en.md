@@ -24,3 +24,7 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [RoPE: Incorporating Token Positions into Attention](https://llm-systems-engineering.pages.dev/en/posts/rope/)
 - [MoE: Choosing Which MLPs to Use for Each Token](https://llm-systems-engineering.pages.dev/en/posts/moe/)
 - [Revisiting the Flow Through the Model](https://llm-systems-engineering.pages.dev/en/posts/model-summary/)
+
+#### Hardware
+
+- [CPU and GPU: Two Devices That Execute Model Computation](https://llm-systems-engineering.pages.dev/en/posts/cpu-and-gpu/)

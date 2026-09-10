@@ -278,5 +278,37 @@
         "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately."
       }
     }
+  },
+  {
+    "articleId": "cpu-and-gpu",
+    "order": 10,
+    "track": "공통",
+    "date": "2026-09-10",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "cpu-and-gpu",
+        "title": "CPU와 GPU: 모델의 계산을 실행하는 두 장치",
+        "description": "GPU를 사용하는 이유와 CPU·GPU의 구조 차이를 살펴보고, Host·Device의 실행 흐름과 데이터 공급의 중요성을 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "cpu-and-gpu",
+        "title": "CPU and GPU: Two Devices That Execute Model Computation",
+        "description": "Explore why GPUs are used, how CPU and GPU designs differ, how host and device work together, and why compute units need a supply of data.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "sourceRevision": "5fae6d32a85fe1dfedc43b40f47441df92138ab46bd0bb080cb078af74c57dd7",
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision."
+      }
+    }
   }
 ]
