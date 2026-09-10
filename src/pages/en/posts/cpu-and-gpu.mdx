@@ -1,0 +1,58 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: cpu-and-gpu
+title: "CPU and GPU: Two Devices That Execute Model Computation"
+description: "Explore why GPUs are used, how CPU and GPU designs differ, how host and device work together, and why compute units need a supply of data."
+track: Shared Concepts
+date: 2026-09-10
+---
+
+So far, we have explored the computations that transform input vectors into outputs inside a model. Now we will look at **how those computations run on actual hardware**. We will begin with why GPUs are used to handle a model's many computations and how CPUs and GPUs differ in structure, then follow how the two devices work together.
+
+## Dividing Up a Large Amount of Computation
+
+In the earlier MLP article, we multiplied an input vector by a weight matrix to produce a new vector. Each output component is the sum of products of input components and weights. Real models apply these computations to large matrices and repeat them across many layers. **Executing a model quickly requires processing many multiplications and additions.**
+
+Some parts of this computation can proceed at the same time. Let us revisit multiplying X, which stacks the inputs for T tokens as rows, by a weight matrix W. If X has shape T × d and W has shape d × m, the output Y has shape T × m. Figure 1 uses small matrices with T = 3, d = 4, and m = 8.
+
+[![Multiplying input X by weights W produces output Y. Entries A in column 3, B in column 1, and C in column 6 of the first output row are highlighted. The same input row and different weight columns produce 0.5, −1, and 1, respectively.](/images/cpu-and-gpu/en/01-parallel-computation.png)](/images/cpu-and-gpu/en/01-parallel-computation.png)
+
+Entry A in the figure is computed from the first input row, `[1, 2, −1, 0]`, and the third column of W. Multiplying the four pairs of values and summing the products gives 0.5. B and C use the same input row, but they use the first and sixth columns of W, respectively. **Computing B does not require waiting for the result of A.** With the necessary inputs and weights available, the three output entries can be computed at the same time.
+
+Performing multiple computations at the same time is called **parallel processing**. A device designed to perform a particular kind of work quickly is called an **accelerator**, and GPUs are a common accelerator for parallel computation over large amounts of data. CPUs can also execute models, but when there is a large amount of computation that can be divided into enough parallel work, we can make use of a GPU's many compute units.
+
+## How Do CPUs and GPUs Differ?
+
+CPU stands for Central Processing Unit, and GPU stands for Graphics Processing Unit. GPUs have been used for graphics processing and are well suited to applying the same kind of computation to many data elements. This capability also applies to model computations such as matrix multiplication.
+
+Both CPUs and GPUs have **compute units that perform calculations, components that control execution, and memory that stores data**. They differ in how they organize these resources and the kinds of work they prioritize. Figure 2 is a simplified view of their design approaches.
+
+[![The CPU has cores containing control, compute, and cache components. The GPU has repeating groups containing multiple compute units. The CPU focuses on reducing latency for complex tasks, while the GPU focuses on increasing overall throughput across many computations.](/images/cpu-and-gpu/en/02-cpu-gpu-architecture.png)](/images/cpu-and-gpu/en/02-cpu-gpu-architecture.png)
+
+In the CPU on the left, each core handles control and computation and retrieves data from a nearby cache. **A cache is memory that keeps frequently used or soon-to-be-used data close by so it can be read quickly.** CPUs handle diverse tasks, such as changing execution paths based on conditions or using a previous result to proceed to the next operation. For these tasks, reducing **latency**, the time until an individual task finishes, is important.
+
+In the GPU on the right, the orange compute units repeat within multiple groups. The GPU distributes work across these many compute units to increase **throughput**, the amount of computation processed in a given period. [NVIDIA's CUDA guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#differences-between-host-and-device) also describes the design differences between CPUs and GPUs in terms of latency and throughput.
+
+CPUs also perform parallel computation using multiple cores and compute units within each core. The figure does not represent actual core counts or area ratios, and a CPU core and a GPU compute unit are not equivalent units. The point of this comparison is that **a GPU is organized to process many computations together, and making use of it requires enough work to distribute**.
+
+## The CPU Requests Work and the GPU Computes
+
+Even when a model runs on a GPU, the CPU still has work to do: preparing inputs, requesting computations on the GPU, and using the results it needs. In CUDA, the system comprising the CPU and host memory is called the **Host**, and the GPU assigned the computation is called the **Device**. Here, we will consider a system in which the CPU and GPU each have their own memory.
+
+[![The host CPU prepares inputs, transfers them to GPU memory, and requests execution. The GPU uses the intermediate data from operation A in operation B. After computation finishes, the needed results are brought back to the host. Solid blue arrows indicate data transfers; dashed gray arrows indicate execution requests.](/images/cpu-and-gpu/en/03-host-device-flow.png)](/images/cpu-and-gpu/en/03-host-device-flow.png)
+
+In step ① of Figure 3, the CPU prepares the input, and in step ②, that input is transferred to GPU memory. We assume that the model weights are already stored in GPU memory. In step ③, the CPU requests the computation to be performed on the GPU. **Transferring data and requesting computation are different operations**, so the figure distinguishes them with solid and dashed arrows.
+
+In step ④, the GPU reads the inputs and weights and performs the computation. The result of operation A becomes the input to operation B. **Intermediate data can remain on the GPU while the next operation proceeds.** For example, the result of an MLP matrix multiplication can be passed directly to an activation function on the GPU. There is no need to bring intermediate results back to the CPU after every operation.
+
+In [CUDA's execution model](https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html), requesting execution on the GPU and the GPU finishing its computation are separate points in time. **Before the CPU can use a result, it must wait for the GPU's computation to finish.** The needed results can then be brought into host memory and used, as shown in step ⑤.
+
+## Compute Units Need Data to Work
+
+Figure 3 showed data moving between the CPU and GPU. Data must also move within the GPU. **Even if weights and inputs are stored in GPU memory, compute units must retrieve those values to perform calculations.** The results must then be stored or passed to the next operation.
+
+[![The same number of compute units can behave differently depending on the data supply. All four units are computing on the left, while some units on the right are waiting for the data they need.](/images/cpu-and-gpu/en/04-feeding-compute.png)](/images/cpu-and-gpu/en/04-feeding-compute.png)
+
+On the left of Figure 4, data is supplied and multiple compute units are working. The right side has the same number of compute units, but some are waiting for the data they need. **Even with many compute units, an insufficient data supply makes it difficult to use all of their computing capacity.** To understand how fast a model runs, we therefore need to consider both how quickly computations can be performed and how quickly the required data can be retrieved.
+
+The GPU processes many computations in parallel, while the CPU handles the overall work, including input preparation and execution requests. Data must also be supplied to keep the GPU's compute units working. In the next article, we will look inside the GPU to explore how its compute units and memory are organized.

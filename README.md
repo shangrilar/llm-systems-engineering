@@ -24,3 +24,7 @@
 - [RoPE: 토큰 위치를 Attention에 반영하기](https://llm-systems-engineering.pages.dev/posts/rope/)
 - [MoE: 토큰마다 사용할 MLP 선택하기](https://llm-systems-engineering.pages.dev/posts/moe/)
 - [모델 전체 흐름 다시 보기](https://llm-systems-engineering.pages.dev/posts/model-summary/)
+
+#### 하드웨어
+
+- [CPU와 GPU: 모델의 계산을 실행하는 두 장치](https://llm-systems-engineering.pages.dev/posts/cpu-and-gpu/)
