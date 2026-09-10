@@ -28,3 +28,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 #### Hardware
 
 - [CPU and GPU: Two Devices That Execute Model Computation](https://llm-systems-engineering.pages.dev/en/posts/cpu-and-gpu/)
+- [GPU Architecture: Compute Units and Memory](https://llm-systems-engineering.pages.dev/en/posts/gpu-architecture/)
