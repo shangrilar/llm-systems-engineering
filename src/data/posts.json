@@ -214,5 +214,37 @@
         "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately."
       }
     }
+  },
+  {
+    "articleId": "moe",
+    "order": 8,
+    "track": "공통",
+    "date": "2026-09-10",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "moe",
+        "title": "MoE: 토큰마다 사용할 MLP 선택하기",
+        "description": "Dense MLP와 MoE를 비교하고, Router의 선택과 가중치 계산부터 Dispatch, Expert 계산, Combine, Shared expert까지 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "모델"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "moe",
+        "title": "MoE: Choosing Which MLPs to Use for Each Token",
+        "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
+        "readmePath": [
+          "Shared Concepts",
+          "Models"
+        ],
+        "published": true,
+        "sourceRevision": "b87efab8b3c84c8d04ad189d65bb6955349ee184a13e8de802f497407f248e50",
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately."
+      }
+    }
   }
 ]
