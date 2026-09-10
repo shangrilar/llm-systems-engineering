@@ -22,6 +22,7 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [Attention Projections: Q, K, V and Multiple Heads](https://llm-systems-engineering.pages.dev/en/posts/attention-projections/)
 - [Core Attention: Combining Information Across Tokens](https://llm-systems-engineering.pages.dev/en/posts/core-attention/)
 - [RoPE: Incorporating Token Positions into Attention](https://llm-systems-engineering.pages.dev/en/posts/rope/)
+- [MoE: Choosing Which MLPs to Use for Each Token](https://llm-systems-engineering.pages.dev/en/posts/moe/)
 
 ## Citation
 
