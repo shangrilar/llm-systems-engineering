@@ -1,0 +1,90 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: gpu-execution-and-warp-scheduling
+title: "Parallel Execution on GPUs: Work Assignment and Warp Scheduling"
+description: "Explore kernels, threads, blocks, and grids, then connect SM resource allocation, warp scheduling, and latency hiding through a small vector addition example."
+track: 공통
+date: 2026-09-11
+---
+
+In the previous article, we looked at which results can be computed independently in element-wise operations, reductions, and matrix multiplication. When there are many computations to divide up, how does a GPU take them on and execute them? This time, we will explore **how computations are organized into groups of work, assigned to SMs, and selected for execution when they are ready**.
+
+We will use NVIDIA GPUs as our reference. Starting with dividing vector addition into small pieces of work, we will connect this to how other computations can proceed while waiting for data.
+
+## Organizing Many Computations into Groups of Work
+
+Suppose we want to add values at matching positions in two vectors to produce 1,024 outputs. The GPU needs to read the inputs, add them, and store the results. A function that specifies this procedure for execution on the GPU is called a **kernel**. Here, we will look at a single execution of a vector addition kernel.
+
+As we saw in the previous article, each output can be computed without waiting for results at other positions. Let us assign the work of producing one output to an individual execution flow. This **individual execution flow is called a thread**. Each thread reads the two input values at its assigned position, adds them, and stores the result. All the threads execute the same kernel, each processing its own assigned data.
+
+We need a way to group these threads for management. **A block is a group of threads assigned together to an SM**. Threads in the same block can also share data and cooperate. Here, we will group 128 threads into one block. Since each thread is responsible for one output, each block computes 128 outputs.
+
+To process 1,024 outputs, we need eight such blocks. **All the blocks belonging to a single kernel execution form a grid**. This execution therefore consists of one grid containing eight blocks, with 128 threads in each block. Figure 1 shows this [organization of work in CUDA](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/intro-to-cuda-cpp.html).
+
+[![The grid contains eight blocks, A through H, each labeled as containing 128 threads. The small cells show some of the threads. One thread is expanded to show reading 1 and 10, adding them, and storing the result 11.](/images/gpu-execution-and-warp-scheduling/en/01-work-groups.png)](/images/gpu-execution-and-warp-scheduling/en/01-work-groups.png)
+
+On the left of the figure, block A handles the first 128 outputs and block B handles the next 128. The right side expands the work assigned to one of the threads. **The kernel defines the processing procedure, while the grid and blocks organize the many threads that execute it**.
+
+This organization is determined by the implementation and launch of the kernel. For example, if we keep one output per thread and 128 threads per block but increase the input length to 2,048, we need 16 blocks. **Deciding how to group the work can be distinguished from executing those groups on the GPU hardware.** Let us now look at where these blocks execute.
+
+## Blocks: Assignment to SMs and Resource Allocation
+
+In our earlier discussion of GPU architecture, we saw that a GPU contains multiple SMs, each with compute units, registers, and L1 cache and shared memory. **The GPU assigns blocks to SMs, and the threads of a single block execute on the same SM.** Work is described as **resident** when it has been assigned to an SM and occupies the resources needed for execution.
+
+[![Blocks E through H wait for SM assignment at the top. Blocks A and B reside on SM 1, while C and D reside on SM 2. Each block shows per-thread registers and shared memory used within the block. Each SM's L1 cache serves multiple blocks.](/images/gpu-execution-and-warp-scheduling/en/02-blocks-on-sms.png)](/images/gpu-execution-and-warp-scheduling/en/02-blocks-on-sms.png)
+
+In Figure 2, blocks A and B are assigned to SM 1, and C and D to SM 2. An SM can have multiple resident blocks, as many as its resources allow, rather than being limited to one.
+
+Resident work uses the SM's storage resources. **Registers hold the values and intermediate results used by each thread.** In the addition from Figure 1, each thread needs its own input values and computed result. The physical register resources are within the SM, while the values stored in them are kept separately for each thread.
+
+**Shared memory is storage that threads in the same block can use to share data and cooperate.** For example, several threads can place their intermediate partial sums there before combining them. Coordinating execution so that the required values are ready before proceeding to the next computation is called synchronization. When combining partial sums, threads can synchronize so that they read values produced by other threads only after those values are ready.
+
+The L1 cache serves memory accesses from multiple blocks on the same SM. Shared memory and the L1 cache divide the unified storage we discussed earlier, but they have different roles: one is used explicitly by threads to share data, while the other is a hardware-managed cache.
+
+An SM's resources are limited. If work already assigned to it uses many registers or a large amount of shared memory, there may not be enough room for another block. Blocks E through H at the top of the figure have not yet been assigned. When a running block completes and releases its resources, another waiting block can be assigned. Therefore, **having many blocks in a grid does not mean that they all reside on SMs at the same time.** The [number that can be resident](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#execution-configuration-optimizations) depends on hardware limits on blocks and threads as well as resource usage.
+
+## Warps: Executing Instructions Across 32 Threads
+
+Once a block has been assigned to an SM, how do its threads execute? NVIDIA GPUs **schedule instructions in units called warps, each grouping 32 threads from the same block.** In Figure 3, a block of 128 threads is divided into four warps.
+
+[![A block of 128 threads contains four warps, each with 32 threads. Four threads from one warp are expanded to show the same addition instruction computing 1+10, 2+20, 3+30, and 4+40 with different inputs.](/images/gpu-execution-and-warp-scheduling/en/03-warps-and-threads.png)](/images/gpu-execution-and-warp-scheduling/en/03-warps-and-threads.png)
+
+Let us zoom in on four threads in warp 0. Thread 0 computes `1 + 10`, and thread 1 computes `2 + 20`. The other two threads also add their own inputs. **The instruction is the same addition, but the values it uses and the results it produces differ for each thread.**
+
+The GPU applies a common instruction to multiple threads in this way. This is called **[SIMT](https://docs.nvidia.com/cuda/cuda-programming-guide/03-advanced/advanced-kernel-programming.html#simt-execution-model)** (Single Instruction, Multiple Threads). All threads can participate in the same addition, as in the figure, or only some may participate in an instruction depending on a conditional branch.
+
+**A thread is an execution flow that performs computation, while a CUDA Core is a physical compute unit that processes instructions.** Each thread does not occupy its own dedicated CUDA Core.
+
+Putting this together, blocks are the units assigned to SMs, and warps are the units used to schedule instructions within an SM. When multiple warps reside on an SM, which warp's instruction should execute next?
+
+## Warp Scheduling: Selecting a Ready Next Instruction
+
+Inside the SM, **a warp scheduler selects a warp that is ready to execute its next instruction from among the warps it manages.** Sending the selected instruction to an execution unit is called **instruction issue**. The result of an issued instruction becomes available later, after execution.
+
+An SM has multiple warp schedulers. Figure 4 shows four warps managed by one of them and the selection of the next instruction.
+
+[![Of the warps resident under one scheduler, A waits for a memory result and C waits for synchronization. B and D are eligible, and the scheduler selects B this time to issue its next instruction. There are four resident warps, two eligible warps, and one selected warp.](/images/gpu-execution-and-warp-scheduling/en/04-ready-warps.png)](/images/gpu-execution-and-warp-scheduling/en/04-ready-warps.png)
+
+Warp A is waiting for a value to be read from memory. If its next addition needs that value, it cannot execute the addition yet. Warp C is waiting at a synchronization point for work by other threads to be ready. B and D, in contrast, are ready to proceed with their next instructions.
+
+At this moment, **four warps are resident, but only two are eligible for execution**. The scheduler selects B and issues its next instruction. D is also ready but is not selected this time. Waiting for a condition to proceed, as A and C are doing, differs from being ready but not selected, as D is. To be [eligible for execution](https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#sections-and-rules), a warp needs both the required inputs and results of earlier computations, as well as an available execution resource to process the instruction.
+
+**The selection is for the next instruction a warp will perform.** The scheduler does not have to keep executing B until all of B's work is complete. After issuing B's instruction, it may select D from the ready candidates at the next opportunity. Whether another instruction can be issued while an earlier one is still in progress depends on instruction dependencies and execution resources.
+
+**The register values and execution state of waiting warps also remain within the SM.** The scheduler selects the next instruction from warps whose state is maintained there. When the conditions a waiting warp needs to proceed are satisfied, it becomes eligible again.
+
+## Latency Hiding: Making Progress While Waiting
+
+Let us connect this to memory access latency. Time passes between requesting a value from memory and being able to use it. Even if the computation that needs the value is waiting, **computations in other ready warps can proceed.**
+
+[![While warp A requests a read and waits for its input, the scheduler issues instructions from B and D if they are ready. When all other warps are also waiting, instruction issue is empty during the same wait. Once A's input is ready, its addition can proceed.](/images/gpu-execution-and-warp-scheduling/en/05-latency-hiding.png)](/images/gpu-execution-and-warp-scheduling/en/05-latency-hiding.png)
+
+In the top half of Figure 5, A requests a memory read. Its next addition requires that input, so it waits for the data to arrive. Meanwhile, the scheduler issues instructions from the ready warps B and D. Once A's input is ready, A's addition can also be selected for execution.
+
+In the bottom half, the other warps are all waiting along with A. With no eligible candidates, the scheduler cannot issue a new instruction. Previously issued memory requests or computations may still be in progress, but this scheduler has no additional instruction to send to an execution unit.
+
+We assume that A waits for its data for the same amount of time in both cases. The difference is **whether other work makes progress during that time**. Reducing the impact of a wait by executing other work is called **latency hiding**.
+
+More resident warps provide opportunities to select other work. But if all those warps are waiting at the same time, there are no eligible candidates. To understand GPU execution, we therefore need to consider **both how much work has been assigned and how much of it can make progress right now.** This is why grouping and managing many threads and selecting instructions from ready warps matters.
+
+In the next article, we will use this execution structure to examine how to divide work to use the GPU more efficiently. We will connect the amount of computation assigned to each piece of work, the data movement it requires, and reuse of the data brought in, using element-wise operations and matrix multiplication.

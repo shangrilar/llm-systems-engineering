@@ -374,5 +374,37 @@
         "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "gpu-execution-and-warp-scheduling",
+    "order": 13,
+    "track": "공통",
+    "date": "2026-09-11",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-execution-and-warp-scheduling",
+        "title": "GPU의 병렬 실행: 작업 배정과 Warp 스케줄링",
+        "description": "커널·thread·block·grid의 관계와 SM 자원 배정, warp 스케줄링과 지연 숨기기를 작은 벡터 덧셈 예시로 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-execution-and-warp-scheduling",
+        "title": "Parallel Execution on GPUs: Work Assignment and Warp Scheduling",
+        "description": "Explore kernels, threads, blocks, and grids, then connect SM resource allocation, warp scheduling, and latency hiding through a small vector addition example.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3c068ec77149f2ea4e79486a58fc50427d1c3932d19772ca58b80389d9b7ee1e",
+        "reviewNote": "Compared all five sections, 31 prose paragraphs, 25 emphasized passages, examples, alt text, and source links against the approved Korean source on 2026-09-11. The kernel-thread-block-grid introduction before Figure 1, 128 threads per block, resource scopes, resident versus eligible warps, instruction issue, and latency hiding agree. Repetitive caveat deletions are preserved. Five English figures retain Korean geometry and values; static assets were compared separately from the body revision and visually reviewed."
+      }
+    }
   }
 ]
