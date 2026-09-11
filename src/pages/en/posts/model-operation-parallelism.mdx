@@ -1,0 +1,66 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-operation-parallelism
+title: "Parallelism in Model Operations: Element-wise Operations, Reductions, and Matrix Multiplication"
+description: "Compare element-wise operations, reductions, and matrix multiplication through independent output elements and the inputs and computation needed for each result."
+track: 공통
+date: 2026-09-11
+---
+
+In the previous article, we explored GPU compute units and memory, along with the flow of reading data, computing, and storing results. To use many compute units, we need computations that can run concurrently. This time, we will revisit the operations used in models to understand **which results can be computed independently and what computation is needed to produce each result**.
+
+Each value in a vector or matrix is called an **element**. In a vector, it is the value at a position; in a matrix, it is the value in a cell where a row and a column meet. In this article, we will compare element-wise operations, reductions, and matrix multiplication by looking at individual output elements.
+
+## Element-wise Operations: Computing Independently at Each Position
+
+The residual connections we examined in the model series add values at matching positions in two vectors. The two values at the first position produce the first output, and the two values at the second position produce the second output. **An operation that applies a computation to the inputs at each position to produce an output at the same position is called an element-wise operation**.
+
+[![Values 1, 2, 3, and 4 in input A are added to 10, 20, 30, and 40 at the matching positions in input B, producing 11, 22, 33, and 44. The four computations have different colors and do not wait for results at other positions.](/images/model-operation-parallelism/en/01-elementwise.png)](/images/model-operation-parallelism/en/01-elementwise.png)
+
+In Figure 1, producing the first result, 11, requires the inputs 1 and 10. Producing the second result, 22, requires 2 and 20. **Computing 22 does not require 11.** Once the inputs at each position are available, all four results can therefore be computed independently.
+
+The activation function used in an MLP can also be applied independently to each element. Multiplying matching positions in two vectors for gating is another element-wise operation. Applying a function to one input differs from adding or multiplying two inputs, but they share one property: **the output at one position does not depend on the output at another position**.
+
+## Reduction: Combining Multiple Inputs into One Result
+
+Now imagine adding all the values in a vector to produce a single sum. One value at a particular position is not enough to determine the result; every value being summed must contribute. **An operation that combines multiple input values into a single result, such as a sum or a maximum, is called a reduction**. Here, we will look at computing a sum.
+
+Summing each row of a matrix separately produces one result per row. With two rows, we can compute the sum of the first row independently of the sum of the second. Figure 2 shows how each of these sums is computed.
+
+[![The first row, containing 1 through 8, is combined into partial sums 3, 7, 11, and 15, then 10 and 26, and finally 36. The second row is summed to 12 in a separate tree. Additions at the same stage and sums of different rows are independent.](/images/model-operation-parallelism/en/02-reduction.png)](/images/model-operation-parallelism/en/02-reduction.png)
+
+In the first row, adding 1 through 8 produces 36. In the second row, adding four repetitions of 2 and 1 produces 12. **Computing the first row's sum does not require the second row's sum.** Viewed as output elements, the two results can be computed separately.
+
+However, the process of producing one output differs from element-wise addition. All eight input values must contribute to the first row's result, 36. The diagram first adds neighboring values to form the partial sums 3, 7, 11, and 15. It then combines those partial sums into 10 and 26, and finally adds the two values.
+
+**Even within the process of computing a sum, some computations can run concurrently.** In the first stage, `1 + 2` and `3 + 4` are independent. To compute `3 + 7` in the next stage, however, both partial sums must be ready first. We can distinguish independent computations within a stage from dependencies on earlier results between stages. When adding floating-point values, the summation order can lead to rounding differences, but we will use small integers here to focus on the relationships between computations.
+
+In RMSNorm, a reduction appears in the process of squaring the elements of a token vector and summing them. Softmax also needs a reduction to sum the values after applying the exponential function. Both operations include element-wise computations as well as this sum. **A single named operation in a model can consist of several kinds of computation.**
+
+## Matrix Multiplication: Multiplying and Accumulating for Each Output Element
+
+MLPs and attention projections multiply an input matrix by a weight matrix. If X has shape M × K and W has shape K × N, the output Y has shape M × N. **M and N are the numbers of output rows and columns, while K is the number of input pairs multiplied and summed to produce one output**.
+
+[![Multiplying a 2-by-3 matrix X by a 3-by-4 matrix W produces a 2-by-4 matrix Y. The first output, 7, is computed as 1×1+2×0+3×2 using X's first row, 1, 2, 3, and W's first column, 1, 0, 2.](/images/model-operation-parallelism/en/03-matmul.png)](/images/model-operation-parallelism/en/03-matmul.png)
+
+In Figure 3, X is 2 × 3 and W is 3 × 4, so the output is 2 × 4 with eight elements. The first output, 7, uses X's first row, `[1, 2, 3]`, and W's first column, `[1, 0, 2]`. Multiplying the values at matching positions gives 1, 0, and 6; adding them produces 7.
+
+The neighboring output, 4, uses the same row of X and W's second column, `[2, 1, 0]`. Its calculation is `1 × 2 + 2 × 1 + 3 × 0 = 4`. **This computation does not require the previously calculated output, 7.** Each remaining output can likewise be computed using only its corresponding row of X and column of W, so matrix multiplication can be parallelized at the level of output elements.
+
+Meanwhile, producing each output includes a reduction that sums multiple products. In the diagram, K is 3, so three products are added. As K grows, each output requires more multiplication and accumulation, even if the numbers of output rows and columns stay the same.
+
+Also, **independent outputs do not necessarily use different inputs.** Elements in the same row of Y use the same row of X, and elements in the same column of Y use the same column of W. They do not have to wait for each other's outputs, yet they share some of their inputs. This property will matter when we later explore how to compute while reusing data.
+
+## The Number of Independent Results and the Computation per Result
+
+Let us compare the three operations side by side in terms of output elements. Element-wise addition uses two inputs at matching positions, a row sum uses multiple inputs from one row, and matrix multiplication uses inputs from one row and one column. **In all three cases, different output elements can be computed independently, but the range of inputs and amount of computation needed for each output differ.**
+
+[![Two independent results are shown for element-wise addition, row-sum reduction, and matrix multiplication, with the first result expanded in each case. One addition produces 11, summing a row produces 36, and summing three products produces 7.](/images/model-operation-parallelism/en/04-output-elements.png)](/images/model-operation-parallelism/en/04-output-elements.png)
+
+On the left of Figure 4, producing the output 11 takes one addition of 1 and 10. In the center, producing 36 requires summing eight values in one row. On the right, producing 7 requires multiplying three pairs of values and adding the products. Even though each is one output element, the computation inside it is different.
+
+When examining an operation's parallelism, we can therefore first ask **how many result elements can be computed independently**. We can then ask **which inputs and computations are needed to produce each result**. In matrix multiplication, M·N determines the number of output elements, while K determines the amount of multiplication and accumulation needed for each element. The number of rows and the length of each row likewise play different roles in row sums.
+
+This distinction is a starting point for dividing computation to run on a GPU. We can compute independent outputs separately, or divide the work inside a single result, as we saw in the summation tree. However, the fact that computations can run in parallel does not mean they all execute at the same instant or determine how long execution takes. Both the compute units and the required data must be available.
+
+In the next article, we will explore how to assign these divisible computations to a GPU. We will connect **the execution units used to organize work with the way a GPU assigns that work to SMs and executes it**.
