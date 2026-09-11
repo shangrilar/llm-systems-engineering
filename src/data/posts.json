@@ -342,5 +342,37 @@
         "sourceRevision": "e33bc047ae6ed1f1fc1f080c2c56da928c160079484f59c2a027fad9ee7840c7"
       }
     }
+  },
+  {
+    "articleId": "model-operation-parallelism",
+    "order": 12,
+    "track": "공통",
+    "date": "2026-09-11",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "model-operation-parallelism",
+        "title": "모델 연산의 병렬성: 원소별 연산, Reduction, 행렬 곱",
+        "description": "원소별 연산, reduction, 행렬 곱을 출력 요소의 독립성과 결과 하나에 필요한 입력·계산의 관점에서 비교합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "model-operation-parallelism",
+        "title": "Parallelism in Model Operations: Element-wise Operations, Reductions, and Matrix Multiplication",
+        "description": "Compare element-wise operations, reductions, and matrix multiplication through independent output elements and the inputs and computation needed for each result.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3d43cd04de5398e3cfbee0834c7ce334a907f5dad6ebc37ba38579297f49d9e5",
+        "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision."
+      }
+    }
   }
 ]

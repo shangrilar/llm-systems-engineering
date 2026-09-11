@@ -29,3 +29,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 
 - [CPU and GPU: Two Devices That Execute Model Computation](https://llm-systems-engineering.pages.dev/en/posts/cpu-and-gpu/)
 - [GPU Architecture: Compute Units and Memory](https://llm-systems-engineering.pages.dev/en/posts/gpu-architecture/)
+- [Parallelism in Model Operations: Element-wise Operations, Reductions, and Matrix Multiplication](https://llm-systems-engineering.pages.dev/en/posts/model-operation-parallelism/)
