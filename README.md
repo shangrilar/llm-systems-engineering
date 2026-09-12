@@ -30,4 +30,4 @@
 - [CPU와 GPU: 모델의 계산을 실행하는 두 장치](https://llm-systems-engineering.pages.dev/posts/cpu-and-gpu/)
 - [GPU 구조: 연산 장치와 메모리](https://llm-systems-engineering.pages.dev/posts/gpu-architecture/)
 - [모델 연산의 병렬성: 원소별 연산, Reduction, 행렬 곱](https://llm-systems-engineering.pages.dev/posts/model-operation-parallelism/)
-- [GPU의 병렬 실행: 작업 배정과 Warp 스케줄링](https://llm-systems-engineering.pages.dev/posts/gpu-execution-and-warp-scheduling/)
+- [GPU의 병렬 실행: 스레드에서 워프 스케줄링까지](https://llm-systems-engineering.pages.dev/posts/gpu-execution-and-warp-scheduling/)
