@@ -406,5 +406,37 @@
         "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels."
       }
     }
+  },
+  {
+    "articleId": "gpu-arithmetic-intensity-and-fusion",
+    "order": 14,
+    "track": "공통",
+    "date": "2026-09-12",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-arithmetic-intensity-and-fusion",
+        "title": "GPU 최적화의 출발점: 산술 강도와 데이터 이동",
+        "description": "메모리와 연산의 병목을 산술 강도와 Roofline으로 연결하고, 데이터 이동 감소·동시 진행과 원소별 연산 fusion의 원리를 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-arithmetic-intensity-and-fusion",
+        "title": "Starting GPU Optimization: Arithmetic Intensity and Data Movement",
+        "description": "Connect memory and compute bottlenecks through arithmetic intensity and Roofline, then explore reduced data movement, concurrent progress, and element-wise kernel fusion.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a6453379f76779d94a165bb76c5e4018877124c332ebb1d1fc45b261a1c56a91",
+        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision."
+      }
+    }
   }
 ]
