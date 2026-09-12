@@ -1,0 +1,110 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: matmul-tiling-and-data-reuse
+title: "Optimizing Matrix Multiplication: Input Reuse and Tiling"
+description: "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation."
+track: 공통
+date: 2026-09-12
+---
+
+In the previous article, we used arithmetic intensity to examine the relationship between computation and data movement. Combining element-wise operations into one kernel let us avoid storing and rereading intermediate values. This time, we will look at two ways to reduce the time needed for matrix multiplication.
+
+The first is to **reuse an input across multiple computations after loading it once, reducing data movement**. Keeping inputs in shared memory and registers reduces repeated loads of the same values. The second is to **fetch the next inputs while computing with the current ones, reducing waiting time**. Overlapping necessary data movement with computation can reduce the time that computation sits idle waiting for inputs.
+
+## Why Matrix Multiplication Allows Input Reuse
+
+Suppose we multiply matrices A and B to produce C. Each output in C is computed by multiplying corresponding values from one row of A and one column of B, then adding all the products. If a row of A has eight elements, each output requires multiplying and summing eight pairs of values.
+
+In Figure 1, A is 4 × 8 and B is 8 × 4, so C is 4 × 4. c00 is the element in row 0, column 0 of C, and c01 is the element in row 0, column 1. Row and column indices start at 0 here.
+
+[![The same row of A is used to compute different output columns, and the same column of B is used to compute different output rows. Outputs can be computed independently, but their required inputs overlap.](/images/matmul-tiling-and-data-reuse/en/01-shared-inputs.png)](/images/matmul-tiling-and-data-reuse/en/01-shared-inputs.png)
+
+First, consider c00 and c01. c00 uses row 0 of A and column 0 of B, while c01 uses row 0 of A and column 1 of B. They use different columns of B, but **both need row 0 of A**.
+
+c00 and c10 are similar. This time, the row of A changes, but both need column 0 of B. Elements in the same output row use the same row of A, and elements in the same output column use the same column of B.
+
+If each output loads its required inputs separately, the same values are read repeatedly. If we instead compute several outputs together and keep their common inputs, we can use values that have already been loaded. **Computing multiple outputs together lets us load their common inputs once and reuse them.**
+
+## Reusing Inputs in Shared Memory
+
+Where should we keep these inputs? As we saw earlier, HBM can hold the weights and inputs of large models. Shared memory and registers are closer to the compute units, but hold much less data. Let us examine this difference using B300 figures.
+
+The table below compares **the three memory spaces used in this article, with B300 as the reference**. HBM specifications come from [NVIDIA's HGX component specifications](https://docs.nvidia.com/enterprise-reference-architectures/hgx-ai-factory/latest/components.html), and on-chip capacities come from the [CUDA memory specifications](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/compute-capabilities.html#features-and-technical-specifications).
+
+| Space | Capacity | Bandwidth |
+| --- | --- | --- |
+| HBM3e | 288 GB per GPU | Up to 8 TB/s |
+| Shared memory | Up to 228 KiB per SM | About 192 GB/s per SM, about 29 TB/s in total (assumptions below) |
+| Registers | 256 KiB per SM | No comparable public B300 figure confirmed |
+
+A KiB is 1,024 bytes. Register capacity is calculated from 65,536 32-bit registers per SM, which are allocated among multiple threads. Shared memory occupies part of a 256 KiB space per SM that also serves the L1 cache and other uses; the table lists the maximum configurable shared memory capacity. Shared memory and L1 cache capacities should therefore not be added separately.
+
+The shared memory bandwidth is an illustrative calculation for comparing scale, rather than an official B300 product specification. The structure described in the [CUDA memory optimization guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory) supports 128 bytes per cycle per SM. **Assuming a 1.5 GHz clock and 150 SMs**, this gives about 192 GB/s per SM and about 29 TB/s in total. That is **about 3.6 times** B300's 8 TB/s HBM bandwidth, giving a sense of how reusing inputs in shared memory can change the capacity to supply data.
+
+This total assumes that each SM uses its own shared memory concurrently; it does not mean that one SM can use the entire aggregate bandwidth. Actual throughput varies with clock speed and access pattern. We have not confirmed a public B300 register bandwidth figure on a comparable basis, but reusing inputs held in registers can **also reduce repeated reads of the same values from shared memory**.
+
+The first difference to consider is capacity. For example, a 4,096 × 4,096 matrix in FP32, with 4 bytes per value, needs 64 MiB. It fits in B300's HBM, but cannot fit entirely in one SM's shared memory. This is **why we keep large data in HBM and bring the portion needed for the current computation closer to the compute units**.
+
+Bandwidth is also finite. If the amount actually transferred to and from HBM is 8 GB, the movement alone takes at least 1 ms even at the full peak bandwidth of 8 TB/s. Repeatedly loading the same values increases traffic and the time needed to supply data. Using an input across several computations allows the same amount of computation with less data movement.
+
+Now let us select the outputs to compute. A **tile** is a small rectangular region of a matrix that we handle together. Figure 2 shows an 8 × 8 output matrix in which one **block** is responsible for the upper-left 4 × 4 region.
+
+[![Select a 4 × 4 region of output C for one block. Find the four rows of A and four columns of B that it needs, then bring common inputs into shared memory for reuse across multiple outputs.](/images/matmul-tiling-and-data-reuse/en/02-shared-memory-reuse.png)](/images/matmul-tiling-and-data-reuse/en/02-shared-memory-reuse.png)
+
+The selected 16 outputs need the first four rows of A and the first four columns of B. For example, a value in row 0 of A is used to compute four elements in row 0 of the selected output. A value in column 0 of B is also used for four elements in column 0 of the selected output.
+
+The block's threads cooperate to bring their common inputs from global memory into shared memory. Multiple computations within the block can then **use the values kept in shared memory instead of each rereading the same inputs from global memory**. They must also coordinate so that inputs are ready before use.
+
+As we saw in the previous article, caches participate in global memory accesses. Four reads from global memory therefore do not necessarily mean four reads from HBM. The key here is to organize computation so that the block keeps and reuses its common inputs. For large matrices, even the inputs in the selected rows and columns are brought in a portion at a time; we will examine that process in the last figure.
+
+## Reusing Inputs in Registers
+
+Inputs in shared memory still incur data movement if we reread them for every computation. Now suppose that, within the block's output region, one **thread** computes four outputs in a 2 × 2 region.
+
+Each output is a sum of multiple products, so during computation we have a value that is not yet complete. **A partial sum is the sum of the products computed so far.** In this example, we initialize the four output partial sums to 0 and keep them in the thread's registers.
+
+Figure 3 shows the first product being computed for each output. A[0, 0] and A[1, 0] are labeled a0 and a1, while B[0, 0] and B[0, 1] are labeled b0 and b1. In an expression such as A[0, 0], the two bracketed numbers identify the row and column.
+
+[![One thread reads inputs a0, a1, b0, and b1 into registers. It computes four products with these inputs and adds them to partial sums c00, c01, c10, and c11, using each input twice.](/images/matmul-tiling-and-data-reuse/en/03-register-reuse.png)](/images/matmul-tiling-and-data-reuse/en/03-register-reuse.png)
+
+We multiply a0 by b0 and add the product to c00, then multiply a0 by b1 and add the product to c01. Likewise, a1 is multiplied by b0 and b1, and the products are added to c10 and c11. **Four values read from shared memory have produced four products, with each input used twice.** Compared with computing the four outputs entirely separately and reading two inputs each time, this reduces repeated input reads.
+
+Next, we read A[0, 1], A[1, 1], B[1, 0], and B[1, 1] for the second products and add the new products to the four partial sums. Continuing through the eighth product completes all four outputs. The partial sums are updated in registers instead of being stored elsewhere after every step.
+
+In shared memory, multiple computations within a block used common inputs. In registers, one thread uses its loaded inputs for multiple multiplications and keeps its own partial sums. **Reuse continues as we divide computation into smaller units; it does not stop at one level.** [NVIDIA's explanation of hierarchical matrix multiplication](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)
+
+## Tile Size and Resource Usage
+
+Computing more outputs together creates opportunities to use the same input more times. Should we therefore make the output tile assigned to each block or thread as large as possible?
+
+A larger tile also means keeping more data during computation. A larger output region per block can require more inputs to be brought in together, and more outputs per thread mean more partial sums to maintain. As the B300 table showed, both shared memory and registers have limited capacity per SM.
+
+[![Compare reuse and resource usage for small and large tiles. A larger tile uses each input for more outputs, but needs more resources to keep inputs and partial sums, potentially reducing the number of resident blocks and warps.](/images/matmul-tiling-and-data-reuse/en/04-tile-resource-tradeoff.png)](/images/matmul-tiling-and-data-reuse/en/04-tile-resource-tradeoff.png)
+
+If one block uses a large amount of shared memory or registers, there may be less room for other blocks on the same SM. Connecting this to **warp scheduling**, there may be fewer other warps available to execute when one warp is waiting for data.
+
+Conversely, a smaller tile can reduce resource use per block, but also narrows the range of computations that reuse the inputs brought in by each block. Dividing the same overall output among more blocks may increase repeated loads of the same inputs across blocks.
+
+We therefore need to **consider both the benefit of greater input reuse and the benefit of having enough work available to execute concurrently**. More resident warps do not automatically mean faster execution, nor does a larger tile. The choice depends on matrix shape, resource use, and observed execution results. [CUTLASS on tile size and resource usage](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html)
+
+## Overlapping Data Movement and Computation
+
+If shared memory cannot hold all the inputs, we need to bring them in a portion at a time and compute with them. What we divide here is **the set of inputs needed to complete the same outputs**. We are not moving on to new outputs, but adding products that have not yet been computed to the existing partial sums.
+
+Suppose each output requires a sum of eight products, as in Figure 5. We call the first two products Compute 1 and the next two Compute 2, grouping the work in the same way through Compute 4. **Input 1 contains the A and B values needed for Compute 1**, and Inputs 2, 3, and 4 correspond to their respective computations. The block performs these four stages for all the outputs it owns.
+
+A **buffer** is an area of memory reserved to hold data temporarily. It is not a separate hardware device. In this example, the buffers hold inputs in shared memory, while the output partial sums remain in registers as described earlier.
+
+[![At the top, pairs of products are labeled Compute 1 through Compute 4, with their required data labeled Input 1 through Input 4. Sequential execution fills one buffer and then computes. Overlapped execution alternates between two buffers so that current computation and the next input transfer proceed concurrently.](/images/matmul-tiling-and-data-reuse/en/05-pipelined-tiles.png)](/images/matmul-tiling-and-data-reuse/en/05-pipelined-tiles.png)
+
+With one buffer, we first fill it with Input 1 and perform Compute 1. Once those inputs are no longer needed, we refill the same buffer with Input 2 and perform Compute 2. In the sequential case shown, computation waits during input transfers, and the next input transfer does not proceed during computation.
+
+With two buffers, we can bring the next inputs into one buffer while keeping the inputs currently in use in the other. While Compute 1 uses Input 1 in Buffer 0, we prepare Input 2 in Buffer 1. When Compute 1 has finished and Input 2 is ready, Compute 2 can begin.
+
+Input 1 is no longer needed, so Buffer 0 can now be filled with Input 3. Compute 2 uses Buffer 1, allowing it to proceed concurrently with refilling Buffer 0. The two buffers then continue to alternate roles. Organizing execution so that **the current stage's computation and the next stage's data preparation proceed concurrently is called pipelining**.
+
+Ordering still matters. A computation must start only after its inputs are ready, and a buffer still in use must not be overwritten with new inputs. The necessary synchronization preserves these conditions while allowing data movement into the other buffer to begin ahead of time.
+
+Both cases perform the same amount of computation and data movement. What changes is whether movement and computation overlap in time. Simply allocating two buffers does not guarantee overlap; execution must also be arranged so that movement and computation proceed concurrently. Some waiting may remain if input preparation takes longer than computation. An extra buffer also uses more shared memory, so the resource tradeoff discussed earlier still applies.
+
+For matrix multiplication, we selected outputs to compute together, kept their common inputs in shared memory, and reused the values read into registers across multiple computations. We then arranged the remaining data movement to overlap with current computation. In the next article, we will turn to Attention and examine the difficulty introduced by softmax's summation when dividing inputs and continuing computation in this way.

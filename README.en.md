@@ -32,3 +32,4 @@ Read articles and figures on the [website](https://llm-systems-engineering.pages
 - [Parallelism in Model Operations: Element-wise Operations, Reductions, and Matrix Multiplication](https://llm-systems-engineering.pages.dev/en/posts/model-operation-parallelism/)
 - [Parallel Execution on GPUs: From Threads to Warp Scheduling](https://llm-systems-engineering.pages.dev/en/posts/gpu-execution-and-warp-scheduling/)
 - [Starting GPU Optimization: Arithmetic Intensity and Data Movement](https://llm-systems-engineering.pages.dev/en/posts/gpu-arithmetic-intensity-and-fusion/)
+- [Optimizing Matrix Multiplication: Input Reuse and Tiling](https://llm-systems-engineering.pages.dev/en/posts/matmul-tiling-and-data-reuse/)
