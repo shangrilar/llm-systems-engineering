@@ -25,25 +25,32 @@ for (const locale of ['ko', 'en']) {
     return sections.join('\n\n');
   }
   const articles = renderGroup(root);
+  const startingPoints = ['embedding-to-lm-head', 'gpu-architecture', 'gpu-arithmetic-intensity-and-fusion']
+    .map(id => posts.find(post => post.articleId === id)?.locales[locale])
+    .filter(article => article?.published)
+    .map(article => `- [${article.title}](${base}${prefix}/posts/${article.slug}/)`)
+    .join('\n');
   const text = `# LLM Systems Engineering
 
-${korean ? '**한국어** | [English](README.en.md)' : '[한국어](README.md) | **English**'}
+${korean ? '[English](README.md) | **한국어**' : '**English** | [한국어](README.ko.md)'}
 
 ${korean
-  ? '모델·하드웨어·워크로드라는 세 가지 관점으로 LLM 실행 시스템을 이해하는 학습 자료입니다.'
-  : 'Learning materials for understanding LLM execution systems through three perspectives: models, hardware, and workloads.'}
+  ? '모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 LLM 시스템 엔지니어링 가이드입니다.'
+  : 'An illustrated guide to LLM systems engineering: model internals, GPU execution, and performance, explained step by step.'}
 
 ${korean
-  ? '공통 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training 순서로 원리, 실행 과정, 성능 측정과 최적화를 다룹니다.'
-  : 'The series covers principles, execution, performance measurement, and optimization in this order: shared concepts → inference → training (pretraining and SFT) → RL-based post-training.'}
+  ? '현재 모델과 GPU의 기초를 다루는 글을 제공합니다. 학습 로드맵은 기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training으로 이어집니다.'
+  : 'Start with the available articles on model and GPU fundamentals. The learning roadmap continues into inference, training (pretraining and SFT), and RL-based post-training.'}
 
 ${korean
-  ? '글과 그림은 [홈페이지](' + base + '/)에서, 관련 실습 코드는 이 저장소에서 제공합니다. 한국어 원문과 영어 번역을 함께 제공합니다.'
-  : 'Read articles and figures on the [website](' + base + '/en/). Related example code belongs in this repository. Articles are written in Korean with English translations.'}
+  ? '[한국어 글 읽기](' + base + '/) · [영어 글 읽기](' + base + '/en/)\n\n한국어와 영어로 제공합니다. 아래 목차에서 개별 글과 그림을 읽을 수 있습니다.'
+  : '[Read in English](' + base + '/en/) · [한국어로 읽기](' + base + '/)\n\nAvailable in English and Korean. Browse the articles and diagrams below.'}
 
-## ${korean ? '글 목록' : 'Articles'}
+${startingPoints ? `## ${korean ? '여기서 시작하세요' : 'Start here'}\n\n${startingPoints}\n\n` : ''}## ${korean ? '전체 글 목록' : 'All articles'}
 
 ${articles || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
 `;
-  writeFileSync(korean ? 'README.md' : 'README.en.md', text);
+  writeFileSync(korean ? 'README.ko.md' : 'README.md', text);
 }
+
+writeFileSync('README.en.md', '# LLM Systems Engineering\n\nThe English guide is now the [main README](README.md).\n\n[Read articles in English](' + base + '/en/) · [한국어](README.ko.md)\n');
