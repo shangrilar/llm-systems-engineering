@@ -1,0 +1,94 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: gpu-arithmetic-intensity-and-fusion
+title: "Starting GPU Optimization: Arithmetic Intensity and Data Movement"
+description: "Connect memory and compute bottlenecks through arithmetic intensity and Roofline, then explore reduced data movement, concurrent progress, and element-wise kernel fusion."
+track: 공통
+date: 2026-09-12
+---
+
+In the previous article, we followed how a computation procedure is divided among threads, how blocks are assigned to SMs, and how instructions from eligible warps are selected. Does creating enough parallel work let us fully use a GPU's compute capacity?
+
+Computation requires its data to be ready. Even with many threads assigned, waiting for data can leave the compute units without enough work. In this article, we will **examine the relationship between computation and data movement, and see what we can reduce or run concurrently to obtain the same results in less time**.
+
+## Which Is the Bottleneck: Memory or Computation?
+
+To execute a computation on a GPU, we need to read inputs from memory, process them in the compute units, and store the results. When discussing the memory hierarchy, we saw that HBM bandwidth and access latency matter alongside capacity. Even if a model fits in memory, **supplying the data needed for computation in time is a separate question**.
+
+[![Two cases on the same GPU: data supply is the bottleneck above, while compute throughput is the bottleneck below. Limited inputs leave computation sparse in the first case; more computation per input makes compute throughput the limit in the second.](/images/gpu-arithmetic-intensity-and-fusion/en/01-compute-and-memory.png)](/images/gpu-arithmetic-intensity-and-fusion/en/01-compute-and-memory.png)
+
+The top of Figure 1 shows a case where the rate of data supply is the bottleneck. The compute units could handle more operations, but the rate at which inputs arrive from memory cannot keep up. For such a computation, increasing only the number or speed of compute units may not reduce execution time enough.
+
+The bottom shows a case where compute throughput is the bottleneck. The required data can be supplied, but there is a large amount of computation to perform on it. Here, the rate at which the compute units finish their work limits overall processing speed.
+
+Recall the element-wise addition we saw earlier. Producing one output requires reading two input values, performing one addition, and storing one result. A longer input provides more independent outputs to compute, but each output still requires just one addition. Thus, **having a lot of concurrent work is different from having a lot of computation relative to the amount of data read and written.** Even an element-wise operation can involve more computation per output if it applies a complex function.
+
+Using a GPU efficiently means using its resources to reduce the time needed to obtain the required results. To do this, we first need to examine **whether data supply or computation is limiting execution**.
+
+## Arithmetic Intensity and Roofline: Relating Data Movement to Computation
+
+Let us express the relationship between data movement and computation numerically. **Arithmetic intensity** is the ratio of computation to data movement. In this article, we will count the bytes read from and written to HBM.
+
+**Arithmetic intensity = Operation count ÷ Bytes transferred**
+
+Counting one floating-point addition or multiplication as 1 FLOP gives arithmetic intensity in FLOP/byte. This tells us how much computation is performed for each byte moved. FLOP measures an amount of computation, while FLOPS measures the number of operations performed per second.
+
+Computation A in Figure 2 performs 128 FLOP for 64 bytes moved, giving an arithmetic intensity of 2 FLOP/byte. Computation B performs 512 FLOP for the same amount of data movement, giving 8 FLOP/byte. Imagine that computations with these ratios are repeated many times.
+
+[![On the left, 128 FLOP divided by 64 bytes gives an arithmetic intensity of 2, and 512 FLOP divided by 64 bytes gives 8. On the right, the Roofline shows a sloped bandwidth ceiling and a horizontal compute-throughput ceiling.](/images/gpu-arithmetic-intensity-and-fusion/en/02-arithmetic-intensity-roofline.png)](/images/gpu-arithmetic-intensity-and-fusion/en/02-arithmetic-intensity-roofline.png)
+
+Now assume a device with 8 GB/s of memory bandwidth and a compute-throughput ceiling of 32 GFLOPS. GB/s means a billion bytes per second, and GFLOPS means a billion floating-point operations per second. With 2 FLOP per byte, as in computation A, supplying 8 GB per second supports at most 16 GFLOPS. Even if the compute units can process 32 GFLOPS, the amount of computation supported by the data supply is lower.
+
+Computation B performs 8 FLOP per byte. The same bandwidth can supply data for 64 GFLOP per second, but the compute units can process at most 32 GFLOPS. In this case, compute throughput sets the ceiling.
+
+The **Roofline** on the right shows this relationship. The horizontal axis is arithmetic intensity, and the vertical axis is compute throughput. The sloped line is the ceiling given by **memory bandwidth × arithmetic intensity**, while the horizontal line is the compute-unit ceiling. Both conditions must hold, so [the lower of the two values is the throughput ceiling](https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/index.html#understanding-performance).
+
+At low arithmetic intensity, there is little computation relative to the data moved, so bandwidth sets the ceiling. As arithmetic intensity increases, the same data supply supports more computation. But once the compute-unit ceiling is reached, throughput cannot keep rising. In the figure, the two lines meet at 4 FLOP/byte.
+
+**The Roofline represents an upper bound, not a guarantee of execution performance.** As we saw in the previous article, actual throughput can be lower if there is too little work or all warps are waiting. The throughput ceiling must also match the operation type and data type. The peak throughput of Tensor Cores performing matrix multiplication cannot be applied to every operation.
+
+What happens if we keep the computation the same while reducing the required data movement? The denominator of arithmetic intensity becomes smaller. Reducing the burden of moving data can give the compute units more opportunity to make progress. The element-wise fusion we will see later is one example.
+
+## Reduce Data Movement or Do Other Computation While Waiting
+
+If computation must wait for its data, we can consider two directions: **reduce the required data movement itself, or perform other independent computation while waiting for the data**.
+
+Figure 3 contains computations A and B. A is waiting for inputs from memory, while B already has its inputs and can execute independently of A. All three cases complete the same computations A and B.
+
+[![The baseline waits for A's inputs and then computes A and B. Reducing data movement reduces the transfers needed for A. Concurrent progress computes B while preparing A's inputs, without changing A's input preparation time.](/images/gpu-arithmetic-intensity-and-fusion/en/03-reduce-and-overlap.png)](/images/gpu-arithmetic-intensity-and-fusion/en/03-reduce-and-overlap.png)
+
+In the first timeline, execution waits until A's inputs arrive and then computes A and B in order. B could have progressed earlier, but here the compute units wait while the data is prepared.
+
+In the second timeline, less data needs to be moved for A. Reusing values already stored nearby, or eliminating the storage and rereading of intermediate values in memory, can enable this kind of improvement. The computations A and B remain the same, while the burden of preparing their data is reduced.
+
+In the third timeline, B is computed while A's inputs are being prepared. **A waits just as long for its data, but part of the required computation is completed during that time.** Once A's inputs are ready, A can execute, bringing forward the point at which both computations are complete.
+
+Warp scheduling from the previous article connects to this principle. While one warp waits for a memory read, the scheduler can select instructions from another ready warp. Data movement and other computation can then progress concurrently. The key is not to execute A before its inputs arrive, but to **make progress on work that does not depend on those inputs**.
+
+We can examine synchronization from the same perspective. If threads share intermediate results, those results must be ready before they are used. While preserving this requirement, we can reduce unnecessary synchronization or the number of participants, and look for other work that can progress during the wait. Understanding why data movement and synchronization are needed helps us decide what can be eliminated and what must be awaited.
+
+## Fusion: Continue Computing Without Storing Intermediate Values
+
+Now let us look at an example of reducing data movement. We add bias to input x to produce an intermediate value u, then apply ReLU to u to obtain output y. ReLU returns its input when positive, and 0 otherwise. The computation at each position is as follows.
+
+**u = x + bias → y = ReLU(u)**
+
+For example, if x is −3 and bias is 1 at one position, the addition gives u = −2 and ReLU gives y = 0. At another position, x = 2 and bias = 1 give u = 3 and y = 3. Each output can be computed without waiting for results at other positions.
+
+If the two operations run as separate kernels, the value computed by the first kernel must be passed to the second. The registers used by the first kernel's threads and the shared memory used by its blocks belong to that execution; the next kernel cannot simply inherit and use them. Intermediate results are therefore stored in a buffer in **global memory, which persists beyond the end of a kernel execution**. Here, a buffer means memory allocated to hold the computation's results.
+
+[![With separate execution, the first kernel stores the addition result u in an intermediate tensor in global memory, and the second reads it to apply ReLU. Fusion uses the intermediate addition result directly for ReLU within one kernel and stores only the final result y.](/images/gpu-arithmetic-intensity-and-fusion/en/04-elementwise-fusion.png)](/images/gpu-arithmetic-intensity-and-fusion/en/04-elementwise-fusion.png)
+
+On the left of Figure 4, addition and ReLU execute as separate kernels. The first kernel's threads read and add x and bias at their assigned positions, then store u in an intermediate tensor in global memory. In this execution, the second kernel runs after the first finishes. Its threads read u from this tensor, apply ReLU, and store y.
+
+Global memory is a space in which a program stores and accesses data. On the GPU considered here, storage for this buffer is allocated in HBM, but caches participate in the actual reads and writes. **If an intermediate value remains in L2 cache, the next kernel can use it without fetching it from HBM again.** Passing values between kernels requires storing them in global memory, but this does not mean that all results must be written all the way back to HBM whenever a kernel ends.
+
+On the right, the two operations are combined into one kernel. **Combining multiple operations so that they execute in sequence within one kernel is called kernel fusion**. A thread reads x and bias at its position, keeps the addition result in a register, and uses it directly for ReLU. Because the same thread continues the computation, it can store only the final result y in global memory without creating an intermediate tensor for another kernel.
+
+Both cases perform addition and ReLU. The difference is **whether the intermediate value u must be stored in a separate tensor and read back**. By continuing to use values within the kernel, fusion can [reduce the global-memory reads and writes of intermediate tensors](https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html) used to pass values between kernels.
+
+For N output elements, separate execution writes N intermediate values and reads those N values back. Eliminating these accesses while keeping the required computation increases computation relative to data movement. The actual reduction in HBM traffic, however, depends on factors such as whether the intermediate values remain in cache. Combining two kernels into one can also reduce the overhead of requesting and starting kernel execution.
+
+Combining more operations is not always better. Keeping more intermediate values in one kernel can increase register usage, which, as we saw earlier, can affect how much work can reside on an SM at once. **We need to consider both the reduction in data movement and the increase in resource use.**
+
+Here, we continued computations at the same position to reduce the storage and rereading of intermediate values. In the next article, we will use matrix multiplication to examine how inputs shared by multiple output computations can be reused. We will connect this to how data movement and resource use change when threads cooperate to compute regions of the output.
