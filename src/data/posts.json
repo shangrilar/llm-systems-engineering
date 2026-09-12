@@ -374,5 +374,37 @@
         "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "gpu-execution-and-warp-scheduling",
+    "order": 13,
+    "track": "공통",
+    "date": "2026-09-11",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-execution-and-warp-scheduling",
+        "title": "GPU의 병렬 실행: 스레드에서 워프 스케줄링까지",
+        "description": "공통 계산 절차와 인덱스별 실행에서 출발해 스레드·블록·그리드, SM 배정, 워프 스케줄링과 지연 숨기기를 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-execution-and-warp-scheduling",
+        "title": "Parallel Execution on GPUs: From Threads to Warp Scheduling",
+        "description": "Start with a common computation procedure and indexed executions, then explore threads, blocks, grids, SM assignment, warp scheduling, and latency hiding.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a9b8f46ae20e6d9fb2b779b16bce1e049425164a8136f34d8d4dcf704bf086d4",
+        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels."
+      }
+    }
   }
 ]
