@@ -438,5 +438,37 @@
         "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "matmul-tiling-and-data-reuse",
+    "order": 15,
+    "track": "공통",
+    "date": "2026-09-12",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "matmul-tiling-and-data-reuse",
+        "title": "행렬 곱 최적화: 입력 재사용과 타일링",
+        "description": "공유 메모리와 레지스터에서 입력을 재사용하는 방법, 타일 크기와 자원 사용량의 관계, 데이터 이동과 계산을 동시에 진행하는 원리를 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "matmul-tiling-and-data-reuse",
+        "title": "Optimizing Matrix Multiplication: Input Reuse and Tiling",
+        "description": "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision.",
+        "sourceRevision": "adfd5802a3a76ac1784b0afe973520b0299e707f51c3d4e932c87c41d2730c2c"
+      }
+    }
   }
 ]
