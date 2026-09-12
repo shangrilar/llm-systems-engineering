@@ -470,5 +470,37 @@
         "sourceRevision": "adfd5802a3a76ac1784b0afe973520b0299e707f51c3d4e932c87c41d2730c2c"
       }
     }
+  },
+  {
+    "articleId": "attention-memory-and-softmax",
+    "order": 16,
+    "track": "공통",
+    "date": "2026-09-12",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "attention-memory-and-softmax",
+        "title": "Attention 최적화가 어려운 이유",
+        "description": "큰 점수·확률 행렬의 저장과 재읽기 비용을 살펴보고, 일부 점수만으로 Softmax의 최종 확률을 정할 수 없는 이유를 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "attention-memory-and-softmax",
+        "title": "Why Attention Is Difficult to Optimize",
+        "description": "Examine the cost of storing and rereading large score and probability matrices, and why a subset of scores cannot determine final Softmax probabilities.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision.",
+        "sourceRevision": "ab932002440150ee7616b3a9df2069711ef54faf6621210a72a1671898c7f520"
+      }
+    }
   }
 ]

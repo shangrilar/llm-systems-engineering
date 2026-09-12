@@ -33,3 +33,4 @@
 - [GPU의 병렬 실행: 스레드에서 워프 스케줄링까지](https://llm-systems-engineering.pages.dev/posts/gpu-execution-and-warp-scheduling/)
 - [GPU 최적화의 출발점: 산술 강도와 데이터 이동](https://llm-systems-engineering.pages.dev/posts/gpu-arithmetic-intensity-and-fusion/)
 - [행렬 곱 최적화: 입력 재사용과 타일링](https://llm-systems-engineering.pages.dev/posts/matmul-tiling-and-data-reuse/)
+- [Attention 최적화가 어려운 이유](https://llm-systems-engineering.pages.dev/posts/attention-memory-and-softmax/)
