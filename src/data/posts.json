@@ -502,5 +502,37 @@
         "sourceRevision": "ab932002440150ee7616b3a9df2069711ef54faf6621210a72a1671898c7f520"
       }
     }
+  },
+  {
+    "articleId": "online-softmax",
+    "order": 17,
+    "track": "공통",
+    "date": "2026-09-13",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "online-softmax",
+        "title": "점수를 나누어 처리하는 온라인 소프트맥스",
+        "description": "수치 안정성을 위한 최댓값 처리와 지수합의 역할을 살펴보고, 새 점수 묶음에 따라 두 값을 유지·보정·갱신하는 온라인 소프트맥스의 원리를 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "online-softmax",
+        "title": "Processing Scores in Chunks with Online Softmax",
+        "description": "Explore why stable softmax subtracts the maximum, how the maximum and exponential sum work together, and how online softmax updates them with each new chunk of scores.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "e0189766beb9bfa83fd781e3386720a534031c48b965d94cf7aaa6f4dea99a20",
+        "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared."
+      }
+    }
   }
 ]

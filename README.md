@@ -42,3 +42,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Starting GPU Optimization: Arithmetic Intensity and Data Movement](https://llm-systems-engineering.pages.dev/en/posts/gpu-arithmetic-intensity-and-fusion/)
 - [Optimizing Matrix Multiplication: Input Reuse and Tiling](https://llm-systems-engineering.pages.dev/en/posts/matmul-tiling-and-data-reuse/)
 - [Why Attention Is Difficult to Optimize](https://llm-systems-engineering.pages.dev/en/posts/attention-memory-and-softmax/)
+- [Processing Scores in Chunks with Online Softmax](https://llm-systems-engineering.pages.dev/en/posts/online-softmax/)

@@ -42,3 +42,4 @@
 - [GPU 최적화의 출발점: 산술 강도와 데이터 이동](https://llm-systems-engineering.pages.dev/posts/gpu-arithmetic-intensity-and-fusion/)
 - [행렬 곱 최적화: 입력 재사용과 타일링](https://llm-systems-engineering.pages.dev/posts/matmul-tiling-and-data-reuse/)
 - [Attention 최적화가 어려운 이유](https://llm-systems-engineering.pages.dev/posts/attention-memory-and-softmax/)
+- [점수를 나누어 처리하는 온라인 소프트맥스](https://llm-systems-engineering.pages.dev/posts/online-softmax/)
