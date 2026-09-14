@@ -594,8 +594,40 @@
         ],
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "99f42559dd712f67dc1c70259cac831970a173163a6f8d5b35f1304d5377b7c2",
-        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors."
+        "sourceRevision": "53dde7d6931960a9724ab3bf0acf1117e2c892b9fd1e244fe796795de8241c1e",
+        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation."
+      }
+    }
+  },
+  {
+    "articleId": "multi-gpu-execution",
+    "order": 20,
+    "track": "공통",
+    "date": "2026-09-14",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "multi-gpu-execution",
+        "title": "여러 GPU로 확장하기",
+        "description": "여러 GPU의 연산 장치와 메모리를 살펴보고, 용량·응답 시간·처리량의 목표를 구분하며, 통신과 동기화에 따른 대기가 전체 실행 시간에 미치는 영향을 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "multi-gpu-execution",
+        "title": "Scaling Across Multiple GPUs",
+        "description": "Explore compute and memory across GPUs, distinguish capacity, latency, and throughput goals, and examine how communication and synchronization-related waiting affect total execution time.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "ea9131277dd1be69a9185a0d06886ad34f0c754f8d211db33c7f6bb56afc0f89",
+        "reviewNote": "2026-09-14: Compared all 4 sections, 5 subsections, 27 paragraphs, 15 emphasized passages, 2 inline expressions, source links, alt text and 3 figure pairs with the Korean manuscript. Both versions preserve capacity, latency and throughput goals; separate GPU memories; concatenation versus partial sums; communication volume and frequency; and the 100ms, 60ms and 80ms timelines. The introduction highlights communication and waiting alongside local memory traffic and computation. The uneven split connects synchronization to possible waiting without adding the overlapping 40ms twice. All six PNGs visually reviewed. Twelve static SVG/PNG assets match source bytes and were checked separately from the body revision; all three pairs preserve geometry and colors."
       }
     }
   }

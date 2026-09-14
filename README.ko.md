@@ -45,3 +45,4 @@
 - [점수를 나누어 처리하는 온라인 소프트맥스](https://llm-systems-engineering.pages.dev/posts/online-softmax/)
 - [출력을 누적해 메모리 이동을 줄이는 FlashAttention](https://llm-systems-engineering.pages.dev/posts/flash-attention/)
 - [연산 최적화에서 모델 전체 성능으로](https://llm-systems-engineering.pages.dev/posts/model-performance-and-bottlenecks/)
+- [여러 GPU로 확장하기](https://llm-systems-engineering.pages.dev/posts/multi-gpu-execution/)
