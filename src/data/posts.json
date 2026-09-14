@@ -594,8 +594,8 @@
         ],
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "99f42559dd712f67dc1c70259cac831970a173163a6f8d5b35f1304d5377b7c2",
-        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors."
+        "sourceRevision": "53dde7d6931960a9724ab3bf0acf1117e2c892b9fd1e244fe796795de8241c1e",
+        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation."
       }
     }
   },
