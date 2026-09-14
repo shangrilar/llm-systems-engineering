@@ -44,3 +44,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Why Attention Is Difficult to Optimize](https://llm-systems-engineering.pages.dev/en/posts/attention-memory-and-softmax/)
 - [Processing Scores in Chunks with Online Softmax](https://llm-systems-engineering.pages.dev/en/posts/online-softmax/)
 - [Reducing Memory Traffic with Output Accumulation in FlashAttention](https://llm-systems-engineering.pages.dev/en/posts/flash-attention/)
+- [From Operation Optimization to Whole-Model Performance](https://llm-systems-engineering.pages.dev/en/posts/model-performance-and-bottlenecks/)

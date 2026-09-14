@@ -566,5 +566,37 @@
         "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "model-performance-and-bottlenecks",
+    "order": 19,
+    "track": "공통",
+    "date": "2026-09-14",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "model-performance-and-bottlenecks",
+        "title": "연산 최적화에서 모델 전체 성능으로",
+        "description": "한 연산의 개선이 모델 전체 시간에 미치는 영향을 살펴보고, 병목을 다시 측정하며 최적화를 반복하는 과정과 성능 목표·메모리 용량에 따른 자원 확장을 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "model-performance-and-bottlenecks",
+        "title": "From Operation Optimization to Whole-Model Performance",
+        "description": "Explore how improving one operation affects whole-model execution time, why optimization requires repeated bottleneck measurements, and when performance goals or memory capacity call for more resources.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "99f42559dd712f67dc1c70259cac831970a173163a6f8d5b35f1304d5377b7c2",
+        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors."
+      }
+    }
   }
 ]
