@@ -534,5 +534,37 @@
         "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared."
       }
     }
+  },
+  {
+    "articleId": "flash-attention",
+    "order": 18,
+    "track": "공통",
+    "date": "2026-09-14",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "flash-attention",
+        "title": "출력을 누적해 메모리 이동을 줄이는 FlashAttention",
+        "description": "Value 가중합과 지수합을 함께 누적하는 원리를 살펴보고, FlashAttention-2의 타일 순회로 출력을 완성하며 큰 중간 행렬의 메모리 이동을 줄이는 과정을 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "flash-attention",
+        "title": "Reducing Memory Traffic with Output Accumulation in FlashAttention",
+        "description": "Explore joint accumulation of the Value weighted sum and exponential sum, then follow FlashAttention-2 tiles to complete the output and reduce memory traffic from large intermediate matrices.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "09365bfd5f6be2e199a1d3331b9fde3b2d9a5afa26bbf5b5aed858e6279b784c",
+        "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision."
+      }
+    }
   }
 ]

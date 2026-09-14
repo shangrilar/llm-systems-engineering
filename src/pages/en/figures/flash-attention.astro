@@ -1,0 +1,12 @@
+---
+import Base from '../../../layouts/Base.astro';
+import FlashAttentionSteps from '../../../components/FlashAttentionSteps.astro';
+---
+<Base title="FlashAttention · Tile Traversal" description="Follow nine steps that keep Q and outputs in place while traversing K/V tiles to complete the output." alternate="/figures/flash-attention/">
+  <article class="article">
+    <h1>Completing the Output Tile by Tile</h1>
+    <p><a href="/en/posts/flash-attention/#figure-3">Return to the article</a></p>
+    <p>This follows the FlashAttention-2 forward pass. The steps are separated for explanation and do not prescribe the kernel’s instruction order.</p>
+    <FlashAttentionSteps locale="en" />
+  </article>
+</Base>

@@ -43,3 +43,4 @@
 - [행렬 곱 최적화: 입력 재사용과 타일링](https://llm-systems-engineering.pages.dev/posts/matmul-tiling-and-data-reuse/)
 - [Attention 최적화가 어려운 이유](https://llm-systems-engineering.pages.dev/posts/attention-memory-and-softmax/)
 - [점수를 나누어 처리하는 온라인 소프트맥스](https://llm-systems-engineering.pages.dev/posts/online-softmax/)
+- [출력을 누적해 메모리 이동을 줄이는 FlashAttention](https://llm-systems-engineering.pages.dev/posts/flash-attention/)
