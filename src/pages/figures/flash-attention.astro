@@ -1,0 +1,12 @@
+---
+import Base from '../../layouts/Base.astro';
+import FlashAttentionSteps from '../../components/FlashAttentionSteps.astro';
+---
+<Base title="FlashAttention · 타일 순회" description="Q와 출력을 유지하고 K/V 타일을 순회하며 출력을 완성하는 9단계 그림입니다." alternate="/en/figures/flash-attention/">
+  <article class="article">
+    <h1>타일을 순회하며 출력 완성하기</h1>
+    <p><a href="/posts/flash-attention/#figure-3">본문으로 돌아가기</a></p>
+    <p>FlashAttention-2 순전파 기준입니다. 단계 구분은 설명을 위한 것이며 실제 커널의 명령 순서를 고정하지 않습니다.</p>
+    <FlashAttentionSteps locale="ko" />
+  </article>
+</Base>

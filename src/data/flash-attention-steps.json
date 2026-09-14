@@ -1,0 +1,96 @@
+{
+  "ko": [
+    {
+      "slug": "03-step-01",
+      "label": "입력과 출력의 위치",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 입력과 출력의 위치"
+    },
+    {
+      "slug": "03-step-02",
+      "label": "첫 타일 · Q와 K로 점수 계산",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 첫 타일 · Q와 K로 점수 계산"
+    },
+    {
+      "slug": "03-step-03",
+      "label": "첫 타일 · 소프트맥스의 exp 계산",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 첫 타일 · 소프트맥스의 exp 계산"
+    },
+    {
+      "slug": "03-step-04",
+      "label": "첫 타일 · Value 가중합 누적",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 첫 타일 · Value 가중합 누적"
+    },
+    {
+      "slug": "03-step-05",
+      "label": "다음 타일 · 새 점수 계산",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 다음 타일 · 새 점수 계산"
+    },
+    {
+      "slug": "03-step-06",
+      "label": "다음 타일 · 이전 누적값 보정",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 다음 타일 · 이전 누적값 보정"
+    },
+    {
+      "slug": "03-step-07",
+      "label": "다음 타일 · 새 exp 값과 지수합",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 다음 타일 · 새 exp 값과 지수합"
+    },
+    {
+      "slug": "03-step-08",
+      "label": "다음 타일 · 같은 출력에 누적",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 다음 타일 · 같은 출력에 누적"
+    },
+    {
+      "slug": "03-step-09",
+      "label": "마지막 · 지수합으로 나누기",
+      "alt": "왼쪽 Q 두 행, 위쪽 K 네 벡터, 아래쪽 V 네 벡터, 오른쪽 출력 누적 벡터를 배치한다. K와 V는 토큰을 가로로 나열한 전치 배치다. 중앙에는 현재 2×2 타일의 점수 또는 정규화 전 exp 값만 표시한다. Q와 출력 위치를 고정하고 두 K/V 타일을 순회한다. 중앙의 전체 격자는 처리 위치 지도이며 전체 점수 행렬을 저장하지 않는다. 스케일링과 마스크를 생략한 교육용 계산이다. 현재 단계: 마지막 · 지수합으로 나누기"
+    }
+  ],
+  "en": [
+    {
+      "slug": "03-step-01",
+      "label": "Input and output positions",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Input and output positions."
+    },
+    {
+      "slug": "03-step-02",
+      "label": "First tile · Compute scores from Q and K",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: First tile · Compute scores from Q and K."
+    },
+    {
+      "slug": "03-step-03",
+      "label": "First tile · Compute softmax exponentials",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: First tile · Compute softmax exponentials."
+    },
+    {
+      "slug": "03-step-04",
+      "label": "First tile · Accumulate the Value weighted sum",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: First tile · Accumulate the Value weighted sum."
+    },
+    {
+      "slug": "03-step-05",
+      "label": "Next tile · Compute new scores",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Next tile · Compute new scores."
+    },
+    {
+      "slug": "03-step-06",
+      "label": "Next tile · Rescale previous accumulators",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Next tile · Rescale previous accumulators."
+    },
+    {
+      "slug": "03-step-07",
+      "label": "Next tile · New exponentials and sum",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Next tile · New exponentials and sum."
+    },
+    {
+      "slug": "03-step-08",
+      "label": "Next tile · Accumulate into the same output",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Next tile · Accumulate into the same output."
+    },
+    {
+      "slug": "03-step-09",
+      "label": "Finish · Divide by the exponential sum",
+      "alt": "Two Q rows on the left, four K vectors above, four V vectors below, and output accumulator vectors on the right. K and V are transposed to arrange tokens horizontally. The center shows only the current 2×2 tile of scores or unnormalized exponentials. Q and output positions stay fixed while traversing two K/V tiles. The full grid maps processing positions and does not store the full score matrix. This educational example omits scaling and masking. Current step: Finish · Divide by the exponential sum."
+    }
+  ]
+}

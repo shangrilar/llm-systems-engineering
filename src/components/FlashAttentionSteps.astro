@@ -1,0 +1,71 @@
+---
+import steps from '../data/flash-attention-steps.json';
+interface Props { locale: 'ko' | 'en' }
+const { locale } = Astro.props;
+const frames = steps[locale];
+const base = `/images/flash-attention/${locale === 'en' ? 'en/' : ''}`;
+const t = locale === 'ko' ? {
+  prev: '← 이전', next: '다음 →', reset: '처음', label: '그림 3 계산 단계',
+  expand: '현재 단계 그림 원본 확대', svg: '현재 단계 SVG', png: '현재 단계 PNG · 2400 px',
+  poster: '대표 장면 PNG', help: '그림을 누르면 원본으로 확대됩니다. 단계 선택에 초점을 두고 방향키로 이동할 수 있습니다.',
+} : {
+  prev: '← Previous', next: 'Next →', reset: 'Reset', label: 'Figure 3 computation step',
+  expand: 'Open the current step at full size', svg: 'Current step SVG', png: 'Current step PNG · 2400 px',
+  poster: 'Representative scene PNG', help: 'Click the figure to open it at full size. Focus the step selector to navigate with arrow keys.',
+};
+const first = base + frames[0].slug;
+---
+<div class="flash-steps" id="figure-3" data-flash-steps data-base={base}>
+  <div class="toolbar">
+    <button data-prev type="button" disabled>{t.prev}</button>
+    <select data-steps aria-label={t.label}>
+      {frames.map((frame, n) => <option value={frame.slug} data-alt={frame.alt}>{n + 1}. {frame.label}</option>)}
+    </select>
+    <button data-next type="button">{t.next}</button>
+    <button data-reset type="button">{t.reset}</button>
+  </div>
+  <a data-stage-link href={`${first}.svg`} target="_blank" aria-label={t.expand}>
+    <img data-stage src={`${first}.svg`} alt={frames[0].alt} width="1200" height="1270" loading="lazy" />
+  </a>
+  <p class="asset-links">
+    <a data-svg href={`${first}.svg`}>{t.svg}</a>
+    <a data-png href={`${first}.png`}>{t.png}</a>
+    <a href={`${base}03-tiled-online-attention.png`}>{t.poster}</a>
+  </p>
+  <p class="help">{t.help}</p>
+</div>
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+  button, select { font: inherit; padding: 10px 13px; border: 1px solid #bdccd9; border-radius: 8px; background: white; color: #182c40; min-height: 44px; }
+  button:disabled { opacity: .4; }
+  select { flex: 1; min-width: 200px; max-width: 100%; }
+  [data-stage-link] { display: block; }
+  img { width: 100%; height: auto; }
+  .asset-links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .help { font-size: 14px; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #2470bb; outline-offset: 3px; }
+</style>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-flash-steps]').forEach((root) => {
+    const select = root.querySelector<HTMLSelectElement>('[data-steps]')!;
+    const prev = root.querySelector<HTMLButtonElement>('[data-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
+    const image = root.querySelector<HTMLImageElement>('[data-stage]')!;
+    function show(n: number) {
+      select.selectedIndex = Math.max(0, Math.min(select.options.length - 1, n));
+      const option = select.selectedOptions[0];
+      const path = root.dataset.base + option.value;
+      image.src = path + '.svg';
+      image.alt = option.dataset.alt!;
+      root.querySelector<HTMLAnchorElement>('[data-stage-link]')!.href = path + '.svg';
+      root.querySelector<HTMLAnchorElement>('[data-svg]')!.href = path + '.svg';
+      root.querySelector<HTMLAnchorElement>('[data-png]')!.href = path + '.png';
+      prev.disabled = select.selectedIndex === 0;
+      next.disabled = select.selectedIndex === select.options.length - 1;
+    }
+    prev.addEventListener('click', () => show(select.selectedIndex - 1));
+    next.addEventListener('click', () => show(select.selectedIndex + 1));
+    select.addEventListener('change', () => show(select.selectedIndex));
+    root.querySelector('[data-reset]')!.addEventListener('click', () => show(0));
+  });
+</script>
