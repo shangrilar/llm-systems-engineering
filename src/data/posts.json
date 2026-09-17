@@ -402,14 +402,46 @@
         ],
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a9b8f46ae20e6d9fb2b779b16bce1e049425164a8136f34d8d4dcf704bf086d4",
-        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels."
+        "sourceRevision": "e5ad48e8a8ec40e2d33d73dbc5a2c3863bc38040bfa6e54ecf7b123772316773",
+        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "cpu-gpu-work-execution",
+    "order": 14,
+    "track": "공통",
+    "date": "2026-09-17",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "cpu-gpu-work-execution",
+        "title": "CPU와 GPU가 함께 작업을 실행하는 방법",
+        "description": "CPU의 작업 요청과 GPU의 실행을 구별하고, 버퍼·스트림·이벤트를 통해 데이터 준비와 완료 대기, 작업 사이의 실행 순서를 설명합니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "cpu-gpu-work-execution",
+        "title": "How the CPU and GPU Execute Work Together",
+        "description": "Distinguish CPU requests from GPU execution, then use buffers, streams, and events to explain data preparation, completion waits, and execution order.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "sourceRevision": "a66f25291a3abe26f77ddbf8badd89b9b9d62b8df7ca125f8112f22a4847ace8",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-09-17: Compared all six sections, paragraph order, emphasis, the x/u/y array example, two illustrative code blocks and their comments, the stream-order sketch, source links and four image alt texts against the approved Korean manuscript. Both languages preserve the distinction between submission and completion, allocation and copying, CPU waits and GPU dependencies, and conditional concurrency. CUDA syntax is not assumed. All four figure pairs retain shared geometry and colors with selected English font sizes; static SVG/PNG assets are reviewed separately from the body revision."
       }
     }
   },
   {
     "articleId": "gpu-arithmetic-intensity-and-fusion",
-    "order": 14,
+    "order": 15,
     "track": "공통",
     "date": "2026-09-12",
     "figureIds": [],
@@ -434,14 +466,14 @@
         ],
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a6453379f76779d94a165bb76c5e4018877124c332ebb1d1fc45b261a1c56a91",
-        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision."
+        "sourceRevision": "80b0ce3cf3761f1da7f3a0ec7cfabb45533901afc6dc0acd98e30ad25d9a7dbb",
+        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
       }
     }
   },
   {
     "articleId": "matmul-tiling-and-data-reuse",
-    "order": 15,
+    "order": 16,
     "track": "공통",
     "date": "2026-09-12",
     "figureIds": [],
@@ -473,7 +505,7 @@
   },
   {
     "articleId": "attention-memory-and-softmax",
-    "order": 16,
+    "order": 17,
     "track": "공통",
     "date": "2026-09-12",
     "figureIds": [],
@@ -505,7 +537,7 @@
   },
   {
     "articleId": "online-softmax",
-    "order": 17,
+    "order": 18,
     "track": "공통",
     "date": "2026-09-13",
     "figureIds": [],
@@ -537,7 +569,7 @@
   },
   {
     "articleId": "flash-attention",
-    "order": 18,
+    "order": 19,
     "track": "공통",
     "date": "2026-09-14",
     "figureIds": [],
@@ -569,7 +601,7 @@
   },
   {
     "articleId": "model-performance-and-bottlenecks",
-    "order": 19,
+    "order": 20,
     "track": "공통",
     "date": "2026-09-14",
     "figureIds": [],
@@ -595,13 +627,13 @@
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "53dde7d6931960a9724ab3bf0acf1117e2c892b9fd1e244fe796795de8241c1e",
-        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation."
+        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged."
       }
     }
   },
   {
     "articleId": "multi-gpu-execution",
-    "order": 20,
+    "order": 21,
     "track": "공통",
     "date": "2026-09-14",
     "figureIds": [],
@@ -627,7 +659,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "ea9131277dd1be69a9185a0d06886ad34f0c754f8d211db33c7f6bb56afc0f89",
-        "reviewNote": "2026-09-14: Compared all 4 sections, 5 subsections, 27 paragraphs, 15 emphasized passages, 2 inline expressions, source links, alt text and 3 figure pairs with the Korean manuscript. Both versions preserve capacity, latency and throughput goals; separate GPU memories; concatenation versus partial sums; communication volume and frequency; and the 100ms, 60ms and 80ms timelines. The introduction highlights communication and waiting alongside local memory traffic and computation. The uneven split connects synchronization to possible waiting without adding the overlapping 40ms twice. All six PNGs visually reviewed. Twelve static SVG/PNG assets match source bytes and were checked separately from the body revision; all three pairs preserve geometry and colors."
+        "reviewNote": "2026-09-14: Compared all 4 sections, 5 subsections, 27 paragraphs, 15 emphasized passages, 2 inline expressions, source links, alt text and 3 figure pairs with the Korean manuscript. Both versions preserve capacity, latency and throughput goals; separate GPU memories; concatenation versus partial sums; communication volume and frequency; and the 100ms, 60ms and 80ms timelines. The introduction highlights communication and waiting alongside local memory traffic and computation. The uneven split connects synchronization to possible waiting without adding the overlapping 40ms twice. All six PNGs visually reviewed. Twelve static SVG/PNG assets match source bytes and were checked separately from the body revision; all three pairs preserve geometry and colors. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged."
       }
     }
   }
