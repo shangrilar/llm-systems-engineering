@@ -1,0 +1,84 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: gpu-network-data-path
+title: "GPU Communication Across Servers and the CPU's Role"
+description: "Explore transfer paths that reduce intermediate copies through CPU memory and the CPU role in helping network communication progress."
+track: 공통
+date: 2026-09-17
+---
+
+In [SMs and Copy Engines in GPU Communication](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-engines/), we explored assigning data movement to suitable hardware to reduce resource contention with computation. This time, we will examine the path data takes when the GPUs are in different servers.
+
+**Reducing copies through intermediate memory** is another important direction for improving communication. We will first follow a path that copies GPU data into CPU memory before sending it over the network. We will then explain how a network device can access GPU memory directly to reduce intermediate copies. Finally, we will distinguish this from the CPU's role in requesting transfers and checking progress, which can remain even when the data does not pass through CPU memory.
+
+## Sending Data Outside the Server Through CPU Memory
+
+GPUs within a server need a connection to exchange data. Sending data to another server also requires a connection beyond the server itself. Here, we will examine two servers connected by a network.
+
+The hardware that sends and receives network data in each server is called a **NIC** (Network Interface Card). A NIC reads outgoing data from memory and sends it onto the network, and writes incoming data into memory.
+
+Our example is computation A on GPU 0 producing `x = [1, 2, 3, 4]`, followed by computation B on GPU 1 doubling the received values. This time, GPU 0 is in server 0 and GPU 1 is in server 1. The x needed by B must travel between the servers.
+
+We will first look at a **path that uses CPU memory as an intermediate buffer**. CPU memory is the server's system memory. An intermediate buffer temporarily holds data before it reaches its final destination. On the sending server, x is copied from the GPU into this space, then read and sent by the NIC. On the receiving server, the NIC writes the incoming data into CPU memory, after which it is copied into GPU memory.
+
+**PCIe** (PCI Express), labeled in the figure, is a standard for connecting devices such as GPUs and NICs to a computer system. It is used for data movement between devices and memory within the server. The network between servers is a separate segment connecting the two NICs.
+
+[![On server 0, x produced by A on GPU 0 is copied into an intermediate buffer in CPU memory, which the NIC reads and sends over the network. On server 1, the NIC writes the received x into CPU memory, then it is copied into GPU 1 memory. B runs after the receive completes.](/images/gpu-network-data-path/en/01-host-memory-staging.png)](/images/gpu-network-data-path/en/01-host-memory-staging.png)
+
+Following the blue arrows in Figure 1 takes us from the sending GPU's memory through CPU memory, the sending NIC, the network, the receiving NIC, and CPU memory to the receiving GPU's memory. B runs once the values are available for use on the receiving GPU.
+
+Using CPU memory here **does not mean a CPU thread directly reads and copies each element of x**. A copy engine can handle copies between GPU and CPU memory, and the NIC also has the ability to read and write memory. The location holding the data and the device performing the data movement must be distinguished.
+
+Alongside the network transfer, this path requires moving data from the sending GPU into CPU memory and from the receiving CPU memory into the GPU. Copies and transfers may overlap by dividing the data into portions, but the reads and writes of intermediate memory still remain. Reducing these intermediate copies leaves room to reduce the memory bandwidth consumed and the copying work performed.
+
+## Reducing Intermediate Copies with GPUDirect RDMA
+
+Let us first look at the technology that lets NICs transfer data between memory regions across servers. **RDMA** stands for Remote Direct Memory Access. Network devices transfer data between prepared memory regions, reducing the burden of having the CPU copy data directly. Preparing the memory and communication connections and requesting the transfer are still necessary. [RDMA fundamentals](https://docs.nvidia.com/doca/archive/doca-v2.2.0/rdma-programming-guide/index.html)
+
+The memory used for RDMA is not necessarily GPU memory. RDMA can also operate between regions of CPU memory. To avoid first copying GPU data into CPU memory, the NIC must also be able to access GPU memory.
+
+NVIDIA's technology for enabling this access is **GPUDirect RDMA**. In supported environments, a NIC can read outgoing data from GPU memory or write incoming network data into GPU memory. A NIC is a physical device; GPUDirect RDMA is the technology that enables this access. It does not add another box that moves data. [How GPUDirect RDMA works and its support conditions](https://docs.nvidia.com/cuda/gpudirect-rdma/index.html)
+
+Figure 2 keeps GPU memory, NICs, and the network in the same positions as the preceding figure. Let us see what changes in the part that previously passed through intermediate CPU-memory buffers.
+
+[![With GPUDirect RDMA support, the sending NIC reads x directly from GPU 0 memory and sends it over the network. The receiving NIC writes x directly into GPU 1 memory. The intermediate CPU-memory buffers and the copies to and from them in the preceding figure are removed.](/images/gpu-network-data-path/en/02-direct-gpu-memory.png)](/images/gpu-network-data-path/en/02-direct-gpu-memory.png)
+
+On the sending side, the NIC reads x from GPU memory through PCIe and sends it onto the network. On the receiving side, the NIC writes the received values into GPU memory. **The copies using CPU memory as an intermediate location are removed.** The transfer through NICs and the network is still necessary.
+
+This direct access requires compatible GPUs and NICs, device connectivity, drivers, and communication-library support. The memory regions to be used must also be prepared for NIC access. Simply having a GPU and NIC installed in the same server does not make every buffer accessible this way.
+
+Direct transfers preserve the required order between computations. A must prepare x before its values are sent, and B must run after x is available for use on the receiving GPU. The principles connecting this order are the same as those in [Transferring Data Between GPUs](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-basics/).
+
+Even after reducing intermediate copies, **someone still has to request which data to send and when, and check whether the transfer has finished**. Being able to access GPU memory does not mean the NIC independently decides which data to send or when to send it. Someone must check that the data is ready and ask the NIC to “send this much data from this location.” Next, we will look at who handles these tasks along the same direct-transfer path.
+
+## A CPU Proxy That Helps Communication Progress
+
+A **CPU thread** is one execution flow running a program's code on the CPU. Multiple CPU threads within a process can divide different tasks among themselves.
+
+For some network communication paths, **NCCL creates a separate CPU thread to handle transfer progress**. The thread running user-written code requests computation and communication, while the thread created by NCCL checks data readiness, requests transfers from the NIC, and checks completion. It is called a “helper thread” because it helps communication proceed. A helper thread is an ordinary thread executing code on the CPU, not a separate kind of hardware. NCCL's [thread creation code](https://github.com/NVIDIA/nccl/blob/v2.28.7-1/src/proxy.cc#L963-L969) shows the library creating this execution flow.
+
+The role this thread performs is called a **CPU proxy**. “CPU” identifies where the role runs, and “proxy” means performing the necessary processing on behalf of another operation. Here, it **requests transfers from the NIC and checks completion on behalf of GPU communication work**. “Thread” describes how the code executes; “proxy” describes the role that thread performs.
+
+The thread created by NCCL monitors NIC progress rather than requiring the thread running user code to keep checking it. The user can therefore submit communication and continue with subsequent CPU work. The device that actually reads x from GPU memory and sends it over the network is the NIC.
+
+Figure 3 shows GPUDirect RDMA used together with a CPU proxy. The blue data path is the same as in the preceding figure. We have added the CPU thread that requests and checks transfers on the sending side, along with orange dashed arrows. “GPU progress state” represents readiness and progress information exchanged separately from the element values of x.
+
+[![Blue solid arrows represent actual data movement between GPU memory, NICs, and the network. Orange dashed arrows show the sending-side CPU proxy checking GPU-side data readiness, requesting a transfer from the NIC, and checking completion to update the GPU-side progress state.](/images/gpu-network-data-path/en/03-cpu-proxy.png)](/images/gpu-network-data-path/en/03-cpu-proxy.png)
+
+Follow the numbers on the orange dashed arrows in this order:
+
+1. **Check data readiness.** The CPU proxy checks progress information shared with the GPU-side communication work to determine whether the outgoing data is ready. It does not inspect each element of x on the CPU.
+2. **Request a transfer.** Using information such as the prepared buffer and its size, the proxy requests a transfer from the NIC. The NIC performs the actual reads of x from memory and sends it onto the network.
+3. **Check completion and update state.** The proxy checks completion of the transfer request and updates state so that GPU-side communication work can track progress.
+
+NCCL's [network transfer implementation](https://github.com/NVIDIA/nccl/blob/v2.28.7-1/src/transport/net.cc) also shows the relationship between checking data readiness, requesting transfers, checking completion, and updating state. In practice, large data may be divided into chunks and this process repeated across them. The figure focuses on the sending side; the receiving side also needs completion handling so that the GPU can safely use the received data.
+
+Checking transfer completion here does not mean that computation B on the peer GPU has also finished. B is a separate operation that executes after the receive has completed and x is available for use. The CPU call, communication completion, and completion of subsequent computation must each be distinguished.
+
+In this arrangement, **while the CPU proxy requests and checks transfers, the actual data moves directly between GPU memory and the NIC**. CPU participation in control and the use of CPU memory as an intermediate data buffer are different things.
+
+A CPU proxy is not required by every network communication path. Supported environments also provide ways for the GPU to request transfers directly from the NIC. NCCL's [description of device-initiated communication](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/deviceapi.html) distinguishes GPU control of the NIC from approaches using a CPU proxy. This is another direction for reducing the overhead of involving the CPU in transfer control.
+
+The improvements explored in these two articles apply to different parts of communication. Assigning copies to a copy engine can reduce the copying work performed by SMs, while direct data exchange between GPU memory and a NIC can reduce intermediate copies through CPU memory. Who handles transfer requests is a separate choice again. When examining actual communication, distinguishing **the device that moves data, the path the data travels, and who controls the transfer** makes their roles easier to connect.
+
+We have now followed how a transfer between GPUs takes place. Next, we will examine how communication operations express collecting or distributing data and sending the same values to multiple destinations by organizing such transfers across several GPUs.
