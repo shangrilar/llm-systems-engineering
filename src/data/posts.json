@@ -2,7 +2,8 @@
   {
     "articleId": "llm-systems-engineering-introduction",
     "order": 1,
-    "track": "공통",
+    "track": "shared",
+    "category": null,
     "date": "2026-09-08",
     "figureIds": [],
     "locales": {
@@ -26,7 +27,8 @@
   {
     "articleId": "embedding-to-lm-head",
     "order": 2,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-09",
     "figureIds": [],
     "locales": {
@@ -34,21 +36,13 @@
         "slug": "embedding-to-lm-head",
         "title": "LLM의 전체 구조: 임베딩 층에서 LM Head까지",
         "description": "텍스트가 토큰 ID와 벡터를 거쳐 어휘별 점수로 바뀌는 흐름과 임베딩 층, 디코더 블록, LM Head의 역할을 살펴봅니다.",
-        "published": true,
-        "readmePath": [
-          "공통",
-          "모델"
-        ]
+        "published": true
       },
       "en": {
         "slug": "embedding-to-lm-head",
         "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
         "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
         "published": true,
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "sourceRevision": "13f934401570aff874f35212651c6709fefb84d80502338155890d96d65e51b7",
         "translationStatus": "reviewed",
         "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values."
@@ -58,7 +52,8 @@
   {
     "articleId": "residual-and-rmsnorm",
     "order": 3,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-09",
     "figureIds": [],
     "locales": {
@@ -66,21 +61,13 @@
         "slug": "residual-and-rmsnorm",
         "title": "디코더 블록의 기본 흐름: Residual과 RMSNorm",
         "description": "Residual stream을 중심으로 디코더 블록의 구조를 살펴보고, d차원 벡터의 덧셈과 RMSNorm의 계산을 설명합니다.",
-        "published": true,
-        "readmePath": [
-          "공통",
-          "모델"
-        ]
+        "published": true
       },
       "en": {
         "slug": "residual-and-rmsnorm",
         "title": "The Flow Through a Decoder Block: Residual Connections and RMSNorm",
         "description": "Explore a decoder block around its residual stream, then follow vector addition and RMSNorm across each token’s d components.",
         "published": true,
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "sourceRevision": "02ab2806526191bd8e8cec365ba8992522c36b40a2af55af555dd273c7059940",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples."
@@ -90,7 +77,8 @@
   {
     "articleId": "attention-and-mlp",
     "order": 4,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-09",
     "figureIds": [],
     "locales": {
@@ -98,21 +86,13 @@
         "slug": "attention-and-mlp",
         "title": "Attention과 MLP: 토큰 사이의 정보와 토큰 내부의 변환",
         "description": "Attention과 MLP의 역할을 비교하고, 행렬 곱부터 기본 MLP와 Gated MLP의 내부 계산까지 살펴봅니다.",
-        "published": true,
-        "readmePath": [
-          "공통",
-          "모델"
-        ]
+        "published": true
       },
       "en": {
         "slug": "attention-and-mlp",
         "title": "Attention and MLP: Information Across Tokens and Transformations Within a Token",
         "description": "Compare Attention and MLP, then explore matrix multiplication and the computations inside basic and gated MLPs.",
         "published": true,
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "translationStatus": "reviewed",
         "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1.",
         "sourceRevision": "68a848973732657619e166c9431edb1aaf5e88ccfbf4f5d695d5cf8985f2034a"
@@ -122,7 +102,8 @@
   {
     "articleId": "attention-projections",
     "order": 5,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-09",
     "figureIds": [],
     "locales": {
@@ -130,20 +111,12 @@
         "slug": "attention-projections",
         "title": "Attention의 projection: Q·K·V와 멀티 헤드",
         "description": "Q·K·V projection과 멀티 헤드의 구성을 살펴보고, 출력 projection이 같은 토큰의 여러 head 결과를 조합하는 과정을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "모델"
-        ],
         "published": true
       },
       "en": {
         "slug": "attention-projections",
         "title": "Attention Projections: Q, K, V and Multiple Heads",
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "09828dbd7128e18d922ce8e0df9bffaa8b12920a50918c265aeb332b8a2c31f4",
@@ -154,7 +127,8 @@
   {
     "articleId": "core-attention",
     "order": 6,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-09",
     "figureIds": [],
     "locales": {
@@ -162,20 +136,12 @@
         "slug": "core-attention",
         "title": "Core Attention: 토큰 사이의 정보 조합하기",
         "description": "Head별 Core Attention의 흐름을 따라 QKᵀ, 스케일링, Causal mask, Softmax, Value 가중합을 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "모델"
-        ],
         "published": true
       },
       "en": {
         "slug": "core-attention",
         "title": "Core Attention: Combining Information Across Tokens",
         "description": "Follow Core Attention within each head through QKᵀ, scaling, a causal mask, Softmax, and a weighted sum of Value vectors.",
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "a79dd82e7ca1b6357bdf83af8960878d09e7430a91244ad4bfb19cd5de6102e2",
@@ -186,7 +152,8 @@
   {
     "articleId": "rope",
     "order": 7,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-10",
     "figureIds": [],
     "locales": {
@@ -194,20 +161,12 @@
         "slug": "rope",
         "title": "RoPE: 토큰 위치를 Attention에 반영하기",
         "description": "Q와 K의 성분을 토큰 위치에 따라 회전하는 방법과, 상대 위치가 Attention 점수에 반영되는 과정을 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "모델"
-        ],
         "published": true
       },
       "en": {
         "slug": "rope",
         "title": "RoPE: Incorporating Token Positions into Attention",
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "953b5c665dc4c3bd6307ad40920c0307e375883f38bcaf908f9007c3297904d3",
@@ -218,7 +177,8 @@
   {
     "articleId": "moe",
     "order": 8,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-10",
     "figureIds": [],
     "locales": {
@@ -226,20 +186,12 @@
         "slug": "moe",
         "title": "MoE: 토큰마다 사용할 MLP 선택하기",
         "description": "Dense MLP와 MoE를 비교하고, Router의 선택과 가중치 계산부터 Dispatch, Expert 계산, Combine, Shared expert까지 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "모델"
-        ],
         "published": true
       },
       "en": {
         "slug": "moe",
         "title": "MoE: Choosing Which MLPs to Use for Each Token",
         "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "published": true,
         "sourceRevision": "b87efab8b3c84c8d04ad189d65bb6955349ee184a13e8de802f497407f248e50",
         "translationStatus": "reviewed",
@@ -250,7 +202,8 @@
   {
     "articleId": "model-summary",
     "order": 9,
-    "track": "공통",
+    "track": "shared",
+    "category": "model",
     "date": "2026-09-10",
     "figureIds": [],
     "locales": {
@@ -258,31 +211,24 @@
         "slug": "model-summary",
         "title": "모델 전체 흐름 다시 보기",
         "description": "Embedding부터 LM Head까지 구성 요소를 연결하고, Attention과 MLP·MoE의 역할과 토큰 사이의 정보가 합쳐지는 위치를 정리합니다.",
-        "readmePath": [
-          "공통",
-          "모델"
-        ],
         "published": true
       },
       "en": {
         "slug": "model-summary",
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
-        "readmePath": [
-          "Shared Concepts",
-          "Models"
-        ],
         "published": true,
-        "sourceRevision": "bf7518c438ede54b639422cb71d953095cc72e791f6a22e70b705d42a2809150",
+        "sourceRevision": "58f01751db0a6941297478f1e7acfd8266a30b0438a0d4ba727a38c300f2b0df",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately."
+        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
       }
     }
   },
   {
     "articleId": "cpu-and-gpu",
     "order": 10,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-10",
     "figureIds": [],
     "locales": {
@@ -290,20 +236,12 @@
         "slug": "cpu-and-gpu",
         "title": "CPU와 GPU: 모델의 계산을 실행하는 두 장치",
         "description": "GPU를 사용하는 이유와 CPU·GPU의 구조 차이를 살펴보고, Host·Device의 실행 흐름과 데이터 공급의 중요성을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "cpu-and-gpu",
         "title": "CPU and GPU: Two Devices That Execute Model Computation",
         "description": "Explore why GPUs are used, how CPU and GPU designs differ, how host and device work together, and why compute units need a supply of data.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "sourceRevision": "5fae6d32a85fe1dfedc43b40f47441df92138ab46bd0bb080cb078af74c57dd7",
         "translationStatus": "reviewed",
@@ -314,7 +252,8 @@
   {
     "articleId": "gpu-architecture",
     "order": 11,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-10",
     "figureIds": [],
     "locales": {
@@ -322,20 +261,12 @@
         "slug": "gpu-architecture",
         "title": "GPU 구조: 연산 장치와 메모리",
         "description": "SM과 CUDA Core·Tensor Core, GPU 메모리의 구성을 살펴보고, 용량·대역폭·접근 지연을 모델 실행의 문제와 연결합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-architecture",
         "title": "GPU Architecture: Compute Units and Memory",
         "description": "Explore SMs, CUDA Cores, Tensor Cores, and GPU memory, then connect capacity, bandwidth, and access latency to running a model.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision.",
@@ -346,7 +277,8 @@
   {
     "articleId": "model-operation-parallelism",
     "order": 12,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-11",
     "figureIds": [],
     "locales": {
@@ -354,20 +286,12 @@
         "slug": "model-operation-parallelism",
         "title": "모델 연산의 병렬성: 원소별 연산, Reduction, 행렬 곱",
         "description": "원소별 연산, reduction, 행렬 곱을 출력 요소의 독립성과 결과 하나에 필요한 입력·계산의 관점에서 비교합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "model-operation-parallelism",
         "title": "Parallelism in Model Operations: Element-wise Operations, Reductions, and Matrix Multiplication",
         "description": "Compare element-wise operations, reductions, and matrix multiplication through independent output elements and the inputs and computation needed for each result.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "3d43cd04de5398e3cfbee0834c7ce334a907f5dad6ebc37ba38579297f49d9e5",
@@ -378,7 +302,8 @@
   {
     "articleId": "gpu-execution-and-warp-scheduling",
     "order": 13,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-11",
     "figureIds": [],
     "locales": {
@@ -386,20 +311,12 @@
         "slug": "gpu-execution-and-warp-scheduling",
         "title": "GPU의 병렬 실행: 스레드에서 워프 스케줄링까지",
         "description": "공통 계산 절차와 인덱스별 실행에서 출발해 스레드·블록·그리드, SM 배정, 워프 스케줄링과 지연 숨기기를 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-execution-and-warp-scheduling",
         "title": "Parallel Execution on GPUs: From Threads to Warp Scheduling",
         "description": "Start with a common computation procedure and indexed executions, then explore threads, blocks, grids, SM assignment, warp scheduling, and latency hiding.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "e5ad48e8a8ec40e2d33d73dbc5a2c3863bc38040bfa6e54ecf7b123772316773",
@@ -410,7 +327,8 @@
   {
     "articleId": "cpu-gpu-work-execution",
     "order": 14,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-17",
     "figureIds": [],
     "locales": {
@@ -418,20 +336,12 @@
         "slug": "cpu-gpu-work-execution",
         "title": "CPU와 GPU가 함께 작업을 실행하는 방법",
         "description": "CPU의 작업 요청과 GPU의 실행을 구별하고, 버퍼·스트림·이벤트를 통해 데이터 준비와 완료 대기, 작업 사이의 실행 순서를 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "cpu-gpu-work-execution",
         "title": "How the CPU and GPU Execute Work Together",
         "description": "Distinguish CPU requests from GPU execution, then use buffers, streams, and events to explain data preparation, completion waits, and execution order.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "sourceRevision": "a66f25291a3abe26f77ddbf8badd89b9b9d62b8df7ca125f8112f22a4847ace8",
         "translationStatus": "reviewed",
@@ -442,7 +352,8 @@
   {
     "articleId": "gpu-arithmetic-intensity-and-fusion",
     "order": 15,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-12",
     "figureIds": [],
     "locales": {
@@ -450,20 +361,12 @@
         "slug": "gpu-arithmetic-intensity-and-fusion",
         "title": "GPU 최적화의 출발점: 산술 강도와 데이터 이동",
         "description": "메모리와 연산의 병목을 산술 강도와 Roofline으로 연결하고, 데이터 이동 감소·동시 진행과 원소별 연산 fusion의 원리를 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-arithmetic-intensity-and-fusion",
         "title": "Starting GPU Optimization: Arithmetic Intensity and Data Movement",
         "description": "Connect memory and compute bottlenecks through arithmetic intensity and Roofline, then explore reduced data movement, concurrent progress, and element-wise kernel fusion.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "80b0ce3cf3761f1da7f3a0ec7cfabb45533901afc6dc0acd98e30ad25d9a7dbb",
@@ -474,7 +377,8 @@
   {
     "articleId": "matmul-tiling-and-data-reuse",
     "order": 16,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-12",
     "figureIds": [],
     "locales": {
@@ -482,20 +386,12 @@
         "slug": "matmul-tiling-and-data-reuse",
         "title": "행렬 곱 최적화: 입력 재사용과 타일링",
         "description": "공유 메모리와 레지스터에서 입력을 재사용하는 방법, 타일 크기와 자원 사용량의 관계, 데이터 이동과 계산을 동시에 진행하는 원리를 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "matmul-tiling-and-data-reuse",
         "title": "Optimizing Matrix Multiplication: Input Reuse and Tiling",
         "description": "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision.",
@@ -506,7 +402,8 @@
   {
     "articleId": "attention-memory-and-softmax",
     "order": 17,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-12",
     "figureIds": [],
     "locales": {
@@ -514,20 +411,12 @@
         "slug": "attention-memory-and-softmax",
         "title": "Attention 최적화가 어려운 이유",
         "description": "큰 점수·확률 행렬의 저장과 재읽기 비용을 살펴보고, 일부 점수만으로 Softmax의 최종 확률을 정할 수 없는 이유를 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "attention-memory-and-softmax",
         "title": "Why Attention Is Difficult to Optimize",
         "description": "Examine the cost of storing and rereading large score and probability matrices, and why a subset of scores cannot determine final Softmax probabilities.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision.",
@@ -538,7 +427,8 @@
   {
     "articleId": "online-softmax",
     "order": 18,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-13",
     "figureIds": [],
     "locales": {
@@ -546,20 +436,12 @@
         "slug": "online-softmax",
         "title": "점수를 나누어 처리하는 온라인 소프트맥스",
         "description": "수치 안정성을 위한 최댓값 처리와 지수합의 역할을 살펴보고, 새 점수 묶음에 따라 두 값을 유지·보정·갱신하는 온라인 소프트맥스의 원리를 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "online-softmax",
         "title": "Processing Scores in Chunks with Online Softmax",
         "description": "Explore why stable softmax subtracts the maximum, how the maximum and exponential sum work together, and how online softmax updates them with each new chunk of scores.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "e0189766beb9bfa83fd781e3386720a534031c48b965d94cf7aaa6f4dea99a20",
@@ -570,7 +452,8 @@
   {
     "articleId": "flash-attention",
     "order": 19,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-14",
     "figureIds": [],
     "locales": {
@@ -578,20 +461,12 @@
         "slug": "flash-attention",
         "title": "출력을 누적해 메모리 이동을 줄이는 FlashAttention",
         "description": "Value 가중합과 지수합을 함께 누적하는 원리를 살펴보고, FlashAttention-2의 타일 순회로 출력을 완성하며 큰 중간 행렬의 메모리 이동을 줄이는 과정을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "flash-attention",
         "title": "Reducing Memory Traffic with Output Accumulation in FlashAttention",
         "description": "Explore joint accumulation of the Value weighted sum and exponential sum, then follow FlashAttention-2 tiles to complete the output and reduce memory traffic from large intermediate matrices.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "09365bfd5f6be2e199a1d3331b9fde3b2d9a5afa26bbf5b5aed858e6279b784c",
@@ -602,7 +477,8 @@
   {
     "articleId": "model-performance-and-bottlenecks",
     "order": 20,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-14",
     "figureIds": [],
     "locales": {
@@ -610,20 +486,12 @@
         "slug": "model-performance-and-bottlenecks",
         "title": "연산 최적화에서 모델 전체 성능으로",
         "description": "한 연산의 개선이 모델 전체 시간에 미치는 영향을 살펴보고, 병목을 다시 측정하며 최적화를 반복하는 과정과 성능 목표·메모리 용량에 따른 자원 확장을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "model-performance-and-bottlenecks",
         "title": "From Operation Optimization to Whole-Model Performance",
         "description": "Explore how improving one operation affects whole-model execution time, why optimization requires repeated bottleneck measurements, and when performance goals or memory capacity call for more resources.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "53dde7d6931960a9724ab3bf0acf1117e2c892b9fd1e244fe796795de8241c1e",
@@ -634,7 +502,8 @@
   {
     "articleId": "multi-gpu-execution",
     "order": 21,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-14",
     "figureIds": [],
     "locales": {
@@ -642,20 +511,12 @@
         "slug": "multi-gpu-execution",
         "title": "여러 GPU로 확장하기",
         "description": "여러 GPU의 연산 장치와 메모리를 살펴보고, 용량·응답 시간·처리량의 목표를 구분하며, 통신과 동기화에 따른 대기가 전체 실행 시간에 미치는 영향을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "multi-gpu-execution",
         "title": "Scaling Across Multiple GPUs",
         "description": "Explore compute and memory across GPUs, distinguish capacity, latency, and throughput goals, and examine how communication and synchronization-related waiting affect total execution time.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "b7748e3aec3ef7ef81d68d95be8d6bd6cd9b18281038ff356cd416a6d7a439ff",
@@ -666,7 +527,8 @@
   {
     "articleId": "gpu-communication-basics",
     "order": 22,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-17",
     "figureIds": [],
     "locales": {
@@ -674,31 +536,24 @@
         "slug": "gpu-communication-basics",
         "title": "GPU 사이에서 데이터를 전달하기",
         "description": "통신 참여자와 버퍼를 준비하고, CPU의 송수신 등록과 GPU 실행을 연결하며, 독립 계산의 동시 진행과 안전한 버퍼 재사용을 설명합니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-communication-basics",
         "title": "Transferring Data Between GPUs",
         "description": "Prepare communication participants and buffers, connect CPU send/receive submission to GPU execution, and explain overlapping independent computation and safe buffer reuse.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
-        "sourceRevision": "dc257493b5a92686511476bec5274e3bfc1a299635be0af6495e6bd1fbb03038",
+        "sourceRevision": "811b93fc0f792e7229f9ce3df11e58c2725a9aaecc273d034164b54bf98b7756",
         "translationStatus": "reviewed",
-        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title."
+        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
       }
     }
   },
   {
     "articleId": "gpu-communication-engines",
     "order": 23,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-17",
     "figureIds": [],
     "locales": {
@@ -706,20 +561,12 @@
         "slug": "gpu-communication-engines",
         "title": "GPU 통신을 수행하는 SM과 복사 엔진",
         "description": "통신을 수행하는 장치와 연결을 구별하고, 계산과의 자원 경쟁이 전체 완료 시간에 미치는 영향을 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-communication-engines",
         "title": "SMs and Copy Engines in GPU Communication",
         "description": "Distinguish the devices and connections used for GPU communication, and examine how resource contention with computation affects overall completion time.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "b684f02bbeebed69ea6ae9a65d9348bbd721f2bdafa3e3590d141afcf8bad70c",
@@ -730,7 +577,8 @@
   {
     "articleId": "gpu-network-data-path",
     "order": 24,
-    "track": "공통",
+    "track": "shared",
+    "category": "hardware",
     "date": "2026-09-17",
     "figureIds": [],
     "locales": {
@@ -738,20 +586,12 @@
         "slug": "gpu-network-data-path",
         "title": "서버 사이의 GPU 통신과 CPU의 역할",
         "description": "CPU 메모리의 중간 복사를 줄이는 전달 경로와, 전송의 진행을 돕는 CPU의 역할을 살펴봅니다.",
-        "readmePath": [
-          "공통",
-          "하드웨어"
-        ],
         "published": true
       },
       "en": {
         "slug": "gpu-network-data-path",
         "title": "GPU Communication Across Servers and the CPU's Role",
         "description": "Explore transfer paths that reduce intermediate copies through CPU memory and the CPU role in helping network communication progress.",
-        "readmePath": [
-          "Shared Concepts",
-          "Hardware"
-        ],
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "8d11ae1f926f6dd7afc605304d73f03eae52cd72ee7df80529a972cfdadf2667",

@@ -3,7 +3,6 @@ layout: ../../../layouts/Post.astro
 articleId: gpu-communication-basics
 title: "Transferring Data Between GPUs"
 description: "Prepare communication participants and buffers, connect CPU send/receive submission to GPU execution, and explain overlapping independent computation and safe buffer reuse."
-track: 공통
 date: 2026-09-17
 ---
 
@@ -13,7 +12,7 @@ This article follows **a value produced on one GPU as another GPU receives it an
 
 The example is simple. Computation A on GPU 0 produces `x = [1, 2, 3, 4]`. Computation B on GPU 1 doubles each element of the received x to obtain `y = [2, 4, 6, 8]`. In this article, A produces the values to transfer, and B uses them.
 
-Recall the execution model from [Article 5](https://llm-systems-engineering.pages.dev/en/posts/cpu-gpu-work-execution/). CPU code requests GPU work, and the GPU executes the submitted operations. Operations submitted to the same stream proceed in order, and **the CPU call finishes at a different point from the GPU operation**. We will now connect this execution flow across two GPUs.
+Recall the execution model from [How the CPU and GPU Execute Work Together](https://llm-systems-engineering.pages.dev/en/posts/cpu-gpu-work-execution/). CPU code requests GPU work, and the GPU executes the submitted operations. Operations submitted to the same stream proceed in order, and **the CPU call finishes at a different point from the GPU operation**. We will now connect this execution flow across two GPUs.
 
 ## Choosing the GPUs That Participate in Communication
 
@@ -101,7 +100,7 @@ B needs the received x, so it must wait for the receive. Now suppose GPU 1 also 
 
 If receive, C, and B are placed in one stream in that order, C also waits for the receive to finish. This time, we prepare two streams on GPU 1: a communication stream for the receive and a compute stream for C and B. The developer, framework, or library chooses which streams to create and where to submit each operation. Here, process 1 submits work to both streams on GPU 1. Creating two streams does not create two additional CPU processes.
 
-Even after separating the streams, we must preserve **the requirement that B execute after the receive completes**. We use the event mechanism introduced in Article 5. Process 1's CPU code first submits the recording of event E after the receive in the communication stream. It then submits C, a wait for event E to complete, and B in the compute stream, in that order.
+Even after separating the streams, we must preserve **the requirement that B execute after the receive completes**. We use the event mechanism introduced earlier. Process 1's CPU code first submits the recording of event E after the receive in the communication stream. It then submits C, a wait for event E to complete, and B in the compute stream, in that order.
 
 ```text
 GPU 1 communication stream: receive → record event E
@@ -132,6 +131,6 @@ The CPU does not have to wait on every reuse. Submitting “A → send → next 
 
 There are also times when the CPU needs to check completion. For example, before cleaning up buffers and communication resources after GPU work finishes, we must ensure the work using those resources has completed. One way for the CPU to wait for a particular stream to finish is `cudaStreamSynchronize`. Waiting on a stream with work submitted through B also confirms B's completion. [Waiting for CUDA stream completion](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__STREAM.html)
 
-If the CPU needs to read the actual values of y, one more step is required. Even after B finishes, y is still in GPU memory. As in Article 5, we must copy the result to CPU memory and ensure that copy completes. Waiting for completion and moving data are separate operations.
+If the CPU needs to read the actual values of y, one more step is required. Even after B finishes, y is still in GPU memory. As discussed earlier, we must copy the result to CPU memory and ensure that copy completes. Waiting for completion and moving data are separate operations.
 
 During repeated execution, we can keep the prepared communication group and buffers, reusing each buffer for the next operation after its last use finishes. This article connected CPU preparation and submission, send/receive and computation across two GPUs, and reuse after the last use. In [SMs and Copy Engines in GPU Communication](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-engines/), we will look beneath these communication calls at **which execution devices move the data and which connections it travels over**.

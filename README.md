@@ -18,9 +18,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 
 ## All articles
 
-- [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/)
-
 ### Shared Concepts
+
+- [LLM Systems Engineering: Connecting Models, Hardware, and Workloads](https://llm-systems-engineering.pages.dev/en/posts/llm-systems-engineering-introduction/)
 
 #### Models
 

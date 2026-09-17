@@ -3,11 +3,10 @@ layout: ../../layouts/Post.astro
 articleId: model-summary
 title: "모델 전체 흐름 다시 보기"
 description: "Embedding부터 LM Head까지 구성 요소를 연결하고, Attention과 MLP·MoE의 역할과 토큰 사이의 정보가 합쳐지는 위치를 정리합니다."
-track: 공통
 date: 2026-09-10
 ---
 
-모델 1편에서는 Embedding 층과 LM Head 사이에 디코더 블록을 놓고, 블록의 입력과 출력이 같은 d차원이라는 점을 살펴봤습니다. 이후에는 블록 안으로 들어가 Residual stream과 RMSNorm, Attention, MLP, RoPE, MoE를 차례로 살펴봤습니다. 이번 글에서는 **각각 살펴본 구성 요소를 연결해 모델 전체 흐름을 정리하겠습니다.** 벡터가 어떤 경로를 따라 변하고, 그중 어디에서 토큰 사이의 정보가 합쳐지는지 따라가 보겠습니다.
+[LLM의 전체 구조: 임베딩 층에서 LM Head까지](/posts/embedding-to-lm-head/)에서는 Embedding 층과 LM Head 사이에 디코더 블록을 놓고, 블록의 입력과 출력이 같은 d차원이라는 점을 살펴봤습니다. 이후에는 블록 안으로 들어가 Residual stream과 RMSNorm, Attention, MLP, RoPE, MoE를 차례로 살펴봤습니다. 이번 글에서는 **각각 살펴본 구성 요소를 연결해 모델 전체 흐름을 정리하겠습니다.** 벡터가 어떤 경로를 따라 변하고, 그중 어디에서 토큰 사이의 정보가 합쳐지는지 따라가 보겠습니다.
 
 ## 모델 전체에서 디코더 블록으로
 

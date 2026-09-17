@@ -1,3 +1,4 @@
+import { tracks, categories, type Track, type Category } from '../src/data/classification';
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
@@ -9,12 +10,12 @@ export type Translation = {
   sourceRevision?: string;
   translationStatus?: "draft" | "reviewed";
   reviewNote?: string;
-  readmePath?: string[];
 };
 export type Article = {
   articleId: string;
   order: number;
-  track: string;
+  track: Track;
+  category: Category | null;
   date: string;
   locales: { ko: Translation; en?: Translation };
   figureIds?: string[];
@@ -45,6 +46,9 @@ export function validateArticles(
     if (!/^[a-z0-9-]+$/.test(a.articleId) || ids.has(a.articleId))
       throw Error("Invalid article ID");
     ids.add(a.articleId);
+    if (!Object.hasOwn(tracks, a.track) ||
+        (a.category !== null && !Object.hasOwn(categories, a.category)))
+      throw Error("Invalid article classification: " + a.articleId);
     if (!Number.isFinite(a.order) || !a.locales.ko)
       throw Error("Invalid article metadata");
     for (const [locale, t] of Object.entries(a.locales)) {
@@ -121,6 +125,8 @@ export function validateContent() {
     );
     if (metadata.articleId !== a.articleId)
       throw Error("Frontmatter articleId mismatch");
+    if (metadata.track || metadata.category)
+      throw Error("Classification belongs in the catalog: " + a.articleId);
     const t = a.locales[locale as "ko" | "en"]!;
     for (const k of ["title", "description"] as const)
       if (metadata[k] && metadata[k] !== t[k])

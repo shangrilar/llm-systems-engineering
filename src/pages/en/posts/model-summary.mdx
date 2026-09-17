@@ -3,11 +3,10 @@ layout: ../../../layouts/Post.astro
 articleId: model-summary
 title: "Revisiting the Flow Through the Model"
 description: "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens."
-track: 공통
 date: 2026-09-10
 ---
 
-In the first article of the model series, we placed decoder blocks between the Embedding layer and the LM Head and saw that each block has d-dimensional inputs and outputs. We then went inside the block to explore the residual stream, RMSNorm, Attention, MLP, RoPE, and MoE. In this article, **we will connect these components to review the flow through the whole model.** We will follow how vectors change along the way and where information from different tokens is combined.
+In [The Structure of an LLM: From the Embedding Layer to the LM Head](/en/posts/embedding-to-lm-head/), we placed decoder blocks between the Embedding layer and the LM Head and saw that each block has d-dimensional inputs and outputs. We then went inside the block to explore the residual stream, RMSNorm, Attention, MLP, RoPE, and MoE. In this article, **we will connect these components to review the flow through the whole model.** We will follow how vectors change along the way and where information from different tokens is combined.
 
 ## From the whole model to a decoder block
 

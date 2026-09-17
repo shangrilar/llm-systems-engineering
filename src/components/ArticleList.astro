@@ -1,0 +1,30 @@
+---
+import type { Article } from '../../scripts/content';
+import type { Locale } from '../i18n/index';
+import { postUrl } from '../i18n/index';
+import { groupArticles, tracks, categories } from '../data/classification';
+interface Props { posts: Article[]; locale: Locale }
+const { posts, locale } = Astro.props;
+---
+{groupArticles(posts).map(group => <div class="article-track" data-track={group.track}>
+  <h3>{tracks[group.track][locale]}</h3>
+  {group.categories.map(section => <div class="article-category" data-category={section.category ?? 'overview'}>
+    {section.category && <h4>{categories[section.category][locale]}</h4>}
+    {section.articles.map(post => {
+      const article = post.locales[locale]!;
+      const Heading = section.category ? 'h5' : 'h4';
+      return <a class="post-link" href={postUrl(locale, article.slug)}>
+        <span class="eyebrow">{post.date}</span>
+        {!article.published && <span class="status">{locale === 'ko' ? '초안 · 미리보기' : 'Draft · Preview'}</span>}
+        <Heading class="post-title">{article.title} <span aria-hidden="true">↗</span></Heading>
+        <p>{article.description}</p>
+      </a>;
+    })}
+  </div>)}
+</div>)}
+<style>
+  .article-track > h3 { font-size: 26px; margin: 32px 0 24px; }
+  .article-category > h4 { font-size: 20px; color: var(--green); margin: 32px 0 16px; }
+  .post-title { font-size: 24px; line-height: 1.6; margin: 20px 0; letter-spacing: -.025em; }
+  .post-link:hover .post-title { color: var(--green); }
+</style>
