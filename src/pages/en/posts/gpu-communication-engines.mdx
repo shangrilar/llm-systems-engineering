@@ -1,0 +1,68 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: gpu-communication-engines
+title: "SMs and Copy Engines in GPU Communication"
+description: "Distinguish the devices and connections used for GPU communication, and examine how resource contention with computation affects overall completion time."
+track: 공통
+date: 2026-09-17
+---
+
+In [Transferring Data Between GPUs](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-basics/), we followed a value produced by one GPU and used in a computation on another. The CPU submitted work, and streams and communication completion connected the execution order. This time, we will look inside the part we previously grouped under “communication.”
+
+**Moving data also consumes GPU resources.** When computation and communication use the same resources, they can slow each other down. One direction for optimization is to assign suitable communication work to a separate device, leaving more resources available for computation.
+
+We will first briefly review how a CPU communication call leads to an actual transfer. We will then compare moving data using the GPU's compute units with using dedicated hardware for copying. Finally, we will examine how this difference affects not only communication time, but also the time to finish both communication and computation.
+
+## From a CPU Call to an Actual Data Transfer
+
+NCCL is a library for communication between GPUs. A program calls `ncclSend` on the CPU to request “send the values in this buffer to the peer,” and `ncclRecv` to request “receive values from the peer into this buffer.” A buffer is a region of memory that holds data. You do not need to understand the function syntax here: simply read these as **names for send and receive requests**.
+
+The NCCL code that receives these calls also runs on the CPU. NCCL checks the requests and builds the work to execute using information such as the peer, buffers, and available connections. It then submits the necessary work so that communication proceeds in the specified stream. A stream is a way to specify execution order between GPU operations.
+
+[![CPU processes 0 and 1 request a send and a receive from NCCL. NCCL checks the requests, builds the work, and submits it. Orange dashed arrows represent work submission; the blue solid arrow represents x being transferred from GPU 0 memory to GPU 1 memory.](/images/gpu-communication-engines/en/01-call-and-transfer.png)](/images/gpu-communication-engines/en/01-call-and-transfer.png)
+
+The top of Figure 1 shows code running on the CPU, while the bottom shows the submitted communication work transferring GPU data. The orange dashed arrows represent requests to execute work. The blue solid arrow represents the actual data movement. Requesting communication on the CPU does not mean bringing the values into CPU memory and sending them one by one.
+
+Submission and completion must also be distinguished. Even if the CPU call has returned and execution continues to the next line, GPU communication may not have finished. NCCL's [description of stream execution](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/streams.html) likewise distinguishes enqueueing an operation in a stream from completing the actual communication.
+
+Does this mean there is one communication kernel inside each NCCL function? It is better to understand the relationship as **preparing work on the CPU and arranging for GPU kernels or transfer hardware to perform it**. A kernel is a program executed by multiple threads on a GPU. Communication can use such a program, and supported operations can also use dedicated hardware. NCCL can [group multiple communication requests for execution](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/groups.html), so one function call does not always correspond to one kernel.
+
+Let us now compare two ways to perform the actual data transfer beneath these calls.
+
+## Moving Data with SMs and Copy Engines
+
+An **SM** (Streaming Multiprocessor) is a unit in a GPU that executes kernel threads. Threads running on an SM execute memory reads and writes as well as computation. In an environment that permits access to another GPU's memory, they can also run a program that reads values from their own GPU's memory and writes them to the peer's memory. In this article, we call a GPU program that performs such data transfer and the necessary progress checks a **communication kernel**.
+
+A communication kernel runs on SMs and shares their resources with computation. If other computation is ready to run concurrently, resources used for communication may leave fewer execution resources available for that computation. This is why moving data can affect compute time too.
+
+A GPU also has separate hardware for memory copies: a **copy engine**, or CE. When the source, destination, size, and other details of a supported copy are specified, this device moves the data. It can reduce the burden of having SM threads repeatedly execute copying instructions. Here, “engine” means a device inside the GPU, not a software function.
+
+Whichever device performs the copy, a connection to the peer GPU is still required. **NVLink** is a technology NVIDIA developed to provide high-bandwidth connections between GPUs and other supported devices. **PCIe** (PCI Express) is a widely used standard for connecting devices such as GPUs to a computer system. Bandwidth is the amount of data that can be transferred per unit time. Transfers between GPUs can use NVLink or PCIe depending on the configuration and support conditions. [CUDA memory transfers and access between GPUs](https://docs.nvidia.com/cuda/cuda-programming-guide/03-advanced/multi-gpu-systems.html#multi-device-peer-to-peer-transfers-and-memory-access)
+
+Figure 2 assumes two GPUs in the same server connected by NVLink. The operation being compared is copying the same data x from GPU 0 to GPU 1. GPU 0 also runs independent computation C alongside the communication. C is a separate computation that neither reads nor modifies the x being transferred.
+
+[![At the top, a communication kernel and computation C run on GPU 0's SMs. At the bottom, copy engine CE performs a supported copy while C runs on the SMs. The data being transferred and the NVLink connection are the same in both cases.](/images/gpu-communication-engines/en/02-sm-and-copy-engine.png)](/images/gpu-communication-engines/en/02-sm-and-copy-engine.png)
+
+At the top, the SM communication kernel reads GPU 0's memory and issues writes to GPU 1's memory through NVLink. C also runs on SMs, so communication and computation share SM resources. At the bottom, the copy engine performs the copy. Reducing the copying work performed on SMs leaves room to devote more resources to C. NVIDIA's [explanation of copy engines in NCCL](https://developer.nvidia.com/blog/fusing-communication-and-compute-with-new-device-api-and-copy-engine-collectives-in-nvidia-nccl-2-28/) also discusses this reduction in resource contention.
+
+When reading the figure, distinguish **the device performing the transfer from the connection the data travels over**. The execution device changes from SMs to CE, but the connection remains the same NVLink. CE does not create a new path for the data.
+
+Having a copy engine does not mean that it can handle every communication operation. NCCL's use of CE depends on the communication operation, buffer preparation, software version, and configuration. The figure compares how supported copies execute; it does not mean the `ncclSend` and `ncclRecv` calls shown earlier can always switch to CE. See [NCCL's documentation on communication optimization without SM use](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/bufferreg.html#zero-cta-optimization) for the specific conditions.
+
+## Finishing Communication and Computation Together
+
+If the same data travels over the same NVLink, will communication take the same time whether it uses SMs or CE? Link bandwidth is a shared constraint, but it does not determine communication time on its own. Preparing data, starting the operation, and waiting before sending the next data also take time. Even a fast connection cannot be fully used before the data and transfer requests are ready.
+
+If both methods make full use of the same link bandwidth and have little preparation or waiting overhead, their communication times may be similar. Their results when running alongside computation can still differ. **Finishing communication quickly and finishing both communication and computation quickly must be checked separately.**
+
+To isolate this difference, Figure 3 keeps communication time the same in both cases. The amount of data transferred and the work performed by C are also the same. What changes is how communication and C share SM resources.
+
+[![At the top, an SM communication kernel shares resources with C, delaying its completion. At the bottom, CE performs the copy, reducing SM contention so C can finish earlier. Communication time is the same in both cases; overall completion is when both communication and C have finished.](/images/gpu-communication-engines/en/03-communication-and-compute.png)](/images/gpu-communication-engines/en/03-communication-and-compute.png)
+
+At the top, the communication kernel and C share SM resources, slowing computation. At the bottom, CE performs the copy, leaving more SM resources available to C so it finishes earlier. Communication alone completes at the same time, but the time to finish both operations is reduced. Here, “overall completion” means that both the communication and C shown in the figure have finished.
+
+This figure illustrates a case in which **SM resource contention slows computation**. CE also reads and writes GPU memory and uses the connection between GPUs. Reducing SM contention therefore does not eliminate contention for memory and link bandwidth. If C is more strongly limited by how quickly it can fetch input from memory, the improvement in overall time from using CE may be small.
+
+In a real execution, we must examine the resources communication uses alongside where computation waits. The effective improvement depends on whether SM contention is high or memory or inter-GPU links have reached their limits. The final criterion is whether all the required work finishes earlier.
+
+This article explored assigning data movement to suitable hardware to reduce resource contention with computation. Another direction is to reduce copies through intermediate memory. In [GPU Communication Across Servers and the CPU's Role](https://llm-systems-engineering.pages.dev/en/posts/gpu-network-data-path/), we will examine the path taken by data sent to another server and the CPU's role even after intermediate copies are reduced.

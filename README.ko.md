@@ -48,3 +48,5 @@
 - [연산 최적화에서 모델 전체 성능으로](https://llm-systems-engineering.pages.dev/posts/model-performance-and-bottlenecks/)
 - [여러 GPU로 확장하기](https://llm-systems-engineering.pages.dev/posts/multi-gpu-execution/)
 - [GPU 사이에서 데이터를 전달하기](https://llm-systems-engineering.pages.dev/posts/gpu-communication-basics/)
+- [GPU 통신을 수행하는 SM과 복사 엔진](https://llm-systems-engineering.pages.dev/posts/gpu-communication-engines/)
+- [서버 사이의 GPU 통신과 CPU의 역할](https://llm-systems-engineering.pages.dev/posts/gpu-network-data-path/)

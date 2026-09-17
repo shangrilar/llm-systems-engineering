@@ -689,9 +689,73 @@
           "Hardware"
         ],
         "published": true,
-        "sourceRevision": "5e94ff3521a9ddec40eec2da85ed0fd0b1e1a1a0743e94b055c2d4799e73469e",
+        "sourceRevision": "dc257493b5a92686511476bec5274e3bfc1a299635be0af6495e6bd1fbb03038",
         "translationStatus": "reviewed",
-        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision."
+        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title."
+      }
+    }
+  },
+  {
+    "articleId": "gpu-communication-engines",
+    "order": 23,
+    "track": "공통",
+    "date": "2026-09-17",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-communication-engines",
+        "title": "GPU 통신을 수행하는 SM과 복사 엔진",
+        "description": "통신을 수행하는 장치와 연결을 구별하고, 계산과의 자원 경쟁이 전체 완료 시간에 미치는 영향을 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-communication-engines",
+        "title": "SMs and Copy Engines in GPU Communication",
+        "description": "Distinguish the devices and connections used for GPU communication, and examine how resource contention with computation affects overall completion time.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "b684f02bbeebed69ea6ae9a65d9348bbd721f2bdafa3e3590d141afcf8bad70c",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 11 emphasized passages, API names, seven source/continuation links, three image alt texts and all three figure pairs against the approved Korean manuscript. Both languages distinguish CPU submission from transfer, SM and CE execution from NVLink/PCIe connectivity, supported CE copies from generic send/receive, independent C on GPU 0, equal communication times and conditional overall improvement. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
+      }
+    }
+  },
+  {
+    "articleId": "gpu-network-data-path",
+    "order": 24,
+    "track": "공통",
+    "date": "2026-09-17",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "gpu-network-data-path",
+        "title": "서버 사이의 GPU 통신과 CPU의 역할",
+        "description": "CPU 메모리의 중간 복사를 줄이는 전달 경로와, 전송의 진행을 돕는 CPU의 역할을 살펴봅니다.",
+        "readmePath": [
+          "공통",
+          "하드웨어"
+        ],
+        "published": true
+      },
+      "en": {
+        "slug": "gpu-network-data-path",
+        "title": "GPU Communication Across Servers and the CPU's Role",
+        "description": "Explore transfer paths that reduce intermediate copies through CPU memory and the CPU role in helping network communication progress.",
+        "readmePath": [
+          "Shared Concepts",
+          "Hardware"
+        ],
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "8d11ae1f926f6dd7afc605304d73f03eae52cd72ee7df80529a972cfdadf2667",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
       }
     }
   }
