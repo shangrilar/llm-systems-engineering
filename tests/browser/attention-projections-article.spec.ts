@@ -18,7 +18,7 @@ for (const locale of ['ko', 'en']) {
     await expect(page.locator('.prose img')).toHaveCount(4);
     await expect(page.locator('.prose')).toContainText('T × h × dh');
     await expect(page.locator('.prose')).not.toContainText('**');
-    await expect(page.locator('article nav a').first()).toHaveAttribute('href', `${prefix}/posts/attention-and-mlp/`);
+    await expect(page.getByRole('navigation', { name: locale === 'ko' ? '이전과 다음 글' : 'Previous and next articles' }).getByRole('link').first()).toHaveAttribute('href', `${prefix}/posts/attention-and-mlp/`);
     for (const width of [360, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       for (const img of await page.locator('.prose img').all()) {

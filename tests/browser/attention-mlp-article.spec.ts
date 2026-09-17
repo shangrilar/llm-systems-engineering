@@ -18,7 +18,7 @@ for (const locale of ['ko', 'en']) {
     await expect(page.locator('.prose')).toContainText('⊙');
     await expect(page.locator('.prose')).toContainText('T × d');
     await expect(page.locator('.prose')).not.toContainText('**');
-    await expect(page.locator('article nav a').first()).toHaveAttribute('href', `${prefix}/posts/residual-and-rmsnorm/`);
+    await expect(page.getByRole('navigation', { name: locale === 'ko' ? '이전과 다음 글' : 'Previous and next articles' }).getByRole('link').first()).toHaveAttribute('href', `${prefix}/posts/residual-and-rmsnorm/`);
     await expect(page.locator('nav[aria-label="Previous and next articles"], nav[aria-label="이전과 다음 글"] a').first()).toBeVisible();
     for (const width of [360, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });

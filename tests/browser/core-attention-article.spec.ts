@@ -18,7 +18,7 @@ for (const locale of ['ko', 'en']) {
     await expect(page.locator('.prose img')).toHaveCount(5);
     await expect(page.locator('.prose')).toContainText('P = softmax(S / √dh + M)');
     await expect(page.locator('.prose')).not.toContainText('**');
-    await expect(page.locator('article nav a').first()).toHaveAttribute('href', `${prefix}/posts/attention-projections/`);
+    await expect(page.getByRole('navigation', { name: locale === 'ko' ? '이전과 다음 글' : 'Previous and next articles' }).getByRole('link').first()).toHaveAttribute('href', `${prefix}/posts/attention-projections/`);
     for (const width of [360, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       for (const img of await page.locator('.prose img').all()) {

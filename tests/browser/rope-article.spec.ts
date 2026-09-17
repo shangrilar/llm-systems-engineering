@@ -17,7 +17,7 @@ for (const locale of ['ko', 'en']) {
     await expect(page.locator('.prose img')).toHaveCount(6);
     await expect(page.locator('.prose math')).toHaveCount(3);
     await expect(page.locator('.prose')).not.toContainText('**');
-    await expect(page.locator('article nav a').first()).toHaveAttribute('href', `${prefix}/posts/core-attention/`);
+    await expect(page.getByRole('navigation', { name: locale === 'ko' ? '이전과 다음 글' : 'Previous and next articles' }).getByRole('link').first()).toHaveAttribute('href', `${prefix}/posts/core-attention/`);
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => [...document.fonts].some(font =>
       font.family.includes('LLM Math') && font.status === 'loaded'))).toBe(true);

@@ -1,4 +1,5 @@
 ---
+import type { MarkdownHeading } from 'astro';
 import {buildProfile,translationIsStale} from '../../scripts/content';
 import '../styles/math.css';
 import Base from './Base.astro';import config from '../../site.config.json';import catalog from '../data/posts.json';
@@ -9,5 +10,22 @@ const alternate=article?.locales[other]&&(buildProfile()==='preview'||article.lo
 const title=article?.locales[locale]?.title??frontmatter.title,description=article?.locales[locale]?.description??frontmatter.description;
 const stale=locale==='en'&&article&&translationIsStale(article);
 const draft=article&&!article.locales[locale]?.published;
+const sections=(Astro.props.headings ?? []).filter((heading: MarkdownHeading)=>heading.depth===2);
+const showToc=sections.length>=3;
 ---
-<Base title={`${title} | LLM Systems Engineering`} description={description} alternate={alternate}><article class="article"><header class="article-header"><a href={`${home(locale)}#learn`}>{t.back}</a><p class="eyebrow">{frontmatter.track??article?.track} · {article?.date??frontmatter.date}</p><h1>{title}</h1><p class="lede">{description}</p>{draft&&<p role="status">{locale==='ko'?'초안 · 발행 전 검토 중입니다.':'Draft · Pending publication review.'}</p>}{stale&&<p role="status">Translation awaiting review.</p>}</header><div class="prose"><slot/></div><nav aria-label={locale==='ko'?'이전과 다음 글':'Previous and next articles'}>{position>0&&<a href={postUrl(locale,posts[position-1].locales[locale].slug)}>← {posts[position-1].locales[locale].title}</a>}{position>=0&&position<posts.length-1&&<a href={postUrl(locale,posts[position+1].locales[locale].slug)}>{posts[position+1].locales[locale].title} →</a>}</nav><aside class="article-end"><p>{t.feedback}</p><a href={`${config.repository}/issues`}>{t.issue}</a><a href={`${home(locale)}#articles`}>{t.list}</a></aside></article></Base>
+<Base title={`${title} | LLM Systems Engineering`} description={description} alternate={alternate}><article class="article"><header class="article-header"><a href={`${home(locale)}#learn`}>{t.back}</a><p class="eyebrow">{frontmatter.track??article?.track} · {article?.date??frontmatter.date}</p><h1>{title}</h1><p class="lede">{description}</p>{draft&&<p role="status">{locale==='ko'?'초안 · 발행 전 검토 중입니다.':'Draft · Pending publication review.'}</p>}{stale&&<p role="status">Translation awaiting review.</p>}</header>
+{showToc&&<nav class="article-toc" id="article-toc" aria-labelledby="article-toc-title" tabindex="-1"><p id="article-toc-title">{t.toc}</p><ol>{sections.map((heading: MarkdownHeading)=><li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}</ol></nav>}
+<div class="prose"><slot/></div>
+{showToc&&<p class="toc-return"><a href="#article-toc">{t.backToToc}</a></p>}
+<nav aria-label={locale==='ko'?'이전과 다음 글':'Previous and next articles'}>{position>0&&<a href={postUrl(locale,posts[position-1].locales[locale].slug)}>← {posts[position-1].locales[locale].title}</a>}{position>=0&&position<posts.length-1&&<a href={postUrl(locale,posts[position+1].locales[locale].slug)}>{posts[position+1].locales[locale].title} →</a>}</nav><aside class="article-end"><p>{t.feedback}</p><a href={`${config.repository}/issues`}>{t.issue}</a><a href={`${home(locale)}#articles`}>{t.list}</a></aside></article></Base>
+
+<style>
+  .article-toc { display: block; margin: 24px 0 30px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; scroll-margin-top: 24px; }
+  .article-toc p { margin: 0 0 8px; font-weight: 700; }
+  .article-toc ol { margin: 0; padding-left: 24px; }
+  .article-toc a { display: block; padding: 5px 0; line-height: 1.6; overflow-wrap: anywhere; word-break: keep-all; text-decoration: underline; text-decoration-color: var(--line); }
+  .article-toc a:hover { color: var(--green); text-decoration-color: currentColor; }
+  .prose :global(h2[id]) { scroll-margin-top: 24px; }
+  .toc-return { margin: 32px 0; font-size: 14px; }
+  @media (max-width: 600px) { .article-toc { padding: 14px 16px; } }
+</style>
