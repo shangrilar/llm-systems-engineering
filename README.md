@@ -47,3 +47,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Reducing Memory Traffic with Output Accumulation in FlashAttention](https://llm-systems-engineering.pages.dev/en/posts/flash-attention/)
 - [From Operation Optimization to Whole-Model Performance](https://llm-systems-engineering.pages.dev/en/posts/model-performance-and-bottlenecks/)
 - [Scaling Across Multiple GPUs](https://llm-systems-engineering.pages.dev/en/posts/multi-gpu-execution/)
+- [Transferring Data Between GPUs](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-basics/)
