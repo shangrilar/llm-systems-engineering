@@ -7,7 +7,7 @@ track: 공통
 date: 2026-09-12
 ---
 
-In the previous article, we followed how a computation procedure is divided among threads, how blocks are assigned to SMs, and how instructions from eligible warps are selected. Does creating enough parallel work let us fully use a GPU's compute capacity?
+In the [previous article](https://llm-systems-engineering.pages.dev/en/posts/cpu-gpu-work-execution/), we followed how the CPU requests GPU work and how streams and events connect execution order and completion. Before that, we examined how threads, blocks, and warps execute inside the GPU. Does creating enough parallel work let us fully use a GPU's compute capacity?
 
 Computation requires its data to be ready. Even with many threads assigned, waiting for data can leave the compute units without enough work. In this article, we will **examine the relationship between computation and data movement, and see what we can reduce or run concurrently to obtain the same results in less time**.
 

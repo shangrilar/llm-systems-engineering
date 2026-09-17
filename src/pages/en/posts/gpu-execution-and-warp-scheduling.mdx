@@ -121,4 +121,4 @@ We assume that A waits for its data for the same amount of time in both cases. T
 
 More resident warps provide opportunities to select other work. But if all those warps are waiting at the same time, there are no eligible candidates. To understand GPU execution, we therefore need to consider **both how much work has been assigned and how much of it can make progress right now.** This is why grouping and managing many threads and selecting instructions from ready warps matters.
 
-In the next article, we will use this execution structure to examine how to divide work to use the GPU more efficiently. We will connect the amount of computation assigned to each piece of work, the data movement it requires, and reuse of the data brought in, using element-wise operations and matrix multiplication.
+In the [next article](https://llm-systems-engineering.pages.dev/en/posts/cpu-gpu-work-execution/), we will widen our view to the whole program and follow how the CPU requests GPU work and uses its results. We will prepare space for inputs and results and connect the execution order between operations with streams and events.
