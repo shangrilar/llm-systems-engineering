@@ -1,3 +1,4 @@
+import { groupArticles, tracks, categories } from '../src/data/classification.ts';
 import { readFileSync, writeFileSync } from 'node:fs';
 const config = JSON.parse(readFileSync('site.config.json', 'utf8'));
 const posts = JSON.parse(readFileSync('src/data/posts.json', 'utf8'));
@@ -5,26 +6,19 @@ const base = config.url.replace(/\/$/, '');
 for (const locale of ['ko', 'en']) {
   const korean = locale === 'ko';
   const prefix = korean ? '' : '/en';
-  const root = { links: [], children: new Map() };
-  for (const p of posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl))
-    .sort((a, b) => a.order - b.order)) {
-      const article = p.locales[locale];
-      const articleBase = article.published ? base : p.previewUrl.replace(/\/$/, '');
-      const status = article.published ? '' : (korean ? ' · 초안 미리보기' : ' · Draft preview');
-      let group = root;
-      for (const heading of article.readmePath ?? []) {
-        if (!group.children.has(heading)) group.children.set(heading, { links: [], children: new Map() });
-        group = group.children.get(heading);
-      }
-      group.links.push(`- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`);
-  }
-  function renderGroup(group, depth = 3) {
-    const sections = group.links.length ? [group.links.join('\n')] : [];
-    for (const [heading, child] of group.children)
-      sections.push(`${'#'.repeat(depth)} ${heading}\n\n${renderGroup(child, depth + 1)}`);
-    return sections.join('\n\n');
-  }
-  const articles = renderGroup(root);
+  const visible = posts.filter(p => p.locales[locale] && (p.locales[locale].published || p.previewUrl));
+  const articles = groupArticles(visible).map(group => {
+    const sections = group.categories.map(section => {
+      const links = section.articles.map(p => {
+        const article = p.locales[locale];
+        const articleBase = article.published ? base : p.previewUrl.replace(/\/$/, '');
+        const status = article.published ? '' : (korean ? ' · 초안 미리보기' : ' · Draft preview');
+        return `- [${article.title}](${articleBase}${prefix}/posts/${article.slug}/)${status}`;
+      }).join('\n');
+      return (section.category ? `#### ${categories[section.category][locale]}\n\n` : '') + links;
+    }).join('\n\n');
+    return `### ${tracks[group.track][locale]}\n\n${sections}`;
+  }).join('\n\n');
   const startingPoints = ['embedding-to-lm-head', 'gpu-architecture', 'gpu-arithmetic-intensity-and-fusion']
     .map(id => posts.find(post => post.articleId === id)?.locales[locale])
     .filter(article => article?.published)

@@ -1,5 +1,6 @@
 ---
 import type { MarkdownHeading } from 'astro';
+import { classificationLabel } from '../data/classification';
 import {buildProfile,translationIsStale} from '../../scripts/content';
 import '../styles/math.css';
 import Base from './Base.astro';import config from '../../site.config.json';import catalog from '../data/posts.json';
@@ -13,7 +14,7 @@ const draft=article&&!article.locales[locale]?.published;
 const sections=(Astro.props.headings ?? []).filter((heading: MarkdownHeading)=>heading.depth===2);
 const showToc=sections.length>=3;
 ---
-<Base title={`${title} | LLM Systems Engineering`} description={description} alternate={alternate}><article class="article"><header class="article-header"><a href={`${home(locale)}#learn`}>{t.back}</a><p class="eyebrow">{frontmatter.track??article?.track} · {article?.date??frontmatter.date}</p><h1>{title}</h1><p class="lede">{description}</p>{draft&&<p role="status">{locale==='ko'?'초안 · 발행 전 검토 중입니다.':'Draft · Pending publication review.'}</p>}{stale&&<p role="status">Translation awaiting review.</p>}</header>
+<Base title={`${title} | LLM Systems Engineering`} description={description} alternate={alternate}><article class="article"><header class="article-header"><a href={`${home(locale)}#learn`}>{t.back}</a><p class="eyebrow">{article ? classificationLabel(article, locale) : ''} · {article?.date??frontmatter.date}</p><h1>{title}</h1><p class="lede">{description}</p>{draft&&<p role="status">{locale==='ko'?'초안 · 발행 전 검토 중입니다.':'Draft · Pending publication review.'}</p>}{stale&&<p role="status">Translation awaiting review.</p>}</header>
 {showToc&&<nav class="article-toc" id="article-toc" aria-labelledby="article-toc-title" tabindex="-1"><p id="article-toc-title">{t.toc}</p><ol>{sections.map((heading: MarkdownHeading)=><li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}</ol></nav>}
 <div class="prose"><slot/></div>
 {showToc&&<p class="toc-return"><a href="#article-toc">{t.backToToc}</a></p>}
