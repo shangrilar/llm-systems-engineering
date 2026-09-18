@@ -1,0 +1,51 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: tensor-parallelism
+title: "TP: Split One Operation Across GPUs"
+description: "Explain why matrix partitions produce either completed output shards or partial sums, then connect them to communication in MLP and attention."
+date: 2026-09-18
+---
+
+[DP](/en/posts/data-parallelism/) replicates a model and assigns different inputs. **Tensor parallelism, or TP**, has multiple GPUs cooperate on one operation for the same input. Here, a tensor means arranged values such as a vector or matrix.
+
+Partitioning the same matrix product along different axes changes what each GPU’s result means. We will distinguish completed output shards from partial sums, connect two linear operations to avoid unnecessary communication, and then consider attention and overall execution.
+
+## Partitioning the Output Dimension
+
+For `Y = XW`, let X be `[1, 2]` and the rows of W be `[1, 3]` and `[2, 4]`. The result is `[5, 11]`. The first output is the dot product of X with W’s first column; the second uses its second column.
+
+[![Splitting W by columns gives completed outputs 5 on GPU 0 and 11 on GPU 1.](/images/tensor-parallelism/en/01-columns.png)](/images/tensor-parallelism/en/01-columns.png)
+
+Partition W by columns: GPU 0 stores the first column and computes 5; GPU 1 stores the second and computes 11. Both need all of X, but each stores half of W. **These are completed values at different output positions.** Place 5 and 11 side by side rather than adding them to form Y.
+
+If the next operation needs the entire Y on each GPU, All-Gather can collect the shards. If it can continue using local shards, immediate collection is unnecessary. Communication follows the next operation’s input requirements, not just the partition’s name.
+
+## Partitioning the Reduction Dimension
+
+Now partition W’s rows and the corresponding elements of X. GPU 0 multiplies X’s 1 by the first row to obtain `[1, 3]`. GPU 1 multiplies X’s 2 by the second row to obtain `[4, 8]`.
+
+[![Add [1,3] and [4,8] elementwise to obtain [5,11].](/images/tensor-parallelism/en/02-rows.png)](/images/tensor-parallelism/en/02-rows.png)
+
+Both results have as many elements as the full output, but they are **partial sums** containing only some of its products. Add corresponding positions to obtain `[5, 11]`. Concatenating them would compute something other than the original matrix product.
+
+All-Reduce is a natural choice if every GPU needs all of Y. Reduce is appropriate if only one GPU needs it; Reduce-Scatter can produce partitioned completed results. The choice follows two questions: are these shards or partial sums, and who needs the completed values?
+
+## Connecting Two Linear Operations
+
+A model’s MLP expands features with a linear operation, applies an activation, and reduces features with another linear operation. Consider the simple form `Y = f(XU)V`, where f acts elementwise. An elementwise activation transforms each value without requiring values at other positions.
+
+[![An MLP pairs column and row partitions so the intermediate activation need not be all-gathered.](/images/tensor-parallelism/en/03-mlp.png)](/images/tensor-parallelism/en/03-mlp.png)
+
+Partitioning U by output columns partitions intermediate H. Each GPU can apply f to its own H shard. Partition V by the rows corresponding to those intermediate features, and each GPU can compute a partial sum of the final output using its own H shard. Combine the partial sums at the end.
+
+Thus, **the entire H need not be gathered between the two linear operations**. The [Megatron-LM paper](https://arxiv.org/abs/1909.08053) uses this column–row pairing. In a gated MLP, shards in the two elementwise-multiplied branches must align too. For a nonlinear function, `f(P₀ + P₁)` generally differs from `f(P₀) + f(P₁)`, so an activation cannot simply be applied to partial sums before a required reduction.
+
+## Applying TP to Attention and Overall Execution
+
+Attention can exploit the structure of multiple heads computing from their respective Q, K, and V. Heads and corresponding input projections can be partitioned, with partial sums combined at the output projection. The actual model still determines whether head counts divide appropriately and which data is replicated when K and V are shared.
+
+TP partitions some weights and computation, reducing per-GPU load, but not all memory shrinks by the TP degree. Replicated inputs, temporary buffers, and live state remain. Over-partitioning small matrix operations can also reduce each GPU’s compute efficiency.
+
+Communication repeated across layers depends on interconnect latency and bandwidth. If added communication and waiting exceed saved compute time, a single input can finish later. After applying TP, inspect **where execution waits for required results and when the whole operation finishes**, alongside per-GPU work.
+
+[SP: Partition Activations Alongside TP](/en/posts/sequence-parallelism/) next keeps TP weight partitioning while splitting intermediate values that remain replicated in some regions.

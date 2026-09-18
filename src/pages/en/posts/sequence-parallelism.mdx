@@ -1,0 +1,49 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: sequence-parallelism
+title: "SP: Partition Activations Alongside TP"
+description: "Partition activations that remain replicated under TP, using All-Gather and Reduce-Scatter to connect operation layouts."
+date: 2026-09-18
+---
+
+[TP](/en/posts/tensor-parallelism/) partitions weights and matrix computation, but does not partition every intermediate. All-Reducing an MLP’s partial sums, for example, produces the same complete result on every GPU. If all GPUs then normalize the same inputs, storage and computation are duplicated.
+
+**Activations** are intermediate values produced during model computation. We will partition replicated activations by token and gather them only where needed. First we will identify operations that are independent across tokens, then follow communication around a TP MLP and examine memory benefits and limitations.
+
+Here, **sequence parallelism, or SP**, means [Megatron-style SP](https://arxiv.org/abs/2205.05198). The term has different scopes across literature; not every token-partitioning approach is the same method.
+
+## Removing Duplication in Per-Token Work
+
+Suppose there are four tokens, t0 through t3, each with four features. If every GPU holds the same four token vectors after a TP operation, each stores the same 16 values.
+
+[![SP partitions replicated tokens t0–t3 into t0,t1 on GPU 0 and t2,t3 on GPU 1.](/images/sequence-parallelism/en/01-activations.png)](/images/sequence-parallelism/en/01-activations.png)
+
+In an SP region, GPU 0 stores t0 and t1, while GPU 1 stores t2 and t3. For this activation, the per-GPU element count falls from 16 to eight. **Tokens are divided while each token’s complete feature vector remains together.**
+
+This distinction matters for normalization. [RMSNorm](/en/posts/residual-and-rmsnorm/) uses the features within one token but does not require other tokens. It can finish locally when all of that token’s features are local. Residual addition, which adds corresponding vectors, also works locally if their token layouts match.
+
+## Gathering Before TP and Partitioning After It
+
+In the TP MLP considered earlier, each GPU holds different output columns of the first linear operation’s weights. To compute its output features for all tokens, each GPU needs all token inputs. This motivates All-Gathering the normalization outputs partitioned by SP.
+
+[![Normalize local tokens, All-Gather the TP input, then Reduce-Scatter completed outputs by token.](/images/sequence-parallelism/en/02-flow.png)](/images/sequence-parallelism/en/02-flow.png)
+
+In the forward pass, normalize local tokens, All-Gather the input, and compute the TP MLP. Its final row-partitioned linear operation produces partial sums for all tokens. Instead of All-Reduce, **Reduce-Scatter adds these partial sums and partitions the results by token**.
+
+GPU 0 then holds completed t0,t1 results and GPU 1 holds t2,t3, ready for another normalization or residual addition. The residual input must retain the matching token layout. Communication is not eliminated; replication is delayed until an operation actually needs the full input.
+
+## Checking Total Memory and Communication Time
+
+SP directly reduces duplicated activation storage and computation in these regions. Training often retains activations for later gradient calculation, making the savings particularly relevant for long sequences.
+
+But total GPU memory does not all shrink inversely with SP size. Gathered inputs or communication buffers may be needed temporarily, while weights and other live state follow separate layouts. Check peak memory during execution, not just the array size in the normalization region.
+
+The relationship between [Ring All-Reduce](/en/posts/collective-ring-tree/), Reduce-Scatter, and All-Gather reappears here. With matching sizes and assumptions, the two operations’ combined data volume can correspond to All-Reduce’s volume. Their timing, buffers, kernel execution, and overlap with computation still differ. **Equal data volume does not guarantee equal communication time.** The original paper also reports measured execution-time differences.
+
+The principle of partitioning per-token activations can apply to inference, but training’s memory and speed benefits cannot simply be transferred unchanged. Tokens computed per step and retained state differ. The model and runtime must also support the chosen layout.
+
+## Extending to Attention Across Tokens
+
+The key so far was a region that can compute locally once each token’s complete feature vector is present. Attention differs: a token’s Q refers to other tokens’ K and V. Merely partitioning tokens leaves required input unavailable locally.
+
+[CP: Split Long Contexts Across GPUs](/en/posts/context-parallelism/) next partitions long-context data and computation while preserving those dependencies. Distinguish SP from CP by **which operations retain the partition and how they obtain missing information**, rather than simply observing that both use the token dimension.

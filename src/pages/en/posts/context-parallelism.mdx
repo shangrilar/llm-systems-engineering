@@ -1,0 +1,51 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: context-parallelism
+title: "CP: Split Long Contexts Across GPUs"
+description: "Preserve attention dependencies after partitioning tokens, examining K/V transfers, normalization, and causal load imbalance."
+date: 2026-09-18
+---
+
+Longer contexts mean more tokens and activations. [SP](/en/posts/sequence-parallelism/) partitioned some activations between TP operations by token. We now examine **context parallelism, or CP**, which maintains token partitions through model execution including attention.
+
+A GPU’s tokens still need to refer to tokens on other GPUs. We will first examine Q/K/V placement and transfers, then explain how to combine block results correctly. Finally, we will consider unequal causal-attention work despite equal token counts, and the conditions under which CP helps. The explanation uses a forward pass that computes multiple tokens together.
+
+## Preserving References Across Token Partitions
+
+Place tokens t0,t1 on GPU 0 and t2,t3 on GPU 1. This example uses CP alone, so both GPUs hold the same model weights. Each can apply local linear operations to produce Q, K, and V for its tokens.
+
+Attention cannot finish with local Q alone. If t3’s Q attends to t0, it needs t0’s K and V from GPU 0. Partitioning tokens does not permit omitting references allowed by the original model; doing so would compute different attention.
+
+[![Each GPU retains Q for its own tokens and receives other required K,V blocks.](/images/context-parallelism/en/01-kv.png)](/images/context-parallelism/en/01-kv.png)
+
+One approach is to **keep Q on its assigned GPU and bring in the required K and V**. Remote K/V can be gathered together or received and processed block by block. [Megatron’s CP documentation](https://docs.nvidia.com/megatron-core/developer-guide/latest/user-guide/features/context_parallel.html) describes required K/V communication and several implementations.
+
+With successive blocks, a GPU may compute on one while receiving the next. Actual overlap requires compatible dependencies, buffer lifetimes, and execution resources. Merely submitting work to different streams does not remove all waiting. The figure shows the general two-way exchange relationship; implementations can omit transfers or work made unnecessary by causal masking.
+
+## Normalizing Block Results Correctly
+
+Can separately computed K/V-block outputs simply be averaged? Attention’s Softmax determines weights over **all positions referenced by the query**. Averaging outputs normalized independently within each block is generally incorrect.
+
+[![Combining weighted sums and weight sums gives 16/3; averaging the two block outputs gives the incorrect 6.5.](/images/context-parallelism/en/03-normalization.png)](/images/context-parallelism/en/03-normalization.png)
+
+Let one query attend to three positions, all with score zero. Their exponentials are all one. With V values 2 and 4 in the first block, the weighted sum is 6 and the weight sum is 2. For value 10 in the second block, they are 10 and 1. The overall output is `(6+10)/(2+1) = 16/3`, not 6.5, the plain average of block means 3 and 10.
+
+With differing scores, numerically stable computation also tracks quantities such as the block maximum and exponential sum. As in [Online Softmax](/en/posts/online-softmax/), previous accumulators must be rescaled to match new blocks. This connects [FlashAttention’s](/en/posts/flash-attention/) within-GPU block computation to cross-GPU data movement. It does not require storing the entire score matrix at once.
+
+## Balancing Causal Attention Work
+
+Causal attention excludes future tokens. Later tokens can attend to more positions than earlier tokens. Consider splitting six tokens into the first and last three.
+
+[![The first three causal rows attend to six positions; the last three attend to fifteen.](/images/context-parallelism/en/02-causal.png)](/images/context-parallelism/en/02-causal.png)
+
+GPU 0’s queries attend to 1+2+3=6 positions, while GPU 1’s attend to 4+5+6=15. Each owns three tokens, but the number of valid attention pairs differs. Execution time need not be exactly proportional to this count, but it explains why a simple contiguous partition can be imbalanced.
+
+Assigning both early and late regions to each participant can improve balance. Original token positions and causal masks must still be preserved. The order of storage partitions must not be mistaken for the original sequence order.
+
+## Weighing Memory Savings Against Communication
+
+CP partitions long-sequence activations and some attention work. CP alone does not partition model weights. Peak memory also depends on whether required K/V is gathered and retained or exchanged incrementally using smaller buffers.
+
+Long inputs may provide enough divided computation to justify communication; for short inputs, setup and transfer costs can consume the benefit. Training’s backward computation also requires communicating K/V gradient contributions back to their owners. Token-by-token inference has different numbers of new queries and different use of retained K/V, so it requires a separate design rather than blindly applying this multi-token example.
+
+TP, SP, and CP can be connected through feature-axis computation, activation placement in particular regions, and context dependencies. [PP: Partition and Execute Model Layers](/en/posts/pipeline-parallelism/) next moves from partitioning inside layers to placing different layers on different GPUs.

@@ -1,0 +1,462 @@
+[
+  {
+    "article": "collective-ring-tree",
+    "slug": "01-ring-reduce-scatter",
+    "locale": "ko",
+    "title": "Ring: 조각을 전달하며 합산하기",
+    "alt": "세 번의 이웃 전달 뒤 GPU 0부터 3에 A=1111, B=2222, C=3333, D=4444가 완성됩니다.",
+    "path": "public/images/collective-ring-tree/01-ring-reduce-scatter.svg",
+    "width": 1200,
+    "height": 954
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "02-ring-all-gather",
+    "locale": "ko",
+    "title": "Ring: 완성된 조각을 모두에게",
+    "alt": "세 단계의 All-Gather 뒤 모든 GPU가 A부터 D까지 갖습니다. Reduce-Scatter 세 단계와 합쳐 총 여섯 단계입니다.",
+    "path": "public/images/collective-ring-tree/02-ring-all-gather.svg",
+    "width": 1200,
+    "height": 927
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "03-tree",
+    "locale": "ko",
+    "title": "Tree: 모아서 더하고 다시 펼치기",
+    "alt": "GPU 1과 3의 값을 각각 0과 2로 보내 합산한 뒤 GPU 2가 0으로 보냅니다. 전체 합을 역순으로 배포합니다.",
+    "path": "public/images/collective-ring-tree/03-tree.svg",
+    "width": 1200,
+    "height": 916
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "04-logical-physical",
+    "locale": "ko",
+    "title": "전달 순서와 실제 연결을 구별하기",
+    "alt": "논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.",
+    "path": "public/images/collective-ring-tree/04-logical-physical.svg",
+    "width": 1200,
+    "height": 884
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "01-replicas",
+    "locale": "ko",
+    "title": "DP: 같은 모델, 서로 다른 입력",
+    "alt": "네 GPU가 모델 W 전체를 각각 보관하며 요청 A부터 D까지 따로 계산합니다.",
+    "path": "public/images/data-parallelism/01-replicas.svg",
+    "width": 1200,
+    "height": 854
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "02-gradients",
+    "locale": "ko",
+    "title": "학습 DP: 기울기를 맞추고 같은 갱신",
+    "alt": "기울기 2와 6을 평균내어 4를 얻고 두 GPU 모두 가중치 10을 9.6으로 갱신합니다.",
+    "path": "public/images/data-parallelism/02-gradients.svg",
+    "width": 1200,
+    "height": 830
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "03-throughput",
+    "locale": "ko",
+    "title": "실행 시간과 처리량을 구별하기",
+    "alt": "GPU 하나는 네 요청을 네 슬롯에 처리하고 두 GPU는 두 슬롯에 처리하지만 개별 요청의 실행은 한 슬롯입니다.",
+    "path": "public/images/data-parallelism/03-throughput.svg",
+    "width": 1200,
+    "height": 807
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "01-columns",
+    "locale": "ko",
+    "title": "출력 열을 나누면 결과도 나뉩니다",
+    "alt": "W의 열을 나누면 GPU 0이 5, GPU 1이 11을 완성합니다.",
+    "path": "public/images/tensor-parallelism/01-columns.svg",
+    "width": 1200,
+    "height": 803
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "02-rows",
+    "locale": "ko",
+    "title": "누적하는 축을 나누면 부분합이 생깁니다",
+    "alt": "GPU 0의 [1,3]과 GPU 1의 [4,8]을 위치별로 더해 [5,11]을 얻습니다.",
+    "path": "public/images/tensor-parallelism/02-rows.svg",
+    "width": 1200,
+    "height": 803
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "03-mlp",
+    "locale": "ko",
+    "title": "두 연산 사이의 조각을 그대로 사용하기",
+    "alt": "첫 선형 연산의 열 분할과 둘째 선형 연산의 행 분할을 연결해 중간 All-Gather를 피하는 MLP 흐름입니다.",
+    "path": "public/images/tensor-parallelism/03-mlp.svg",
+    "width": 1200,
+    "height": 867
+  },
+  {
+    "article": "sequence-parallelism",
+    "slug": "01-activations",
+    "locale": "ko",
+    "title": "복제된 활성값을 토큰 방향으로 나누기",
+    "alt": "TP에서 복제된 t0부터 t3를 SP에서는 GPU 0의 t0,t1과 GPU 1의 t2,t3로 나눕니다.",
+    "path": "public/images/sequence-parallelism/01-activations.svg",
+    "width": 1200,
+    "height": 906
+  },
+  {
+    "article": "sequence-parallelism",
+    "slug": "02-flow",
+    "locale": "ko",
+    "title": "연산에 맞춰 모으고 다시 나누기",
+    "alt": "정규화는 로컬 토큰에서 수행하고 All-Gather로 TP 입력을 만든 뒤 Reduce-Scatter로 결과를 다시 토큰별로 나눕니다.",
+    "path": "public/images/sequence-parallelism/02-flow.svg",
+    "width": 1200,
+    "height": 894
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "01-kv",
+    "locale": "ko",
+    "title": "Q는 두고, 필요한 K·V를 가져오기",
+    "alt": "각 GPU가 자기 토큰의 Q를 유지하면서 필요한 다른 토큰의 K,V를 받아 어텐션을 계산합니다.",
+    "path": "public/images/context-parallelism/01-kv.svg",
+    "width": 1200,
+    "height": 837
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "02-causal",
+    "locale": "ko",
+    "title": "토큰 수가 같아도 계산량은 다를 수 있습니다",
+    "alt": "인과적 어텐션의 삼각형에서 앞 세 행은 여섯 위치, 뒤 세 행은 열다섯 위치를 참조합니다.",
+    "path": "public/images/context-parallelism/02-causal.svg",
+    "width": 1200,
+    "height": 884
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "03-normalization",
+    "locale": "ko",
+    "title": "블록 결과는 가중치를 함께 합칩니다",
+    "alt": "블록별 가중합과 가중치 합을 더해 16/3을 얻습니다. 블록별 출력의 단순 평균 6.5는 틀립니다.",
+    "path": "public/images/context-parallelism/03-normalization.svg",
+    "width": 1200,
+    "height": 800
+  },
+  {
+    "article": "pipeline-parallelism",
+    "slug": "01-stages",
+    "locale": "ko",
+    "title": "PP: 층을 나누고 중간값 전달하기",
+    "alt": "여덟 층을 두 층씩 네 GPU에 배치하고 입력이 순서대로 모든 단계를 통과합니다.",
+    "path": "public/images/pipeline-parallelism/01-stages.svg",
+    "width": 1200,
+    "height": 778
+  },
+  {
+    "article": "pipeline-parallelism",
+    "slug": "02-schedule",
+    "locale": "ko",
+    "title": "여러 입력으로 파이프라인 채우기",
+    "alt": "4개 GPU의 대각선 일정에서 네 마이크로배치를 7슬롯 동안 처리하며 시작과 끝에 빈 슬롯이 생깁니다.",
+    "path": "public/images/pipeline-parallelism/02-schedule.svg",
+    "width": 1200,
+    "height": 891
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "01-dispatch",
+    "locale": "ko",
+    "title": "EP: 토큰을 Expert에게 보내고 결과 돌려받기",
+    "alt": "GPU 0의 t1을 GPU 1의 E2로 보내고 GPU 1의 t2를 GPU 0의 E1로 보낸 뒤 결과를 원래 GPU로 돌려보냅니다.",
+    "path": "public/images/expert-parallelism/01-dispatch.svg",
+    "width": 1200,
+    "height": 881
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "02-combine",
+    "locale": "ko",
+    "title": "여러 Expert를 선택하면 결과도 결합합니다",
+    "alt": "토큰 하나를 E0과 E2에 보내고 출력에 0.7과 0.3을 곱해 합칩니다.",
+    "path": "public/images/expert-parallelism/02-combine.svg",
+    "width": 1200,
+    "height": 809
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "03-imbalance",
+    "locale": "ko",
+    "title": "라우팅이 만드는 작업량 불균형",
+    "alt": "E0과 E1은 각각 한 토큰, E2는 여섯 토큰, E3는 영 토큰을 처리합니다.",
+    "path": "public/images/expert-parallelism/03-imbalance.svg",
+    "width": 1200,
+    "height": 925
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "01-layouts",
+    "locale": "ko",
+    "title": "GPU 네 개를 배치하는 세 가지 방법",
+    "alt": "4개 단일 GPU 복제본, 2개의 2-GPU TP 복제본, 1개의 4-GPU TP 복제본을 비교합니다.",
+    "path": "public/images/choosing-parallelism/01-layouts.svg",
+    "width": 1200,
+    "height": 951
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "02-memory",
+    "locale": "ko",
+    "title": "속도를 비교하기 전에 메모리부터",
+    "alt": "24GiB GPU와 32GiB 모델에서 추가 상태 8GiB를 포함하면 세 배치가 각각 40,24,16GiB를 사용합니다.",
+    "path": "public/images/choosing-parallelism/02-memory.svg",
+    "width": 1200,
+    "height": 851
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "03-goals",
+    "locale": "ko",
+    "title": "응답 시간과 처리량을 함께 판단하기",
+    "alt": "요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.",
+    "path": "public/images/choosing-parallelism/03-goals.svg",
+    "width": 1200,
+    "height": 919
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "01-ring-reduce-scatter",
+    "locale": "en",
+    "title": "Ring: pass chunks and accumulate",
+    "alt": "After three neighbor transfers, GPUs 0–3 own completed chunks A=1111, B=2222, C=3333, D=4444.",
+    "path": "public/images/collective-ring-tree/en/01-ring-reduce-scatter.svg",
+    "width": 1200,
+    "height": 954
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "02-ring-all-gather",
+    "locale": "en",
+    "title": "Ring: distribute the completed chunks",
+    "alt": "Three All-Gather steps give all GPUs chunks A–D; with Reduce-Scatter, there are six steps.",
+    "path": "public/images/collective-ring-tree/en/02-ring-all-gather.svg",
+    "width": 1200,
+    "height": 927
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "03-tree",
+    "locale": "en",
+    "title": "Tree: reduce, then broadcast",
+    "alt": "GPU 1 sends to 0 and GPU 3 to 2; GPU 2 then sends its partial sum to 0. The full sum returns along reversed edges.",
+    "path": "public/images/collective-ring-tree/en/03-tree.svg",
+    "width": 1200,
+    "height": 916
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "04-logical-physical",
+    "locale": "en",
+    "title": "Separate transfer order from physical links",
+    "alt": "A logical ring can run over a physical shared-switch topology.",
+    "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
+    "width": 1200,
+    "height": 884
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "01-replicas",
+    "locale": "en",
+    "title": "DP: same model, different inputs",
+    "alt": "Each GPU stores full model W and independently processes one of requests A–D.",
+    "path": "public/images/data-parallelism/en/01-replicas.svg",
+    "width": 1200,
+    "height": 854
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "02-gradients",
+    "locale": "en",
+    "title": "Training DP: synchronize gradients and updates",
+    "alt": "Average gradients 2 and 6 to get 4; both GPUs update weight 10 to 9.6.",
+    "path": "public/images/data-parallelism/en/02-gradients.svg",
+    "width": 1200,
+    "height": 830
+  },
+  {
+    "article": "data-parallelism",
+    "slug": "03-throughput",
+    "locale": "en",
+    "title": "Distinguish execution time from throughput",
+    "alt": "One GPU finishes in four slots; two GPUs finish in two, while each request executes for one slot.",
+    "path": "public/images/data-parallelism/en/03-throughput.svg",
+    "width": 1200,
+    "height": 807
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "01-columns",
+    "locale": "en",
+    "title": "Split output columns, split the result",
+    "alt": "Splitting W by columns gives completed outputs 5 on GPU 0 and 11 on GPU 1.",
+    "path": "public/images/tensor-parallelism/en/01-columns.svg",
+    "width": 1200,
+    "height": 803
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "02-rows",
+    "locale": "en",
+    "title": "Split the reduction axis, get partial sums",
+    "alt": "Add [1,3] and [4,8] elementwise to obtain [5,11].",
+    "path": "public/images/tensor-parallelism/en/02-rows.svg",
+    "width": 1200,
+    "height": 803
+  },
+  {
+    "article": "tensor-parallelism",
+    "slug": "03-mlp",
+    "locale": "en",
+    "title": "Keep shards between two operations",
+    "alt": "An MLP pairs column and row partitions so the intermediate activation need not be all-gathered.",
+    "path": "public/images/tensor-parallelism/en/03-mlp.svg",
+    "width": 1200,
+    "height": 867
+  },
+  {
+    "article": "sequence-parallelism",
+    "slug": "01-activations",
+    "locale": "en",
+    "title": "Partition replicated activations by token",
+    "alt": "SP partitions replicated tokens t0–t3 into t0,t1 on GPU 0 and t2,t3 on GPU 1.",
+    "path": "public/images/sequence-parallelism/en/01-activations.svg",
+    "width": 1200,
+    "height": 906
+  },
+  {
+    "article": "sequence-parallelism",
+    "slug": "02-flow",
+    "locale": "en",
+    "title": "Gather and repartition around the operation",
+    "alt": "Normalize local tokens, All-Gather the TP input, then Reduce-Scatter completed outputs by token.",
+    "path": "public/images/sequence-parallelism/en/02-flow.svg",
+    "width": 1200,
+    "height": 894
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "01-kv",
+    "locale": "en",
+    "title": "Keep Q local; bring in the required K and V",
+    "alt": "Each GPU retains Q for its own tokens and receives other required K,V blocks.",
+    "path": "public/images/context-parallelism/en/01-kv.svg",
+    "width": 1200,
+    "height": 837
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "02-causal",
+    "locale": "en",
+    "title": "Equal token counts can mean unequal work",
+    "alt": "The first three causal rows attend to six positions; the last three attend to fifteen.",
+    "path": "public/images/context-parallelism/en/02-causal.svg",
+    "width": 1200,
+    "height": 884
+  },
+  {
+    "article": "context-parallelism",
+    "slug": "03-normalization",
+    "locale": "en",
+    "title": "Combine block results with their weights",
+    "alt": "Combining weighted sums and weight sums gives 16/3; averaging the two block outputs gives the incorrect 6.5.",
+    "path": "public/images/context-parallelism/en/03-normalization.svg",
+    "width": 1200,
+    "height": 800
+  },
+  {
+    "article": "pipeline-parallelism",
+    "slug": "01-stages",
+    "locale": "en",
+    "title": "PP: partition layers and pass activations",
+    "alt": "Eight layers are placed two per GPU; an input passes through all four stages in order.",
+    "path": "public/images/pipeline-parallelism/en/01-stages.svg",
+    "width": 1200,
+    "height": 778
+  },
+  {
+    "article": "pipeline-parallelism",
+    "slug": "02-schedule",
+    "locale": "en",
+    "title": "Fill the pipeline with multiple inputs",
+    "alt": "A diagonal four-GPU schedule completes four microbatches in seven slots, with idle slots at the start and end.",
+    "path": "public/images/pipeline-parallelism/en/02-schedule.svg",
+    "width": 1200,
+    "height": 891
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "01-dispatch",
+    "locale": "en",
+    "title": "EP: dispatch tokens and return the results",
+    "alt": "Send t1 from GPU 0 to E2 on GPU 1, and t2 from GPU 1 to E1 on GPU 0, then return the results.",
+    "path": "public/images/expert-parallelism/en/01-dispatch.svg",
+    "width": 1200,
+    "height": 881
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "02-combine",
+    "locale": "en",
+    "title": "Multiple selected experts require result combination",
+    "alt": "Send one token to E0 and E2, then combine their outputs with weights 0.7 and 0.3.",
+    "path": "public/images/expert-parallelism/en/02-combine.svg",
+    "width": 1200,
+    "height": 809
+  },
+  {
+    "article": "expert-parallelism",
+    "slug": "03-imbalance",
+    "locale": "en",
+    "title": "Routing creates load imbalance",
+    "alt": "E0 and E1 process one token each, E2 six, and E3 none.",
+    "path": "public/images/expert-parallelism/en/03-imbalance.svg",
+    "width": 1200,
+    "height": 925
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "01-layouts",
+    "locale": "en",
+    "title": "Three ways to arrange four GPUs",
+    "alt": "Compare four single-GPU replicas, two two-GPU TP replicas, and one four-GPU TP replica.",
+    "path": "public/images/choosing-parallelism/en/01-layouts.svg",
+    "width": 1200,
+    "height": 951
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "02-memory",
+    "locale": "en",
+    "title": "Check memory before comparing speed",
+    "alt": "With 24 GiB GPUs, 32 GiB weights and 8 GiB extra state, per-GPU totals are 40, 24 and 16 GiB.",
+    "path": "public/images/choosing-parallelism/en/02-memory.svg",
+    "width": 1200,
+    "height": 851
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "03-goals",
+    "locale": "en",
+    "title": "Evaluate latency and throughput together",
+    "alt": "Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.",
+    "path": "public/images/choosing-parallelism/en/03-goals.svg",
+    "width": 1200,
+    "height": 919
+  }
+]

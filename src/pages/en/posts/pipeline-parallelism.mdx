@@ -1,0 +1,54 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: pipeline-parallelism
+title: "PP: Partition and Execute Model Layers"
+description: "Place layers on different GPUs and pass activations between them, then overlap microbatches and examine remaining pipeline idle time."
+date: 2026-09-18
+---
+
+So far, we have divided matrices or tokens within the same layer. Models also have an order in which each layer consumes its predecessor’s output. **Pipeline parallelism, or PP**, places these layers across GPUs.
+
+If an input must still traverse layers in order, how can several GPUs work simultaneously? We will first examine stage placement and activation transfers, then feed small batches consecutively so different stages work together. Finally, we will distinguish remaining idle time and the requirements of training and inference.
+
+## Partitioning Layers and Passing Activations
+
+Place eight layers on four GPUs, two per GPU. GPU 0 owns layers 0 and 1, GPU 1 owns layers 2 and 3, and so on. A group of assigned layers is a **pipeline stage**. Here each stage uses one GPU.
+
+[![Eight layers are placed two per GPU; an input passes through all four stages in order.](/images/pipeline-parallelism/en/01-stages.png)](/images/pipeline-parallelism/en/01-stages.png)
+
+After computing its layers, GPU 0 sends the output activations to GPU 1, which uses them as input for its next layers. Weights remain at their assigned stages; **activations move**, rather than the weights being sent forward each time. Training also introduces gradients traveling backward.
+
+For a single input, a stage cannot start until its predecessor produces the required result. Four GPUs therefore cannot execute that input’s four stages at once. Each GPU does store fewer layers, however, allowing the model to be distributed across their memories.
+
+## Overlapping Small Input Batches
+
+A **microbatch** is a smaller part of an input batch. Feed four microbatches A, B, C, and D in order. While an earlier stage computes B, a later stage can compute A. The [GPipe paper](https://arxiv.org/abs/1811.06965) describes this approach of partitioning minibatches for pipelined execution.
+
+[![A diagonal four-GPU schedule completes four microbatches in seven slots, with idle slots at the start and end.](/images/pipeline-parallelism/en/02-schedule.png)](/images/pipeline-parallelism/en/02-schedule.png)
+
+Each slot represents one stage computation; all stage times are assumed equal and communication time is omitted. In slot four, GPUs 0 through 3 compute D, C, B, and A respectively. **Different layers of different inputs overlap; dependent layers of the same input do not execute simultaneously.**
+
+All four microbatches finish after seven slots, versus sixteen if each were sent through the whole pipeline before starting the next. A alone still takes four slots. Higher throughput across inputs must be distinguished from shorter execution of one input.
+
+## Waiting While Filling and Draining
+
+Slots are idle before the first input reaches later stages and after the last input leaves earlier stages. Such idle regions are called **pipeline bubbles**.
+
+In the equal-duration forward schedule above, p stages and m microbatches require `m + p − 1` slots to finish. There are `p(m+p−1)` total GPU time slots and `pm` compute slots:
+
+```text
+Fraction of slots used for computation = m / (m + p − 1)
+p = 4, m = 4 → 4 / 7 ≈ 57%
+```
+
+This is a ratio derived from the illustrated schedule, not measured GPU compute utilization. Increasing m reduces the relative fill/drain cost, but splitting a fixed input batch too finely can shrink matrix operations and increase communication frequency and management overhead.
+
+Unequal stage times introduce more waiting around the slowest stage. Equal layer counts do not ensure equal durations. Embedding/output-layer sizes, attention input length, and activation volume at stage boundaries also matter.
+
+## Scheduling Training and Inference
+
+Training runs a backward pass after the forward pass. Backpropagation starts from the loss and computes gradients for earlier operations, connecting stages in reverse too. How forward and backward passes of multiple microbatches are scheduled affects both waiting and retained activations. Our figure shows only the forward pass, not a complete training schedule.
+
+Inference can overlap independent requests across stages. A single token-by-token generation request still needs the previous token’s result before its next input is determined. PP cannot remove that dependency. Too few requests make it difficult to fill the pipeline.
+
+TP can also be used inside each PP stage. This introduces both inter-stage transfers and within-layer collectives, requiring evaluation against GPU connectivity, memory, and input conditions. [EP: Partition Experts and Route Tokens](/en/posts/expert-parallelism/) next examines destinations that vary by token rather than following only a fixed layer sequence.

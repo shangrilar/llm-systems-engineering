@@ -1,0 +1,57 @@
+---
+layout: ../../layouts/Post.astro
+articleId: expert-parallelism
+title: "EP: Expert를 나누고 토큰 보내기"
+description: "MoE의 Expert를 GPU에 배치하고 토큰을 전달·회수하는 과정을 따라가며, 여러 결과의 결합과 작업량 불균형을 설명합니다."
+date: 2026-09-18
+---
+
+[MoE](/posts/moe/)에서는 토큰마다 여러 Expert 중 일부를 골라 계산합니다. Expert는 서로 다른 가중치를 가진 계산 모듈이며, 보통 MLP에 해당합니다. 어떤 Expert를 사용할지 고르는 모듈이 라우터(router)입니다.
+
+이 Expert들을 GPU에 나눠 보관하는 방법이 **전문가 병렬화(Expert Parallelism, EP)입니다**. 문제는 토큰이 있는 GPU와 선택된 Expert가 있는 GPU가 다를 수 있다는 점입니다. 먼저 토큰을 보내고 결과를 돌려받는 과정을 따라가고, 여러 Expert를 선택할 때의 결합과 작업량 불균형을 살펴보겠습니다.
+
+## Expert를 배치하고 토큰 목적지 정하기
+
+Expert E0·E1을 GPU 0에, E2·E3를 GPU 1에 두겠습니다. 이들은 같은 Expert의 복제본이 아니라 서로 다른 가중치를 가진 네 Expert입니다. 먼저 토큰마다 하나를 선택하는 top-1 라우팅을 사용합니다.
+
+[![GPU 0의 t1을 GPU 1의 E2로 보내고 GPU 1의 t2를 GPU 0의 E1로 보낸 뒤 결과를 원래 GPU로 돌려보냅니다.](/images/expert-parallelism/01-dispatch.png)](/images/expert-parallelism/01-dispatch.png)
+
+처음 GPU 0에는 t0·t1이, GPU 1에는 t2·t3가 있습니다. 라우터가 t0에는 E0, t1과 t3에는 E2, t2에는 E1을 골랐다고 하겠습니다. GPU 0의 t1은 GPU 1로, GPU 1의 t2는 GPU 0으로 가야 합니다. t0과 t3는 이미 필요한 Expert와 같은 GPU에 있습니다.
+
+Expert 가중치를 토큰 쪽으로 매번 옮기는 대신, **토큰의 벡터를 해당 Expert 쪽으로 보냅니다.** 목적지가 같은 벡터를 묶고 Expert별로 정렬하면 로컬 행렬 계산을 수행하기 쉬워집니다. GPU마다 여러 Expert를 가질 수 있으므로 GPU 도착과 Expert별 배치는 구별해야 합니다.
+
+## 계산한 결과를 원래 토큰에 연결하기
+
+Expert 계산이 끝나면 결과가 필요한 곳으로 돌려보내야 합니다. 그림에서는 토큰이 출발한 GPU로 결과를 회수합니다. t1의 E2 결과는 GPU 0으로, t2의 E1 결과는 GPU 1로 돌아가고, 원래 토큰 순서에 맞춰 다음 연산으로 이어집니다.
+
+이 흐름은 [All-to-All](/posts/collective-communication-combinations/)에서 본 목적지별 교환과 연결됩니다. 다만 실제 라우팅에서는 상대별 토큰 수가 같지 않을 수 있습니다. 고정 크기의 조각을 교환한 기초 그림과 달리, 개수·위치 정보와 패딩 또는 가변 크기 전송을 처리해야 할 수 있습니다.
+
+[Megatron의 MoE 문서](https://docs.nvidia.com/megatron-core/developer-guide/latest/user-guide/features/moe.html)는 All-to-All을 사용하는 토큰 전달뿐 아니라 다른 dispatcher도 설명합니다. 따라서 EP를 특정 집합 통신 함수 하나와 동일하게 정의하지는 않습니다. 필요한 의미는 **선택된 Expert가 입력을 받고, 그 출력이 올바른 토큰에 연결되는 것**입니다.
+
+## 여러 Expert의 출력을 결합하기
+
+top-2라면 한 토큰에 두 Expert가 선택됩니다. 토큰의 벡터는 선택된 두 계산에 모두 사용되고, 결과도 둘 생깁니다. 두 결과를 어떻게 결합할지는 모델이 정합니다.
+
+[![토큰 하나를 E0과 E2에 보내고 출력에 0.7과 0.3을 곱해 합칩니다.](/images/expert-parallelism/02-combine.png)](/images/expert-parallelism/02-combine.png)
+
+그림은 E0과 E2의 출력 u₀·u₂에 각각 0.7과 0.3을 곱해 더하는 예입니다. 두 값은 모델 가중치 행렬의 조각이 아니라 **서로 다른 Expert가 만든 결과**입니다. 각 출력에 라우팅 가중치를 적용한 뒤 올바른 토큰으로 합쳐야 합니다.
+
+선택한 Expert 수가 늘면 Expert 계산과 전달할 작업도 늘어납니다. 다만 Expert 둘이 같은 GPU에 있으면 GPU 사이로 동일한 입력을 두 번 보낼 필요가 없도록 묶을 수도 있습니다. 실제 네트워크 전송량은 선택 수뿐 아니라 Expert 배치와 전달 구현에 좌우됩니다.
+
+## Expert 수와 실제 작업량 구별하기
+
+GPU마다 Expert를 같은 개수로 배정했다고 계산량까지 같아지지는 않습니다. 어떤 Expert가 많이 선택되는지는 입력과 라우터에 따라 달라집니다.
+
+[![E0과 E1은 각각 한 토큰, E2는 여섯 토큰, E3는 영 토큰을 처리합니다.](/images/expert-parallelism/03-imbalance.png)](/images/expert-parallelism/03-imbalance.png)
+
+같은 크기의 Expert 네 개에 토큰 여덟 개가 1·1·6·0개로 배정되면 GPU 0은 두 토큰, GPU 1은 여섯 토큰을 처리합니다. 바쁜 GPU의 결과가 필요한 작업은 그 결과가 도착할 때까지 기다려야 합니다. 토큰 수가 세 배라고 실행 시간도 정확히 세 배라는 뜻은 아니지만, Expert 개수만 균등하게 나누는 방식의 한계를 보여줍니다.
+
+Expert당 토큰이 너무 적으면 작은 행렬 계산이 많아져 효율이 낮을 수도 있습니다. 반대로 특정 GPU에 토큰이 몰리면 계산뿐 아니라 수신 버퍼와 통신에도 부담이 집중됩니다. [vLLM의 EP 설명](https://docs.vllm.ai/en/latest/serving/expert_parallel_deployment/)도 Expert 배치와 부하 분산을 주요 실행 문제로 다룹니다.
+
+## 절약한 메모리와 늘어난 전달 함께 보기
+
+EP는 Expert 가중치를 여러 GPU에 나누므로 각 GPU가 모든 Expert를 복제할 필요를 줄입니다. 그러나 어텐션이나 공통 모듈까지 자동으로 같은 비율로 나눠지는 것은 아닙니다. 입력·출력 버퍼와 다른 모델 부분의 배치도 별도로 봐야 합니다.
+
+학습과 추론 모두 순전파에서 라우팅·전달·Expert 계산·결합이라는 관계를 가집니다. 학습에는 역방향 기여를 전달하고 가중치를 갱신하는 작업이 더해집니다. 실제 이득은 모델 크기뿐 아니라 토큰 수, Expert별 분포, GPU 사이 연결에 따라 달라집니다.
+
+여섯 병렬화 방법에서 무엇을 나누고 무엇을 주고받는지 살펴봤습니다. 이제 [여러 GPU를 어떻게 배치할까?](/posts/choosing-parallelism/)에서 같은 GPU 자원을 서로 다르게 묶었을 때 어떤 기준으로 선택할지 정리하겠습니다.

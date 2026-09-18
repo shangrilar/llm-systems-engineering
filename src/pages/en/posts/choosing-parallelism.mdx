@@ -1,0 +1,61 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: choosing-parallelism
+title: "How Should We Arrange Multiple GPUs?"
+description: "Compare replicas and compute groups on the same four GPUs, choosing parallelization using memory fit, latency, throughput, and communication."
+date: 2026-09-18
+---
+
+After learning several parallelization methods, the next question is which to enable. It is better to start with **what currently prevents execution and which outcome needs improvement**. A model that does not fit, a slow individual request, and a growing request queue can call for different placements.
+
+We will arrange four GPUs in three ways. First, we will check whether required data fits on each GPU, then compare latency and throughput among feasible arrangements. Finally, we will relate placement to connectivity and other parallelization methods, and identify what to measure after a change.
+
+## Grouping the Same GPUs in Different Ways
+
+Consider a dense model processing independent requests with fixed weights. One full model per GPU gives four replicas. Alternatively, partition each model across two GPUs and create two such replicas, or let all four GPUs cooperate on one model execution.
+
+[![Compare four single-GPU replicas, two two-GPU TP replicas, and one four-GPU TP replica.](/images/choosing-parallelism/en/01-layouts.png)](/images/choosing-parallelism/en/01-layouts.png)
+
+With two two-GPU replicas, GPUs 0 and 1 form one TP group, and GPUs 2 and 3 another. GPUs within a group communicate for the same request; the two replicas receive different requests. This is TP 2 × DP 2 in our example.
+
+Larger groups can divide a model’s weights and some computation further, but leave fewer independent replicas on the same four GPUs. Compare both resources assigned per request and independently operated model groups. Framework option names may have different group meanings for different model components; here we refer to the actual placement inside each border.
+
+## Filtering Deployments by Memory Fit
+
+Assume 24 GiB of usable memory per GPU and 32 GiB of model weights. GiB measures memory capacity using powers of two. Assume weights divide evenly with TP and that each GPU additionally needs 8 GiB for request state, activations, communication buffers, and other storage.
+
+[![With 24 GiB GPUs, 32 GiB weights and 8 GiB extra state, per-GPU totals are 40, 24 and 16 GiB.](/images/choosing-parallelism/en/02-memory.png)](/images/choosing-parallelism/en/02-memory.png)
+
+The four-replica arrangement is ruled out: weights alone need 32 GiB on each GPU. Although the four GPUs total 96 GiB, each must hold the data required locally. Their memories do not automatically become one large shared memory.
+
+TP 2 uses 16 GiB of weights plus 8 GiB of additional storage, totaling 24 GiB. It fits arithmetically but has no headroom for larger inputs or transient usage. TP 4 uses 16 GiB total, leaving 8 GiB. That is a reason to examine TP 4 under these assumptions, not yet a conclusion that it is faster.
+
+These are **assumptions for capacity arithmetic, not measured memory usage of a real model**. Actual additional storage depends on batch size, context length, TP degree, and implementation. Not all weights may divide evenly. Check peak usage under the intended workload, not merely successful loading with one request.
+
+## Evaluating Latency and Throughput Together
+
+Which fitting deployment is preferable? TP can accelerate a request by dividing computation, but adds communication and waiting between operations. TP 4 need not beat TP 2. More replicas can process different requests, but long per-replica execution or insufficient demand can limit the benefit.
+
+[![Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.](/images/choosing-parallelism/en/03-goals.png)](/images/choosing-parallelism/en/03-goals.png)
+
+User-visible latency runs from arrival to completion and includes queueing. Throughput is completed work per unit time. With varying request lengths, compare input and output token workloads as well as request counts. In sequential token generation, time to the first result and intervals between subsequent results can also be distinguished.
+
+Let q₂ be sustained throughput of one two-GPU group and q₄ that of one four-GPU group. With enough input and no extra contention between replicas, two two-GPU replicas provide roughly 2q₂ overall. **Whether q₄ exceeds 2q₂ must be measured.** Higher throughput obtained by allowing long queues may also violate a latency target.
+
+First specify acceptable latency and input conditions, then compare sustained throughput while satisfying them. Inspect latency distributions so a good average does not hide very slow requests. Deployments that fail for lack of memory must be resolved before entering a speed ranking.
+
+## Matching Combinations to Connectivity
+
+If the links within GPU pairs 0–1 and 2–3 are fast and links between pairs slower, keeping repeatedly communicating TP groups within the pairs is a candidate. The same TP degree can incur different shared-link traffic depending on group membership. The distinction between logical relationships and physical links from [Ring and Tree](/en/posts/collective-ring-tree/) matters again.
+
+Combine other methods according to the remaining problem. Consider SP for replicated activations around TP regions, and CP for long-context attention and activations. PP partitions model layers but needs enough inputs and balanced stages to fill the pipeline. MoE models can partition experts with EP, considering routing distribution and token exchange together.
+
+Do not assume every parallelization degree is an independent factor to multiply into the GPU count. The SP described earlier changes activation placement within an existing TP group. Draw actual group membership and identify what is replicated or partitioned before describing a combination.
+
+## Checking the New Bottleneck After a Change
+
+Record the model, precision, input/output length distributions, request arrival pattern, GPUs, links, and software when comparing deployments. Also record execution settings tuned for each placement, and distinguish initial preparation from steady execution. If conditions differ, explain which change the comparison reflects.
+
+For each candidate, inspect peak memory, latency distribution, sustained throughput, and failures. Then examine the execution timeline: is work waiting for computation, delayed transfers, or a heavily loaded participant? Adding durations of overlapping computation and communication can misrepresent overall completion time.
+
+[From Operation Optimization to Model Performance](/en/posts/model-performance-and-bottlenecks/) showed how optimization can move a bottleneck. GPU placement does too. Communication may become limiting after computation is divided; queueing may become more important after memory pressure is relieved. **Choose a placement that meets the objective, then find the next constraint in the changed end-to-end execution.** That is the process of selecting and optimizing parallelization.
