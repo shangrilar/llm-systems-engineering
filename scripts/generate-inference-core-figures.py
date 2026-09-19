@@ -112,6 +112,22 @@ for LANG in ['ko','en']:
     b+=text(48,1126,('단계 사이의 요청 관리입니다. GPU 커널을 중간에 끊는 흐름을 뜻하지 않습니다.','These are request-management steps, not interruptions of a running GPU kernel.'),22,MUTED,width=1104)
     save(a,'02-request-lifecycle',('요청 도착에서 종료까지','From request arrival to completion'),('개념적 실행 지도입니다. 선택·공간 확보·출력 전달의 세부 순서는 엔진마다 다릅니다.','A conceptual map; engines differ in how they order selection, allocation, and delivery.'),b,1172,('요청은 입력 준비와 대기를 거쳐 자원에 맞게 선택되어 실행되고 상태와 출력을 갱신합니다. 미완료 요청은 반복하고 KV 부족 시 진입 지연이나 중단과 회수로 처리합니다.','Requests wait after input preparation, are selected within resource limits, execute, and update state and output. Unfinished requests repeat; KV pressure can delay admission or trigger preemption and reclamation.'),('대기, 실행, 상태 관리, 출력 전달이 하나의 반복을 이룹니다. 실행 대상에서 빠지는 것과 KV 공간을 회수하는 것은 별개의 동작입니다.','Queueing, execution, state management, and delivery form a loop. Excluding a request from a batch and reclaiming its KV storage are separate actions.'))
 
+    b=text(48,219,('학습','Training'),29,TEAL,True)+text(642,219,('추론','Inference'),29,BLUE,True)
+    b+=box(48,255,510,126,('모델 가중치 W','Model weights W'),('한 배치의 입력들이 함께 사용\n가중치 갱신의 대상','Shared by inputs in a batch\nUpdated during training'))
+    b+=box(642,255,510,126,('모델 가중치 W','Model weights W'),('여러 요청이 함께 사용\n생성 동안 가중치 유지','Shared by multiple requests\nKept fixed during generation'))
+    b+=text(48,433,('가중치 갱신을 위해 유지','Retained for weight updates'),26,TEAL,True,width=510)
+    b+=text(642,433,('이후 생성을 위해 유지','Retained for later generation'),26,ORANGE,True,width=510)
+    b+=box(48,470,510,132,('저장 활성값','Saved activations'),('순전파에서 만든 중간값\n역전파의 기울기 계산에 사용','Forward-pass intermediate values\nRetained for backward'),TEALF,TEAL)
+    b+=box(48,622,510,132,('그레디언트','Gradients'),('역전파로 계산한 기울기\n가중치 갱신에 사용','Computed by backpropagation\nUsed to update the weights'),TEALF,TEAL)
+    b+=box(48,774,510,132,('옵티마이저 상태','Optimizer state'),('업데이트에 쓰는 누적 통계 등\n옵티마이저에 따라 구성이 달라짐','Running statistics, for example\nContents depend on the optimizer'),TEALF,TEAL)
+    b+=box(642,470,510,132,('KV 캐시','KV cache'),('처리한 토큰에서 계산한 K와 V\n이후 생성에서 다시 읽기 위해 보관','K and V from processed tokens\nReused in later generation'),ORANGEF,ORANGE)
+    b+=text(642,661,('요청의 문맥을 이어 가는 상태','State for a request’s context'),25,ORANGE,True,width=510)
+    b+=text(642,714,('더 많은 요청을 동시에 유지하거나\n더 긴 문맥을 보관하면\nKV에 필요한 저장 공간이 늘어납니다.','Keeping more requests active\nor retaining longer contexts\nincreases the space needed for KV.'),24,width=510)
+    b+=note(955,('양쪽 모두 실행 중 중간값과 작업 공간이 필요합니다','Both also need intermediate values and workspace'),('추론도 실행 중 활성값을 만듭니다. 역전파를 위해 보관하지 않는다는 점이 다릅니다.','Inference also creates activations during execution, without retaining them for backpropagation.'),142)
+    b+=text(48,1141,('카드는 저장 역할을 설명하며, 독립된 메모리 영역의 분할이나 실제 사용량·비율을 나타내지 않습니다.','Cards explain storage roles, not a partition into separate memory regions or actual amounts and proportions.'),22,MUTED,width=1104)
+    b+=text(48,1204,('전체 가중치 학습과 KV 캐시 생성의 GPU 내 기본 구성입니다. 세부 저장 방식은 달라질 수 있습니다.','Typical full-parameter training and generation with KV caching, with state on the GPU. Storage choices can vary.'),22,MUTED,width=1104)
+    save(a,'03-memory-state',('학습과 추론에서 사용하는 GPU 메모리','GPU memory in training and inference'),('둘 다 모델 가중치를 사용하지만, 다음 계산을 위해 보관하는 상태는 다릅니다.','Both use model weights, but retain different state for the computations that follow.'),b,1250,('학습과 추론 모두 모델 가중치를 GPU 메모리에 둡니다. 학습은 역전파용 활성값, 그레디언트, 옵티마이저 상태를 유지하고 추론은 이후 생성에 재사용할 KV 캐시를 유지합니다. 두 실행 모두 중간값과 작업 공간이 필요합니다. 카드는 저장 목적을 비교하며 사용량과 비율을 나타내지 않습니다.','Both training and inference store model weights in GPU memory. Training retains activations for backpropagation, gradients, and optimizer state; inference retains KV for later generation. Both also need intermediate values and workspace. Cards compare storage roles, not memory amounts or proportions.'),('가중치는 두 실행에 공통으로 필요합니다. 학습은 가중치 갱신에 필요한 상태를, 추론은 이후 생성에 재사용할 KV를 보관하며, 둘 다 계산 중 중간값과 작업 공간을 사용합니다.','Weights are needed in both workloads. Training retains state for weight updates, inference retains KV for later generation, and both use intermediate values and workspace while executing.'))
+
     a='inference-kv-cache'
     b=note(198,('현재 상태: p0 p1 p2를 처리한 뒤 x0를 선택했습니다','Current state: p0 p1 p2 have been processed and x0 selected'),('이제 x0를 입력으로 사용해 x1을 선택할 차례입니다.','The next step consumes x0 to select x1.'))
     b+=text(48,365,('캐시 없이 다시 계산','Recompute without a cache'),27,BLUE,True)+text(642,365,('과거 KV 재사용','Reuse previously computed KV'),27,TEAL,True)
@@ -191,7 +207,7 @@ for LANG in ['ko','en']:
     b+=text(48,1160,('기본 예시: 독립적인 KV, prefix 공유 없음. 실제 병목은 T·문맥 길이·정밀도·모델·하드웨어에 따라 달라집니다.','Baseline: independent KV, no prefix sharing. The bottleneck varies with T, context length, precision, model, and hardware.'),22,MUTED,width=1104)
     save(a,'03-memory-reads',('가중치 재사용과 KV 읽기는 다릅니다','Weight reuse and KV reads behave differently'),('각 요청은 이번 decode에서 새 입력 하나를 처리합니다. 화살표는 데이터 의존 관계입니다.','Each request consumes one new input in this decode step. Arrows denote data dependencies.'),b,1234,('요청 A B C는 동일한 가중치 W를 재사용하지만 자기 요청의 독립된 KV를 각각 읽습니다. 배칭은 가중치 재사용을 늘려도 누적 문맥을 읽는 비용을 없애지 않습니다.','Requests A, B, and C reuse the same weights W, but each reads its own independent KV. Batching improves weight reuse without removing the cost of reading accumulated context.'),('작은 배치의 decode에서는 가중치와 누적 K/V의 읽기 비용을 함께 봐야 합니다. 가중치는 요청 간 재사용할 수 있지만 독립적인 KV는 요청 수와 문맥 길이에 따라 늘어납니다.','For small-batch decode, consider both weight and accumulated K/V reads. Weights can be reused across requests, whereas independent KV grows with request count and context length.'))
 
-assert len(MANIFEST) == 14
+assert len(MANIFEST) == 16
 for article in {f['article'] for f in MANIFEST}:
     ko = [(f['slug'],f['width'],f['height']) for f in MANIFEST if f['article']==article and f['locale']=='ko']
     en = [(f['slug'],f['width'],f['height']) for f in MANIFEST if f['article']==article and f['locale']=='en']

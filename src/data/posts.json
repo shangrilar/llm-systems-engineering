@@ -869,8 +869,8 @@
         "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "8d03b4d0bc153b573d7c86097637c2f2c2f5c711628cb24983484aaece9bcf66",
-        "reviewNote": "2026-09-19: Revised Korean and English workload framing, five section headings, request-arrival assumptions, loss and weight-update explanation, and both execution comparison figures reviewed. Static figures checked separately from the prose revision. User review pending."
+        "sourceRevision": "6affbda2e66b41b18f65e9d716ef78a52110c7a56e3467da27db6f0323b3c717",
+        "reviewNote": "2026-09-19: Revised Korean and English workload framing, five section headings, request-arrival assumptions, loss and weight-update explanation, and both execution comparison figures reviewed. Static figures checked separately from the prose revision. User review pending. 2026-09-19: Compared the revised state-management section and new memory-figure alt text in both languages: shared weights, saved training activations, gradients, optimizer state, a brief KV-cache definition and next-article link, temporary computation memory, and request-dependent KV growth agree. Figure review is recorded separately."
       }
     }
   },
