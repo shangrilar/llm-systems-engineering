@@ -58,3 +58,7 @@
 - [SP: TP와 함께 활성값 나누기](https://llm-systems-engineering.pages.dev/posts/sequence-parallelism/)
 - [CP: 긴 문맥을 여러 GPU로 나누기](https://llm-systems-engineering.pages.dev/posts/context-parallelism/)
 - [PP: 모델의 층을 나누어 실행하기](https://llm-systems-engineering.pages.dev/posts/pipeline-parallelism/)
+
+#### 워크로드
+
+- [같은 모델, 다른 워크로드: 추론과 학습](https://llm-systems-engineering.pages.dev/posts/inference-and-training/)
