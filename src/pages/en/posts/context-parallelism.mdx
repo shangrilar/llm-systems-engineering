@@ -1,0 +1,106 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: context-parallelism
+title: "CP: Split Long Contexts Across GPUs"
+description: "Compare CP with SP, then follow how Ring and Ulysses connect information across GPUs to complete attention."
+date: 2026-09-18
+---
+
+import SequenceContextFigures from '../../../components/SequenceContextFigures.astro';
+
+Longer contexts mean more tokens and activations to process. Splitting tokens across GPUs can reduce the load on each device, but attention introduces a problem: **computing a token assigned to one GPU can require information from tokens on another GPU**. Partitioning tokens must preserve the original model's attention dependencies.
+
+This article first compares the scope of [sequence parallelism (SP)](/en/posts/sequence-parallelism/) with context parallelism, and explains why attention needs information exchange between GPUs. We then examine Ring, which keeps Q in place and circulates K/V, and Ulysses, which redistributes token-partitioned data by head. Finally, we see why equal token counts can still produce unequal workloads in causal attention.
+
+The figures describe a forward pass that processes multiple tokens together. We assume **CP alone, with identical model weights on each GPU**. TP and CP can be combined later, but here we focus on token placement and the movement of information needed for attention.
+
+## Extend partitioning from SP to CP
+
+The Megatron-style SP discussed earlier partitions activations by token in the normalization and residual regions between TP blocks. All-Gather combines the inputs before entering TP, so inside TP attention each GPU has all tokens for its assigned heads.
+
+**Context parallelism (CP)** assigns tokens from a long context across GPUs during model execution, including attention. GPUs with the same weights compute Q/K/V Projections and FFNs for their local tokens, using communication to connect attention to other tokens. [NVIDIA's CP documentation](https://docs.nvidia.com/megatron-core/developer-guide/latest/user-guide/features/context_parallel.html) also distinguishes earlier SP from CP by the operations covered.
+
+<SequenceContextFigures locale="en" article="cp" figure="1" />
+
+Both methods hold all features of some tokens during normalization at the top of the figure. Their difference appears in attention and the FFN. SP+TP on the left partitions features or heads for all tokens. The CP example on the right uses the same model weights to compute assigned tokens. An FFN can operate on local tokens alone because it does not use other tokens' values, while attention requires information from other GPUs.
+
+This does not mean that CP preserves the same token layout at every instant. To produce the outputs for its assigned tokens, a GPU may fetch K/V or temporarily change the partitioning axis inside attention. The right side of the figure shows which tokens' Q and final outputs each GPU owns.
+
+Terminology also varies across publications. Ulysses, discussed below, is itself called *Sequence Parallelism* in its original description. Here, SP refers specifically to the Megatron method from the preceding article; we discuss Ulysses alongside CP as **a way to distribute attention over a long context across GPUs**.
+
+## Why attention needs information from other GPUs
+
+Suppose GPU 0 holds tokens t0 and t1, while GPU 1 holds t2 and t3. Each GPU multiplies its local tokens by the weights to produce Q, K, and V. This Projection step does not need other tokens' values.
+
+The attention computation that follows is different. Q uses scores against K to determine how much to attend to each position, and combines V with those weights. For example, in causal attention, t3 can attend to itself and all preceding tokens t0, t1, and t2. Even if GPU 1 holds t3's Q, it cannot complete the original attention without K/V for t0 and t1.
+
+<SequenceContextFigures locale="en" article="cp" figure="2" />
+
+Rows represent Q tokens and columns represent K tokens. A dot marks an allowed attention relationship; future tokens are masked. Following the Q(t3) row shows the need for K(t0) and K(t1) on GPU 0. The corresponding V(t0) and V(t1) must also contribute to the output.
+
+This matrix illustrates relationships between tokens. It does not mean that an implementation must materialize the entire score matrix in memory at once. The required relationships can be preserved while fetching data in blocks or redistributing it for computation.
+
+## Circulate K/V blocks with Ring
+
+The first method **keeps Q on its assigned GPU and brings in K/V blocks one at a time**. GPUs form a ring, passing their K/V blocks to the next GPU. Each arriving block contributes to attention for the local Q before the next block is processed. This is the core structure of [Ring Attention](https://arxiv.org/abs/2310.01889).
+
+The next figure partitions eight tokens from one head across four GPUs, with two tokens per GPU. To make the transfer order clear, it first shows a case where every token attends to all tokens. We examine the workload under a causal mask later.
+
+<SequenceContextFigures locale="en" article="cp" figure="3" />
+
+Follow GPU 0. Q0 contains the queries for t0 and t1 and stays on GPU 0 throughout the computation. Local K0/V0 first contribute the information from t0 and t1. After one transfer, K3/V3 arrive from GPU 3 to process t6 and t7, followed by K2/V2 and K1/V1 for the remaining tokens. After three transfers, all four blocks, including the local block, have contributed. Every other GPU follows the same process for its own Q.
+
+The cells filled at the bottom show which Q–K token pairs GPU 0 has processed. K/V move, but **the output being completed always belongs to the local Q tokens**. Instead of gathering all K/V at once, the GPU can compute and accumulate each arriving block.
+
+The attention outputs from individual blocks must not simply be added or averaged. Softmax weights depend on all scores referenced by that Q. As discussed in [Online Softmax](/en/posts/online-softmax/), accumulation tracks the maximum and denominator along with the weighted sum, adjusting earlier accumulations to the new block's scale. This is where [FlashAttention's](/en/posts/flash-attention/) blockwise computation connects to data transfers across GPUs.
+
+The payload and purpose differ from [Ring All-Reduce](/en/posts/collective-ring-tree/). Ring All-Reduce is a collective that combines values across GPUs and shares the result. Here, GPUs receive K/V blocks to compute attention outputs for their own Q. K/V themselves are not summed together.
+
+Receiving the next block while computing the current one can reduce communication waits. How much actually overlaps depends on block computation time, link speed, buffers, and execution. The figure's Next steps follow data dependencies; they are not a measured execution timeline.
+
+## Change token partitions into head partitions with Ulysses
+
+Another method **places a head's entire context on one GPU to compute attention**. [DeepSpeed Ulysses](https://github.com/deepspeedai/DeepSpeed/blob/master/blogs/deepspeed-ulysses/README.md) achieves this by changing the layout of Q, K, and V.
+
+Consider four tokens and two heads. Initially, GPU 0 holds all heads for t0 and t1, while GPU 1 holds all heads for t2 and t3. After each GPU produces Q/K/V for its local tokens, head h0's data go to GPU 0 and head h1's data go to GPU 1.
+
+This uses **All-to-All**, a collective in which each GPU sends and receives different shards for different peers. Unlike All-Gather, it does not replicate all data on all GPUs; it assigns the required head shards to each GPU.
+
+<SequenceContextFigures locale="en" article="cp" figure="4" />
+
+After the first All-to-All, GPU 0 has h0's data for t0 through t3, while GPU 1 has h1's data for the same four tokens. The token-partitioned array has become head-partitioned. Each GPU now holds Q/K/V for its assigned head across the full context, so it can complete that head's attention locally.
+
+After computation, the layout is restored. GPU 0 sends the t2–t3 portion of h0's output to GPU 1, while GPU 1 sends the t0–t1 portion of h1's output to GPU 0. This **reverse All-to-All moves the computed attention output O, rather than Q, K, and V**.
+
+GPU 0 then has all head outputs for t0 and t1, and GPU 1 has all head outputs for t2 and t3. They can concatenate the head outputs, compute Output Projection, and proceed through the residual connection and normalization to the FFN. Each GPU is once again responsible for its assigned tokens.
+
+This may resemble TP, which also partitions heads. But this figure **changes the layout of activations produced with replicated weights, rather than partitioning weights with TP**. Ring brings K/V to a fixed Q, whereas Ulysses moves Q/K/V together to assemble the full context for each assigned head.
+
+## Balance the workload in causal attention
+
+Now consider causal attention, which does not attend to future tokens. Early tokens have fewer positions to attend to, while later tokens have more. Equal token counts therefore do not imply equal attention workloads.
+
+If two GPUs each handle four of eight tokens, the GPU assigned the first tokens t0 through t3 computes `1+2+3+4 = 10` token pairs. The GPU assigned the later tokens t4 through t7 computes `5+6+7+8 = 26` pairs.
+
+<SequenceContextFigures locale="en" article="cp" figure="5" />
+
+Use Next to assign t0, t1, t6, and t7 to GPU 0, and t2, t3, t4, and t5 to GPU 1. Pairing early and late tokens gives each GPU 18 token pairs in this example. The row colors indicating GPU ownership change, while the triangle of allowed attention remains the same.
+
+In other words, **only GPU ownership changes; original token positions and the causal mask stay intact**. Preserving this distinction is necessary to compute attention over the original context. An implementation must fit this placement to its communication order and computation block size. Equal token-pair counts do not guarantee identical execution times, but the example shows where imbalance comes from and how placement can address it.
+
+## Weigh memory savings against communication cost
+
+Ring and Ulysses both aim to complete the original attention while partitioning the context, but place the required information differently.
+
+| Method | Layout for attention computation | Main communication |
+| --- | --- | --- |
+| Ring | Keep local Q and process K/V blocks in turn | K/V block transfers between GPUs |
+| Ulysses | Assemble the full context for assigned heads | Q/K/V All-to-All and reverse All-to-All for outputs |
+
+The CP-only examples partition token activations and computation, but each GPU holds identical model weights. Total GPU memory usage does not scale inversely with the partition count. Peak memory must include simultaneously held communication blocks and buffers, as well as activations retained for backpropagation.
+
+The basic Ulysses configuration requires heads that can be assigned across GPUs. Assigning two heads to two GPUs, one each, is straightforward in the figure. The conditions change with head counts, parallelism degree, and the head structure of Q versus K/V. With Ring, adding GPUs can also shrink local computation while increasing transfer stages, so the balance between computation and communication must be checked.
+
+Training also requires communicating gradients during backpropagation. Processing many input tokens together differs from generating tokens one at a time while reading existing K/V. The forward-pass figures here do not directly describe execution in every setting.
+
+We have examined TP as partitioning feature-wise computation for the same input, SP as partitioning activations between TP regions, and CP as partitioning a long context while preserving its attention relationships. Next, pipeline parallelism (PP) moves beyond partitioning within a layer to placing different model layers on different GPUs.

@@ -1,0 +1,77 @@
+---
+import steps from '../data/sp-cp-steps.json';
+interface Props { locale: 'ko' | 'en'; article: 'sp' | 'cp'; figure: string }
+const { locale, article, figure } = Astro.props;
+const figures: Record<string, {slug: string; label: string; alt: string; height: number}[]> = steps[locale][article];
+const frames = figures[figure];
+const interactive = frames.length > 1;
+const base = `/images/${article === 'sp' ? 'sequence-parallelism' : 'context-parallelism'}/${locale === 'en' ? 'en/' : ''}`;
+const overview = frames[frames.length - 1].slug;
+const t = locale === 'ko' ? {
+  prev: '← 이전', next: '다음 →', reset: '처음', label: `그림 ${Number(figure)} 단계 선택`,
+  expand: '현재 단계 그림 확대', overview: '완성 그림 보기',
+  help: '다음을 눌러 계산 과정을 따라가세요. 그림을 누르면 확대할 수 있습니다.',
+  noScript: '단계 버튼은 JavaScript가 필요합니다. 완성 그림은 링크로 볼 수 있습니다.',
+} : {
+  prev: '← Previous', next: 'Next →', reset: 'Reset', label: `Figure ${Number(figure)} step`,
+  expand: 'Enlarge the current step', overview: 'View the completed figure',
+  help: 'Use Next to follow the computation. Click the figure to enlarge it.',
+  noScript: 'Step controls require JavaScript. The completed figure is available through the link.',
+};
+---
+<div class="sp-cp-steps" id={`figure-${Number(figure)}`} data-sp-cp-steps data-base={base}>
+  {interactive && <div class="toolbar">
+    <button data-prev type="button" disabled>{t.prev}</button>
+    <select data-steps aria-label={t.label} disabled>
+      {frames.map(frame => <option value={frame.slug} data-alt={frame.alt}>{frame.label}</option>)}
+    </select>
+    <button data-next type="button" disabled>{t.next}</button>
+    <button data-reset type="button" disabled>{t.reset}</button>
+  </div>}
+  <div class="figure-scroll"><a data-stage-link href={`${base}${frames[0].slug}.svg`} target="_blank" aria-label={t.expand}>
+    <img data-stage src={`${base}${frames[0].slug}.svg`} alt={frames[0].alt} width="1200" height={frames[0].height} loading="lazy" />
+  </a></div>
+  <p class="step-info"><span data-status role="status" aria-live="polite">{frames[0].label}</span><a href={`${base}${overview}.svg`}>{t.overview}</a></p>
+  <p class="help">{interactive ? t.help : (locale === 'ko' ? '그림을 누르면 확대할 수 있습니다.' : 'Click the figure to enlarge it.')}</p>
+  {interactive && <noscript><p>{t.noScript}</p></noscript>}
+</div>
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+  button, select { font: inherit; padding: 10px 13px; border: 1px solid #bdccd9; border-radius: 8px; background: white; color: #182c40; min-height: 44px; }
+  button:disabled { opacity: .4; }
+  select { flex: 1; min-width: 160px; max-width: 100%; }
+  .figure-scroll { overflow-x: auto; }
+  [data-stage-link] { display: block; min-width: 720px; }
+  img { width: 100%; height: auto; }
+  .step-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; }
+  .help { font-size: 14px; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #2470bb; outline-offset: 3px; }
+</style>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-sp-cp-steps]').forEach(root => {
+    const select = root.querySelector<HTMLSelectElement>('[data-steps]');
+    if (!select) return;
+    const prev = root.querySelector<HTMLButtonElement>('[data-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
+    const reset = root.querySelector<HTMLButtonElement>('[data-reset]')!;
+    const image = root.querySelector<HTMLImageElement>('[data-stage]')!;
+    function show(n: number) {
+      select.selectedIndex = Math.max(0, Math.min(select.options.length - 1, n));
+      const option = select!.selectedOptions[0];
+      const src = root.dataset.base + option.value + '.svg';
+      image.src = src;
+      image.alt = option.dataset.alt!;
+      root.querySelector<HTMLAnchorElement>('[data-stage-link]')!.href = src;
+      root.querySelector('[data-status]')!.textContent = option.textContent;
+      prev.disabled = select.selectedIndex === 0;
+      next.disabled = select.selectedIndex === select.options.length - 1;
+    }
+    select.disabled = false;
+    reset.disabled = false;
+    show(0);
+    prev.addEventListener('click', () => show(select.selectedIndex - 1));
+    next.addEventListener('click', () => show(select.selectedIndex + 1));
+    select.addEventListener('change', () => show(select.selectedIndex));
+    reset.addEventListener('click', () => show(0));
+  });
+</script>

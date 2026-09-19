@@ -723,5 +723,55 @@
         "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
       }
     }
+  },
+  {
+    "articleId": "sequence-parallelism",
+    "order": 30,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "sequence-parallelism",
+        "title": "SP: TP와 함께 활성값 나누기",
+        "description": "TP 사이에 남는 활성값의 중복을 줄이고, 토큰 분할과 특징 분할을 오가며 트랜스포머 레이어를 계산하는 방법을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "sequence-parallelism",
+        "title": "SP: Partition Activations Alongside TP",
+        "description": "Reduce activation duplication between TP regions, and alternate between token and feature partitioning to compute a Transformer layer.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "aea836906e42d4c32bc29699e3cae2879fb5593c4b44d669f619946cc5589f8f",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+      }
+    }
+  },
+  {
+    "articleId": "context-parallelism",
+    "order": 31,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "context-parallelism",
+        "title": "CP: 긴 문맥을 여러 GPU로 나누기",
+        "description": "SP와의 차이를 살펴보고, Ring과 Ulysses가 GPU 사이의 정보를 연결해 어텐션을 완성하는 과정을 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "context-parallelism",
+        "title": "CP: Split Long Contexts Across GPUs",
+        "description": "Compare CP with SP, then follow how Ring and Ulysses connect information across GPUs to complete attention.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "f5b2626fe288d41920a2dd7562dc49300ae3cb7e94573a406e8506cf365c62b3",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+      }
+    }
   }
 ]

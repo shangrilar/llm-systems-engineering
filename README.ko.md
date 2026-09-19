@@ -55,3 +55,5 @@
 - [집합 통신은 어떻게 전달될까: Ring과 Tree](https://llm-systems-engineering.pages.dev/posts/collective-ring-tree/)
 - [DP: 모델을 복제해 입력 나누기](https://llm-systems-engineering.pages.dev/posts/data-parallelism/)
 - [TP: 하나의 연산을 여러 GPU로 나누기](https://llm-systems-engineering.pages.dev/posts/tensor-parallelism/)
+- [SP: TP와 함께 활성값 나누기](https://llm-systems-engineering.pages.dev/posts/sequence-parallelism/)
+- [CP: 긴 문맥을 여러 GPU로 나누기](https://llm-systems-engineering.pages.dev/posts/context-parallelism/)
