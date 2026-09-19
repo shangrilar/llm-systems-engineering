@@ -4,7 +4,7 @@
     "slug": "01-ring-reduce-scatter",
     "locale": "ko",
     "title": "Ring: 조각을 전달하며 합산하기",
-    "alt": "원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 각 단계의 화살표는 전송값, 상자는 수신 후의 합을 표시합니다.",
+    "alt": "원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 전체 벡터에서 갱신한 위치를 강조하며, 마지막에는 GPU마다 완성된 결과 한 칸과 나머지 중간값을 구별합니다.",
     "path": "public/images/collective-ring-tree/01-ring-reduce-scatter.svg",
     "width": 1200,
     "height": 2240
@@ -14,7 +14,7 @@
     "slug": "02-ring-all-gather",
     "locale": "ko",
     "title": "Ring: 완성된 조각을 모두에게",
-    "alt": "원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 세 단계 뒤 모두 A부터 D까지 보관합니다.",
+    "alt": "원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 빈 위치를 채워 세 단계 뒤 모두 [1111, 2222, 3333, 4444]를 보관합니다.",
     "path": "public/images/collective-ring-tree/02-ring-all-gather.svg",
     "width": 1200,
     "height": 2240
@@ -234,7 +234,7 @@
     "slug": "01-ring-reduce-scatter",
     "locale": "en",
     "title": "Ring: pass chunks and accumulate",
-    "alt": "Four GPUs arranged in a ring exchange and reduce chunks in three steps. Arrows show sent values and boxes show sums after receipt.",
+    "alt": "Four GPUs arranged in a ring exchange and reduce chunks in three steps. Each whole vector highlights its updated position; the final state distinguishes one completed result from intermediate values on each GPU.",
     "path": "public/images/collective-ring-tree/en/01-ring-reduce-scatter.svg",
     "width": 1200,
     "height": 2240
@@ -244,7 +244,7 @@
     "slug": "02-ring-all-gather",
     "locale": "en",
     "title": "Ring: distribute the completed chunks",
-    "alt": "Four GPUs arranged in a ring each forward one chunk per step. After three steps, all hold A through D.",
+    "alt": "Four GPUs arranged in a ring each forward one chunk per step. They fill missing positions and all hold [1111, 2222, 3333, 4444] after three steps.",
     "path": "public/images/collective-ring-tree/en/02-ring-all-gather.svg",
     "width": 1200,
     "height": 2240

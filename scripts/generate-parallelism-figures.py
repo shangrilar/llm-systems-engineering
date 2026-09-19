@@ -68,6 +68,16 @@ for _ in range(3):
     active=[(active[(r-1)%4][0],active[(r-1)%4][1]+vectors[r][active[(r-1)%4][0]]) for r in range(4)]
     rs.append(active.copy())
 assert active==[(r,1111*(r+1)) for r in range(4)]
+# Retain the whole working vector so each update can be followed in place.
+rs_vectors=[[v.copy() for v in vectors]]
+for state in rs[1:]:
+    current=[v.copy() for v in rs_vectors[-1]]
+    for r,(c,value) in enumerate(state):current[r][c]=value
+    rs_vectors.append(current)
+assert all(rs_vectors[3][r][r]==sum(v[r] for v in vectors) for r in range(4))
+assert rs_vectors[1][0]==[1,2,3003,4]
+assert rs_vectors[2][0]==[1,2202,3003,4]
+assert rs_vectors[3][0]==[1111,2202,3003,4]
 gather=[{r} for r in range(4)]; ag=[gather]
 for _ in range(3):
     gather=[gather[r]|gather[(r-1)%4] for r in range(4)];ag.append(gather)
@@ -90,7 +100,7 @@ for LANG in ['ko','en']:
         return b
 
     def ring_panel(y,step,gathered=False,continuous=True):
-        b=text(48,y+27,('시작 · 전달 전의 상태','Start · before any transfer') if step==0 else (f'{step}단계 · 전달한 뒤의 상태',f'Step {step} · state after transfer'),28,bold=True)
+        b=text(48,y+27,('시작 · 전달 전의 상태','Start · before any transfer') if step==0 else (f'{step}단계',f'Step {step}'),28,bold=True)
         centers=[(600,y+116),(930,y+285),(600,y+454),(270,y+285)]
         paths=[(758,y+145,899,y+222),(899,y+348,758,y+425),(442,y+425,301,y+348),(301,y+222,442,y+145)]
         labels=[(935,y+179),(935,y+405),(265,y+405),(265,y+179)]
@@ -105,23 +115,35 @@ for LANG in ['ko','en']:
                 c,v=rs[step-1][r];label=f'{"ABCD"[c]}: {v}'
             lx,ly=labels[r];b+=text(lx,ly,label,23,bold=True,anchor='middle')
         for r,(x,cy) in enumerate(centers):
-            b+=rect(x-150,cy-57,300,114,FILLS[r],COLORS[r])+text(x,cy-25,f'GPU {r}',24,COLORS[r],True,anchor='middle')
+            b+=rect(x-150,cy-57,300,114,FILLS[r],COLORS[r])+text(x,cy-33,f'GPU {r}',23,COLORS[r],True,anchor='middle')
+            changed=(r-step)%4 if gathered else (rs[step][r][0] if step else -1)
+            values=[1111*(c+1) if c in ag[step][r] else None for c in range(4)] if gathered else rs_vectors[step][r]
+            for c,value in enumerate(values):
+                cx=x-136+c*68
+                faded=(not gathered and step==3 and c!=r)
+                marked=(c==changed)
+                fill='#E9EDF0' if faded else ('white' if value is not None else '#F5F7F9')
+                b+=text(cx+32,cy-9,'ABCD'[c],16,MUTED,anchor='middle')
+                b+=rect(cx,cy-1,64,30,fill,COLORS[r] if marked else LINE)
+                if marked:b+=f'<rect x="{cx}" y="{cy-1}" width="64" height="30" rx="8" fill="none" stroke="{COLORS[r]}" stroke-width="3"/>'
+                b+=text(cx+32,cy+20,'—' if value is None else str(value),18,'#88939E' if faded else INK,marked,anchor='middle')
             if step==0:
-                value=f'{"ABCD"[r]} = {1111*(r+1)}' if gathered else str(vectors[r])
-                b+=text(x,cy+13,value,21,bold=True,anchor='middle')
-                label=('완성된 조각','Completed chunk') if gathered else ('처음 보낼 조각: '+'ABCD'[(r-1)%4],'First send: '+'ABCD'[(r-1)%4])
-                b+=text(x,cy+43,label,19,MUTED,anchor='middle')
+                label=('완성된 자기 조각만 보관','Only the owned result chunk') if gathered else ('처음 보낼 조각: '+'ABCD'[(r-1)%4],'First send: '+'ABCD'[(r-1)%4])
             elif gathered:
-                b+=text(x,cy+13,' · '.join('ABCD'[c] for c in sorted(ag[step][r])),26,bold=True,anchor='middle')
-                incoming='ABCD'[(r-step)%4]
-                b+=text(x,cy+43,('새로 받은 조각: '+incoming,'New chunk: '+incoming),19,MUTED,anchor='middle')
+                label=('새로 받은 값: ','Received: ');label=tr(label)+f'{"ABCD"[changed]} = {1111*(changed+1)}'
             else:
                 c,v=rs[step][r];incoming=rs[step-1][(r-1)%4][1]
-                b+=text(x,cy+13,f'{"ABCD"[c]} = {v}',26,bold=True,anchor='middle')
-                b+=text(x,cy+43,f'{incoming} + {vectors[r][c]}',21,MUTED,anchor='middle')
-        note=('받은 조각을 보관\n다시 더하지 않음','Keep received chunks\nNo further addition') if gathered else ('받은 값 + 자기 입력\n네 GPU가 동시에 합산','Received + local input\nAll four GPUs reduce')
-        if step==0:note=('A · B · C · D\n배열의 1 · 2 · 3 · 4번째 위치','A · B · C · D\nArray positions 1 · 2 · 3 · 4')
-        b+=text(600,y+278,note,21,MUTED,anchor='middle')
+                label=f'{"ABCD"[c]}: {vectors[r][c]} + {incoming} = {v}'
+            b+=text(x,cy+47,label,18,MUTED,anchor='middle')
+        if gathered:
+            note=('테두리: 새로 채운 위치\n—: 아직 받지 않은 결과','Outlined: newly filled slot\n—: result not yet received')
+            if step==0:note=('완성된 조각에서 시작\n—: 아직 없는 결과','Start with completed chunks\n—: missing result')
+            if step==3:note=('모든 위치가 채워짐\n네 GPU 모두 같은 결과','All positions filled\nSame result on all GPUs')
+        else:
+            note=('테두리: 이번에 더한 위치\n나머지 값은 그대로 유지','Outlined: updated position\nOther values are retained')
+            if step==0:note=('각 GPU의 입력 벡터\n아직 합산하지 않은 값','Input vector on each GPU\nNo reduction yet')
+            if step==3:note=('진한 칸: 완성된 결과 조각\n옅은 칸: 결과가 아닌 중간값','Dark: completed result chunk\nFaded: intermediate values')
+        b+=text(600,y+278,note,19,MUTED,anchor='middle')
         if continuous and step<3:b+=arrow(600,y+526,600,y+551)
         return b
 
@@ -130,13 +152,13 @@ for LANG in ['ko','en']:
     b+=text(48,389,('A · B · C · D = 배열의 첫째 · 둘째 · 셋째 · 넷째 위치','A · B · C · D = array positions 1 · 2 · 3 · 4'),23,MUTED)
     for step in range(1,4):b+=ring_panel(420+(step-1)*570,step)
     b+=banner(2100,('완성: GPU마다 합산된 조각 하나씩 보관','Done: one reduced chunk per GPU'),'GPU 0: A=1111    GPU 1: B=2222    GPU 2: C=3333    GPU 3: D=4444')
-    save(a,'01-ring-reduce-scatter',('Ring: 조각을 전달하며 합산하기','Ring: pass chunks and accumulate'),('화살표는 보내는 조각, 상자는 받은 뒤의 결과입니다. 색은 GPU를 구별합니다.','Arrows show sent chunks; boxes show results after receipt. Colors identify GPUs.'),b,2240,('원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 각 단계의 화살표는 전송값, 상자는 수신 후의 합을 표시합니다.','Four GPUs arranged in a ring exchange and reduce chunks in three steps. Arrows show sent values and boxes show sums after receipt.'))
+    save(a,'01-ring-reduce-scatter',('Ring: 조각을 전달하며 합산하기','Ring: pass chunks and accumulate'),('각 GPU의 전체 벡터에서 더해지는 위치를 따라갑니다. 화살표는 보내는 조각입니다.','Follow updates within each GPU’s full vector. Arrows show the chunk sent.'),b,2240,('원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 전체 벡터에서 갱신한 위치를 강조하며, 마지막에는 GPU마다 완성된 결과 한 칸과 나머지 중간값을 구별합니다.','Four GPUs arranged in a ring exchange and reduce chunks in three steps. Each whole vector highlights its updated position; the final state distinguishes one completed result from intermediate values on each GPU.'))
     b=text(48,204,('시작: Reduce-Scatter에서 완성한 조각','Start: completed chunks from Reduce-Scatter'),26,bold=True)
     b+=input_boxes(225,True)
     b+=text(48,389,('화살표의 조각 하나를 전달하고, 받은 조각도 계속 보관합니다.','Send the one chunk shown on each arrow, and retain received chunks.'),23,MUTED)
     for step in range(1,4):b+=ring_panel(420+(step-1)*570,step,True)
     b+=banner(2100,('완성: 네 GPU 모두 같은 배열 보관','Done: the same array on all four GPUs'),'[A, B, C, D] = [1111, 2222, 3333, 4444]')
-    save(a,'02-ring-all-gather',('Ring: 완성된 조각을 모두에게','Ring: distribute the completed chunks'),('화살표는 보내는 조각, 상자는 전달 후 가진 조각들입니다. 색은 GPU를 구별합니다.','Arrows show sent chunks; boxes show chunks held after transfer. Colors identify GPUs.'),b,2240,('원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 세 단계 뒤 모두 A부터 D까지 보관합니다.','Four GPUs arranged in a ring each forward one chunk per step. After three steps, all hold A through D.'))
+    save(a,'02-ring-all-gather',('Ring: 완성된 조각을 모두에게','Ring: distribute the completed chunks'),('완성된 조각을 받아 벡터의 빈 위치를 채웁니다. 값은 다시 더하지 않습니다.','Receive completed chunks to fill missing vector positions, without adding again.'),b,2240,('원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 빈 위치를 채워 세 단계 뒤 모두 [1111, 2222, 3333, 4444]를 보관합니다.','Four GPUs arranged in a ring each forward one chunk per step. They fill missing positions and all hold [1111, 2222, 3333, 4444] after three steps.'))
 
     b=text(48,204,('시작: Ring과 같은 네 입력 배열','Start: the same four input arrays as the ring'),26,bold=True)
     b+=input_boxes(225,tree=True)
@@ -174,7 +196,7 @@ for LANG in ['ko','en']:
         frames=[]
         for step in range(count):
             label=('시작 상태','Starting state') if step==0 else ((f'전달 {step}단계',f'Transfer step {step}') if figure!='03' else titles[step-1])
-            subtitle=('색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다.','Colors and positions identify GPUs and remain fixed across steps.') if step==0 else (('화살표: 보내는 조각 · 상자: 받은 뒤의 결과','Arrows: sent chunks · Boxes: results after receipt') if figure=='01' else (('화살표: 보내는 조각 · 상자: 보관한 조각','Arrows: sent chunks · Boxes: chunks retained') if figure=='02' else ('화살표: 배열 전체 전달 · 상자: 전달 후의 값','Arrows: whole-array transfers · Boxes: values after transfer')))
+            subtitle=('색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다.','Colors and positions identify GPUs and remain fixed across steps.') if step==0 else (('전체 벡터에서 합산되는 위치를 강조합니다. 화살표는 보내는 조각입니다.','The updated position is highlighted in each full vector. Arrows show sent chunks.') if figure=='01' else (('받은 결과로 빈 위치를 채웁니다. 화살표는 보내는 조각입니다.','Fill missing positions with received results. Arrows show sent chunks.') if figure=='02' else ('화살표: 배열 전체 전달 · 상자: 전달 후의 값','Arrows: whole-array transfers · Boxes: values after transfer')))
             body=tree_panel(210,step-1) if figure=='03' else ring_panel(210,step,figure=='02',False)
             if figure=='01' and step==3:body+=text(48,786,('합산 완료: GPU마다 결과 조각 하나씩 보관','Reduction complete: each GPU holds one result chunk'),24,bold=True)
             if figure=='02' and step==3:body+=text(48,786,'[A, B, C, D] = [1111, 2222, 3333, 4444]',24,bold=True)

@@ -22,23 +22,23 @@ Suppose each GPU holds a four-element array. Call the first position chunk A, th
 
 Send each chunk to a neighbor, which adds its local input at the same position. Once the chunk has passed through the other three GPUs, all four contributions are included. Circulating different chunks simultaneously lets us **leave one completed chunk on each GPU. This is Reduce-Scatter implemented with a ring**.
 
-The figure starts with the four GPUs’ inputs. Use **Next** to follow the three transfers in sequence. GPU positions and colors stay fixed. Arrows identify the chunk being sent, while GPU boxes show the sum computed after receipt.
+The figure starts with the four GPUs’ inputs. Use **Next** to follow the three transfers in sequence. GPU positions and colors stay fixed. Each GPU keeps showing vector positions A, B, C, and D, with an outline around the position updated in this step. Arrows identify the chunk being sent.
 
 <RingTreeSteps locale="en" figure="01" />
 
-Each GPU box in a step tracks the chunk reduced in that step, not the GPU’s entire memory. Each GPU also retains the local inputs needed for addition. On the first transfer, GPU 1 sends its A value, 10, to GPU 2. GPU 2 adds its local value 100 to obtain 110. GPU 3 then adds 1000 to obtain 1110. Finally, GPU 0 adds 1, completing A=1111.
+Each GPU box shows the whole working vector. On receipt, the GPU adds the chunk to its local value at that position and keeps the other positions unchanged. On the first transfer, GPU 1 sends its A value, 10, to GPU 2. GPU 2 adds its local value 100 to obtain 110. GPU 3 then adds 1000 to obtain 1110. Finally, GPU 0 adds 1, completing A=1111.
 
-Other chunks move simultaneously at other positions in the ring. After three transfers, GPUs 0, 1, 2, and 3 hold A=1111, B=2222, C=3333, and D=4444 respectively. No GPU has to collect the entire result first. The initial chunks were chosen to align final ownership with rank; library-internal chunk layouts can differ.
+Other chunks move simultaneously at other positions in the ring. After three transfers, GPUs 0, 1, 2, and 3 hold A=1111, B=2222, C=3333, and D=4444 respectively. In the final scene, each GPU’s dark cell is its completed result chunk. Faded cells contain values left during computation and are not part of the Reduce-Scatter output. No GPU has to collect the entire result first. The initial chunks were chosen to align final ownership with rank; library-internal chunk layouts can differ.
 
 ## Distributing the Completed Chunks
 
-Reduction is complete, but each GPU holds only part of the result. Forward these completed chunks in the same ring order. Retaining received chunks while forwarding them to the next neighbor gradually collects all chunks. This phase is All-Gather. The figure keeps the same circular GPU placement and shows the growing collection over three steps.
+Reduction is complete, but each GPU holds only part of the result. Forward these completed chunks in the same ring order. Retaining received chunks while forwarding them to the next neighbor gradually collects all chunks. This phase is All-Gather. The figure starts with only each GPU’s owned, completed result. Positions without a completed result are marked `—` and filled with received values in subsequent steps. These blanks do not mean memory was physically cleared; they mean the completed result for that position is not yet available.
 
 <RingTreeSteps locale="en" figure="02" />
 
 On the first step, GPU 0 sends A to GPU 1 and receives D from GPU 3. It then forwards D while receiving C. After three steps, every GPU holds A through D. **These are completed values, so they are copied without being added again.**
 
-The GPU boxes list chunks held after each step, while each arrow identifies the one chunk sent in that step. A GPU does not send every chunk in its box: each GPU forwards one chunk per step. Three Reduce-Scatter steps plus three All-Gather steps complete the All-Reduce. These steps describe data dependencies; they do not require a separate CPU call or a global GPU barrier at every step.
+An outline marks the newly filled position in each GPU’s vector. Each arrow identifies the one chunk sent in that step. A GPU does not send every chunk in its box: each GPU forwards one chunk per step. Three Reduce-Scatter steps plus three All-Gather steps complete the All-Reduce. These steps describe data dependencies; they do not require a separate CPU call or a global GPU barrier at every step.
 
 ## Reducing and Broadcasting Through a Tree
 

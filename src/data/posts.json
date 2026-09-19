@@ -669,8 +669,8 @@
         "description": "Follow Ring and Tree implementations of the same All-Reduce result, and relate communication time to steps, data volume, and physical links.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "0b157c66cb2175e8d79b16a849a7f5a695d45a89f9cbf8d37eb5cea5bd7261c6",
-        "reviewNote": "2026-09-19: Korean and English interactive instructions and 26 SVG step states compared. Ring and Tree use fixed GPU positions and localized independent controls. Interactive assets are checked separately from the body revision."
+        "sourceRevision": "49cd2c69c4effe87031fcef95a1acddc25e93aa8901defd675f9fc67663e346b",
+        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval."
       }
     }
   },
