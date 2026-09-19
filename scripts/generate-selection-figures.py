@@ -80,32 +80,32 @@ for LANG in ['ko','en']:
  # 3. The same GPU and request budget; no invented runtime or throughput.
  b=text(48,145,('↔ : 그룹 내부 통신 관계','↔ : communication within a group'),20,MUTED)
  for row,(tp,dp) in enumerate([(2,2),(4,1)]):
-  y=204+row*498;b+=rect(48,y,1104,466,'#fbfcfd')
+  y=204+row*536;b+=rect(48,y,1104,504,'#fbfcfd')
   b+=text(76,y+44,f'TP {tp} × DP {dp}',29,bold=True)
   b+=text(1124,y+44,('모델 복제본 2개' if dp==2 else '모델 복제본 1개','Two model replicas' if dp==2 else 'One model replica'),25,BLUE,True,'end')
   b+=text(600,y+96,('동일한 요청 A · B · C · D','The same requests A · B · C · D'),23,MUTED,anchor='middle')
   if dp==2:
    for group,x in enumerate([76,626]):
-    cx=x+249;b+=rect(x,y+126,498,240,'#f5f9fc',BLUE)
-    b+=chip(cx,y+144,'A · B' if group==0 else 'C · D',132)
-    for local,gx in enumerate([x+24,x+272]):
-     b+=gpu(gx,y+214,group*2+local,[local*2,local*2+1],202,136)
-    b+=arrow([(cx,y+195),(cx,y+206),(x+125,y+206),(x+125,y+211)])+arrow([(cx,y+206),(x+373,y+206),(x+373,y+211)])
-    b+=arrow([(x+233,y+312),(x+265,y+312)],double=True)
+    cx=x+249;b+=rect(x,y+126,498,278,'#f5f9fc',BLUE)
+    b+=chip(cx,y+140,'A · B' if group==0 else 'C · D',132)
+    for local,gx in enumerate([x+35,x+283]):
+     b+=gpu(gx,y+252,group*2+local,[local*2,local*2+1],180,136)
+    b+=arrow([(cx,y+190),(cx,y+212),(x+125,y+212),(x+125,y+246)])+arrow([(cx,y+212),(x+373,y+212),(x+373,y+246)])
+    b+=arrow([(x+222,y+350),(x+276,y+350)],double=True)
   else:
-   b+=rect(76,y+126,1048,240,'#f5f9fc',BLUE)+chip(600,y+144,'A · B · C · D',258)
+   b+=rect(76,y+126,1048,278,'#f5f9fc',BLUE)+chip(600,y+140,'A · B · C · D',258)
    centers=[210,470,730,990]
-   b+=arrow([(600,y+195),(600,y+206),(210,y+206),(210,y+211)])
-   for cx in centers[1:]:b+=arrow([(600,y+206),(cx,y+206),(cx,y+211)])
-   for g,cx in enumerate(centers):b+=gpu(cx-100,y+214,g,[g],200,136)
-   for cx in centers[:-1]:b+=arrow([(cx+107,y+312),(cx+153,y+312)],double=True)
-  b+=text(600,y+409,('두 그룹이 서로 다른 요청을 처리' if dp==2 else '한 그룹의 네 GPU가 요청들의 계산에 함께 참여','Two groups handle different requests' if dp==2 else 'All four GPUs cooperate on the requests in one group'),25,bold=True,anchor='middle')
-  b+=text(600,y+447,('그룹별로 입력을 배분하고 독립적으로 실행' if dp==2 else '한 그룹도 여러 요청을 배치로 처리할 수 있음','Requests are assigned to independently running groups' if dp==2 else 'One group can also batch multiple requests'),22,MUTED,anchor='middle')
- b+=text(600,1241,('실행 가능한 두 후보에서 함께 비교할 것','Compare both feasible candidates'),27,bold=True,anchor='middle')
+   b+=arrow([(600,y+190),(600,y+212),(210,y+212),(210,y+246)])
+   for cx in centers[1:]:b+=arrow([(600,y+212),(cx,y+212),(cx,y+246)])
+   for g,cx in enumerate(centers):b+=gpu(cx-90,y+252,g,[g],180,136)
+   for cx in centers[:-1]:b+=arrow([(cx+97,y+350),(cx+163,y+350)],double=True)
+  b+=text(600,y+447,('두 그룹이 서로 다른 요청을 처리' if dp==2 else '한 그룹의 네 GPU가 요청들의 계산에 함께 참여','Two groups handle different requests' if dp==2 else 'All four GPUs cooperate on the requests in one group'),25,bold=True,anchor='middle')
+  b+=text(600,y+485,('그룹별로 입력을 배분하고 독립적으로 실행' if dp==2 else '한 그룹도 여러 요청을 배치로 처리할 수 있음','Requests are assigned to independently running groups' if dp==2 else 'One group can also batch multiple requests'),22,MUTED,anchor='middle')
+ b+=text(600,1317,('실행 가능한 두 후보에서 함께 비교할 것','Compare both feasible candidates'),27,bold=True,anchor='middle')
  for i,label in enumerate([('GPU당 메모리 여유','Memory headroom'),('요청의 응답 시간','Request latency'),('전체 처리량','Total throughput'),('그룹 내부 통신','Within-group communication')]):
-  x=48+i*280;b+=rect(x,1271,264,100,'#f5f8fb');lines=tr(label).replace('Within-group communication','Within-group\ncommunication');b+=text(x+132,1309 if '\n' in lines else 1327,lines,22,bold=True,anchor='middle')
- b+=text(600,1420,('한 모델에 쓸 GPU 수와 독립 복제본 수를 함께 조정합니다.','Adjust GPUs per model together with the number of independent replicas.'),23,MUTED,anchor='middle')
- save('03-balance-shards-and-replicas',('같은 GPU를 분할과 복제에 다르게 배분하기','Balance partitioning and replication on the same GPUs'),('두 배치 모두 GPU 4개와 동일한 요청을 사용합니다.','Both arrangements use four GPUs and the same requests.'),b,1466,('같은네GPU를 TP2×DP2의 두모델그룹 또는 TP4×DP1의 한모델그룹으로 구성한다. 첫배치는 A/B와C/D를 별도그룹에, 두번째는 A/B/C/D를 한그룹에 보낸다. 그룹하나도 여러요청을 배칭할수있으며 메모리여유,응답시간,처리량,내부통신을 비교한다.','Four GPUs form either two TP2 replicas or one TP4 replica. The first assigns A/B and C/D to separate groups; the second sends A/B/C/D to one group, which can batch requests. Compare memory headroom, latency, throughput, and within-group communication.'))
+  x=48+i*280;b+=rect(x,1347,264,100,'#f5f8fb');lines=tr(label).replace('Within-group communication','Within-group\ncommunication');b+=text(x+132,1385 if '\n' in lines else 1403,lines,22,bold=True,anchor='middle')
+ b+=text(600,1496,('한 모델에 쓸 GPU 수와 독립 복제본 수를 함께 조정합니다.','Adjust GPUs per model together with the number of independent replicas.'),23,MUTED,anchor='middle')
+ save('03-balance-shards-and-replicas',('같은 GPU를 분할과 복제에 다르게 배분하기','Balance partitioning and replication on the same GPUs'),('두 배치 모두 GPU 4개와 동일한 요청을 사용합니다.','Both arrangements use four GPUs and the same requests.'),b,1542,('같은네GPU를 TP2×DP2의 두모델그룹 또는 TP4×DP1의 한모델그룹으로 구성한다. 첫배치는 A/B와C/D를 별도그룹에, 두번째는 A/B/C/D를 한그룹에 보낸다. 그룹하나도 여러요청을 배칭할수있으며 메모리여유,응답시간,처리량,내부통신을 비교한다.','Four GPUs form either two TP2 replicas or one TP4 replica. The first assigns A/B and C/D to separate groups; the second sends A/B/C/D to one group, which can batch requests. Compare memory headroom, latency, throughput, and within-group communication.'))
 assert len(MANIFEST)==6
 (ROOT/'scripts/selection-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print('Generated six bilingual selection diagrams; capacity examples verified.')

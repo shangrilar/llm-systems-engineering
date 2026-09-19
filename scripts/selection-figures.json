@@ -27,7 +27,7 @@
     "alt": "같은네GPU를 TP2×DP2의 두모델그룹 또는 TP4×DP1의 한모델그룹으로 구성한다. 첫배치는 A/B와C/D를 별도그룹에, 두번째는 A/B/C/D를 한그룹에 보낸다. 그룹하나도 여러요청을 배칭할수있으며 메모리여유,응답시간,처리량,내부통신을 비교한다.",
     "path": "public/images/choosing-parallelism/03-balance-shards-and-replicas.svg",
     "width": 1200,
-    "height": 1466
+    "height": 1542
   },
   {
     "article": "choosing-parallelism",
@@ -57,6 +57,6 @@
     "alt": "Four GPUs form either two TP2 replicas or one TP4 replica. The first assigns A/B and C/D to separate groups; the second sends A/B/C/D to one group, which can batch requests. Compare memory headroom, latency, throughput, and within-group communication.",
     "path": "public/images/choosing-parallelism/en/03-balance-shards-and-replicas.svg",
     "width": 1200,
-    "height": 1466
+    "height": 1542
   }
 ]
