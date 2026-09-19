@@ -214,40 +214,6 @@ for LANG in ['ko','en']:
     b+=text(48,828,('Ring의 이웃이라고 전용 케이블로 직접 연결된 것은 아닙니다.','Logical neighbors need not have a dedicated direct cable.'),25,bold=True)
     save(a,'04-logical-physical',('전달 순서와 실제 연결을 구별하기','Separate transfer order from physical links'),('위는 알고리즘의 관계, 아래는 가능한 물리 연결의 한 예입니다.','Top: algorithmic relationship. Bottom: one possible physical topology.'),b,884,('논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.','A logical ring can run over a physical shared-switch topology.'))
 
-    a='data-parallelism'
-    b=text(48,212,('같은 모델 W를 네 벌 보관','Four copies of the same model W'),26,bold=True)
-    for i,x in enumerate([48,328,608,888]):
-        b+=box(x,249,264,125,('요청 '+chr(65+i),'Request '+chr(65+i)),color=i)+arrow(x+132,386,x+132,427)
-        b+=box(x,439,264,178,f'GPU {i}',('전체 모델 W\n자기 요청 계산','Full model W\nOwn request'),i)+arrow(x+132,630,x+132,673)
-        b+=box(x,685,264,125,('결과 '+chr(65+i),'Result '+chr(65+i)),color=i)
-    save(a,'01-replicas',('DP: 같은 모델, 서로 다른 입력','DP: same model, different inputs'),('고정 가중치의 일반적인 dense 모델 추론 예시입니다.','An example of ordinary dense-model inference with fixed weights.'),b,854,('네 GPU가 모델 W 전체를 각각 보관하며 요청 A부터 D까지 따로 계산합니다.','Each GPU stores full model W and independently processes one of requests A–D.'))
-    b=box(48,207,510,160,'GPU 0',('같은 가중치 w = 10\n입력 A → 기울기 g₀ = 2','Same weight w = 10\nInput A → gradient g₀ = 2'),0)+box(642,207,510,160,'GPU 1',('같은 가중치 w = 10\n입력 B → 기울기 g₁ = 6','Same weight w = 10\nInput B → gradient g₁ = 6'),1)
-    b+=arrow(303,378,303,431)+arrow(897,378,897,431)
-    b+=banner(446,('All-Reduce로 합산한 뒤 참여자 수로 나누기','All-Reduce the sum, then divide by the number of participants'),'g = (2 + 6) / 2 = 4')
-    for i,x in enumerate([48,642]):
-        b+=arrow(x+255,562,x+255,601)+box(x,615,510,167,f'GPU {i}',('학습률 η = 0.1\n같은 갱신: 10 − 0.1 × 4 = 9.6','Learning rate η = 0.1\nSame update: 10 − 0.1 × 4 = 9.6'),i)
-    save(a,'02-gradients',('학습 DP: 기울기를 맞추고 같은 갱신','Training DP: synchronize gradients and updates'),('동일 크기의 입력 묶음, 묶음별 평균 손실, 단순 SGD 갱신을 가정합니다.','Assume equal local batch sizes, mean local losses, and a simple SGD update.'),b,830,('기울기 2와 6을 평균내어 4를 얻고 두 GPU 모두 가중치 10을 9.6으로 갱신합니다.','Average gradients 2 and 6 to get 4; both GPUs update weight 10 to 9.6.'))
-    b=text(48,211,('한 요청의 실행에 1칸이 걸린다고 가정','Assume each request takes one time slot'),25,bold=True)
-    b+=table(254,[('배치','Deployment'),('시간 1','Slot 1'),('시간 2','Slot 2'),('시간 3','Slot 3'),('시간 4','Slot 4')],[['1 GPU','A','B','C','D'],['2 GPUs · GPU 0','A','C','—','—'],['2 GPUs · GPU 1','B','D','—','—']],rowh=100)
-    b+=banner(662,('전체 네 요청의 완료: 4칸 → 2칸','Completion of all four requests: 4 slots → 2 slots'),('요청 하나의 실행은 여전히 1칸입니다. 대기 시간은 줄어들 수 있습니다.','Each request still executes for one slot; time spent in the queue can shrink.'))
-    save(a,'03-throughput',('실행 시간과 처리량을 구별하기','Distinguish execution time from throughput'),('네 요청이 동시에 도착하고, 요청 간 간섭과 분산 비용은 생략한 일정입니다.','All four requests arrive together; interference and dispatch costs are omitted.'),b,807,('GPU 하나는 네 요청을 네 슬롯에 처리하고 두 GPU는 두 슬롯에 처리하지만 개별 요청의 실행은 한 슬롯입니다.','One GPU finishes in four slots; two GPUs finish in two, while each request executes for one slot.'))
-
-    a='tensor-parallelism'
-    b=banner(192,('같은 행렬 곱','The same matrix product'),'X = [1, 2]     W = [[1, 3], [2, 4]]     Y = [5, 11]')
-    for i,x in enumerate([48,642]):
-        b+=box(x,335,510,245,f'GPU {i}',('X 전체: [1, 2]\nW의 '+('첫 열: [1, 2]ᵀ\n1×1 + 2×2 = 5' if i==0 else '둘째 열: [3, 4]ᵀ\n1×3 + 2×4 = 11'),'Full X: [1, 2]\n'+('First W column: [1, 2]ᵀ\n1×1 + 2×2 = 5' if i==0 else 'Second W column: [3, 4]ᵀ\n1×3 + 2×4 = 11')),i)
-    b+=arrow(303,592,303,640)+arrow(897,592,897,640)+banner(657,('완성된 출력 조각: [5]와 [11]','Completed output shards: [5] and [11]'),('전체 출력이 필요하면 이어 붙입니다. 같은 위치의 부분합은 아닙니다.','Concatenate if the full output is needed; these are not partial sums.'))
-    save(a,'01-columns',('출력 열을 나누면 결과도 나뉩니다','Split output columns, split the result'),('TP는 같은 입력의 한 연산을 여러 GPU가 함께 계산합니다.','In TP, multiple GPUs cooperate on one operation for the same input.'),b,803,('W의 열을 나누면 GPU 0이 5, GPU 1이 11을 완성합니다.','Splitting W by columns gives completed outputs 5 on GPU 0 and 11 on GPU 1.'))
-    b=banner(192,('같은 행렬 곱','The same matrix product'),'X = [1, 2]     W = [[1, 3], [2, 4]]     Y = [5, 11]')
-    b+=box(48,335,510,245,'GPU 0',('X의 첫 원소: [1]\nW의 첫 행: [1, 3]\n부분합 P₀ = [1, 3]','First X element: [1]\nFirst W row: [1, 3]\nPartial sum P₀ = [1, 3]'),0)
-    b+=box(642,335,510,245,'GPU 1',('X의 둘째 원소: [2]\nW의 둘째 행: [2, 4]\n부분합 P₁ = [4, 8]','Second X element: [2]\nSecond W row: [2, 4]\nPartial sum P₁ = [4, 8]'),1)
-    b+=arrow(303,592,303,640)+arrow(897,592,897,640)+banner(657,('같은 위치끼리 더해야 완성','Add corresponding positions to complete the result'),'P₀ + P₁ = [1 + 4, 3 + 8] = [5, 11]')
-    save(a,'02-rows',('누적하는 축을 나누면 부분합이 생깁니다','Split the reduction axis, get partial sums'),('부분합은 각 GPU에 두 원소가 있지만 아직 완성된 출력이 아닙니다.','Each partial sum has two elements, but is not yet the completed output.'),b,803,('GPU 0의 [1,3]과 GPU 1의 [4,8]을 위치별로 더해 [5,11]을 얻습니다.','Add [1,3] and [4,8] elementwise to obtain [5,11].'))
-    rows=[ [('같은 입력','Same input'),'X','X'],[('첫 선형 연산','First linear'),'X × U₀ → H₀','X × U₁ → H₁'],[('원소별 활성화','Elementwise activation'),'f(H₀)','f(H₁)'],[('둘째 선형 연산','Second linear'),'f(H₀) × V₀ → P₀','f(H₁) × V₁ → P₁'],[('All-Reduce 후','After All-Reduce'),'Y = P₀ + P₁','Y = P₀ + P₁']]
-    b=table(204,[('계산 순서 ↓','Execution ↓'),'GPU 0','GPU 1'],rows,[280,412,412],96)
-    b+=text(48,812,('U는 출력 열, V는 그에 대응하는 입력 행으로 나눕니다.','Split U by output columns and V by matching input rows.'),24,bold=True)
-    save(a,'03-mlp',('두 연산 사이의 조각을 그대로 사용하기','Keep shards between two operations'),('중간 H를 모으지 않아도, 각 GPU가 자기 조각으로 다음 부분합을 계산할 수 있습니다.','Each GPU can compute its next partial sum without gathering intermediate H.'),b,867,('첫 선형 연산의 열 분할과 둘째 선형 연산의 행 분할을 연결해 중간 All-Gather를 피하는 MLP 흐름입니다.','An MLP pairs column and row partitions so the intermediate activation need not be all-gathered.'))
-
     a='sequence-parallelism'
     b=text(48,205,('활성값: 계산 중 만들어지는 토큰별 벡터','Activations: per-token vectors produced during computation'),25,bold=True)
     for k,(label,toks) in enumerate([(('TP의 복제 구간','Replicated region with TP'),[[0,1,2,3],[0,1,2,3]]),(('SP로 나눈 구간','Region partitioned with SP'),[[0,1],[2,3]])]):
@@ -339,7 +305,7 @@ for LANG in ['ko','en']:
     b+=table(665,[('측정 조건','Measurement conditions'),('함께 기록할 항목','Record together')],[[('같은 모델·정밀도·입력/출력 길이·요청 도착 패턴','Same model, precision, lengths, and arrival pattern'),('메모리 최고 사용량·응답 시간 분포·처리량·통신과 대기','Peak memory, latency distribution, throughput, communication and waiting')]], [552,552],152)
     save(a,'03-goals',('응답 시간과 처리량을 함께 판단하기','Evaluate latency and throughput together'),('모든 경우에 가장 좋은 병렬화 하나가 정해져 있지는 않습니다.','There is no single best parallelization for every workload.'),b,919,('요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.','Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.'))
 
-assert len(MANIFEST)==46
+assert len(MANIFEST)==34
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
 

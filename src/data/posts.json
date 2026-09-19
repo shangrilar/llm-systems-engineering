@@ -695,7 +695,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "sourceRevision": "a3ff26d6012c0ee95b637b6e414b2b058e2cb527fc34cd3d9002ac95998fda60",
-        "reviewNote": "2026-09-19: Compared the revised Korean and English introduction and throughput section. Both explain inference request throughput versus individual request time, training with eight inputs per GPU versus a fixed global batch of eight, global batch size, synchronization costs, and the distinction between data throughput and time to target model performance. Existing figures are unchanged from the previously reviewed versions."
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
       }
     }
   },
@@ -710,17 +710,17 @@
       "ko": {
         "slug": "tensor-parallelism",
         "title": "TP: 하나의 연산을 여러 GPU로 나누기",
-        "description": "행렬 곱의 분할 방향에 따라 완성된 출력 조각과 부분합이 생기는 이유를 설명하고, MLP와 어텐션의 통신으로 연결합니다.",
+        "description": "가중치의 열과 행을 나누는 방법을 살펴보고, FFN과 어텐션에서 두 분할을 연결해 중간 통신을 줄이는 원리를 설명합니다.",
         "published": true
       },
       "en": {
         "slug": "tensor-parallelism",
         "title": "TP: Split One Operation Across GPUs",
-        "description": "Explain why matrix partitions produce either completed output shards or partial sums, then connect them to communication in MLP and attention.",
+        "description": "Partition weight matrices by columns and rows, then connect these partitions in FFN and attention to avoid intermediate communication.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "1f6eda05c5b8b95c6468808c6476c961505e1acef9eba215cb33c5f3816f02a4",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "7eb1dc51b23cc9af52c4a389b2cc76b2f24d889731cb264b44d87a31dd41a605",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
       }
     }
   },
