@@ -47,7 +47,7 @@ If the training data already contains `p0 p1 p2 p3`, the next-token targets for 
 
 Training measures how well the predictions match the targets through a **loss**. Rather than merely selecting one token and checking whether it matches the target, it evaluates the probability assigned to the target token. The backward pass obtains the gradients of the loss with respect to the weights, and the optimizer uses those gradients to update the weights. The next training batch uses the updated weights. [Loss computation and weight updates](https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html)
 
-During inference, the weights remain fixed while the model repeats its forward pass and token selection. In the figure, the inference loop leads to the next input, while the training update leads back to the model weights. The arrows connect the processing steps; they do not imply any particular ratio of time spent in each step.
+During inference, the weights remain fixed while the model repeats its forward pass and token selection. In the figure, the inference loop leads to the next input, while the training update leads back to the model weights.
 
 ## State management in training and inference
 
