@@ -22,13 +22,21 @@
     ],
     "2": [
       {
+        "slug": "pp-batch-wait",
+        "label": "배치 전체가 끝날 때까지 다음 GPU는 대기",
+        "alt": "GPU 0부터 3까지 배치 A·B·C·D를 각각 4칸씩 차례로 계산한다. 각 구간에서 GPU 하나만 계산하고 나머지 세 개는 이 배치를 계산하지 않는다.",
+        "height": 987
+      }
+    ],
+    "3": [
+      {
         "slug": "pp-02-step-0",
         "label": "배치 크기 4 → 크기 1 네 묶음",
         "alt": "배치에 있던 네 입력 시퀀스를 하나씩 나누되 각 시퀀스의 토큰은 유지한다. 모든 입력은 네 GPU를 통과하고 학습 예시에서는 기울기를 모아 한 번 갱신한다.",
         "height": 1045
       }
     ],
-    "3": [
+    "4": [
       {
         "slug": "pp-03-step-0",
         "label": "시작 전",
@@ -96,13 +104,21 @@
     ],
     "2": [
       {
+        "slug": "pp-batch-wait",
+        "label": "The next GPU waits for the whole batch",
+        "alt": "GPUs 0 through 3 compute batch A, B, C, D in sequence, taking four slots each. In each interval, only one GPU computes while the other three do no work on this batch.",
+        "height": 987
+      }
+    ],
+    "3": [
+      {
         "slug": "pp-02-step-0",
         "label": "Batch of four → four groups of one",
         "alt": "Split four input sequences into individual microbatches without splitting their tokens. All inputs pass through all four GPUs; in the training example, accumulate their gradients for one update.",
         "height": 1045
       }
     ],
-    "3": [
+    "4": [
       {
         "slug": "pp-03-step-0",
         "label": "Before execution",

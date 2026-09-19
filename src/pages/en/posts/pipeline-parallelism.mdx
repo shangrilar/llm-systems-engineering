@@ -10,7 +10,7 @@ import SequenceContextFigures from '../../../components/SequenceContextFigures.a
 
 So far, we have partitioned features or tokens within a layer. A model also has an ordering in which one layer uses the preceding layer's output. **Pipeline parallelism (PP)** places these layers across multiple GPUs. Each GPU holds part of the model, allowing a model that is difficult to fit on one GPU to be distributed across several.
 
-Partitioning layers does not immediately make every GPU compute at once. Later GPUs must wait for results from earlier GPUs. This article first examines layer placement and the directions of forward and backward passes. We then see what it means to split a batch into smaller groups, and compare whole-batch execution with microbatch execution to follow how GPUs work together. Finally, we examine the remaining waits and the effect of partition size.
+Partitioning layers does not immediately make every GPU compute at once. Later GPUs must wait for results from earlier GPUs. This article first examines layer placement and the directions of forward and backward passes. We then examine how much GPUs wait when a whole batch is passed onward. To reduce that waiting, we split the batch into smaller groups and compare execution before and after the split to follow how GPUs work together. Finally, we examine the remaining waits and the effect of partition size.
 
 ## Connect partitioned layers through forward and backward passes
 
@@ -24,15 +24,25 @@ During training, the model's output and the target are used to compute a **loss*
 
 The backward pass proceeds from GPU 3 toward GPU 0. For example, GPU 1 backpropagates through its layers using gradients received from the later stage and values obtained during the forward pass. **It computes gradients for its own weights locally and sends gradients of its input activations to the preceding stage, GPU 0.** The reverse arrows show these activation-gradient transfers.
 
-Either direction requires the results of preceding computations. In a forward pass for one input, GPU 1 cannot begin before GPU 0 has produced the activations. Multiple GPUs do not compute all layers of the same input simultaneously. Reducing this wait requires overlapping computation for different inputs.
+Either direction requires the results of preceding computations. In a forward pass for one input, GPU 1 cannot begin before GPU 0 has produced the activations. Multiple GPUs do not compute all layers of the same input simultaneously. Let us see what waiting this dependency creates when several inputs are executed together.
 
-## Split one batch into multiple microbatches
+## Waiting when the whole batch is passed onward
 
 A **batch** is a group of inputs processed together. If input sequences A, B, C, and D form one batch, its batch size is four. Each input contains multiple tokens.
 
-A **microbatch** is a smaller group formed by splitting that batch. Here, we place A, B, C, and D in separate microbatches of size one: **a batch of size four executed as four groups of size one**. There are still four inputs, and each input's token sequence remains intact.
+First, assume that all four inputs are computed as one group and that their results are passed to the next GPU together. While GPU 0 computes A, B, C, and D, GPU 1 waits for its input. So do GPU 2 and GPU 3. GPU 1 can start only after GPU 0 finishes computing the whole batch.
 
 <SequenceContextFigures locale="en" article="pp" figure="2" />
+
+In the figure, even after GPU 1 starts computing, GPU 2 and GPU 3 still wait, while GPU 0 has already finished its own computation. **With only this batch running, one GPU computes while the other three have no computation to perform.** The layers are distributed, but computation still proceeds one GPU at a time.
+
+Could the next GPU start sooner? Instead of waiting until all four inputs have been computed, **send A's result to the next GPU as soon as A is ready.** This requires executing the batch in smaller groups.
+
+## Split the batch to start the next GPU sooner
+
+A **microbatch** is a smaller group formed by splitting that batch. Here, we place A, B, C, and D in separate microbatches of size one: **a batch of size four executed as four groups of size one**. There are still four inputs, and each input's token sequence remains intact.
+
+<SequenceContextFigures locale="en" article="pp" figure="3" />
 
 This does not mean assigning A to GPU 0 and B to GPU 1 and stopping there. Each GPU holds only some model layers, so **A, B, C, and D must all pass through GPU 0 to GPU 3**. What changes is the size of the group passing through each stage. Size one is only an example; a batch of size eight could instead be split into four microbatches of size two.
 
@@ -44,7 +54,7 @@ When the batch is passed as a whole, GPU 1 waits until GPU 0 has computed all fo
 
 Compare these executions using the same four GPUs and the same four inputs. To make the difference clear, assume that each stage takes one time slot to compute one input and four slots to compute the whole batch of four. All stages take the same time, and communication time is omitted. The next figure compares **forward passes only** under these assumptions; it does not show total training time including backpropagation.
 
-<SequenceContextFigures locale="en" article="pp" figure="3" />
+<SequenceContextFigures locale="en" article="pp" figure="4" />
 
 At the top, GPU 0 computes the entire batch for four slots. GPU 1 then receives the result and computes for another four slots, followed by GPU 2 and GPU 3. All four inputs finish passing through the last GPU after 16 slots. Each GPU's block represents processing all four inputs together.
 

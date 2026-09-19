@@ -10,7 +10,7 @@ for (const locale of ['ko', 'en'] as const) {
     test(`${locale}: ${article} figures preserve states and responsive controls`, async ({ page }) => {
       await page.goto(route);
       await expect(page.locator('.prose del, .prose s')).toHaveCount(0);
-      await expect(page.locator('[data-sp-cp-steps]')).toHaveCount(article === 'sp' ? 4 : article === 'cp' ? 5 : 3);
+      await expect(page.locator('[data-sp-cp-steps]')).toHaveCount(article === 'cp' ? 5 : 4);
       for (const width of [360, 768, 1280]) {
         await page.setViewportSize({ width, height: 960 });
         for (const [figure, frames] of Object.entries(figures)) {
@@ -24,6 +24,7 @@ for (const locale of ['ko', 'en'] as const) {
             await expect(player.locator('[data-stage]')).toHaveAttribute('alt', frames[n].alt);
             await expect(player.locator('[data-stage-link]')).toHaveAttribute('href', src);
             await expect(player.locator('[data-status]')).toHaveText(frames[n].label);
+            await player.locator('[data-stage]').scrollIntoViewIfNeeded();
             await player.locator('[data-stage]').evaluate((img: HTMLImageElement) => img.decode());
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
             if (interactive) {
@@ -40,12 +41,12 @@ for (const locale of ['ko', 'en'] as const) {
           } else await expect(player.locator('button')).toHaveCount(0);
         }
       }
-      const player = page.locator('#figure-3');
+      const player = page.locator(article === 'pp' ? '#figure-4' : '#figure-3');
       await player.locator('[data-next]').focus();
       await page.keyboard.press('Space');
       await expect(player.locator('select')).toHaveValue(`${article}-03-step-1`);
       if (article === 'pp') {
-        await expect(page.locator('.prose h2')).toHaveCount(4);
+        await expect(page.locator('.prose h2')).toHaveCount(5);
         await expect(page.locator('#figure-1 select')).toHaveValue('pp-01-step-0');
       }
       if (article === 'cp') await expect(page.locator('#figure-4 select')).toHaveValue('cp-04-step-0');
