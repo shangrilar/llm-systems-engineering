@@ -33,6 +33,50 @@
     "height": 1250
   },
   {
+    "article": "inference-kv-cache",
+    "slug": "01-generation-loop",
+    "locale": "ko",
+    "title": "선택한 출력이 다음 입력이 됩니다",
+    "alt": "입력 문맥 p0 p1 p2로 x0를 선택하고, x0를 문맥에 추가해 x1을 선택하며, x1을 추가해 x2를 선택합니다. 각 출력에서 다음 입력의 같은 토큰으로 화살표가 연결됩니다.",
+    "caption": "새로 선택한 토큰은 다음 실행의 입력 문맥에 들어갑니다. 입력 문맥에 들어 있는 위치와 이번 실행에서 실제로 계산하는 위치는 구별해야 합니다.",
+    "path": "public/images/inference-kv-cache/01-generation-loop.svg",
+    "width": 1200,
+    "height": 1120
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "02-recomputation",
+    "locale": "ko",
+    "title": "캐시가 없으면 입력 문맥을 다시 계산합니다",
+    "alt": "캐시가 없을 때 첫 실행은 p0 p1 p2를 계산해 x0를 선택합니다. 다음 실행은 p0 p1 p2를 재계산하고 x0를 새로 계산해 x1을 선택합니다. 그 다음은 p0 p1 p2 x0를 재계산하고 x1을 새로 계산해 x2를 선택합니다.",
+    "caption": "문맥을 매번 모델에 다시 넣으면 이미 처리한 위치도 각 층에서 재계산됩니다. 그 실행에서 새로 선택하는 출력은 마지막 위치의 결과로 얻는 다음 토큰 하나입니다.",
+    "path": "public/images/inference-kv-cache/02-recomputation.svg",
+    "width": 1200,
+    "height": 1280
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "03-kv-reuse",
+    "locale": "ko",
+    "title": "계산한 K와 V를 저장하고 다음 생성에서 읽습니다",
+    "alt": "첫 실행은 p0 p1 p2의 K와 V를 각 층의 캐시에 저장하고 x0를 선택합니다. 다음 실행은 x0의 새 Q와 K와 V만 계산하고 과거 및 현재 KV를 Attention에서 읽어 x1을 선택합니다. 이어 x1의 KV를 추가하고 x2를 선택합니다. 각 실행에서 선택한 출력 토큰의 KV는 아직 만들어지지 않았습니다.",
+    "caption": "각 층에서 이미 계산한 과거 위치의 K·V를 재사용합니다. 새 위치의 Q는 과거와 현재 K·V를 참조하며, 이 과정은 각 층에서 반복됩니다.",
+    "path": "public/images/inference-kv-cache/03-kv-reuse.svg",
+    "width": 1200,
+    "height": 1650
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "04-kv-boundary",
+    "locale": "ko",
+    "title": "토큰 선택과 KV 계산은 한 실행 차이가 납니다",
+    "alt": "x0를 선택한 직후 KV는 p0 p1 p2까지만 있습니다. x0가 다음 입력으로 들어가 각 층의 KV(x0)를 만들고 x1을 선택합니다. 그때 x1의 KV는 없으며 다음 실행에 x1을 입력해야 KV(x1)가 만들어지고 x2를 선택합니다.",
+    "caption": "출력 토큰을 고르는 것과 그 토큰의 K·V를 계산하는 것은 서로 다른 실행에서 일어납니다. 새 출력은 다음 실행의 입력이 되어야 자기 K·V를 만듭니다.",
+    "path": "public/images/inference-kv-cache/04-kv-boundary.svg",
+    "width": 1200,
+    "height": 1440
+  },
+  {
     "article": "inference-and-training",
     "slug": "01-execution",
     "locale": "en",
@@ -64,5 +108,49 @@
     "path": "public/images/inference-and-training/en/03-memory-state.svg",
     "width": 1200,
     "height": 1250
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "01-generation-loop",
+    "locale": "en",
+    "title": "The selected output becomes the next input",
+    "alt": "Context p0 p1 p2 selects x0. Appending x0 enables selection of x1, and appending x1 enables selection of x2. Each output connects directly to the same token in the next input.",
+    "caption": "Each selected token becomes part of the next input context. Positions present in that context and positions actually computed in an execution are different concepts.",
+    "path": "public/images/inference-kv-cache/en/01-generation-loop.svg",
+    "width": 1200,
+    "height": 1120
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "02-recomputation",
+    "locale": "en",
+    "title": "Without a cache, recompute the input context",
+    "alt": "Without caching, the first execution computes p0 p1 p2 to select x0. The next recomputes p0 p1 p2 and newly computes x0 to select x1. The following recomputes p0 p1 p2 x0 and newly computes x1 to select x2.",
+    "caption": "Feeding the full context through the model again recomputes previously processed positions in every layer. Only the next token from the final position is newly selected.",
+    "path": "public/images/inference-kv-cache/en/02-recomputation.svg",
+    "width": 1200,
+    "height": 1280
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "03-kv-reuse",
+    "locale": "en",
+    "title": "Save computed K and V for the next generation step",
+    "alt": "The first execution stores p0 p1 p2 K/V in each layer’s cache and selects x0. The next computes new Q/K/V for x0, lets attention read past and current K/V, and selects x1. Then x1 adds its K/V and x2 is selected. The selected output token has not yet produced its own K/V.",
+    "caption": "Each layer reuses previously computed K/V. The new position’s Q attends to past and current K/V, and this pattern repeats across layers.",
+    "path": "public/images/inference-kv-cache/en/03-kv-reuse.svg",
+    "width": 1200,
+    "height": 1650
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "04-kv-boundary",
+    "locale": "en",
+    "title": "Token selection and KV computation are one execution apart",
+    "alt": "Immediately after selecting x0, KV exists only for p0 p1 p2. The next execution consumes x0, creates its K/V in each layer, and selects x1. At that point x1 has no own KV; consuming x1 in the following execution creates its K/V and selects x2.",
+    "caption": "Selecting an output token and computing its K/V happen in different executions. The new output obtains its own K/V when consumed as the next input.",
+    "path": "public/images/inference-kv-cache/en/04-kv-boundary.svg",
+    "width": 1200,
+    "height": 1440
   }
 ]
