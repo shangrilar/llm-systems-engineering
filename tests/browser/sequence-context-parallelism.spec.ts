@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import data from '../../src/data/sp-cp-steps.json' with { type: 'json' };
 import ppData from '../../src/data/pp-steps.json' with { type: 'json' };
+import epData from '../../src/data/ep-steps.json' with { type: 'json' };
 
 for (const locale of ['ko', 'en'] as const) {
-  for (const article of ['sp', 'cp', 'pp'] as const) {
-    const slug = article === 'sp' ? 'sequence-parallelism' : article === 'cp' ? 'context-parallelism' : 'pipeline-parallelism';
-    const figures = article === 'pp' ? ppData[locale] : data[locale][article];
+  for (const article of ['sp', 'cp', 'pp', 'ep'] as const) {
+    const slug = article === 'sp' ? 'sequence-parallelism' : article === 'cp' ? 'context-parallelism' : article === 'pp' ? 'pipeline-parallelism' : 'expert-parallelism';
+    const figures = article === 'ep' ? epData[locale] : article === 'pp' ? ppData[locale] : data[locale][article];
     const route = `${locale === 'en' ? '/en' : ''}/posts/${slug}/`;
     test(`${locale}: ${article} figures preserve states and responsive controls`, async ({ page }) => {
       await page.goto(route);
@@ -48,6 +49,10 @@ for (const locale of ['ko', 'en'] as const) {
       if (article === 'pp') {
         await expect(page.locator('.prose h2')).toHaveCount(5);
         await expect(page.locator('#figure-1 select')).toHaveValue('pp-01-step-0');
+      }
+      if (article === 'ep') {
+        await expect(page.locator('.prose h2')).toHaveCount(4);
+        await expect(page.locator('#figure-2 select')).toHaveValue('ep-02-step-0');
       }
       if (article === 'cp') await expect(page.locator('#figure-4 select')).toHaveValue('cp-04-step-0');
       const opened = page.waitForEvent('popup');

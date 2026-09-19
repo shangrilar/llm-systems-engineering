@@ -800,6 +800,31 @@
     }
   },
   {
+    "articleId": "expert-parallelism",
+    "order": 33,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "expert-parallelism",
+        "title": "EP: Expert를 나누고 토큰 보내기",
+        "description": "같은 GPU에서 어텐션에는 DP, Expert에는 EP를 적용하고, 토큰이 Expert로 흩어졌다가 원래 위치로 돌아오는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "expert-parallelism",
+        "title": "EP: Partition Experts and Route Tokens",
+        "description": "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "dae9ee6cb44745f1df399df9e51a83d606b1bd5b1bad14f5db3373f24889d3eb",
+        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks."
+      }
+    }
+  },
+  {
     "articleId": "inference-and-training",
     "order": 35,
     "track": "shared",
