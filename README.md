@@ -53,3 +53,5 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [The Basic Operations of Collective Communication](https://llm-systems-engineering.pages.dev/en/posts/collective-communication-basics/)
 - [Collective Communication: Combinations and Extensions](https://llm-systems-engineering.pages.dev/en/posts/collective-communication-combinations/)
 - [How Collectives Move Data: Ring and Tree](https://llm-systems-engineering.pages.dev/en/posts/collective-ring-tree/)
+- [DP: Replicate the Model, Partition the Inputs](https://llm-systems-engineering.pages.dev/en/posts/data-parallelism/)
+- [TP: Split One Operation Across GPUs](https://llm-systems-engineering.pages.dev/en/posts/tensor-parallelism/)

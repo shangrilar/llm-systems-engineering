@@ -1,0 +1,206 @@
+{
+  "ko": {
+    "01": [
+      {
+        "slug": "01-step-0",
+        "label": "1. 행렬 분할",
+        "alt": "열을 나누면 출력 조각이 완성됩니다 · 행렬 분할",
+        "height": 950
+      },
+      {
+        "slug": "01-step-1",
+        "label": "2. GPU별 계산",
+        "alt": "열을 나누면 출력 조각이 완성됩니다 · GPU별 계산",
+        "height": 950
+      },
+      {
+        "slug": "01-step-2",
+        "label": "3. 결과의 관계",
+        "alt": "열을 나누면 출력 조각이 완성됩니다 · 결과의 관계",
+        "height": 950
+      }
+    ],
+    "02": [
+      {
+        "slug": "02-step-0",
+        "label": "1. 행렬 분할",
+        "alt": "행을 나누면 출력의 부분합이 생깁니다 · 행렬 분할",
+        "height": 950
+      },
+      {
+        "slug": "02-step-1",
+        "label": "2. GPU별 계산",
+        "alt": "행을 나누면 출력의 부분합이 생깁니다 · GPU별 계산",
+        "height": 950
+      },
+      {
+        "slug": "02-step-2",
+        "label": "3. 부분합 합산",
+        "alt": "행을 나누면 출력의 부분합이 생깁니다 · 부분합 합산",
+        "height": 950
+      }
+    ],
+    "03": [
+      {
+        "slug": "03-step-0",
+        "label": "1. 첫 Linear와 활성화",
+        "alt": "FFN: 열 분할의 출력을 행 분할의 입력으로 · 첫 Linear와 활성화",
+        "height": 1260
+      },
+      {
+        "slug": "03-step-1",
+        "label": "2. 중간 통신 없이 둘째 Linear",
+        "alt": "FFN: 열 분할의 출력을 행 분할의 입력으로 · 중간 통신 없이 둘째 Linear",
+        "height": 1260
+      },
+      {
+        "slug": "03-step-2",
+        "label": "3. 마지막 부분합 합산",
+        "alt": "FFN: 열 분할의 출력을 행 분할의 입력으로 · 마지막 부분합 합산",
+        "height": 1260
+      }
+    ],
+    "04": [
+      {
+        "slug": "04-step-0",
+        "label": "1. 헤드별 Q·K·V 투영",
+        "alt": "어텐션: 헤드별 계산을 출력 투영까지 이어갑니다 · 헤드별 Q·K·V 투영",
+        "height": 1370
+      },
+      {
+        "slug": "04-step-1",
+        "label": "2. 헤드 계산과 출력 투영",
+        "alt": "어텐션: 헤드별 계산을 출력 투영까지 이어갑니다 · 헤드 계산과 출력 투영",
+        "height": 1370
+      },
+      {
+        "slug": "04-step-2",
+        "label": "3. 마지막 부분합 합산",
+        "alt": "어텐션: 헤드별 계산을 출력 투영까지 이어갑니다 · 마지막 부분합 합산",
+        "height": 1370
+      }
+    ],
+    "05": [
+      {
+        "slug": "05-step-0",
+        "label": "1. 각 GPU의 계산 경로",
+        "alt": "통신 위치를 트랜스포머 레이어 전체에서 보기 · 각 GPU의 계산 경로",
+        "height": 1375
+      },
+      {
+        "slug": "05-step-1",
+        "label": "2. 필요한 통신과 생략한 통신",
+        "alt": "통신 위치를 트랜스포머 레이어 전체에서 보기 · 필요한 통신과 생략한 통신",
+        "height": 1375
+      },
+      {
+        "slug": "05-step-2",
+        "label": "3. 여러 레이어에서 반복되는 비용",
+        "alt": "통신 위치를 트랜스포머 레이어 전체에서 보기 · 여러 레이어에서 반복되는 비용",
+        "height": 1375
+      }
+    ]
+  },
+  "en": {
+    "01": [
+      {
+        "slug": "01-step-0",
+        "label": "1. Partition the matrices",
+        "alt": "Column splits produce complete output shards · Partition the matrices",
+        "height": 950
+      },
+      {
+        "slug": "01-step-1",
+        "label": "2. Compute on each GPU",
+        "alt": "Column splits produce complete output shards · Compute on each GPU",
+        "height": 950
+      },
+      {
+        "slug": "01-step-2",
+        "label": "3. Relate the results",
+        "alt": "Column splits produce complete output shards · Relate the results",
+        "height": 950
+      }
+    ],
+    "02": [
+      {
+        "slug": "02-step-0",
+        "label": "1. Partition the matrices",
+        "alt": "Row splits produce partial output sums · Partition the matrices",
+        "height": 950
+      },
+      {
+        "slug": "02-step-1",
+        "label": "2. Compute on each GPU",
+        "alt": "Row splits produce partial output sums · Compute on each GPU",
+        "height": 950
+      },
+      {
+        "slug": "02-step-2",
+        "label": "3. Add the partial sums",
+        "alt": "Row splits produce partial output sums · Add the partial sums",
+        "height": 950
+      }
+    ],
+    "03": [
+      {
+        "slug": "03-step-0",
+        "label": "1. First Linear and activation",
+        "alt": "FFN: from column-sharded outputs to row-sharded inputs · First Linear and activation",
+        "height": 1260
+      },
+      {
+        "slug": "03-step-1",
+        "label": "2. Second Linear without an intermediate gather",
+        "alt": "FFN: from column-sharded outputs to row-sharded inputs · Second Linear without an intermediate gather",
+        "height": 1260
+      },
+      {
+        "slug": "03-step-2",
+        "label": "3. Sum the final partial outputs",
+        "alt": "FFN: from column-sharded outputs to row-sharded inputs · Sum the final partial outputs",
+        "height": 1260
+      }
+    ],
+    "04": [
+      {
+        "slug": "04-step-0",
+        "label": "1. Q/K/V projections by head",
+        "alt": "Attention: keep heads local through the output projection · Q/K/V projections by head",
+        "height": 1370
+      },
+      {
+        "slug": "04-step-1",
+        "label": "2. Head computation and output projection",
+        "alt": "Attention: keep heads local through the output projection · Head computation and output projection",
+        "height": 1370
+      },
+      {
+        "slug": "04-step-2",
+        "label": "3. Sum the final partial outputs",
+        "alt": "Attention: keep heads local through the output projection · Sum the final partial outputs",
+        "height": 1370
+      }
+    ],
+    "05": [
+      {
+        "slug": "05-step-0",
+        "label": "1. Each GPU's computation path",
+        "alt": "Where communication occurs in a transformer layer · Each GPU's computation path",
+        "height": 1375
+      },
+      {
+        "slug": "05-step-1",
+        "label": "2. Required and omitted communication",
+        "alt": "Where communication occurs in a transformer layer · Required and omitted communication",
+        "height": 1375
+      },
+      {
+        "slug": "05-step-2",
+        "label": "3. Costs repeated across layers",
+        "alt": "Where communication occurs in a transformer layer · Costs repeated across layers",
+        "height": 1375
+      }
+    ]
+  }
+}
