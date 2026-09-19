@@ -1,23 +1,30 @@
 ---
 layout: ../../../layouts/Post.astro
 articleId: inference-and-training
-title: "Same Model, Different Execution: Inference and Training"
-description: "Compare inputs, computation, state, and goals, then follow the inference engine from request arrival through generation and resource cleanup."
+title: "Same Model, Different Workloads: Inference and Training"
+description: "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management."
 date: 2026-09-19
 ---
 
-Having examined what a model computes and how a GPU executes that computation, we can now ask **which inputs it processes and in what order it repeats the work**. The same Transformer executes differently when generating an answer for a user and when updating its weights from training data. Its memory requirements and the meaning of good performance change as well.
+Having examined what a model computes and how a GPU executes that computation, we can now ask **which inputs arrive and in what order the computation repeats**. Even with the same Transformer, training on prepared data and answering user requests whose arrival times are unknown place different conditions on how we organize execution.
 
-This article compares those execution tasks as workloads. We will first examine how their inputs and repeated steps differ, then consider the state each process retains. We will connect these ideas to the inference engine’s complete flow, from a request’s arrival to the end of its response. Our comparison uses standard autoregressive generation with fixed weights and next-token training on a known token sequence.
+To describe these tasks, we must consider **inputs, computation, retained state, repetition, and goals** alongside the model’s name and size. Together, these make up a workload.
 
-## What makes up a workload
+This article first examines how being able to prepare inputs in advance changes the execution plan. We will then compare token generation during inference with weight updates during training and look at the state each process retains. Finally, we will connect these ideas to the inference engine’s work, from receiving a new request to completing its response. Our comparison uses next-token training on prepared token sequences and inference that generates text for user requests with fixed model weights.
 
-A workload means more than a model’s name or size. To understand the task, we must consider **incoming inputs, computation, retained state, repetition, and goals** together. Even with the same model, answering a single sentence and generating answers from thousands of documents involve different arrival patterns and processing goals.
+## Training data and inference requests
 
-When training data is already available, we can group it into batches and process them repeatedly. In a conversational service, requests arrive at different times, with different input lengths and actual generation lengths.
+The first difference in organizing a workload is **when we know the inputs to process**. If training data is ready, we can take the inputs and targets for each execution from that data. We can also plan which examples to group together and in what order to process them. The model does not have to generate an earlier answer before we can know the next training input.
 
-| Aspect | Autoregressive generation | Next-token training |
+In **online inference**, which receives user requests in real time, we cannot know in advance when future requests will arrive or what their content and length will be. Once a request arrives, its input is known, but new requests keep arriving while existing ones are in progress. The number of tokens a request will actually generate before ending may also be unknown when it starts.
+
+For example, while the engine is answering request A, request B may arrive asking for a summary of a long document, followed by a short question C. The engine must continually consider both ongoing work and new requests to decide what to process first and how many requests to execute together. An important difference in online inference workloads is **the shift from planning how to process prepared data to planning around requests that change during execution**.
+
+Inference can also process inputs collected in advance, such as a list of documents to summarize. In this offline setting, the upcoming inputs are known, but the computation that generates answers still differs from training computation that updates weights. Here, we focus on request management in online inference and compare it with training on prepared data.
+
+| Aspect | Inference: online generation | Training: prepared data |
 | --- | --- | --- |
+| Input preparation | A request’s content becomes known when it arrives; later requests remain unknown | Prepare the inputs and targets for each execution from the data |
 | Input | The prompt and outputs selected so far | A known token sequence containing the targets |
 | Computation | Forward pass and next-token selection | Forward pass, loss, backward pass, and weight update |
 | Repetition | Continue generation using the selected token | Continue training on the next data batch |
@@ -26,21 +33,23 @@ When training data is already available, we can group it into batches and proces
 
 The model defines the computation on given tensors. The engine prepares the required inputs and state and repeats that computation. We will examine training-engine design in detail when we turn to training.
 
-## Known targets and an unknown next token
+## Token generation and weight updates
 
 Suppose we provide three tokens, `p0 p1 p2`, and ask the model to continue the sentence. The [LM Head](/en/posts/embedding-to-lm-head/) computes logits, the scores used to select the next token, from the representation at each input position. During generation, we use the logits at the final position, `p2`, to select a new token, `x0`. If generation continues, `x0` becomes the input to the next execution, whose result selects `x1`.
 
-This process, in which the selected output becomes the next input, is called **autoregressive generation**. We cannot perform computation that takes `x0` as input before selecting `x0`. This is why generation steps within a request remain sequential even when several requests execute together.
+During generation, **the previously selected output becomes the input to the next execution**. We cannot perform computation that takes `x0` as input before selecting `x0`. This is why generation steps within a request remain sequential even when several requests execute together. Separately from the arrival times of new requests discussed above, a request’s answer also takes shape as generation proceeds.
 
-[![Generation repeats forward passes and token selection with fixed weights. Training predicts known positions, computes loss and gradients, and updates weights.](/images/inference-and-training/en/01-execution.png)](/images/inference-and-training/en/01-execution.png)
+[![Inference passes the input through the model to select the next token. Training computes loss from the predictions at each position and the targets in the data, then updates model weights using gradients obtained through the backward pass.](/images/inference-and-training/en/01-execution.png)](/images/inference-and-training/en/01-execution.png)
 
-Training, shown on the right, is different. If the training data already contains `p0 p1 p2 p3`, the next-token targets for input `p0 p1 p2` are `p1 p2 p3`. We can compute predictions at all three positions together and evaluate how appropriately each prediction assigns probability to its target. We do not need to wait for the model to select a token at an earlier position to discover the next training input. [Causal language modeling documentation](https://huggingface.co/docs/transformers/tasks/language_modeling)
+If the training data already contains `p0 p1 p2 p3`, the next-token targets for input `p0 p1 p2` are `p1 p2 p3`. We can compute predictions at all three positions together and evaluate how much probability each prediction assigns to the target token. We obtain the next input and target from the data without waiting for the model to select a token at an earlier position. [How next-token training works](https://huggingface.co/docs/transformers/tasks/language_modeling)
 
 **Computing several positions together does not allow them to see the future.** The causal mask prevents the position `p0` from obtaining information from `p1` or `p2` through attention. The target `p1` evaluates the prediction at `p0`, while the position `p1` uses the context up to that position to predict the next token, `p2`. Using a known token sequence as input is distinct from the range of context each position may attend to.
 
-Training computes a loss from the predictions and targets, then uses the backward pass to obtain gradients with respect to the weights. The optimizer uses those gradients to update the weights. The next training batch uses the updated weights. Generation repeats the forward pass and token selection without these weight updates. The arrows in the figure show execution order; they do not imply any particular ratio of time spent in each step.
+Training measures how well the predictions match the targets through a **loss**. Rather than merely selecting one token and checking whether it matches the target, it evaluates the probability assigned to the target token. The backward pass obtains the gradients of the loss with respect to the weights, and the optimizer uses those gradients to update the weights. The next training batch uses the updated weights. [Loss computation and weight updates](https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html)
 
-## State depends on the task
+During inference, the weights remain fixed while the model repeats its forward pass and token selection. In the figure, the inference loop leads to the next input, while the training update leads back to the model weights. The arrows connect the processing steps; they do not imply any particular ratio of time spent in each step.
+
+## State management in training and inference
 
 Some information must remain available for the next task even after a model computation finishes. This **state** depends on the purpose of execution.
 
@@ -66,14 +75,14 @@ After model execution, the engine incorporates newly computed KV and selected ou
 
 Here, **not every ongoing request participates in the same batch at every step**. If the engine leaves some requests out to limit the current step’s token count, it can still retain their KV. When KV space is insufficient, the engine may instead need to delay new admissions or preempt an ongoing request and actually reclaim its KV storage. Removing a request from a batch and returning its storage are separate actions. We will examine preemption, reclamation, and resumption later; for now, remember that these are request-management decisions between model-execution steps.
 
-## Different request lengths and performance goals
+## Response time and throughput
 
 Suppose request A needs a short answer, B is writing a long document, and C arrives while both are in progress. The engine must decide how to use the room left when A finishes first, how much more context B will retain, and when to start C. The actual output length may remain unknown until a request ends, so a single initial decision cannot easily determine the entire execution.
 
-There is more than one goal. For conversational services, both a quick first response and steady subsequent output matter. When processing many documents in advance, completing the total workload within a time and cost budget may matter more. Running more requests together can improve server throughput without reducing each user’s waiting time by the same proportion. This is why we consider response-time constraints alongside throughput. [DistServe’s performance goals](https://arxiv.org/abs/2401.09670)
+There is more than one goal. For conversational services, both a quick first response and steady subsequent output matter. When processing many documents in advance, completing the total workload within a time and cost budget may matter more. Running more requests together can improve server throughput without reducing each user’s waiting time by the same proportion. This is why we consider response-time constraints alongside throughput.
 
 Training also aims to make progress with the same resources while maintaining training quality. We will not reduce this distinction to “training is always compute-bound and inference is always memory-bound.” Even within generation, processing the input context has a different computational shape from extending the output one token at a time. [Prefill and Decode](/en/posts/prefill-and-decode/) examines that distinction.
 
-Although SFT is generally included in post-training, this site follows a teaching sequence that places pretraining and SFT in the training stage, followed by RL-based post-training. RL-based processes connect the two execution patterns, for example by using generated results for training.
+Although SFT is generally included in post-training, our series follows a teaching sequence that places pretraining and SFT in the training stage, followed by RL-based post-training. RL-based processes connect the two execution patterns, for example by using generated results for training.
 
-Having seen the whole request flow, we can now examine its inner loop. In [Inference and the KV Cache](/en/posts/inference-kv-cache/), we will follow what is recomputed and what is reused when calculating the next token after selecting the previous one.
+Having examined how the inference engine handles requests, we will next look more closely at how a single request generates tokens. In [Inference and the KV Cache](/en/posts/inference-kv-cache/), we will follow what is newly computed and which earlier computations are reused when calculating the next token.

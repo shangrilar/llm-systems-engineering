@@ -6,7 +6,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL, fileURLToPath} from 'node:url';
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const figures=JSON.parse(await fs.readFile(repo+'/scripts/inference-core-figures.json','utf8'));
+const figures=JSON.parse(await fs.readFile(repo+'/scripts/inference-core-figures.json','utf8'))
+  .filter(f=>!process.argv[2]||`${f.article}/${f.slug}`===process.argv[2]);
+if(!figures.length)throw new Error('No matching figure');
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({deviceScaleFactor:2});
 const report=[];

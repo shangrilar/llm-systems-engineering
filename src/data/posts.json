@@ -859,18 +859,18 @@
     "locales": {
       "ko": {
         "slug": "inference-and-training",
-        "title": "같은 모델, 다른 실행: 추론과 학습",
-        "description": "입력과 계산, 유지할 상태와 목표를 비교하고, 요청이 도착해 생성과 자원 정리를 마칠 때까지 추론 엔진이 맡는 일을 살펴봅니다.",
+        "title": "같은 모델, 다른 워크로드: 추론과 학습",
+        "description": "준비된 데이터를 처리하는 학습과 새로 도착하는 요청에 대응하는 추론을 비교하고, 토큰 생성과 가중치 갱신에서 요청 관리까지 실행 흐름을 살펴봅니다.",
         "published": true
       },
       "en": {
         "slug": "inference-and-training",
-        "title": "Same Model, Different Execution: Inference and Training",
-        "description": "Compare inputs, computation, state, and goals, then follow the inference engine from request arrival through generation and resource cleanup.",
+        "title": "Same Model, Different Workloads: Inference and Training",
+        "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "579442a32f0d43711d516674bef2cc8ccdb5f523aba8092597ecddadbe1c1aad",
-        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+        "sourceRevision": "8d03b4d0bc153b573d7c86097637c2f2c2f5c711628cb24983484aaece9bcf66",
+        "reviewNote": "2026-09-19: Revised Korean and English workload framing, five section headings, request-arrival assumptions, loss and weight-update explanation, and both execution comparison figures reviewed. Static figures checked separately from the prose revision. User review pending."
       }
     }
   },

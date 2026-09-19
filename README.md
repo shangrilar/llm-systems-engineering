@@ -63,7 +63,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 
 #### Workloads
 
-- [Same Model, Different Execution: Inference and Training](https://llm-systems-engineering.pages.dev/en/posts/inference-and-training/)
+- [Same Model, Different Workloads: Inference and Training](https://llm-systems-engineering.pages.dev/en/posts/inference-and-training/)
 
 ### Inference
 
