@@ -59,6 +59,7 @@
 - [CP: 긴 문맥을 여러 GPU로 나누기](https://llm-systems-engineering.pages.dev/posts/context-parallelism/)
 - [PP: 모델의 층을 나누어 실행하기](https://llm-systems-engineering.pages.dev/posts/pipeline-parallelism/)
 - [EP: Expert를 나누고 토큰 보내기](https://llm-systems-engineering.pages.dev/posts/expert-parallelism/)
+- [여러 GPU를 어떻게 배치할까?](https://llm-systems-engineering.pages.dev/posts/choosing-parallelism/)
 
 #### 워크로드
 

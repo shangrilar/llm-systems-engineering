@@ -1,0 +1,62 @@
+[
+  {
+    "article": "choosing-parallelism",
+    "slug": "01-make-it-fit",
+    "locale": "ko",
+    "title": "먼저 작업을 실행할 메모리 확보하기",
+    "alt": "24GiB 메모리 한 GPU에 가중치24와 실행공간8은 들어가지 않는다. TP2에서는 W1/W2와 W3/W4를 나누어 각 GPU가 가중치12와 실행공간8을 보관하고 여유4를 확보한다.",
+    "path": "public/images/choosing-parallelism/01-make-it-fit.svg",
+    "width": 1200,
+    "height": 1046
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "02-replicate-the-group",
+    "locale": "ko",
+    "title": "실행 가능한 GPU 그룹을 통째로 복제하기",
+    "alt": "두GPU로 된 TP그룹을 복제한다. GPU0과2는 W1/W2, GPU1과3은 W3/W4를 보관한다. 그룹1의 두GPU가 A/B 요청을 함께 계산하고 그룹2의 두GPU가 C/D를 함께 계산한다.",
+    "path": "public/images/choosing-parallelism/02-replicate-the-group.svg",
+    "width": 1200,
+    "height": 1115
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "03-balance-shards-and-replicas",
+    "locale": "ko",
+    "title": "같은 GPU를 분할과 복제에 다르게 배분하기",
+    "alt": "같은네GPU를 TP2×DP2의 두모델그룹 또는 TP4×DP1의 한모델그룹으로 구성한다. 첫배치는 A/B와C/D를 별도그룹에, 두번째는 A/B/C/D를 한그룹에 보낸다. 그룹하나도 여러요청을 배칭할수있으며 메모리여유,응답시간,처리량,내부통신을 비교한다.",
+    "path": "public/images/choosing-parallelism/03-balance-shards-and-replicas.svg",
+    "width": 1200,
+    "height": 1542
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "01-make-it-fit",
+    "locale": "en",
+    "title": "First, make room to run the workload",
+    "alt": "One 24 GiB GPU cannot hold 24 GiB of weights plus 8 GiB for execution. TP2 places W1/W2 and W3/W4 on separate GPUs; each uses 12+8 GiB with 4 GiB free.",
+    "path": "public/images/choosing-parallelism/en/01-make-it-fit.svg",
+    "width": 1200,
+    "height": 1046
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "02-replicate-the-group",
+    "locale": "en",
+    "title": "Replicate the entire working GPU group",
+    "alt": "Replicate the two-GPU TP group. GPUs0 and2 hold W1/W2; GPUs1 and3 hold W3/W4. Both GPUs in group1 compute requests A/B; both GPUs in group2 compute C/D.",
+    "path": "public/images/choosing-parallelism/en/02-replicate-the-group.svg",
+    "width": 1200,
+    "height": 1115
+  },
+  {
+    "article": "choosing-parallelism",
+    "slug": "03-balance-shards-and-replicas",
+    "locale": "en",
+    "title": "Balance partitioning and replication on the same GPUs",
+    "alt": "Four GPUs form either two TP2 replicas or one TP4 replica. The first assigns A/B and C/D to separate groups; the second sends A/B/C/D to one group, which can batch requests. Compare memory headroom, latency, throughput, and within-group communication.",
+    "path": "public/images/choosing-parallelism/en/03-balance-shards-and-replicas.svg",
+    "width": 1200,
+    "height": 1542
+  }
+]

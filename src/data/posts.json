@@ -825,6 +825,31 @@
     }
   },
   {
+    "articleId": "choosing-parallelism",
+    "order": 34,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "choosing-parallelism",
+        "title": "여러 GPU를 어떻게 배치할까?",
+        "description": "먼저 작업을 실행할 수 있게 모델을 나누고, 그 구성을 복제한 뒤, 응답 시간과 처리량에 맞춰 GPU 배치를 조정합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "choosing-parallelism",
+        "title": "How Should We Arrange Multiple GPUs?",
+        "description": "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "9cbfabbba6f35ddbba023c5fabf47daa6f1750e797748001ef0ead262c18032f",
+        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval."
+      }
+    }
+  },
+  {
     "articleId": "inference-and-training",
     "order": 35,
     "track": "shared",

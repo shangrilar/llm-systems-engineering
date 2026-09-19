@@ -59,6 +59,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [CP: Split Long Contexts Across GPUs](https://llm-systems-engineering.pages.dev/en/posts/context-parallelism/)
 - [PP: Partition and Execute Model Layers](https://llm-systems-engineering.pages.dev/en/posts/pipeline-parallelism/)
 - [EP: Partition Experts and Route Tokens](https://llm-systems-engineering.pages.dev/en/posts/expert-parallelism/)
+- [How Should We Arrange Multiple GPUs?](https://llm-systems-engineering.pages.dev/en/posts/choosing-parallelism/)
 
 #### Workloads
 
