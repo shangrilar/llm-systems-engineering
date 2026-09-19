@@ -844,8 +844,8 @@
         "description": "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "47d59bf55fe1c6f25dd017309d60a24cb1bc3b7e3c9f86f0f2e081ea42ee039a",
-        "reviewNote": "2026-09-20: Compared the three-section Korean and English rewrite and three bilingual figure pairs. Checked the assumed 24+8 and 12+8 GiB capacities, replicated TP2 groups, fixed four-GPU TP2×DP2 versus TP4×DP1 comparison, batching within a replica, Dense inference scope and performance conditions. Figures reviewed separately from the body revision. Authoring review, not final user approval."
+        "sourceRevision": "9cbfabbba6f35ddbba023c5fabf47daa6f1750e797748001ef0ead262c18032f",
+        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval."
       }
     }
   },
