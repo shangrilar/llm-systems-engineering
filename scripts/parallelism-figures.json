@@ -1,0 +1,82 @@
+[
+  {
+    "article": "collective-ring-tree",
+    "slug": "01-ring-reduce-scatter",
+    "locale": "ko",
+    "title": "Ring: 조각을 전달하며 합산하기",
+    "alt": "원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 전체 벡터에서 갱신한 위치를 강조하며, 마지막에는 GPU마다 완성된 결과 한 칸과 나머지 중간값을 구별합니다.",
+    "path": "public/images/collective-ring-tree/01-ring-reduce-scatter.svg",
+    "width": 1200,
+    "height": 2240
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "02-ring-all-gather",
+    "locale": "ko",
+    "title": "Ring: 완성된 조각을 모두에게",
+    "alt": "원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 빈 위치를 채워 세 단계 뒤 모두 [1111, 2222, 3333, 4444]를 보관합니다.",
+    "path": "public/images/collective-ring-tree/02-ring-all-gather.svg",
+    "width": 1200,
+    "height": 2240
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "03-tree",
+    "locale": "ko",
+    "title": "Tree: 모아서 더하고 다시 펼치기",
+    "alt": "같은 트리 배치를 네 번 보여줍니다. 두 단계로 GPU 0에 합산하고, 화살표를 뒤집어 두 단계로 모든 GPU에 배포합니다.",
+    "path": "public/images/collective-ring-tree/03-tree.svg",
+    "width": 1200,
+    "height": 2465
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "04-logical-physical",
+    "locale": "ko",
+    "title": "전달 순서와 실제 연결을 구별하기",
+    "alt": "논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.",
+    "path": "public/images/collective-ring-tree/04-logical-physical.svg",
+    "width": 1200,
+    "height": 884
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "01-ring-reduce-scatter",
+    "locale": "en",
+    "title": "Ring: pass chunks and accumulate",
+    "alt": "Four GPUs arranged in a ring exchange and reduce chunks in three steps. Each whole vector highlights its updated position; the final state distinguishes one completed result from intermediate values on each GPU.",
+    "path": "public/images/collective-ring-tree/en/01-ring-reduce-scatter.svg",
+    "width": 1200,
+    "height": 2240
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "02-ring-all-gather",
+    "locale": "en",
+    "title": "Ring: distribute the completed chunks",
+    "alt": "Four GPUs arranged in a ring each forward one chunk per step. They fill missing positions and all hold [1111, 2222, 3333, 4444] after three steps.",
+    "path": "public/images/collective-ring-tree/en/02-ring-all-gather.svg",
+    "width": 1200,
+    "height": 2240
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "03-tree",
+    "locale": "en",
+    "title": "Tree: reduce, then broadcast",
+    "alt": "Four panels keep the same tree layout: two reduction steps to GPU 0, followed by two broadcast steps along reversed edges.",
+    "path": "public/images/collective-ring-tree/en/03-tree.svg",
+    "width": 1200,
+    "height": 2465
+  },
+  {
+    "article": "collective-ring-tree",
+    "slug": "04-logical-physical",
+    "locale": "en",
+    "title": "Separate transfer order from physical links",
+    "alt": "A logical ring can run over a physical shared-switch topology.",
+    "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
+    "width": 1200,
+    "height": 884
+  }
+]

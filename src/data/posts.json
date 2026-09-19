@@ -598,5 +598,80 @@
         "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
       }
     }
+  },
+  {
+    "articleId": "collective-communication-basics",
+    "order": 25,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "collective-communication-basics",
+        "title": "집합 통신의 기본 동작",
+        "description": "Send/Recv와 집합 통신의 차이에서 출발해 Broadcast, Scatter, Gather, Reduce의 입력과 결과를 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "collective-communication-basics",
+        "title": "The Basic Operations of Collective Communication",
+        "description": "Compare Send/Recv with collectives, then follow the inputs and outputs of Broadcast, Scatter, Gather, and Reduce.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "2eeccc30fee8cb9b3c3a7f40295091b339e1e5a141d6f2ee2d33886c068c84fb",
+        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+      }
+    }
+  },
+  {
+    "articleId": "collective-communication-combinations",
+    "order": 26,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "collective-communication-combinations",
+        "title": "집합 통신의 조합과 확장",
+        "description": "All-Gather, All-Reduce, Reduce-Scatter, All-to-All을 다음 계산에 필요한 데이터와 결과 배치로 이해합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "collective-communication-combinations",
+        "title": "Collective Communication: Combinations and Extensions",
+        "description": "Understand All-Gather, All-Reduce, Reduce-Scatter, and All-to-All through the data and output placement needed by the next computation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "ca1ede742595bf358d686ea6e820c7fa8bc35402a2a0091da722fcfb4c266944",
+        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+      }
+    }
+  },
+  {
+    "articleId": "collective-ring-tree",
+    "order": 27,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "collective-ring-tree",
+        "title": "집합 통신은 어떻게 전달될까: Ring과 Tree",
+        "description": "All-Reduce의 같은 결과를 Ring과 Tree로 만드는 과정을 따라가며, 단계 수·전달량·실제 연결이 통신 시간에 미치는 영향을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "collective-ring-tree",
+        "title": "How Collectives Move Data: Ring and Tree",
+        "description": "Follow Ring and Tree implementations of the same All-Reduce result, and relate communication time to steps, data volume, and physical links.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "c42561ec82e668afcb786cde90192b0bf4a748ca34800f89f57a41f841ba99d9",
+        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article."
+      }
+    }
   }
 ]
