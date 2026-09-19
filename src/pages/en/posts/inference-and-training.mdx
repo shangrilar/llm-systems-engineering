@@ -26,7 +26,7 @@ Inference can also process inputs collected in advance, such as a list of docume
 | --- | --- | --- |
 | Input preparation | A request’s content becomes known when it arrives; later requests remain unknown | Prepare the inputs and targets for each execution from the data |
 | Input | The prompt and outputs selected so far | A known token sequence containing the targets |
-| Computation | Forward pass and next-token selection | Forward pass, loss, backward pass, and weight update |
+| Compute | Forward pass and next-token selection | Forward pass, loss, backward pass, and weight update |
 | Repetition | Continue generation using the selected token | Continue training on the next data batch |
 | Main state | Per-request token history and reusable KV | Activations needed for the backward pass, gradients, and optimizer state |
 | Execution goals | Response time, throughput, and cost | Make progress with the available resources while maintaining training quality |
