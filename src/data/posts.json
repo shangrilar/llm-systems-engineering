@@ -673,5 +673,55 @@
         "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article."
       }
     }
+  },
+  {
+    "articleId": "data-parallelism",
+    "order": 28,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "data-parallelism",
+        "title": "DP: 모델을 복제해 입력 나누기",
+        "description": "같은 모델을 여러 GPU에 복제해 입력을 나누고, 추론의 요청 분산과 학습의 기울기 동기화가 다른 이유를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "data-parallelism",
+        "title": "DP: Replicate the Model, Partition the Inputs",
+        "description": "Replicate a model across GPUs, distribute inputs, and distinguish inference request distribution from training gradient synchronization.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a3ff26d6012c0ee95b637b6e414b2b058e2cb527fc34cd3d9002ac95998fda60",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+      }
+    }
+  },
+  {
+    "articleId": "tensor-parallelism",
+    "order": 29,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "tensor-parallelism",
+        "title": "TP: 하나의 연산을 여러 GPU로 나누기",
+        "description": "가중치의 열과 행을 나누는 방법을 살펴보고, FFN과 어텐션에서 두 분할을 연결해 중간 통신을 줄이는 원리를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "tensor-parallelism",
+        "title": "TP: Split One Operation Across GPUs",
+        "description": "Partition weight matrices by columns and rows, then connect these partitions in FFN and attention to avoid intermediate communication.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "7eb1dc51b23cc9af52c4a389b2cc76b2f24d889731cb264b44d87a31dd41a605",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+      }
+    }
   }
 ]
