@@ -769,8 +769,33 @@
         "description": "Compare CP with SP, then follow how Ring and Ulysses connect information across GPUs to complete attention.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "149082e7fe04cf013a7364170b0ae4ee9b2c6655259fd236c78878bf27d50920",
-        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication. 2026-09-19: Changed only the closing PP preview from next to later in both languages to accommodate the standalone workload introduction in the current published reading sequence."
+        "sourceRevision": "f5b2626fe288d41920a2dd7562dc49300ae3cb7e94573a406e8506cf365c62b3",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+      }
+    }
+  },
+  {
+    "articleId": "pipeline-parallelism",
+    "order": 32,
+    "track": "shared",
+    "category": "hardware",
+    "date": "2026-09-18",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "pipeline-parallelism",
+        "title": "PP: 모델의 층을 나누어 실행하기",
+        "description": "모델의 레이어를 여러 GPU에 배치하고, 같은 배치를 마이크로배치로 나누어 서로 다른 입력의 계산을 겹치는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "pipeline-parallelism",
+        "title": "PP: Partition and Execute Model Layers",
+        "description": "Place model layers across GPUs, then split the same batch into microbatches to overlap computation for different inputs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a1b5fa6b4cd2bd6af09426061632f01044cc92c4c93098979b89f36ea6c25958",
+        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages."
       }
     }
   },
