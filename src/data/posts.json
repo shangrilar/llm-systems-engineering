@@ -885,17 +885,17 @@
       "ko": {
         "slug": "inference-kv-cache",
         "title": "추론과 KV 캐시",
-        "description": "토큰 생성 루프에서 과거 K/V를 재사용하는 이유와, 선택한 출력 토큰·계산이 끝난 KV·요청 종료의 관계를 설명합니다.",
+        "description": "반복적인 토큰 생성에서 같은 계산이 되풀이되는 이유와 KV 캐시의 재사용 과정을 살펴보고, 출력 토큰 선택과 KV 계산의 경계를 구별합니다.",
         "published": true
       },
       "en": {
         "slug": "inference-kv-cache",
         "title": "Inference and the KV Cache",
-        "description": "Follow token generation to understand why past keys and values can be reused, and distinguish selected output tokens, computed KV state, and request completion.",
+        "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "5bdbdd7cce1590b92f24a58db734c34dcd68286f78605b2837b45f8738ef12bd",
-        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+        "sourceRevision": "09efe1ff063d558d3d9e6ed9f07556fea491f100f85957c78d64d49959f576fc",
+        "reviewNote": "2026-09-19: Revised Korean and English prose, four sections, examples, image alt text and four bilingual figures compared. Generation loop, recomputation, KV reuse and selection/computation boundary aligned; Prefill/Decode definitions and resource release deferred. User final review pending."
       }
     }
   },
