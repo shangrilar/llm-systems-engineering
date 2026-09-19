@@ -77,26 +77,84 @@ assert max((m+s+1 for m in range(4) for s in range(4)))==7
 
 for LANG in ['ko','en']:
     a='collective-ring-tree'
-    b=banner(188,('네 GPU의 입력을 같은 위치끼리 더하기','Add matching positions across four GPUs'), 'GPU 0 [1, 2, 3, 4]    GPU 1 [10, 20, 30, 40]')
-    b+=text(72,327,'GPU 2 [100, 200, 300, 400]    GPU 3 [1000, 2000, 3000, 4000]',22)
-    b+=text(48,381,('조각 A / B / C / D = 첫째 / 둘째 / 셋째 / 넷째 위치','Chunks A / B / C / D = positions 1 / 2 / 3 / 4'),24,bold=True)
-    rows=[]
-    for step,state in enumerate(rs):
-        rows.append([('첫 전송 값','First send') if step==0 else (f'{step}회 전달 후',f'After step {step}')]+[f'{"ABCD"[c]} = {v}' for c,v in state])
-    b+=table(411,[('상태','State'),'GPU 0','GPU 1','GPU 2','GPU 3'],rows,rowh=76)
-    b+=banner(812,'GPU 0 → GPU 1 → GPU 2 → GPU 3 → GPU 0',('매 단계에서 네 GPU가 동시에 전달하고, 받은 값에 자신의 값을 더합니다.','Each step: all four GPUs send, receive, and add their local contribution.'))
-    save(a,'01-ring-reduce-scatter',('Ring: 조각을 전달하며 합산하기','Ring: pass chunks and accumulate'),('각 칸은 그 단계에서 전달할 값 또는 새로 합산한 값입니다. 전체 버퍼는 아닙니다.','Each cell tracks one outgoing or newly reduced chunk, not the full buffer.'),b,954,('세 번의 이웃 전달 뒤 GPU 0부터 3에 A=1111, B=2222, C=3333, D=4444가 완성됩니다.','After three neighbor transfers, GPUs 0–3 own completed chunks A=1111, B=2222, C=3333, D=4444.'))
-    b=table(198,[('상태','State'),'GPU 0','GPU 1','GPU 2','GPU 3'],[[('시작','Start') if i==0 else (f'{i}회 전달 후',f'After step {i}')]+[' · '.join('ABCD'[c] for c in sorted(s)) for s in state] for i,state in enumerate(ag)],rowh=88)
-    b+=banner(650,'GPU 0 → GPU 1 → GPU 2 → GPU 3 → GPU 0',('완성된 조각을 한 개씩 전달합니다. 다시 더하지 않습니다.','Forward one completed chunk per step. Do not add it again.'))
-    b+=banner(784,('모든 GPU의 최종 결과','Final result on every GPU'),'[A, B, C, D] = [1111, 2222, 3333, 4444]')
-    save(a,'02-ring-all-gather',('Ring: 완성된 조각을 모두에게','Ring: distribute the completed chunks'),('색이 아닌 A·B·C·D 표식으로 각 조각의 위치를 추적합니다.','The A–D labels identify result chunks; each row lists the chunks now held.'),b,927,('세 단계의 All-Gather 뒤 모든 GPU가 A부터 D까지 갖습니다. Reduce-Scatter 세 단계와 합쳐 총 여섯 단계입니다.','Three All-Gather steps give all GPUs chunks A–D; with Reduce-Scatter, there are six steps.'))
-    b=table(198,[('단계','Step'),('동시에 수행하는 전달','Transfers in the same step'),('새로 준비된 결과','New result')],[
-      [('합산 1','Reduce 1'),'GPU 1 → 0; GPU 3 → 2','GPU 0: [11,22,33,44]\nGPU 2: [1100,2200,3300,4400]'],
-      [('합산 2','Reduce 2'),'GPU 2 → 0','GPU 0: [1111,2222,3333,4444]'],
-      [('배포 1','Broadcast 1'),'GPU 0 → 2',('GPU 0과 2가 전체 합 보유','GPUs 0 and 2 hold the full sum')],
-      [('배포 2','Broadcast 2'),'GPU 0 → 1; GPU 2 → 3',('네 GPU가 전체 합 보유','All four GPUs hold the full sum')]], [174,426,504],116)
-    b+=banner(772,('합산 트리: 1 → 0 ← 2 ← 3','Reduction tree: 1 → 0 ← 2 ← 3'),('GPU 0이 합산의 root입니다. 배포에서는 화살표 방향을 뒤집습니다.','GPU 0 is the reduction root. Broadcast reverses these edges.'))
-    save(a,'03-tree',('Tree: 모아서 더하고 다시 펼치기','Tree: reduce, then broadcast'),('각 전송은 네 원소 전체를 보냅니다. Ring의 한 조각 전송과 크기가 다릅니다.','Each transfer carries all four elements, rather than one chunk as in the ring.'),b,916,('GPU 1과 3의 값을 각각 0과 2로 보내 합산한 뒤 GPU 2가 0으로 보냅니다. 전체 합을 역순으로 배포합니다.','GPU 1 sends to 0 and GPU 3 to 2; GPU 2 then sends its partial sum to 0. The full sum returns along reversed edges.'))
+    # Keep GPU positions fixed across panels; arrows carry the pre-transfer values.
+    def input_boxes(y, gathered=False, tree=False):
+        b=''
+        for r,x in enumerate([48,328,608,888]):
+            b+=rect(x,y,264,126,FILLS[r],COLORS[r])+text(x+18,y+30,f'GPU {r}',24,COLORS[r],True)
+            value=f'{"ABCD"[r]} = {1111*(r+1)}' if gathered else str(vectors[r])
+            b+=text(x+18,y+67,value,20)
+            label=('전체 배열 전달','Send the whole array') if tree else (('완성된 조각','Completed chunk') if gathered else ('처음 보낼 조각: ','First send: '))
+            b+=text(x+18,y+105,tr(label)+('' if gathered or tree else 'ABCD'[(r-1)%4]),19,MUTED)
+        return b
+
+    def ring_panel(y,step,gathered=False):
+        b=text(48,y+27,(f'{step}단계 · 전달한 뒤의 상태',f'Step {step} · state after transfer'),28,bold=True)
+        centers=[(600,y+116),(930,y+285),(600,y+454),(270,y+285)]
+        paths=[(758,y+145,899,y+222),(899,y+348,758,y+425),(442,y+425,301,y+348),(301,y+222,442,y+145)]
+        labels=[(935,y+179),(935,y+405),(265,y+405),(265,y+179)]
+        for r,(x1,y1,x2,y2) in enumerate(paths):
+            b+=arrow(x1,y1,x2,y2)
+            if gathered:
+                c=(r-step+1)%4; label='ABCD'[c]
+            else:
+                c,v=rs[step-1][r];label=f'{"ABCD"[c]}: {v}'
+            lx,ly=labels[r];b+=text(lx,ly,label,23,bold=True,anchor='middle')
+        for r,(x,cy) in enumerate(centers):
+            b+=rect(x-150,cy-57,300,114,FILLS[r],COLORS[r])+text(x,cy-25,f'GPU {r}',24,COLORS[r],True,anchor='middle')
+            if gathered:
+                b+=text(x,cy+13,' · '.join('ABCD'[c] for c in sorted(ag[step][r])),26,bold=True,anchor='middle')
+                incoming='ABCD'[(r-step)%4]
+                b+=text(x,cy+43,('새로 받은 조각: '+incoming,'New chunk: '+incoming),19,MUTED,anchor='middle')
+            else:
+                c,v=rs[step][r];incoming=rs[step-1][(r-1)%4][1]
+                b+=text(x,cy+13,f'{"ABCD"[c]} = {v}',26,bold=True,anchor='middle')
+                b+=text(x,cy+43,f'{incoming} + {vectors[r][c]}',21,MUTED,anchor='middle')
+        note=('받은 조각을 보관\n다시 더하지 않음','Keep received chunks\nNo further addition') if gathered else ('받은 값 + 자기 입력\n네 GPU가 동시에 합산','Received + local input\nAll four GPUs reduce')
+        b+=text(600,y+278,note,21,MUTED,anchor='middle')
+        if step<3:b+=arrow(600,y+526,600,y+551)
+        return b
+
+    b=text(48,204,('시작: GPU마다 A · B · C · D의 입력 보관','Start: each GPU holds inputs for A · B · C · D'),26,bold=True)
+    b+=input_boxes(225)
+    b+=text(48,389,('A · B · C · D = 배열의 첫째 · 둘째 · 셋째 · 넷째 위치','A · B · C · D = array positions 1 · 2 · 3 · 4'),23,MUTED)
+    for step in range(1,4):b+=ring_panel(420+(step-1)*570,step)
+    b+=banner(2100,('완성: GPU마다 합산된 조각 하나씩 보관','Done: one reduced chunk per GPU'),'GPU 0: A=1111    GPU 1: B=2222    GPU 2: C=3333    GPU 3: D=4444')
+    save(a,'01-ring-reduce-scatter',('Ring: 조각을 전달하며 합산하기','Ring: pass chunks and accumulate'),('화살표는 보내는 조각, 상자는 받은 뒤의 결과입니다. 색은 GPU를 구별합니다.','Arrows show sent chunks; boxes show results after receipt. Colors identify GPUs.'),b,2240,('원형으로 배치한 네 GPU가 세 단계에 걸쳐 조각을 전달하고 합산합니다. 각 단계의 화살표는 전송값, 상자는 수신 후의 합을 표시합니다.','Four GPUs arranged in a ring exchange and reduce chunks in three steps. Arrows show sent values and boxes show sums after receipt.'))
+    b=text(48,204,('시작: Reduce-Scatter에서 완성한 조각','Start: completed chunks from Reduce-Scatter'),26,bold=True)
+    b+=input_boxes(225,True)
+    b+=text(48,389,('화살표의 조각 하나를 전달하고, 받은 조각도 계속 보관합니다.','Send the one chunk shown on each arrow, and retain received chunks.'),23,MUTED)
+    for step in range(1,4):b+=ring_panel(420+(step-1)*570,step,True)
+    b+=banner(2100,('완성: 네 GPU 모두 같은 배열 보관','Done: the same array on all four GPUs'),'[A, B, C, D] = [1111, 2222, 3333, 4444]')
+    save(a,'02-ring-all-gather',('Ring: 완성된 조각을 모두에게','Ring: distribute the completed chunks'),('화살표는 보내는 조각, 상자는 전달 후 가진 조각들입니다. 색은 GPU를 구별합니다.','Arrows show sent chunks; boxes show chunks held after transfer. Colors identify GPUs.'),b,2240,('원형으로 배치한 네 GPU가 매 단계 조각 하나씩 전달합니다. 세 단계 뒤 모두 A부터 D까지 보관합니다.','Four GPUs arranged in a ring each forward one chunk per step. After three steps, all hold A through D.'))
+
+    b=text(48,204,('시작: Ring과 같은 네 입력 배열','Start: the same four input arrays as the ring'),26,bold=True)
+    b+=input_boxes(225,tree=True)
+    # Each edge transfers a whole array; keep completed sums on the broadcast senders.
+    tree_states=[[[11,22,33,44],vectors[1],[1100,2200,3300,4400],vectors[3]],
+                 [[1111,2222,3333,4444],vectors[1],[1100,2200,3300,4400],vectors[3]],
+                 [[1111,2222,3333,4444],vectors[1],[1111,2222,3333,4444],vectors[3]],
+                 [[1111,2222,3333,4444] for _ in range(4)]]
+    assert tree_states[0][0]==[x+y for x,y in zip(vectors[0],vectors[1])]
+    assert tree_states[0][2]==[x+y for x,y in zip(vectors[2],vectors[3])]
+    assert tree_states[1][0]==[sum(v[c] for v in vectors) for c in range(4)]
+    titles=[('1단계 · 아래에서 두 곳으로 합산','Step 1 · reduce in two places'),('2단계 · GPU 0에 전체 합 완성','Step 2 · complete the sum on GPU 0'),('3단계 · GPU 0에서 GPU 2로 배포','Step 3 · broadcast from GPU 0 to GPU 2'),('4단계 · GPU 1과 GPU 3에도 배포','Step 4 · broadcast to GPUs 1 and 3')]
+    for i,state in enumerate(tree_states):
+        y=410+i*510;b+=text(48,y+24,titles[i],28,bold=True)
+        centers=[(600,y+101),(290,y+274),(910,y+274),(910,y+442)]
+        # Light edges show the fixed tree; arrowheads mark only this step's transfers.
+        edges=[(450,y+160,330,y+214),(750,y+160,870,y+214),(910,y+338,910,y+381)]
+        for x1,y1,x2,y2 in edges:b+=f'<path d="M{x1},{y1} L{x2},{y2}" stroke="{LINE}" stroke-width="2.5"/>'
+        active_edges=[[0,2],[1],[1],[0,2]][i]
+        for e in active_edges:
+            x1,y1,x2,y2=edges[e]
+            b+=arrow(x2,y2,x1,y1) if i<2 else arrow(x1,y1,x2,y2)
+        for r,(x,cy) in enumerate(centers):
+            b+=rect(x-174,cy-53,348,106,FILLS[r],COLORS[r])+text(x,cy-19,f'GPU {r}'+(' · root' if r==0 else ''),24,COLORS[r],True,anchor='middle')
+            b+=text(x,cy+23,str(state[r]),21,bold=True,anchor='middle')
+        msg=[('1 → 0, 3 → 2\n두 전달과 합산을 동시에','1 → 0, 3 → 2\nBoth transfers reduce in parallel'),('2 → 0\n부분합끼리 더하기','2 → 0\nAdd the two partial sums'),('0 → 2\n완성된 배열을 복사','0 → 2\nCopy the completed array'),('0 → 1, 2 → 3\n다시 더하지 않고 복사','0 → 1, 2 → 3\nCopy without adding again')][i]
+        b+=text(80,y+416,msg,23,MUTED)
+    save(a,'03-tree',('Tree: 모아서 더하고 다시 펼치기','Tree: reduce, then broadcast'),('화살표 하나가 배열 전체를 전달합니다. 상자는 전달 후의 값, 옅은 선은 트리 연결입니다.','Each arrow carries a whole array. Boxes show values after transfer; faint lines show tree edges.'),b,2465,('같은 트리 배치를 네 번 보여줍니다. 두 단계로 GPU 0에 합산하고, 화살표를 뒤집어 두 단계로 모든 GPU에 배포합니다.','Four panels keep the same tree layout: two reduction steps to GPU 0, followed by two broadcast steps along reversed edges.'))
     b=banner(198,('논리적 Ring: 통신 상대와 순서','Logical ring: peers and order'),'GPU 0 → GPU 1 → GPU 2 → GPU 3 → GPU 0')
     b+=text(48,360,('실제 하드웨어: GPU들이 스위치를 통해 연결된 예','Physical hardware: GPUs connected through a switch'),26,bold=True)
     for i,x in enumerate([48,336,624,912]):
