@@ -57,3 +57,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [TP: Split One Operation Across GPUs](https://llm-systems-engineering.pages.dev/en/posts/tensor-parallelism/)
 - [SP: Partition Activations Alongside TP](https://llm-systems-engineering.pages.dev/en/posts/sequence-parallelism/)
 - [CP: Split Long Contexts Across GPUs](https://llm-systems-engineering.pages.dev/en/posts/context-parallelism/)
+
+#### Workloads
+
+- [Same Model, Different Workloads: Inference and Training](https://llm-systems-engineering.pages.dev/en/posts/inference-and-training/)

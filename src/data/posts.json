@@ -769,8 +769,33 @@
         "description": "Compare CP with SP, then follow how Ring and Ulysses connect information across GPUs to complete attention.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "f5b2626fe288d41920a2dd7562dc49300ae3cb7e94573a406e8506cf365c62b3",
-        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+        "sourceRevision": "149082e7fe04cf013a7364170b0ae4ee9b2c6655259fd236c78878bf27d50920",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication. 2026-09-19: Changed only the closing PP preview from next to later in both languages to accommodate the standalone workload introduction in the current published reading sequence."
+      }
+    }
+  },
+  {
+    "articleId": "inference-and-training",
+    "order": 35,
+    "track": "shared",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-and-training",
+        "title": "같은 모델, 다른 워크로드: 추론과 학습",
+        "description": "준비된 데이터를 처리하는 학습과 새로 도착하는 요청에 대응하는 추론을 비교하고, 토큰 생성과 가중치 갱신에서 요청 관리까지 실행 흐름을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-and-training",
+        "title": "Same Model, Different Workloads: Inference and Training",
+        "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "868a4dd49278cb71e622303c9fb98e4bcf5f1ce518fdd49f6f2041f65308a9a5",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision."
       }
     }
   }

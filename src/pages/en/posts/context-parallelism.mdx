@@ -103,4 +103,4 @@ The basic Ulysses configuration requires heads that can be assigned across GPUs.
 
 Training also requires communicating gradients during backpropagation. Processing many input tokens together differs from generating tokens one at a time while reading existing K/V. The forward-pass figures here do not directly describe execution in every setting.
 
-We have examined TP as partitioning feature-wise computation for the same input, SP as partitioning activations between TP regions, and CP as partitioning a long context while preserving its attention relationships. Next, pipeline parallelism (PP) moves beyond partitioning within a layer to placing different model layers on different GPUs.
+We have examined TP as partitioning feature-wise computation for the same input, SP as partitioning activations between TP regions, and CP as partitioning a long context while preserving its attention relationships. Later, we will examine how pipeline parallelism (PP) moves beyond partitioning within a layer to placing different model layers on different GPUs.
