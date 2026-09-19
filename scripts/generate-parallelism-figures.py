@@ -214,25 +214,6 @@ for LANG in ['ko','en']:
     b+=text(48,828,('Ring의 이웃이라고 전용 케이블로 직접 연결된 것은 아닙니다.','Logical neighbors need not have a dedicated direct cable.'),25,bold=True)
     save(a,'04-logical-physical',('전달 순서와 실제 연결을 구별하기','Separate transfer order from physical links'),('위는 알고리즘의 관계, 아래는 가능한 물리 연결의 한 예입니다.','Top: algorithmic relationship. Bottom: one possible physical topology.'),b,884,('논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.','A logical ring can run over a physical shared-switch topology.'))
 
-    a='expert-parallelism'
-    b=table(199,[('순서','Order'),'GPU 0 · E0, E1','GPU 1 · E2, E3'],[
-      [('토큰의 출발','Token origin'),'t0 → E0; t1 → E2','t2 → E1; t3 → E2'],[('Expert로 전달','Dispatch to experts'),'E0: t0\nE1: t2','E2: t1, t3\nE3: —'],[('Expert 계산','Expert computation'),'E0(t0), E1(t2)','E2(t1), E2(t3)'],[('출발지로 결과 회수','Return to origin'),'y(t0), y(t1)','y(t2), y(t3)']], [272,416,416],128)
-    b+=text(48,825,('이동하는 것은 토큰의 벡터와 결과입니다. Expert 가중치는 맡은 GPU에 둡니다.','Token vectors and results move; expert weights stay on their assigned GPU.'),23,bold=True)
-    save(a,'01-dispatch',('EP: 토큰을 Expert에게 보내고 결과 돌려받기','EP: dispatch tokens and return the results'),('E0–E3는 서로 다른 Expert입니다. 먼저 토큰당 하나를 고르는 top-1을 봅니다.','E0–E3 are different experts. Start with top-1 routing: one expert per token.'),b,881,('GPU 0의 t1을 GPU 1의 E2로 보내고 GPU 1의 t2를 GPU 0의 E1로 보낸 뒤 결과를 원래 GPU로 돌려보냅니다.','Send t1 from GPU 0 to E2 on GPU 1, and t2 from GPU 1 to E1 on GPU 0, then return the results.'))
-    b=banner(194,('라우터가 토큰 t에 두 Expert와 결합 가중치를 선택','The router selects two experts and combination weights for token t'),'E0: 0.7     E2: 0.3')
-    b+=arrow(600,310,303,373)+arrow(600,310,897,373)
-    b+=box(48,390,510,181,'GPU 0 · E0',('t의 벡터를 계산\n출력 u₀','Compute on t’s vector\nOutput u₀'),0)+box(642,390,510,181,'GPU 1 · E2',('t의 벡터를 계산\n출력 u₂','Compute on t’s vector\nOutput u₂'),1)
-    b+=arrow(303,585,600,644)+arrow(897,585,600,644)+banner(661,('토큰 t의 출발지에서 결합','Combine at token t’s origin'),'y(t) = 0.7 × u₀ + 0.3 × u₂')
-    save(a,'02-combine',('여러 Expert를 선택하면 결과도 결합합니다','Multiple selected experts require result combination'),('top-2의 단순 예시입니다. 실제 가중치 처리 방식은 모델 정의를 따릅니다.','A simple top-2 example; the model defines how routing weights are handled.'),b,809,('토큰 하나를 E0과 E2에 보내고 출력에 0.7과 0.3을 곱해 합칩니다.','Send one token to E0 and E2, then combine their outputs with weights 0.7 and 0.3.'))
-    b=text(48,208,('같은 크기의 Expert 네 개, top-1 토큰 여덟 개','Four equal-size experts and eight top-1 token assignments'),25,bold=True)
-    for i,n in enumerate([1,1,6,0]):
-        y=259+i*115;b+=text(48,y+39,f'E{i} · GPU {0 if i<2 else 1}',25)
-        for j in range(n):b+=rect(293+j*110,y,96,65,FILLS[i],COLORS[i])+text(341+j*110,y+42,'t',26,anchor='middle')
-        if not n:b+=text(307,y+42,('없음','None'),25,MUTED)
-        b+=text(1020,y+42,str(n),27,bold=True)
-    b+=banner(781,('Expert 수가 같다고 작업량이 같지는 않습니다.','Equal expert counts do not guarantee equal work.'),('GPU 0: 토큰 2개 / GPU 1: 토큰 6개 → 바쁜 쪽이 완료를 늦출 수 있습니다.','GPU 0: 2 tokens / GPU 1: 6 tokens → the busy GPU can delay completion.'))
-    save(a,'03-imbalance',('라우팅이 만드는 작업량 불균형','Routing creates load imbalance'),('막대 한 칸은 Expert에 배정된 토큰 하나이며 실행 시간의 측정값이 아닙니다.','Each block is one token assignment, not a measured unit of execution time.'),b,925,('E0과 E1은 각각 한 토큰, E2는 여섯 토큰, E3는 영 토큰을 처리합니다.','E0 and E1 process one token each, E2 six, and E3 none.'))
-
     a='choosing-parallelism'
     for r,(label,groups) in enumerate([( ('모델 네 벌 · DP','Four replicas · DP'),[[0],[1],[2],[3]]),(('두 GPU씩 두 벌 · TP + DP','Two replicas of two GPUs · TP + DP'),[[0,1],[2,3]]),(('네 GPU로 한 벌 · TP','One replica across four GPUs · TP'),[[0,1,2,3]])]):
         y=212+r*226;b=('' if r==0 else b)+text(48,y,label,26,bold=True)
@@ -252,7 +233,7 @@ for LANG in ['ko','en']:
     b+=table(665,[('측정 조건','Measurement conditions'),('함께 기록할 항목','Record together')],[[('같은 모델·정밀도·입력/출력 길이·요청 도착 패턴','Same model, precision, lengths, and arrival pattern'),('메모리 최고 사용량·응답 시간 분포·처리량·통신과 대기','Peak memory, latency distribution, throughput, communication and waiting')]], [552,552],152)
     save(a,'03-goals',('응답 시간과 처리량을 함께 판단하기','Evaluate latency and throughput together'),('모든 경우에 가장 좋은 병렬화 하나가 정해져 있지는 않습니다.','There is no single best parallelization for every workload.'),b,919,('요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.','Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.'))
 
-assert len(MANIFEST)==20
+assert len(MANIFEST)==14
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
 

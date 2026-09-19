@@ -40,36 +40,6 @@
     "height": 884
   },
   {
-    "article": "expert-parallelism",
-    "slug": "01-dispatch",
-    "locale": "ko",
-    "title": "EP: 토큰을 Expert에게 보내고 결과 돌려받기",
-    "alt": "GPU 0의 t1을 GPU 1의 E2로 보내고 GPU 1의 t2를 GPU 0의 E1로 보낸 뒤 결과를 원래 GPU로 돌려보냅니다.",
-    "path": "public/images/expert-parallelism/01-dispatch.svg",
-    "width": 1200,
-    "height": 881
-  },
-  {
-    "article": "expert-parallelism",
-    "slug": "02-combine",
-    "locale": "ko",
-    "title": "여러 Expert를 선택하면 결과도 결합합니다",
-    "alt": "토큰 하나를 E0과 E2에 보내고 출력에 0.7과 0.3을 곱해 합칩니다.",
-    "path": "public/images/expert-parallelism/02-combine.svg",
-    "width": 1200,
-    "height": 809
-  },
-  {
-    "article": "expert-parallelism",
-    "slug": "03-imbalance",
-    "locale": "ko",
-    "title": "라우팅이 만드는 작업량 불균형",
-    "alt": "E0과 E1은 각각 한 토큰, E2는 여섯 토큰, E3는 영 토큰을 처리합니다.",
-    "path": "public/images/expert-parallelism/03-imbalance.svg",
-    "width": 1200,
-    "height": 925
-  },
-  {
     "article": "choosing-parallelism",
     "slug": "01-layouts",
     "locale": "ko",
@@ -138,36 +108,6 @@
     "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
     "width": 1200,
     "height": 884
-  },
-  {
-    "article": "expert-parallelism",
-    "slug": "01-dispatch",
-    "locale": "en",
-    "title": "EP: dispatch tokens and return the results",
-    "alt": "Send t1 from GPU 0 to E2 on GPU 1, and t2 from GPU 1 to E1 on GPU 0, then return the results.",
-    "path": "public/images/expert-parallelism/en/01-dispatch.svg",
-    "width": 1200,
-    "height": 881
-  },
-  {
-    "article": "expert-parallelism",
-    "slug": "02-combine",
-    "locale": "en",
-    "title": "Multiple selected experts require result combination",
-    "alt": "Send one token to E0 and E2, then combine their outputs with weights 0.7 and 0.3.",
-    "path": "public/images/expert-parallelism/en/02-combine.svg",
-    "width": 1200,
-    "height": 809
-  },
-  {
-    "article": "expert-parallelism",
-    "slug": "03-imbalance",
-    "locale": "en",
-    "title": "Routing creates load imbalance",
-    "alt": "E0 and E1 process one token each, E2 six, and E3 none.",
-    "path": "public/images/expert-parallelism/en/03-imbalance.svg",
-    "width": 1200,
-    "height": 925
   },
   {
     "article": "choosing-parallelism",

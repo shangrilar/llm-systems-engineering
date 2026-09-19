@@ -2,56 +2,76 @@
 layout: ../../../layouts/Post.astro
 articleId: expert-parallelism
 title: "EP: Partition Experts and Route Tokens"
-description: "Follow token dispatch and return across GPU-assigned MoE experts, then examine result combination and load imbalance."
+description: "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions."
 date: 2026-09-18
 ---
 
-[MoE](/en/posts/moe/) selects a subset of experts for each token. Experts are computation modules with different weights, usually MLPs. A router chooses which experts to use.
+import SequenceContextFigures from '../../../components/SequenceContextFigures.astro';
 
-**Expert parallelism, or EP**, distributes these experts across GPUs. A token may be on a different GPU from its selected expert. We will follow dispatch and result return, then examine combining multiple expert outputs and balancing the resulting work.
+[MoE](/en/posts/moe/) selects **experts**, which are MLPs, for each token. As the number of experts grows, keeping all their weights on one GPU becomes difficult. **Expert parallelism (EP)** places different experts across multiple GPUs.
 
-## Placing Experts and Choosing Token Destinations
+Not every part of a model needs the same parallelism. This article uses a simple configuration: **replicate attention and other common layers with DP, and partition experts with EP**. We first establish that the same GPUs use both strategies, then follow tokens as they fan out to selected experts and return to their source GPUs in their original order. We then examine how multiple expert results are combined and why equal expert counts can receive different token counts.
 
-Place experts E0 and E1 on GPU 0, and E2 and E3 on GPU 1. They are four different experts with different weights, not copies of one expert. Start with top-1 routing, selecting one expert per token.
+## Replicate attention and partition experts
 
-[![Send t1 from GPU 0 to E2 on GPU 1, and t2 from GPU 1 to E1 on GPU 0, then return the results.](/images/expert-parallelism/en/01-dispatch.png)](/images/expert-parallelism/en/01-dispatch.png)
+Suppose GPU 0 handles input sequence A and GPU 1 handles sequence B. A1 and A2 are two tokens of sequence A; B1 and B2 are two tokens of sequence B. Each small chip represents one token. What is actually computed and transferred is that token's **activation vector**.
 
-Initially GPU 0 holds t0,t1 and GPU 1 holds t2,t3. Suppose the router selects E0 for t0, E2 for t1 and t3, and E1 for t2. Token t1 must move from GPU 0 to GPU 1; t2 must move in the opposite direction. Tokens t0 and t3 already share a GPU with their experts.
+The two GPUs hold identical copies of attention and other common-layer weights. GPU 0 computes A and GPU 1 computes B using the same weights: the [data parallelism](/en/posts/data-parallelism/) approach introduced earlier. In this example, a sequence is not split across GPUs. Attention handles relationships among tokens within each GPU's own sequence.
 
-Rather than moving expert weights to each token, **send the token vector to the assigned expert**. Grouping vectors by destination and arranging them by expert makes local matrix computation easier. Since a GPU can host multiple experts, arriving at the GPU and arranging input for an expert are separate concerns.
+Expert placement is different. E0 and E1 reside on GPU 0; E2 and E3 reside on GPU 1. These are **four MLPs with different weights**, not replicas of the same weights. The **router**, which chooses experts for each token, has replicated weights on the two GPUs. Each GPU selects from all four experts for its own tokens.
 
-## Returning Results to the Right Tokens
+<SequenceContextFigures locale="en" article="ep" figure="1" />
 
-After expert computation, outputs must reach where they are needed. Our example returns them to the token’s origin GPU. Token t1’s E2 result returns to GPU 0, and t2’s E1 result to GPU 1. Restoring the original token order allows the next operation to continue.
+GPU 0 and GPU 1 stay in the same positions from top to bottom. After computing attention, they send tokens to the selected experts in the MoE block. Once results return, each GPU continues computing its own inputs. **The GPUs are not divided into separate DP and EP sets: weight placement and data flow change by model part on the same GPUs.**
 
-This connects to destination-specific exchange in [All-to-All](/en/posts/collective-communication-combinations/). Real routing need not assign equal token counts to each peer. Unlike the fixed-size chunks in the introductory figure, counts and locations may need to be exchanged, and padding or variable-size transfers may be necessary.
+Using DP for common layers is this article's example configuration. EP does not prescribe one attention parallelism strategy. [vLLM's EP documentation](https://docs.vllm.ai/en/latest/serving/expert_parallel_deployment/#layer-behavior-with-ep-enabled) distinguishes replicated attention from attention partitioned with TP. To focus on the token round trip, we omit TP and other partitioning strategies for the common layers here.
 
-[Megatron’s MoE documentation](https://docs.nvidia.com/megatron-core/developer-guide/latest/user-guide/features/moe.html) describes All-to-All dispatch alongside other dispatchers. EP therefore should not be defined as one specific collective function. The required meaning is that **each selected expert receives its inputs and each output is associated with the correct token**.
+## Send tokens to experts and return their results
 
-## Combining Multiple Expert Outputs
+Now zoom in on the MoE block. We begin with **Top-1**, selecting one expert per token. To focus on dispatch and return, this example sets the combination weight to one. Suppose the router selects E0 for A1, E2 for A2, E1 for B1, and E2 for B2.
 
-Top-2 routing chooses two experts for a token. Both computations use its vector, producing two outputs. The model defines how these outputs are combined.
+Use Next in the figure to follow input, expert selection, dispatch, computation, return, and order restoration. Token colors and names remain consistent, while GPUs and experts stay in place.
 
-[![Send one token to E0 and E2, then combine their outputs with weights 0.7 and 0.3.](/images/expert-parallelism/en/02-combine.png)](/images/expert-parallelism/en/02-combine.png)
+<SequenceContextFigures locale="en" article="ep" figure="2" />
 
-The example multiplies outputs u₀ and u₂ from E0 and E2 by 0.7 and 0.3 respectively and adds them. They are **results from different experts**, rather than shards of a weight matrix. Apply routing weights and combine contributions for the correct token.
+**The router determines destinations.** On GPU 0, A1's E0 is local, but A2's E2 is on GPU 1. On GPU 1, B2's E2 is local, while B1's E1 is on GPU 0. A single central router does not gather every input to make these decisions. Each GPU computes expert-selection information from its own tokens.
 
-Selecting more experts increases expert computation and dispatch work. If two experts are on the same GPU, however, transfers can potentially be grouped so the same input need not cross GPUs twice. Actual network volume depends on expert placement and the dispatcher, not only the selection count.
+**Dispatch groups token vectors by the selected expert.** A2's vector goes to GPU 1, and B1's vector goes to GPU 0. A1 and B2 are placed in their expert inputs within the same GPU. Expert weights stay in place while token vectors move, rather than moving weights toward the inputs each time. Experts receive the token input vectors used for selection, not the router scores.
 
-## Distinguishing Expert Counts from Work
+E2 receives A2 and B2 from different sequences. This works because **the expert MLP transforms each token independently**. Their vectors can be stacked as rows for matrix operations with the same E2 weights, but B2's values are not mixed into A2's output. Grouping tokens under one expert batches their computation; it does not combine information across tokens as attention does.
 
-Assigning the same number of experts to each GPU does not ensure equal computation. Selection frequencies depend on inputs and the router.
+**Results return to their source GPUs and original tokens.** E2's result for A2 returns to GPU 0, and E1's result for B1 returns to GPU 1. Locally computed results for A1 and B2 stay on their GPUs. GPU 0 arranges outputs in A1, A2 order, and GPU 1 in B1, B2 order, then passes them to the next operation. Each token has one result here, so the multi-result weighted sum needed in Top-2 is absent.
 
-[![E0 and E1 process one token each, E2 six, and E3 none.](/images/expert-parallelism/en/03-imbalance.png)](/images/expert-parallelism/en/03-imbalance.png)
+This round trip changes the arrangement from **grouped by input → grouped by expert → grouped by input again**. It connects to [All-to-All](/en/posts/collective-communication-combinations/) as an exchange by destination, but destinations may receive different token counts. The association between each result and its original token must also be tracked. [Megatron's MoE documentation](https://docs.nvidia.com/megatron-core/developer-guide/latest/user-guide/features/moe.html#token-dispatching) describes this dispatch-and-return relationship and several dispatchers. The central idea of EP is **that selected experts receive inputs and their results return to the correct tokens**, rather than the name of a particular communication function.
 
-If eight tokens are assigned 1,1,6,0 across four equally sized experts, GPU 0 processes two and GPU 1 six. Work needing the busy GPU’s results must wait for them. Three times as many tokens does not imply exactly three times the execution time, but it exposes the limits of balancing expert counts alone.
+## Return multiple expert results to the same token
 
-Too few tokens per expert can also yield many inefficient small matrix operations. Concentrated token traffic burdens receive buffers and communication as well as computation. [vLLM’s EP documentation](https://docs.vllm.ai/en/latest/serving/expert_parallel_deployment/) also treats expert placement and load balancing as important execution concerns.
+With **Top-2**, each token selects two experts, so one input vector is used in two expert computations. Focus on A2 from GPU 0. Suppose its router selects local E0 and E2 on GPU 1, assigning combination weights of 0.7 and 0.3. Other tokens are omitted.
 
-## Comparing Saved Memory with Added Transfers
+<SequenceContextFigures locale="en" article="ep" figure="3" />
 
-EP distributes expert weights so each GPU need not replicate every expert. Attention and shared modules are not automatically partitioned by the same factor. Input/output buffers and the placement of other model components must be considered separately.
+E0 and E2 receive the same A2 vector but use different weights, producing two results. In the figure, u0 is E0's output and u2 is E2's output. GPU 0 computes u0 locally; GPU 1 computes u2 and sends it back to GPU 0.
 
-Training and inference both contain forward routing, dispatch, expert computation, and combination. Training adds backward contributions and weight updates. Benefits depend on token counts, expert-level load distribution, and GPU connectivity as well as model size.
+At the source, GPU 0 **forms a weighted sum of only the two results for A2**: `y(A2) = 0.7 × u0 + 0.3 × u2`. If both outputs are d-dimensional, the result is also d-dimensional and can be connected to A2's original position. This is why expert-selection information and weights used for result combination must be kept distinct and available.
 
-We have now examined what six parallelization methods partition and communicate. [How Should We Arrange Multiple GPUs?](/en/posts/choosing-parallelism/) will compare ways to group the same GPU resources and the criteria for choosing between them.
+Selecting more experts increases the number of token–expert computations and the results to collect. However, input delivery can be shared when two experts reside on the same GPU, so network traffic is not always directly proportional to the number selected. Actual transfer volume depends on expert placement and implementation.
+
+## Equal expert counts can receive different token counts
+
+Even when GPUs start with equal numbers of inputs, their routers need not select destinations evenly. Increase the input to four tokens per GPU: A1 through A4 on GPU 0 and B1 through B4 on GPU 1. The four equally sized experts still occupy two GPUs, two experts each, with Top-1 selection.
+
+<SequenceContextFigures locale="en" article="ep" figure="4" />
+
+In the figure, E0 receives A1, E1 receives B1, and E2 receives the other six tokens. GPU 0 therefore processes two tokens and GPU 1 processes six. **Evenly partitioning inputs for common layers does not guarantee an even workload in the expert block.**
+
+An expert selected frequently can concentrate computation, input-buffer demand, and communication on its GPU. Tokens originating on other GPUs also have to wait for that expert's results. Conversely, too few tokens per expert can create many small matrix operations that use GPUs inefficiently.
+
+Three times as many tokens does not mean exactly three times the execution time. The figure shows that dividing weights into equal counts and balancing incoming work are different tasks. Expert placement must therefore be considered together with the distribution produced by routing.
+
+## Weigh partitioned weights against added communication
+
+EP reduces the need for each GPU to store every expert's weights. Here, each GPU holds two of four experts. But replicated attention, router, and other common weights remain, and space is also needed for dispatched inputs and returned outputs. Halving the number of experts per GPU does not halve total GPU memory usage.
+
+Training and inference both follow routing, dispatch, expert computation, return, and combination in the forward pass. Training adds backward gradient transfers and weight updates. The figures show forward passes; they omit training gradient synchronization for DP replicas and backward scheduling.
+
+The key idea is **that different model parts can use different parallelism strategies**. Common layers apply the same weights to different inputs, while expert layers partition weights and exchange the tokens that need them. [How Should We Arrange Multiple GPUs?](/en/posts/choosing-parallelism/) next examines how to choose and combine these strategies.

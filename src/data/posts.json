@@ -810,17 +810,17 @@
       "ko": {
         "slug": "expert-parallelism",
         "title": "EP: Expert를 나누고 토큰 보내기",
-        "description": "MoE의 Expert를 GPU에 배치하고 토큰을 전달·회수하는 과정을 따라가며, 여러 결과의 결합과 작업량 불균형을 설명합니다.",
+        "description": "같은 GPU에서 어텐션에는 DP, Expert에는 EP를 적용하고, 토큰이 Expert로 흩어졌다가 원래 위치로 돌아오는 과정을 살펴봅니다.",
         "published": true
       },
       "en": {
         "slug": "expert-parallelism",
         "title": "EP: Partition Experts and Route Tokens",
-        "description": "Follow token dispatch and return across GPU-assigned MoE experts, then examine result combination and load imbalance.",
+        "description": "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "917a6f3b151ca3986f4860f870c8961950867262521495062db38e8992a4c9b0",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "897c777ceaea160b04816f1f42d77e6ffa4850af1dc3fcd2f7b6f2f6cff3633d",
+        "reviewNote": "2026-09-19: Compared five Korean/English sections, four figures and 13 states per language. Same-GPU DP attention and EP expert placement, local routing, token independence, source return, Top-1 weight-one example, Top-2 weighted combination and load counts checked. SVGs reviewed separately from body revision."
       }
     }
   },
