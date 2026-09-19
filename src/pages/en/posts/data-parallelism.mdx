@@ -8,7 +8,7 @@ date: 2026-09-18
 
 A straightforward way to use more GPUs is to prepare more copies of the same model. It resembles several people using the same tools to handle different jobs. This is **data parallelism, or DP**.
 
-We will first examine model and input placement, then compare inference with fixed weights against training that updates them. Finally, we will distinguish higher throughput across requests from faster execution of one request. The examples use an ordinary dense model that applies the same set of weights to each input token.
+We will first examine model and input placement, then compare inference with fixed weights against training that updates them. Finally, we will examine how dividing inputs increases request throughput in inference and data throughput in training. The examples use an ordinary dense model that applies the same set of weights to each input token.
 
 ## Replicating the Model and Dividing Inputs
 
@@ -40,14 +40,20 @@ The figure starts with one weight at 10 and gradients 2 and 6 on the two GPUs. A
 
 [PyTorch DDP](https://docs.pytorch.org/docs/2.14/generated/torch.nn.parallel.DistributedDataParallel.html) synchronizes gradients between replicas. Implementations may group gradients or communicate those already available while computation continues. They need not wait for every computation and then perform exactly one communication as the simplified figure might suggest. Different local batch sizes or loss sum/mean conventions require checking the appropriate weighting and division.
 
-## Distinguishing Throughput from Request Time
+## Increasing Throughput by Dividing Inputs
 
-Throughput is completed work per unit time. A request’s execution time runs from the start of its computation to its completion. User-visible response time also includes waiting before execution.
+**DP distributes different inputs across replicas so they can complete more work in the same time.** In inference, we can examine this benefit through the number of requests completed; in training, through the amount of data processed. Work processed per unit time is called throughput.
+
+In inference, each replica handles different requests. The example below assumes four requests arrive together and each takes the same time to compute.
 
 [![One GPU finishes in four slots; two GPUs finish in two, while each request executes for one slot.](/images/data-parallelism/en/03-throughput.png)](/images/data-parallelism/en/03-throughput.png)
 
-If each request takes one slot, one GPU finishes four requests in four slots, while two GPUs finish them in two. **All requests finish sooner, but each request still computes for one slot.** Queued requests can start earlier, improving user-visible latency.
+One GPU finishes four requests in four slots, while two GPUs finish them in two. **All requests finish sooner, but each request still computes for one slot.** The computation of an individual request has not been split. However, user-visible response time includes waiting before computation, so starting later requests earlier can also reduce their response time.
 
-Real execution need not scale proportionally with GPU count. Too few requests leave GPUs idle; smaller batches may reduce compute efficiency. In training, waiting for the slowest participant’s gradients and synchronization costs also matter. Evaluate DP by checking whether there is enough input, whether work is balanced, and what participants wait for.
+In training, replicas compute on different training data and combine their gradients to update the weights. Consider a workload where one GPU processes eight inputs before an update. If two GPUs each process eight inputs and combine their gradients, **a single update can reflect sixteen inputs in total**. This increases the total amount of data used at once while keeping each GPU’s share unchanged. In this example, the total number of inputs used for one update is the **global batch size**.
+
+The global batch does not have to grow. We can keep eight inputs in total and have two GPUs compute four each. Here, the aim is to complete the same amount of computation sooner. Conversely, increasing the global batch also changes how much data each update uses, so higher data throughput does not imply a proportional reduction in the time needed to reach a target level of model performance.
+
+In either case, throughput need not grow in proportion to GPU count. Too little input can leave GPUs idle, and smaller per-GPU batches may reduce compute efficiency. In training, waiting for the slowest participant’s gradients and synchronization costs also matter. **Evaluate DP using request throughput and response time for inference, and data throughput together with global batch size for training.**
 
 A model too large to replicate, or a need to divide computation for the same input, calls for another placement. [TP: Split One Operation Across GPUs](/en/posts/tensor-parallelism/) examines the communication created by partitioning a matrix multiplication.

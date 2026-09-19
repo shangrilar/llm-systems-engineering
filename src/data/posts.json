@@ -694,8 +694,8 @@
         "description": "Replicate a model across GPUs, distribute inputs, and distinguish inference request distribution from training gradient synchronization.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "3d725421268105a001d6f99eae9a302725556b0b32c54cf8efa532451d489a25",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "a3ff26d6012c0ee95b637b6e414b2b058e2cb527fc34cd3d9002ac95998fda60",
+        "reviewNote": "2026-09-19: Compared the revised Korean and English introduction and throughput section. Both explain inference request throughput versus individual request time, training with eight inputs per GPU versus a fixed global batch of eight, global batch size, synchronization costs, and the distinction between data throughput and time to target model performance. Existing figures are unchanged from the previously reviewed versions."
       }
     }
   },
