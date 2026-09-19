@@ -969,8 +969,8 @@
         "description": "Manage growing and ending requests in KV blocks, mapping logical token order to physical storage for flexible allocation and reclamation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "1aa97ae4bc2a1341f0082883f7051ca4d75dde6a0fd680fb3aca70f9332806b9",
-        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+        "sourceRevision": "d7956ff28ec955d7c8a66b080dea6f8b04581b3544060c3fb5648ed4b5bff9f6",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending. Korean token ranges use en dashes to prevent Markdown strikethrough; English already uses the same range notation."
       }
     }
   },
