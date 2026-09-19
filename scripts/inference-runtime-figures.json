@@ -1,0 +1,178 @@
+[
+  {
+    "article": "batching-and-scheduling",
+    "slug": "01-continuous-batching",
+    "locale": "ko",
+    "title": "완료된 요청의 자리를 다음 요청에게",
+    "alt": "Static에서는 A가 끝나도 B의 종료까지 C가 기다립니다. Continuous에서는 C의 prefill이 단계 3에 들어가고 decode 뒤 종료합니다.",
+    "caption": "한 칸은 실행 순서를 뜻한다. Continuous batching은 완료된 요청을 제거하고 다음 단계의 구성을 바꾼다. 혼합 배치 여부와 실제 단계 시간은 엔진·입력에 따라 달라진다.",
+    "path": "public/images/batching-and-scheduling/01-continuous-batching.svg",
+    "width": 1200,
+    "height": 1110
+  },
+  {
+    "article": "batching-and-scheduling",
+    "slug": "02-resource-budgets",
+    "locale": "ko",
+    "title": "배치에 넣기 전에 세 가지 수를 확인하기",
+    "alt": "요청 수 3과 실행 토큰 8은 제한을 만족하지만 필요한 KV 26은 용량 24를 넘습니다. C를 대기시키면 A와 B가 2토큰을 계산해 KV 20을 저장합니다.",
+    "caption": "이번에 계산할 토큰 수와 누적 KV 위치 수를 구별한다. 이 예시는 새 요청 C의 진입을 늦추며, A와 B의 문맥은 각각 독립적으로 유지한다.",
+    "path": "public/images/batching-and-scheduling/02-resource-budgets.svg",
+    "width": 1200,
+    "height": 1030
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "01-block-mapping",
+    "locale": "ko",
+    "title": "토큰 순서와 저장 위치를 분리하기",
+    "alt": "A의 논리 블록 L0, L1, L2가 각각 물리 블록 P3, P0, P5에 대응합니다. 각 블록은 4토큰의 K와 V를 저장하며 마지막에는 2칸이 남습니다.",
+    "caption": "블록 테이블이 토큰의 논리적 순서와 비연속 물리 공간을 연결한다. PagedAttention은 이 매핑을 따라 해당 요청의 K/V를 읽는다.",
+    "path": "public/images/paged-kv-cache/01-block-mapping.svg",
+    "width": 1200,
+    "height": 1013
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "02-reuse-blocks",
+    "locale": "ko",
+    "title": "완료된 요청의 블록을 반환하고 다시 배정하기",
+    "alt": "A 종료로 P0, P3, P5가 반환된 뒤 새 요청 C가 P0, P5를 배정받습니다. B의 P1은 계속 유지합니다.",
+    "caption": "요청이 끝나면 독점 소유하던 KV 블록을 반환한다. C는 반환된 공간에 자신의 K/V를 기록하며 A의 캐시 내용을 그대로 사용하는 것이 아니다.",
+    "path": "public/images/paged-kv-cache/02-reuse-blocks.svg",
+    "width": 1200,
+    "height": 1015
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "01-reclaim-kv",
+    "locale": "ko",
+    "title": "실행을 쉬는 것과 공간을 돌려주는 것은 다릅니다",
+    "alt": "B를 배치에서만 빼면 KV 블록 2개가 남아 빈 공간이 없습니다. B의 KV를 실제로 반환하면 2개가 비고 A에 1개를 줄 수 있습니다.",
+    "caption": "한 단계 미루는 것만으로는 KV 점유가 줄지 않는다. Preemption으로 B의 독점 KV를 회수하면 A를 진행시킬 공간을 확보할 수 있다.",
+    "path": "public/images/inference-preemption/01-reclaim-kv.svg",
+    "width": 1200,
+    "height": 1070
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "02-recompute-resume",
+    "locale": "ko",
+    "title": "출력 이력을 지키면서 KV를 다시 만들기",
+    "alt": "중단 전 KV는 p0, p1, p2, x0이고 출력은 x1까지 전달되었습니다. KV를 해제해도 이력을 유지하고 재개 시 x1까지 계산하여 새 x2만 선택·전달합니다.",
+    "caption": "이미 선택한 토큰은 재계산 때 고정된 입력으로 사용한다. 마지막 선택 토큰과 KV 계산 완료 위치가 다를 수 있으며, 기존 출력을 다시 생성하거나 전송하지 않는다.",
+    "path": "public/images/inference-preemption/02-recompute-resume.svg",
+    "width": 1200,
+    "height": 1050
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "01-observation-boundaries",
+    "locale": "ko",
+    "title": "어디에서 시간을 재는지 먼저 정하기",
+    "alt": "엔진은 90, 120, 160ms에 토큰을 선택하고 클라이언트는 100, 130, 170ms에 관측합니다. 제출 0ms, 종료 180ms이며 TTFT는 100ms입니다.",
+    "caption": "TTFT는 이 그림에서 클라이언트 제출부터 첫 출력 관측까지다. 엔진의 토큰 선택, 출력 처리, 네트워크 전달과 종료 통지는 서로 다른 관측 지점을 만든다.",
+    "path": "public/images/inference-metrics/01-observation-boundaries.svg",
+    "width": 1200,
+    "height": 1018
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "02-latency-throughput",
+    "locale": "ko",
+    "title": "대기 시간과 처리량의 분모를 구별하기",
+    "alt": "출력 3개의 TTFT는 100ms, ITL은 30과 40ms, 마지막 토큰 기준 TPOT는 35ms, E2E는 180ms입니다. 10초간 3요청과 출력 10토큰은 0.3req/s와 1tok/s입니다.",
+    "caption": "TPOT는 첫 토큰 뒤의 시간을 나머지 출력 토큰 수로 나눈다. 마지막 토큰과 종료 통지 중 무엇을 끝점으로 쓰는지 확인하고, 처리량의 집계 대상과 관측 시간도 함께 적는다.",
+    "path": "public/images/inference-metrics/02-latency-throughput.svg",
+    "width": 1200,
+    "height": 1036
+  },
+  {
+    "article": "batching-and-scheduling",
+    "slug": "01-continuous-batching",
+    "locale": "en",
+    "title": "Reuse a completed request’s batch slot",
+    "alt": "Static batching makes C wait for B despite A finishing. Continuous batching admits C for prefill at step 3, followed by decode and completion.",
+    "caption": "Cells show execution order. Continuous batching removes completed requests and changes the next batch; mixed-batch support and step duration depend on the engine and inputs.",
+    "path": "public/images/batching-and-scheduling/en/01-continuous-batching.svg",
+    "width": 1200,
+    "height": 1110
+  },
+  {
+    "article": "batching-and-scheduling",
+    "slug": "02-resource-budgets",
+    "locale": "en",
+    "title": "Check three different budgets before admission",
+    "alt": "Three requests and eight execution tokens fit their limits, but 26 KV positions exceed capacity 24. Deferring C lets A and B execute two tokens and store 20 KV positions.",
+    "caption": "Distinguish tokens computed now from accumulated KV positions. This example delays admission of C and keeps A and B’s contexts independent.",
+    "path": "public/images/batching-and-scheduling/en/02-resource-budgets.svg",
+    "width": 1200,
+    "height": 1030
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "01-block-mapping",
+    "locale": "en",
+    "title": "Separate token order from storage location",
+    "alt": "A’s logical blocks L0,L1,L2 map to physical blocks P3,P0,P5. Each stores four tokens’ K,V; the final block leaves two slots unused.",
+    "caption": "The block table maps logical token order to noncontiguous storage. PagedAttention follows this mapping to read the request’s K/V.",
+    "path": "public/images/paged-kv-cache/en/01-block-mapping.svg",
+    "width": 1200,
+    "height": 1013
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "02-reuse-blocks",
+    "locale": "en",
+    "title": "Free completed requests’ blocks and reallocate them",
+    "alt": "A’s completion frees P0,P3,P5, then C receives P0,P5. B retains P1 throughout.",
+    "caption": "A completed request returns its exclusively owned KV blocks. C writes its own K/V into the returned storage rather than using A’s cached contents.",
+    "path": "public/images/paged-kv-cache/en/02-reuse-blocks.svg",
+    "width": 1200,
+    "height": 1015
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "01-reclaim-kv",
+    "locale": "en",
+    "title": "Skipping work and reclaiming memory are different",
+    "alt": "Excluding B from a batch retains its two KV blocks and leaves no free space. Releasing B’s KV frees two blocks, one of which can be assigned to A.",
+    "caption": "Deferring a step alone does not reduce KV occupancy. Reclaiming B’s exclusively owned KV through preemption makes room for A’s progress.",
+    "path": "public/images/inference-preemption/en/01-reclaim-kv.svg",
+    "width": 1200,
+    "height": 1070
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "02-recompute-resume",
+    "locale": "en",
+    "title": "Rebuild KV while preserving output history",
+    "alt": "Before preemption KV covers p0,p1,p2,x0 while x1 is delivered. Retaining history allows recomputation through x1 and delivery of only the new x2.",
+    "caption": "Previously selected tokens become fixed inputs during recomputation. The last selected token and KV frontier can differ; prior outputs are neither regenerated nor resent.",
+    "path": "public/images/inference-preemption/en/02-recompute-resume.svg",
+    "width": 1200,
+    "height": 1050
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "01-observation-boundaries",
+    "locale": "en",
+    "title": "Choose the observation boundary first",
+    "alt": "The engine selects at 90, 120, 160ms and the client observes at 100, 130, 170ms. Submission is 0ms, completion 180ms, and TTFT 100ms.",
+    "caption": "Here TTFT runs from client submission to first observed output. Engine selection, output processing, network delivery, and completion notification create different measurement boundaries.",
+    "path": "public/images/inference-metrics/en/01-observation-boundaries.svg",
+    "width": 1200,
+    "height": 1018
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "02-latency-throughput",
+    "locale": "en",
+    "title": "Distinguish latency and throughput denominators",
+    "alt": "Three outputs give TTFT 100ms, ITLs 30/40ms, last-token TPOT 35ms, and E2E 180ms. Three requests and 10 output tokens over 10s give 0.3req/s and 1tok/s.",
+    "caption": "TPOT divides post-first-token time by the remaining output-token count. Check whether its endpoint is the last token or completion, and state throughput’s counted quantity and observation duration.",
+    "path": "public/images/inference-metrics/en/02-latency-throughput.svg",
+    "width": 1200,
+    "height": 1036
+  }
+]

@@ -1,0 +1,156 @@
+[
+  {
+    "article": "inference-and-training",
+    "slug": "01-execution",
+    "locale": "ko",
+    "title": "같은 모델, 다른 실행 흐름",
+    "alt": "생성은 고정된 가중치로 forward와 토큰 선택을 반복하고, 학습은 알려진 여러 위치의 예측과 손실, 역전파, 가중치 갱신을 수행합니다.",
+    "caption": "같은 Transformer도 입력이 주어지는 방식, 반복할 계산, 유지할 상태가 다르면 다른 워크로드가 됩니다.",
+    "path": "public/images/inference-and-training/01-execution.svg",
+    "width": 1200,
+    "height": 1210
+  },
+  {
+    "article": "inference-and-training",
+    "slug": "02-request-lifecycle",
+    "locale": "ko",
+    "title": "요청 도착에서 종료까지",
+    "alt": "요청은 입력 준비와 대기를 거쳐 자원에 맞게 선택되어 실행되고 상태와 출력을 갱신합니다. 미완료 요청은 반복하고 KV 부족 시 진입 지연이나 중단과 회수로 처리합니다.",
+    "caption": "대기, 실행, 상태 관리, 출력 전달이 하나의 반복을 이룹니다. 실행 대상에서 빠지는 것과 KV 공간을 회수하는 것은 별개의 동작입니다.",
+    "path": "public/images/inference-and-training/02-request-lifecycle.svg",
+    "width": 1200,
+    "height": 1172
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "01-reuse",
+    "locale": "ko",
+    "title": "과거 계산을 반복하지 않는 KV 캐시",
+    "alt": "캐시가 없으면 p0 p1 p2 x0의 계산을 반복합니다. KV 캐시가 있으면 x0만 새로 처리하고 x0의 Q가 저장된 과거 KV와 새 KV를 참조해 x1을 선택합니다.",
+    "caption": "KV 캐시는 과거 위치의 projection·MLP 재계산을 줄입니다. 새 위치의 attention이 과거 K/V를 읽는 일은 여전히 필요합니다.",
+    "path": "public/images/inference-kv-cache/01-reuse.svg",
+    "width": 1200,
+    "height": 1120
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "02-kv-frontier",
+    "locale": "ko",
+    "title": "토큰 선택과 KV 계산의 경계",
+    "alt": "Prefill 후 p0 p1 p2의 KV와 선택된 x0가 있고 x0의 KV는 없습니다. 다음 단계는 x0의 KV를 만들고 x1을 선택하며, 이어 x1의 KV를 만들고 x2를 선택합니다.",
+    "caption": "선택한 토큰은 다음 모델 실행에서 입력이 되어야 자기 K/V가 계산됩니다. 요청이 그 전에 종료되면 그 마지막 토큰의 K/V를 만들 필요가 없습니다.",
+    "path": "public/images/inference-kv-cache/02-kv-frontier.svg",
+    "width": 1200,
+    "height": 1216
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "01-token-positions",
+    "locale": "ko",
+    "title": "이번 계산 위치와 참조할 문맥",
+    "alt": "Prefill은 네 입력 위치의 projection과 MLP를 계산하고 삼각형 causal attention을 적용합니다. Decode는 요청마다 한 입력 위치만 계산하지만 각 Q는 자기 요청의 길이 L인 K/V를 참조합니다.",
+    "caption": "Decode에서 새로 계산하는 위치 수는 요청당 하나입니다. 과거 위치의 토큰별 연산을 다시 하지 않아도, attention은 누적 문맥의 K/V를 읽습니다.",
+    "path": "public/images/prefill-and-decode/01-token-positions.svg",
+    "width": 1200,
+    "height": 1260
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "02-weight-reuse",
+    "locale": "ko",
+    "title": "같은 가중치로 더 많은 토큰 계산하기",
+    "alt": "T가 1인 경우 가중치 W를 한 토큰에 쓰고 T가 4이면 같은 W를 네 토큰에 재사용합니다. 가중치 읽기만 고려한 산술 집약도는 원소당 s바이트일 때 약 2T/s입니다.",
+    "caption": "가중치 크기가 같아도 이번에 함께 처리하는 토큰 수가 많으면 재사용이 늘어납니다. 이 비율은 선형 연산의 직관용 근사이며 모델 전체의 정확한 산술 집약도는 아닙니다.",
+    "path": "public/images/prefill-and-decode/02-weight-reuse.svg",
+    "width": 1200,
+    "height": 1240
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "03-memory-reads",
+    "locale": "ko",
+    "title": "가중치 재사용과 KV 읽기는 다릅니다",
+    "alt": "요청 A B C는 동일한 가중치 W를 재사용하지만 자기 요청의 독립된 KV를 각각 읽습니다. 배칭은 가중치 재사용을 늘려도 누적 문맥을 읽는 비용을 없애지 않습니다.",
+    "caption": "작은 배치의 decode에서는 가중치와 누적 K/V의 읽기 비용을 함께 봐야 합니다. 가중치는 요청 간 재사용할 수 있지만 독립적인 KV는 요청 수와 문맥 길이에 따라 늘어납니다.",
+    "path": "public/images/prefill-and-decode/03-memory-reads.svg",
+    "width": 1200,
+    "height": 1234
+  },
+  {
+    "article": "inference-and-training",
+    "slug": "01-execution",
+    "locale": "en",
+    "title": "Same model, different execution flows",
+    "alt": "Generation repeats forward passes and token selection with fixed weights. Training predicts known positions, computes loss and gradients, and updates weights.",
+    "caption": "The same Transformer forms different workloads when its inputs, repeated computation, and retained state differ.",
+    "path": "public/images/inference-and-training/en/01-execution.svg",
+    "width": 1200,
+    "height": 1210
+  },
+  {
+    "article": "inference-and-training",
+    "slug": "02-request-lifecycle",
+    "locale": "en",
+    "title": "From request arrival to completion",
+    "alt": "Requests wait after input preparation, are selected within resource limits, execute, and update state and output. Unfinished requests repeat; KV pressure can delay admission or trigger preemption and reclamation.",
+    "caption": "Queueing, execution, state management, and delivery form a loop. Excluding a request from a batch and reclaiming its KV storage are separate actions.",
+    "path": "public/images/inference-and-training/en/02-request-lifecycle.svg",
+    "width": 1200,
+    "height": 1172
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "01-reuse",
+    "locale": "en",
+    "title": "KV caching avoids repeating prior computation",
+    "alt": "Without caching, recompute p0 p1 p2 x0. With caching, process only x0 and let its Q attend to reused prior KV plus its new KV to select x1.",
+    "caption": "KV caching avoids re-running projections and MLPs at previous positions. Attention at the new position still reads the earlier K/V.",
+    "path": "public/images/inference-kv-cache/en/01-reuse.svg",
+    "width": 1200,
+    "height": 1120
+  },
+  {
+    "article": "inference-kv-cache",
+    "slug": "02-kv-frontier",
+    "locale": "en",
+    "title": "The boundary between token selection and KV computation",
+    "alt": "After prefill, KV exists for p0 p1 p2 and x0 has been selected without its own KV. The next step computes KV for x0 and selects x1; the following step computes KV for x1 and selects x2.",
+    "caption": "A selected token obtains its own K/V when consumed by the next model execution. If the request ends first, its last selected token need not receive K/V.",
+    "path": "public/images/inference-kv-cache/en/02-kv-frontier.svg",
+    "width": 1200,
+    "height": 1216
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "01-token-positions",
+    "locale": "en",
+    "title": "Positions computed now and context attended to",
+    "alt": "Prefill computes projections and MLPs at four input positions with triangular causal attention. Decode computes one new input position per request, while each Q attends to its own request’s K/V of length L.",
+    "caption": "Decode computes one new position per request. Even without re-running token-wise operations at earlier positions, attention reads K/V across the accumulated context.",
+    "path": "public/images/prefill-and-decode/en/01-token-positions.svg",
+    "width": 1200,
+    "height": 1260
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "02-weight-reuse",
+    "locale": "en",
+    "title": "Compute more tokens with the same weights",
+    "alt": "With T=1, W is used for one token; with T=4, the same W is reused across four tokens. Considering weight reads alone gives an arithmetic-intensity approximation of 2T/s for s bytes per weight element.",
+    "caption": "Even with the same weight size, processing more token positions together increases reuse. This ratio is an intuition for a linear operation, not the exact arithmetic intensity of the entire model.",
+    "path": "public/images/prefill-and-decode/en/02-weight-reuse.svg",
+    "width": 1200,
+    "height": 1240
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "03-memory-reads",
+    "locale": "en",
+    "title": "Weight reuse and KV reads behave differently",
+    "alt": "Requests A, B, and C reuse the same weights W, but each reads its own independent KV. Batching improves weight reuse without removing the cost of reading accumulated context.",
+    "caption": "For small-batch decode, consider both weight and accumulated K/V reads. Weights can be reused across requests, whereas independent KV grows with request count and context length.",
+    "path": "public/images/prefill-and-decode/en/03-memory-reads.svg",
+    "width": 1200,
+    "height": 1234
+  }
+]

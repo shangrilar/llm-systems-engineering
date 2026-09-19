@@ -1,0 +1,97 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: inference-metrics
+title: "Inference Metrics: Latency and Throughput"
+description: "Define TTFT, TPOT, ITL, and throughput using explicit generation and delivery boundaries, then interpret them alongside load conditions and latency distributions."
+date: 2026-09-19
+---
+
+A request waits in a queue, produces its first token through prefill, repeats decode, and eventually finishes. Along the way, new requests may join the batch, or [KV pressure may cause preemption and recovery](/en/posts/inference-preemption/). Evaluating this entire process with a single number makes it difficult to tell which kind of waiting has changed.
+
+This article first distinguishes when the model selects a token from when the client receives its output. Using those boundaries, it defines the first response, gaps between outputs, total request time, and throughput. It then explains why averages and latency distributions must be interpreted alongside request lengths and arrival load. The numbers are teaching examples for calculation, not results measured on a GPU.
+
+## From a generated token to the user
+
+Selecting a token ID from the logits after model execution does not make its text immediately visible to the user. Detokenization converts token IDs to text, followed by output grouping, transmission, and client processing. A token is not always one character or one word, and a transmitted chunk does not always contain exactly one token.
+
+The engine's token-selection time can therefore differ from the client's output-observation time. GPU computation time, time since the server received a request, and time since the client submitted it should not be mixed in a comparison. Internal timings help locate bottlenecks; observations on the user's side are needed to assess user experience.
+
+[![The engine selects tokens at 90, 120, and 160ms; the client receives them at 100, 130, and 170ms. The request is submitted at 0ms and completion is observed at 180ms.](/images/inference-metrics/en/01-observation-boundaries.png)](/images/inference-metrics/en/01-observation-boundaries.png)
+
+The figure uses one time axis: the engine selects x0, x1, x2 at 90, 120, 160ms, and the client receives them at 100, 130, 170ms, respectively. For this explanation, each chunk contains one token. A completion event is observed at 180ms, after the last token. In an actual distributed measurement, timestamps from different device clocks cannot simply be subtracted either. Use times from the same observation point or establish the relationship between the clocks.
+
+The client's wait for the first output can include input transmission and preparation, queueing, prefill, and output delivery. A slow first response therefore does not by itself establish that the prefill kernel is slow.
+
+## First response and gaps between outputs
+
+We define **TTFT (Time to First Token)** as the time from request submission until the first output token is observed. It is `100 − 0 = 100ms` in the example. This relates to the first response the user waits for, but it is also necessary to check how a tool handles empty response chunks and control messages.
+
+**ITL (Inter-Token Latency)** is the observed interval between consecutive output tokens. The interval from x0 to x1 is 30ms, and from x1 to x2 it is 40ms. Looking at individual intervals reveals temporary pauses during generation.
+
+In this article, **TPOT (Time per Output Token)** is a per-request average: the time from the first output token to the last, divided by the number of intervals between them. N output tokens have N−1 intervals.
+
+```text
+TTFT = first output token time − request submission time
+ITLᵢ = next output token time − previous output token time
+TPOT = (last output token time − first output token time) / (N − 1)
+```
+
+For the three-token example, TPOT is `(170 − 100) / (3 − 1) = 35ms/token`. It equals the mean of the 30ms and 40ms ITLs. The wait for the first token is excluded from this TPOT. When N is at most 1, TPOT under this definition is not calculated. That does not mean 0ms; a rule is needed to exclude such requests from the statistic or report them separately.
+
+If one chunk contains several tokens, however, the gaps between arriving chunks cannot reconstruct the generation interval of every token. Giving all tokens in a chunk the same receipt timestamp records delivery time, not the engine's generation intervals. Calculating a per-request average from token counts and chunk boundaries is different from knowing the actual per-token ITL distribution. Results must state which of these was measured.
+
+## Request completion and tool definitions
+
+We define **end-to-end request latency (E2E latency)** as the time from submission until request completion is observed. It is 180ms in the example. The last output arrived at 170ms, so the two endpoints differ by 10ms.
+
+This difference also matters when calculating TPOT. Some tools use `(E2E − TTFT) / (N − 1)`. If completion and the last token have the same timestamp, this matches the previous formula. If the 180ms completion observation in this example is used as the endpoint, however, the result is `(180 − 100) / 2 = 40ms/token`. This 40ms value assumes that endpoint; it does not reproduce a particular tool's output. Before deciding whether 35ms or 40ms is correct, check **where the numerator ends**.
+
+The [vLLM benchmark documentation](https://docs.vllm.ai/en/latest/benchmarking/cli/#understanding-the-latency-metrics), checked on 2026-09-19, describes TPOT using E2E minus TTFT and ITL between streamed outputs. Where a streamed output can contain multiple tokens, the tool's metric name should not be read as an actual per-token interval. The actual endpoint of what a tool calls E2E must also be checked. For example, [vLLM's OpenAI-compatible benchmark request handling](https://github.com/vllm-project/vllm/blob/729ebac4983e1510e035bc579142b0fc210a49a3/vllm/benchmarks/lib/endpoint_request_func.py) skips the completion marker and calculates latency from the most recent output timestamp. The 180ms completion observation in this article therefore cannot simply be substituted into that implementation. Check definitions and aggregation again when the measurement tool or version changes.
+
+The reciprocal of TPOT can describe a request's average token progress rate after the first output, but it is not the same as whole-server throughput. A server processes multiple requests concurrently, and some may still be queueing or performing prefill.
+
+## Calculate throughput over the observation interval
+
+Throughput is the amount of work processed over a period of time. Request throughput divides the number of completed requests by observation time; output-token throughput divides the number of generated or delivered output tokens by that time. Here we use client observations and a simple example in which all requests start and finish within the observation window, with all their outputs also inside it.
+
+[![Distinguish one request's TTFT of 100ms, TPOT of 35ms, and E2E of 180ms from throughput over a separate 10-second window containing three requests and ten output tokens.](/images/inference-metrics/en/02-latency-throughput.png)](/images/inference-metrics/en/02-latency-throughput.png)
+
+If requests A, B, and C finish over 10 seconds and produce 3, 5, and 2 output tokens, respectively, the calculation is as follows. This 10-second window is a different aggregation interval from request A's earlier 180ms timeline.
+
+```text
+Request throughput = 3 / 10 = 0.3 requests/s
+Output-token throughput = (3 + 5 + 2) / 10 = 1 token/s
+```
+
+Input tokens are not included in the numerator of this output throughput. If reporting total-token throughput that combines input and output, state that fact and the input lengths as well. A system processing many long inputs does different work from one generating long outputs after short inputs, even if their total token counts match.
+
+Real measurements may contain requests that arrived before the window opened or remain unfinished after it closes. Counting outputs produced inside the window can give a different result from counting all outputs of requests completed within it. Comparisons also require explicit rules for setup time, warmup, failed requests, and cancelled requests.
+
+## Latency distributions behind the average
+
+An average TPOT of 35ms does not establish that outputs arrived at regular intervals. Even over the same 70ms span, the gaps could be 35 and 35ms, or 5 and 65ms. The user experiences different pauses. Preemption or interference from a long prefill can produce such differences by lengthening particular intervals.
+
+Across multiple requests, percentiles such as p50, p95, and p99 complement the mean. p95 is a boundary at or below which approximately 95% of sampled latencies fall. The exact calculation depends on sample count and interpolation rules, so comparisons should use the same method. Small samples cannot reliably estimate extreme tail latency.
+
+The population being aggregated also matters. Calculating each request's average TPOT and then taking the p99 of those averages differs from pooling all token intervals and calculating ITL p99. In the latter, requests with longer outputs contribute more intervals. One must not be presented as a substitute for the other.
+
+When a service has latency targets, throughput of work that meets those targets is also useful. For example, count completed requests that satisfy both TTFT and TPOT thresholds, then divide by time. The amount of useful work served within such targets is called **goodput**; its targets and units must be defined alongside it. [DistServe](https://arxiv.org/abs/2401.09670) is an example of evaluating inference serving performance under joint TTFT and TPOT constraints.
+
+## Compare optimizations under the same load
+
+Comparing engine speed also requires comparable requests. Longer inputs change prefill and KV costs; longer outputs increase decode iterations and the time KV remains allocated. Repeated prefixes or an already populated cache can change the results as well.
+
+Arrival rate and concurrency are different quantities. Arrival rate counts new requests per second; concurrency counts requests that have not yet finished. A test that sends requests at a set rate without waiting for completions can grow its queue when the rate exceeds processing capacity. A test that keeps a fixed number in flight and sends another after each completion can reduce its actual arrival rate when responses slow down.
+
+A comparison should record at least the following conditions:
+
+| Category | Conditions to record |
+| --- | --- |
+| Request content | Input/output length distributions, generation settings, prefix reuse |
+| Load generation | Arrival rate, concurrency limit, request submission method, test duration |
+| Execution environment | Model and precision, hardware, engine version, key settings |
+| Observation and aggregation | Start/end timestamps, token/chunk distinction, treatment of warmup, failures, and cancellations |
+
+Offline versus online and direct engine calls versus HTTP are separate axes too. The former concerns whether work is supplied in a prepared batch or arrives as in a service; the latter concerns which execution path and observation boundaries are included. Using HTTP alone does not establish that a test reproduces actual user load.
+
+With these conditions fixed, changing batch size or scheduling can reveal whether higher throughput comes at the cost of a particular latency. Better KV management may accommodate more requests, but output intervals under that load still need to be measured against the targets. In later optimizations, we will **first identify the waiting we want to reduce and the metrics we must maintain**, then compare each technique's benefits and costs under those conditions.

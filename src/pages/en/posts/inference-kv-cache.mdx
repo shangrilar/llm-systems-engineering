@@ -1,0 +1,81 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: inference-kv-cache
+title: "Inference and the KV Cache"
+description: "Follow token generation to understand why past keys and values can be reused, and distinguish selected output tokens, computed KV state, and request completion."
+date: 2026-09-19
+---
+
+In [Inference and Training](/en/posts/inference-and-training/), we saw how a generated token becomes input to the next model execution, while the engine retains request state and repeats the process. But if we recalculate the entire prefix whenever the sentence grows by one token, we repeatedly do the same work on inputs we have already processed.
+
+This article identifies the computation we can reuse within that loop. We will first reconstruct how a selected token becomes the next input, then examine why causal attention allows us to store keys and values. Following the prefill of the input context and subsequent decode steps, we will distinguish **tokens selected as output from positions whose KV has been computed**. Our example is a single request generating one token at a time through ordinary autoregressive generation.
+
+## The selected output becomes the next input
+
+Let the input tokens be `p0 p1 p2`. Here, `p` denotes prompt tokens, and `x` denotes output tokens selected during generation. These are illustrative symbols; one token does not necessarily correspond to one word.
+
+Feeding the three input tokens to the model produces a representation at each position. The [LM Head](/en/posts/embedding-to-lm-head/) then provides logits, scores for the vocabulary. Generation uses the logits at the final input position, `p2`, to choose the next token, `x0`. **Greedy selection** chooses the highest-scoring token; **sampling** converts the scores into a probability distribution and draws a token from it. Both play the same role of turning the current step’s result into the next input token. [Transformers generation strategies](https://huggingface.co/docs/transformers/generation_strategies)
+
+If generation continues, the context is now `p0 p1 p2 x0`. After selecting the next token, `x1`, we add that token to the context as well. We must distinguish what a model execution computes from the token selected after it finishes. The result at position `p2` predicts `x0`, and the result of processing `x0` as input predicts `x1`.
+
+The engine preserves the history of selected tokens as it decides subsequent outputs. Selecting the next token does not mean selecting previous outputs again.
+
+## Repeated computation without a cache
+
+The simplest implementation feeds the entire current context into the model each time. Its inputs are first `p0 p1 p2`, then `p0 p1 p2 x0`, and then `p0 p1 p2 x0 x1`, so computation over the prefix repeats as well.
+
+For example, selecting `x1` requires processing the new position `x0`. If we provide the entire context again, however, we also repeat the projections and MLPs for `p0 p1 p2` and recreate their keys and values for attention. Those positions were already processed during the previous execution. As generation grows longer, the same prefix passes through the model more times.
+
+[![Without caching, recompute p0 p1 p2 x0. With caching, process only x0 and let its Q attend to reused prior KV plus its new KV to select x1.](/images/inference-kv-cache/en/01-reuse.png)](/images/inference-kv-cache/en/01-reuse.png)
+
+Orange marks positions computed in the current execution, while green marks prior positions whose KV is reused. On the right, only the new token `x0` passes through the model’s token-wise operations. Its attention still uses both stored past K/V and K/V for the current position. **Avoiding recomputation at past positions does not mean ignoring their context.** The number or size of cells in the figure does not represent a ratio of execution times.
+
+This state, which stores keys and values from past positions for later execution, is called the **KV cache**. It reduces the computation needed to recreate the same results, in exchange for space to store and read those results.
+
+## Why past keys and values can be reused
+
+In causal attention, a position attends only to itself and earlier positions. The position `p1` may attend to `p0 p1`, but not to the later positions `p2` or `x0`. In ordinary inference with the same inputs, positions, and weights, adding `x0` at the end therefore does not change the computation result at the earlier position `p1`.
+
+This property holds through the decoder layers. Earlier positions still cannot see future positions at each layer, and token-wise operations such as normalization and MLPs do not mix in future positions either. We can therefore retain previously computed keys and values at each layer and reuse them for attention at the new position. The cache stores **K/V for every layer that performs attention**, rather than keeping a single cache only at the final layer. [How KV reuse works](https://huggingface.co/docs/transformers/cache_explanation)
+
+Why not store Q alongside them? Attention at the new position needs **the new Q and the K/V of the positions it attends to**. When processing `x0`, we use `Q(x0)` to calculate its relevance to past and current keys, then combine past and current values using the result. We do not need the already processed queries of `p0 p1 p2` to calculate attention at the new position.
+
+At each layer, we can write the required relationship in one line. The brackets mean that past and current K/V are accessed together in logical order; they do not require copying everything into one large physical array at every step.
+
+```text
+Current attention = Attention(new Q, [past K, new K], [past V, new V])
+```
+
+Even the same token ID can have different K/V when its preceding context or position differs. What we reuse is **state from positions already processed in this request’s same context**. Conditions for sharing caches across different requests are a later topic.
+
+## Process the input context, then continue generation
+
+Start with a new request that has no reusable KV. The step that processes the input context `p0 p1 p2`, creates KV at each layer, and computes logits at the final input position is called **prefill**. Those logits select the first output token, `x0`. Obtaining that first output does not necessarily require an additional, separate one-token decode execution.
+
+Next, we process `x0` as new input. Each layer computes its Q/K/V, attention accesses existing KV, and the new K/V is added to the cache. After the remaining model computation finishes, the logits at the final position select `x1`. Here, we call this process of feeding a selected token back into the model to continue generation **decode**. The official generation-loop example follows the same order: forward pass, next-token selection, then preparation of the next input. [Generation-loop example](https://huggingface.co/docs/transformers/cache_explanation#cache-storage-implementation)
+
+An ordinary decode step processes **one new input token per request**. That does not mean the context contains only one token. Even with one newly computed position, the accumulated context read by its attention can contain many tokens. If several requests execute together as a batch, the batch as a whole processes more than one new token.
+
+Prefill and decode use the same model’s forward pass, but differ in the number of input positions computed and the range of KV accessed. The next article examines how this affects computation and data movement.
+
+## Selected tokens and computed KV are different
+
+Now pause immediately after a model execution finishes and the next token is selected. After prefill on `p0 p1 p2`, KV is ready for three positions. The subsequently selected token `x0` is added to the token history, but **it has no K/V of its own yet, because the model has not executed with `x0` as input**.
+
+[![After prefill, KV exists for p0 p1 p2 and x0 has been selected without its own KV. The next step computes KV for x0 and selects x1; the following step computes KV for x1 and selects x2.](/images/inference-kv-cache/en/02-kv-frontier.png)](/images/inference-kv-cache/en/02-kv-frontier.png)
+
+Feeding `x0` into the next execution extends KV to four positions and selects `x1`. At this point, `x1` still has no KV of its own. Executing with `x1` then extends KV to five positions and selects `x2`. Solid green cells show positions whose KV computation is complete; dashed gray cells show positions present in the history but not yet in KV.
+
+The engine therefore needs at least two kinds of progress information: **how far token selection has reached**, and **how far KV computation has reached**. Treating them as one “current length” makes it easy to confuse which token should enter the next execution.
+
+This distinction will also matter when reclaiming and recomputing caches. Retaining a token history and having its KV ready on the GPU are different states.
+
+## End generation and return resources
+
+After selecting a new token, the engine must decide whether to keep generating. Common stopping conditions are an **EOS (end-of-sequence) token** marking the end of the generated sequence, the configured maximum output-token count, and request cancellation. EOS is a control token, so it may not be displayed as ordinary text. The maximum output length bounds execution so generation cannot continue indefinitely.
+
+If the stopping condition is met after selecting `x2` in our example, there is no need to execute the model with `x2` as the next input. There is no further token to predict, so no additional computation is needed to create `x2`’s K/V. **The absence of KV for the final output token does not mean the answer is unfinished.**
+
+The engine records completion, prepares the output and completion status to deliver, and returns request state and KV storage that are no longer needed. Token selection can occur at a different time from conversion to text and delivery. How an engine retains or reuses KV from completed requests depends on its policy. Here, we use the basic case in which requests do not share KV and a completed request returns its space for subsequent requests.
+
+KV caching reduces recomputation at earlier positions, but attention at a new position still reads past K/V. Longer requests also require more KV storage. In [Prefill and Decode](/en/posts/prefill-and-decode/), we will separate the number of tokens processed now from the length of the context they attend to, and examine why these two executions of the same model have different bottlenecks.

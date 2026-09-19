@@ -1,0 +1,85 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: batching-and-scheduling
+title: "Batching and Scheduling"
+description: "See how requests with different lengths and arrival times run together while preserving independent state and respecting token budgets and KV capacity."
+date: 2026-09-19
+---
+
+[Prefill and Decode](/en/posts/prefill-and-decode/) showed that small-batch decode reads many weights to compute only a few new tokens. Computing ready tokens from different requests together lets us reuse the same weights more extensively. Grouping the computation for multiple inputs this way is called **batching**.
+
+Requests, however, neither arrive together nor finish at the same length. One request may be processing its input context for the first time while another is already generating output. This article begins with how to group computation while keeping each request's state separate. It then explains why the batch changes between steps and how the engine chooses the next work within limits on request count, tokens processed in the current step, and KV storage capacity.
+
+## Keep contexts separate while computing together
+
+If we collect new tokens from requests A and B as rows, a linear operation can apply the same W to those rows. This is the weight reuse described in the previous article. It does not make A's sentence part of B's context. Attention must connect A's Q to A's K/V, and B's Q to B's K/V.
+
+Each request also keeps its own token positions because its input and generated lengths differ. If A's next input is at position 7 and B's is at position 11, they are processed at their respective positions even when they share a batch. A row's position in the batch and a token's position in its request's context are different things.
+
+There are several ways to represent inputs of different lengths in an array. If A has length 3 and B has length 2, an array with equal-width rows can pad the end of B. Masks or similar mechanisms prevent padding from affecting the result. Alternatively, an engine can pack only the actual tokens together and provide each request's start and end boundaries.
+
+```text
+Padded representation:
+A: [a0 a1 a2]
+B: [b0 b1 PAD]
+
+Packed representation:
+[a0 a1 a2 | b0 b1]
+Boundaries: A occupies 0–2; B occupies 3–4
+```
+
+These are examples of storage representations. Neither should be computed as one long sentence in which B attends to A. **Batching means shared execution, not merged contexts.** An engine prepares token positions, request boundaries, KV locations, and other information in the form needed for model execution.
+
+## Change the batch when requests finish
+
+The simplest approach starts A and B together and admits no new request until both finish. We will call this fixed group of requests **static batching**. Even if A finishes first, C waits for the next group while B continues generating. An implementation may remove completed rows; the defining constraint in this example is that a new request cannot take their place.
+
+It is difficult to know the exact output length from the input alone. A may give a short answer while B produces a long explanation. Keeping the same group together until completion allows one long-running request to delay the admission of the next request.
+
+[![Static batching makes C wait until B finishes. Continuous batching admits C for prefill after A finishes. Equal-width cells represent execution steps, not elapsed time.](/images/batching-and-scheduling/en/01-continuous-batching.png)](/images/batching-and-scheduling/en/01-continuous-batching.png)
+
+**Continuous batching** selects the participating requests again between model execution steps. When A finishes, the next step removes A and can admit C if resources permit. In the figure, C arrives just after step 1 and A finishes at step 2. A fixed group makes C start at step 6, while changing the group lets it start at step 3. Scheduling at the level of repeated execution steps rather than whole requests is also a central idea described in [ORCA](https://www.usenix.org/conference/osdi22/presentation/yu).
+
+The new request C has no KV for its input context yet. Even after it fills the vacant slot, it must first perform prefill. The figure assumes a simple schedule that can assign prefill and decode to the same step. Actual engines differ in how they combine or separate this work. A step also need not take the same amount of time as another, so the figure cannot establish a speedup factor.
+
+This is a different concern from **dynamic batching**, which may wait for a short time window to collect requests. The time window determines when to form a batch; continuous batching determines when to change its members during a long generation process.
+
+## Let the scheduler choose the next execution
+
+The **scheduler** chooses which ready work runs next. An inference engine puts newly arrived requests in a waiting queue and tracks the progress and retained KV of requests already generating. After each model execution, it incorporates generated results and completion decisions, then forms the next batch.
+
+A simple policy is FCFS, or first come, first served: consider requests in arrival order. Arriving earlier, however, does not allow a request to run unconditionally when it lacks space. The scheduler must also check how many tokens a selected request will process this step and how much its KV will grow. Actual policies may assign separate priorities to ongoing and new requests.
+
+Waiting requests, ongoing requests, and requests included in the current batch are different sets. For example, A may already have started but skip a step if other work consumes that step's token budget. If its KV is retained, A can continue in a later step. **Being left out of the current batch does not mean that the request has ended or its KV has disappeared.**
+
+This choice usually happens between model execution steps. It does not interrupt a GPU kernel in the middle of its execution. The scheduler prepares the inputs and resources for the next computation, then makes another decision after that computation finishes.
+
+## Count requests and two kinds of tokens
+
+Describing batch size only as a request count can hide the actual work. A's decode processes one token, while C's prefill may process six input tokens. B may also store KV for eleven previous positions even though it computes only one token now.
+
+Consider a maximum of 3 requests, a budget of 8 tokens per execution, and KV storage for 24 token positions. This example counts space in token slots, omitting block-size rounding and sharing. These are not the default settings of a particular engine.
+
+[![One decode token each for A and B plus six prefill tokens for C fit the execution budget of 8. But the resulting 26 KV positions exceed capacity 24, so C waits.](/images/batching-and-scheduling/en/02-resource-budgets.png)](/images/batching-and-scheduling/en/02-resource-budgets.png)
+
+Advancing A and B by one step grows their KV lengths from 7 to 8 and from 11 to 12, respectively. Including C's six input tokens makes the current computation `1 + 1 + 6 = 8` tokens. The request count is also 3, so both limits are satisfied. The KV retained afterward, however, would occupy `8 + 12 + 6 = 26` positions, exceeding the available space.
+
+If C waits and only A and B run, the step processes 2 tokens and retains KV for 20 positions afterward. KV capacity prevents adding more work even though some execution-token budget remains. Conversely, there may be spare KV space but no remaining token budget, in which case work can be deferred to a later step.
+
+The three limits count different quantities:
+
+| Limit | What it counts | Required value in this example |
+| --- | --- | --- |
+| Request count | Requests executing together | 3 for A, B, and C |
+| Execution-token budget | New positions computed in this step | 1+1+6=8 |
+| KV storage capacity | Accumulated state retained across steps | 8+12+6=26 |
+
+Satisfying the execution-token budget does not guarantee the same execution time. Attention depends on each request's context length, and prefill and decode also have different computation shapes. The budget is one constraint on execution, not an exact prediction of its duration.
+
+## Larger batches can introduce waiting
+
+Larger batches can improve weight reuse and GPU utilization. Waiting to collect more tokens, however, delays the start of a request. Increasing the work in one step can also delay the next output of requests already generating. This interference deserves particular attention when a long prefill is scheduled alongside short decode work.
+
+The goal, therefore, is not simply to form the largest possible batch. Work must be assigned to obtain enough throughput while keeping waiting within acceptable limits for users. Chunked prefill, which divides prefill work across steps, and executing it on separate resources are later topics that address this basic problem.
+
+So far, we have counted KV space using a simple token-slot model. In practice, the engine must allocate and reclaim GPU storage as requests of different lengths arrive and finish. [KV Cache Management and PagedAttention](/en/posts/paged-kv-cache/) examines how separating logical token order from physical storage locations makes these changes manageable.
