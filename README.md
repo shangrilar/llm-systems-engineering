@@ -64,3 +64,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 #### Workloads
 
 - [Same Model, Different Workloads: Inference and Training](https://llm-systems-engineering.pages.dev/en/posts/inference-and-training/)
+
+### Inference
+
+#### Workloads
+
+- [Inference and the KV Cache](https://llm-systems-engineering.pages.dev/en/posts/inference-kv-cache/)

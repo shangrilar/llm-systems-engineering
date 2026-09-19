@@ -869,8 +869,33 @@
         "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "868a4dd49278cb71e622303c9fb98e4bcf5f1ce518fdd49f6f2041f65308a9a5",
-        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision."
+        "sourceRevision": "a3833d37e54c5ddeca8500827bf63912ec58254950985c2959900316587ebeb4",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "inference-kv-cache",
+    "order": 36,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-kv-cache",
+        "title": "추론과 KV 캐시",
+        "description": "반복적인 토큰 생성에서 같은 계산이 되풀이되는 이유와 KV 캐시의 재사용 과정을 살펴보고, 출력 토큰 선택과 KV 계산의 경계를 구별합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-kv-cache",
+        "title": "Inference and the KV Cache",
+        "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "891e86faf6dd5a2c8c1ebc37f7fbf444303b8cc191ad2041346901a42fda7131",
+        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification."
       }
     }
   }
