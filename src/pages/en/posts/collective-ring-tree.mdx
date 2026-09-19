@@ -73,4 +73,4 @@ Transfers sharing a physical link compete for bandwidth. Changing the GPU order 
 
 Developers normally request the collective and let the library select from available algorithms and paths. The current [NCCL algorithm settings](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html#nccl-algo) include choices beyond Ring and Tree. No algorithm should be presumed fastest for every message size and hardware configuration. Unlike our integer example, floating-point reductions can also differ in their last digits when addition order changes.
 
-We can now distinguish the required result from its delivery method. Starting with [DP: Replicate the Model, Partition the Inputs](/en/posts/data-parallelism/), we will derive communication needs from how models and computation are placed.
+We can now distinguish the required result from its delivery method. Next, we will derive communication needs from how models and computation are placed.
