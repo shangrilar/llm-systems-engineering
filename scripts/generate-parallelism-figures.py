@@ -214,42 +214,6 @@ for LANG in ['ko','en']:
     b+=text(48,828,('Ring의 이웃이라고 전용 케이블로 직접 연결된 것은 아닙니다.','Logical neighbors need not have a dedicated direct cable.'),25,bold=True)
     save(a,'04-logical-physical',('전달 순서와 실제 연결을 구별하기','Separate transfer order from physical links'),('위는 알고리즘의 관계, 아래는 가능한 물리 연결의 한 예입니다.','Top: algorithmic relationship. Bottom: one possible physical topology.'),b,884,('논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.','A logical ring can run over a physical shared-switch topology.'))
 
-    a='sequence-parallelism'
-    b=text(48,205,('활성값: 계산 중 만들어지는 토큰별 벡터','Activations: per-token vectors produced during computation'),25,bold=True)
-    for k,(label,toks) in enumerate([(('TP의 복제 구간','Replicated region with TP'),[[0,1,2,3],[0,1,2,3]]),(('SP로 나눈 구간','Region partitioned with SP'),[[0,1],[2,3]])]):
-        yy=245+k*288;b+=text(48,yy,label,26,bold=True)
-        for g,x in enumerate([48,642]):
-            b+=rect(x,yy+28,510,213,FILLS[g],COLORS[g])+text(x+20,yy+65,f'GPU {g}',25,COLORS[g],True)
-            for j,t in enumerate(toks[g]):
-                b+=rect(x+20+j*119,yy+92,110,112,'white',COLORS[g])+text(x+75+j*119,yy+127,f't{t}',24,anchor='middle')+text(x+75+j*119,yy+170,'h₀ … h₃',18,anchor='middle')
-    b+=text(48,853,('한 토큰의 특징 네 개는 함께 유지합니다. 토큰 묶음만 나눕니다.','Keep all four features of each token together; partition the tokens.'),25,bold=True)
-    save(a,'01-activations',('복제된 활성값을 토큰 방향으로 나누기','Partition replicated activations by token'),('Megatron SP의 관점입니다. 모델 가중치의 TP 분할은 유지합니다.','This is Megatron-style SP; the TP partition of model weights is retained.'),b,906,('TP에서 복제된 t0부터 t3를 SP에서는 GPU 0의 t0,t1과 GPU 1의 t2,t3로 나눕니다.','SP partitions replicated tokens t0–t3 into t0,t1 on GPU 0 and t2,t3 on GPU 1.'))
-    b=table(193,[('순서','Order'),'GPU 0','GPU 1'],[
-      [('토큰별 정규화','Per-token normalization'),'t0, t1','t2, t3'],['All-Gather','t0, t1, t2, t3','t0, t1, t2, t3'],[('TP MLP 계산','TP MLP computation'),('모든 토큰의 부분합 P₀','Partial sum P₀ for all tokens'),('모든 토큰의 부분합 P₁','Partial sum P₁ for all tokens')],['Reduce-Scatter',('완성된 결과 t0, t1','Completed results t0, t1'),('완성된 결과 t2, t3','Completed results t2, t3')],[('잔차 연결 등','Residual addition, etc.'),'t0, t1','t2, t3']], [280,412,412],105)
-    b+=text(48,839,('All-Reduce 뒤 전체 결과를 복제하는 대신, 합산과 토큰 분할을 함께 합니다.','Reduce and partition by token instead of replicating the All-Reduce result.'),23,bold=True)
-    save(a,'02-flow',('연산에 맞춰 모으고 다시 나누기','Gather and repartition around the operation'),('표는 순전파 흐름입니다. 잔차 입력도 대응하는 토큰 배치를 유지합니다.','Forward-pass flow; the residual input keeps the matching token partition.'),b,894,('정규화는 로컬 토큰에서 수행하고 All-Gather로 TP 입력을 만든 뒤 Reduce-Scatter로 결과를 다시 토큰별로 나눕니다.','Normalize local tokens, All-Gather the TP input, then Reduce-Scatter completed outputs by token.'))
-
-    a='context-parallelism'
-    for i,x in enumerate([48,642]):
-        tok='t0, t1' if i==0 else 't2, t3'
-        b=( '' if i==0 else b)+box(x,207,510,238,f'GPU {i}',(f'담당 토큰: {tok}\n로컬 Q · K · V\nQ는 이 GPU에 유지',f'Owned tokens: {tok}\nLocal Q · K · V\nKeep Q on this GPU'),i)
-    b+=arrow(558,498,639,498)+text(600,478,('K·V 교환','Exchange K·V'),22,anchor='middle')+arrow(642,550,561,550)
-    b+=box(48,596,510,194,'GPU 0',('Q₀₋₁로 필요한 K·V 참조\n출력: t0, t1','Q₀₋₁ attends to required K·V\nOutput: t0, t1'),0)+box(642,596,510,194,'GPU 1',('Q₂₋₃로 필요한 K·V 참조\n출력: t2, t3','Q₂₋₃ attends to required K·V\nOutput: t2, t3'),1)
-    save(a,'01-kv',('Q는 두고, 필요한 K·V를 가져오기','Keep Q local; bring in the required K and V'),('K·V는 블록 단위로 전달할 수 있습니다. 마스크상 불필요한 참조는 제외합니다.','K and V can move block by block; masked-out references are unnecessary.'),b,837,('각 GPU가 자기 토큰의 Q를 유지하면서 필요한 다른 토큰의 K,V를 받아 어텐션을 계산합니다.','Each GPU retains Q for its own tokens and receives other required K,V blocks.'))
-    b=text(328,211,('참조할 K·V의 토큰 →','Key/value tokens →'),26,bold=True)
-    for j in range(6):b+=text(366+j*98,258,f't{j}',24,anchor='middle')
-    for i in range(6):
-        b+=text(48,313+i*69,f'GPU {0 if i<3 else 1} · Q(t{i})',24)
-        for j in range(6):
-            b+=rect(326+j*98,279+i*69,82,57,FILLS[0 if j<3 else 1] if j<=i else '#F1F4F7')
-            b+=text(367+j*98,316+i*69,'●' if j<=i else '—',24,COLORS[0 if j<3 else 1] if j<=i else '#9BA7B4',anchor='middle')
-    b+=banner(739,('● 참조하는 위치     — 미래 토큰이라 제외','● Attended position     — Future token, masked out'),('GPU 0: 1+2+3 = 6개 위치 / GPU 1: 4+5+6 = 15개 위치','GPU 0: 1+2+3 = 6 positions / GPU 1: 4+5+6 = 15 positions') )
-    save(a,'02-causal',('토큰 수가 같아도 계산량은 다를 수 있습니다','Equal token counts can mean unequal work'),('여섯 토큰의 인과적 어텐션을 앞 세 토큰과 뒤 세 토큰으로 나눈 예입니다.','Causal attention over six tokens, partitioned into the first and last three.'),b,884,('인과적 어텐션의 삼각형에서 앞 세 행은 여섯 위치, 뒤 세 행은 열다섯 위치를 참조합니다.','The first three causal rows attend to six positions; the last three attend to fifteen.'))
-    b=box(48,204,510,220,('K·V 블록 A','K·V block A'),('점수: [0, 0] → 가중치 [1, 1]\nV: [2, 4]\n가중합 6 / 가중치 합 2','Scores: [0, 0] → weights [1, 1]\nV: [2, 4]\nWeighted sum 6 / weight sum 2'),0)+box(642,204,510,220,('K·V 블록 B','K·V block B'),('점수: [0] → 가중치 [1]\nV: [10]\n가중합 10 / 가중치 합 1','Scores: [0] → weights [1]\nV: [10]\nWeighted sum 10 / weight sum 1'),1)
-    b+=arrow(303,438,303,492)+arrow(897,438,897,492)+banner(509,('전체 기준으로 정규화','Normalize across both blocks'),'(6 + 10) / (2 + 1) = 16 / 3 ≈ 5.33')
-    b+=banner(653,('블록별 평균을 단순 평균하면 다른 값','A plain average of the block averages is different'),'(3 + 10) / 2 = 6.5 ≠ 5.33')
-    save(a,'03-normalization',('블록 결과는 가중치를 함께 합칩니다','Combine block results with their weights'),('Q 하나, 같은 점수 0, 스칼라 V를 사용해 정규화의 의미만 살펴봅니다.','Use one query, zero scores, and scalar V values to isolate normalization.'),b,800,('블록별 가중합과 가중치 합을 더해 16/3을 얻습니다. 블록별 출력의 단순 평균 6.5는 틀립니다.','Combining weighted sums and weight sums gives 16/3; averaging the two block outputs gives the incorrect 6.5.'))
-
     a='pipeline-parallelism'
     b=text(48,212,('모델의 층을 연속된 네 구간으로 배치','Place consecutive model layers on four stages'),26,bold=True)
     for i,x in enumerate([48,328,608,888]):
@@ -305,7 +269,7 @@ for LANG in ['ko','en']:
     b+=table(665,[('측정 조건','Measurement conditions'),('함께 기록할 항목','Record together')],[[('같은 모델·정밀도·입력/출력 길이·요청 도착 패턴','Same model, precision, lengths, and arrival pattern'),('메모리 최고 사용량·응답 시간 분포·처리량·통신과 대기','Peak memory, latency distribution, throughput, communication and waiting')]], [552,552],152)
     save(a,'03-goals',('응답 시간과 처리량을 함께 판단하기','Evaluate latency and throughput together'),('모든 경우에 가장 좋은 병렬화 하나가 정해져 있지는 않습니다.','There is no single best parallelization for every workload.'),b,919,('요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.','Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.'))
 
-assert len(MANIFEST)==34
+assert len(MANIFEST)==24
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
 

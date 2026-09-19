@@ -40,56 +40,6 @@
     "height": 884
   },
   {
-    "article": "sequence-parallelism",
-    "slug": "01-activations",
-    "locale": "ko",
-    "title": "복제된 활성값을 토큰 방향으로 나누기",
-    "alt": "TP에서 복제된 t0부터 t3를 SP에서는 GPU 0의 t0,t1과 GPU 1의 t2,t3로 나눕니다.",
-    "path": "public/images/sequence-parallelism/01-activations.svg",
-    "width": 1200,
-    "height": 906
-  },
-  {
-    "article": "sequence-parallelism",
-    "slug": "02-flow",
-    "locale": "ko",
-    "title": "연산에 맞춰 모으고 다시 나누기",
-    "alt": "정규화는 로컬 토큰에서 수행하고 All-Gather로 TP 입력을 만든 뒤 Reduce-Scatter로 결과를 다시 토큰별로 나눕니다.",
-    "path": "public/images/sequence-parallelism/02-flow.svg",
-    "width": 1200,
-    "height": 894
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "01-kv",
-    "locale": "ko",
-    "title": "Q는 두고, 필요한 K·V를 가져오기",
-    "alt": "각 GPU가 자기 토큰의 Q를 유지하면서 필요한 다른 토큰의 K,V를 받아 어텐션을 계산합니다.",
-    "path": "public/images/context-parallelism/01-kv.svg",
-    "width": 1200,
-    "height": 837
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "02-causal",
-    "locale": "ko",
-    "title": "토큰 수가 같아도 계산량은 다를 수 있습니다",
-    "alt": "인과적 어텐션의 삼각형에서 앞 세 행은 여섯 위치, 뒤 세 행은 열다섯 위치를 참조합니다.",
-    "path": "public/images/context-parallelism/02-causal.svg",
-    "width": 1200,
-    "height": 884
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "03-normalization",
-    "locale": "ko",
-    "title": "블록 결과는 가중치를 함께 합칩니다",
-    "alt": "블록별 가중합과 가중치 합을 더해 16/3을 얻습니다. 블록별 출력의 단순 평균 6.5는 틀립니다.",
-    "path": "public/images/context-parallelism/03-normalization.svg",
-    "width": 1200,
-    "height": 800
-  },
-  {
     "article": "pipeline-parallelism",
     "slug": "01-stages",
     "locale": "ko",
@@ -208,56 +158,6 @@
     "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
     "width": 1200,
     "height": 884
-  },
-  {
-    "article": "sequence-parallelism",
-    "slug": "01-activations",
-    "locale": "en",
-    "title": "Partition replicated activations by token",
-    "alt": "SP partitions replicated tokens t0–t3 into t0,t1 on GPU 0 and t2,t3 on GPU 1.",
-    "path": "public/images/sequence-parallelism/en/01-activations.svg",
-    "width": 1200,
-    "height": 906
-  },
-  {
-    "article": "sequence-parallelism",
-    "slug": "02-flow",
-    "locale": "en",
-    "title": "Gather and repartition around the operation",
-    "alt": "Normalize local tokens, All-Gather the TP input, then Reduce-Scatter completed outputs by token.",
-    "path": "public/images/sequence-parallelism/en/02-flow.svg",
-    "width": 1200,
-    "height": 894
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "01-kv",
-    "locale": "en",
-    "title": "Keep Q local; bring in the required K and V",
-    "alt": "Each GPU retains Q for its own tokens and receives other required K,V blocks.",
-    "path": "public/images/context-parallelism/en/01-kv.svg",
-    "width": 1200,
-    "height": 837
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "02-causal",
-    "locale": "en",
-    "title": "Equal token counts can mean unequal work",
-    "alt": "The first three causal rows attend to six positions; the last three attend to fifteen.",
-    "path": "public/images/context-parallelism/en/02-causal.svg",
-    "width": 1200,
-    "height": 884
-  },
-  {
-    "article": "context-parallelism",
-    "slug": "03-normalization",
-    "locale": "en",
-    "title": "Combine block results with their weights",
-    "alt": "Combining weighted sums and weight sums gives 16/3; averaging the two block outputs gives the incorrect 6.5.",
-    "path": "public/images/context-parallelism/en/03-normalization.svg",
-    "width": 1200,
-    "height": 800
   },
   {
     "article": "pipeline-parallelism",
