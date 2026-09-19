@@ -12,6 +12,7 @@ INK, MUTED, LINE = '#182C40', '#526577', '#DCE4EC'
 COLORS = ['#2470BB', '#287D78', '#7954A3', '#B55B22']
 FILLS = ['#EDF5FD', '#EDF7F5', '#F3EEF8', '#FFF2E6']
 MANIFEST = []
+STEPS = {'ko': {}, 'en': {}}
 LANG = 'ko'
 def tr(pair): return pair[LANG == 'en'] if isinstance(pair, tuple) else str(pair)
 def units(s): return sum(1 if unicodedata.east_asian_width(c) in 'WF' else .57 for c in s)
@@ -88,12 +89,15 @@ for LANG in ['ko','en']:
             b+=text(x+18,y+105,tr(label)+('' if gathered or tree else 'ABCD'[(r-1)%4]),19,MUTED)
         return b
 
-    def ring_panel(y,step,gathered=False):
-        b=text(48,y+27,(f'{step}단계 · 전달한 뒤의 상태',f'Step {step} · state after transfer'),28,bold=True)
+    def ring_panel(y,step,gathered=False,continuous=True):
+        b=text(48,y+27,('시작 · 전달 전의 상태','Start · before any transfer') if step==0 else (f'{step}단계 · 전달한 뒤의 상태',f'Step {step} · state after transfer'),28,bold=True)
         centers=[(600,y+116),(930,y+285),(600,y+454),(270,y+285)]
         paths=[(758,y+145,899,y+222),(899,y+348,758,y+425),(442,y+425,301,y+348),(301,y+222,442,y+145)]
         labels=[(935,y+179),(935,y+405),(265,y+405),(265,y+179)]
         for r,(x1,y1,x2,y2) in enumerate(paths):
+            if step==0:
+                b+=f'<path d="M{x1},{y1} L{x2},{y2}" stroke="{LINE}" stroke-width="2.5"/>'
+                continue
             b+=arrow(x1,y1,x2,y2)
             if gathered:
                 c=(r-step+1)%4; label='ABCD'[c]
@@ -102,7 +106,12 @@ for LANG in ['ko','en']:
             lx,ly=labels[r];b+=text(lx,ly,label,23,bold=True,anchor='middle')
         for r,(x,cy) in enumerate(centers):
             b+=rect(x-150,cy-57,300,114,FILLS[r],COLORS[r])+text(x,cy-25,f'GPU {r}',24,COLORS[r],True,anchor='middle')
-            if gathered:
+            if step==0:
+                value=f'{"ABCD"[r]} = {1111*(r+1)}' if gathered else str(vectors[r])
+                b+=text(x,cy+13,value,21,bold=True,anchor='middle')
+                label=('완성된 조각','Completed chunk') if gathered else ('처음 보낼 조각: '+'ABCD'[(r-1)%4],'First send: '+'ABCD'[(r-1)%4])
+                b+=text(x,cy+43,label,19,MUTED,anchor='middle')
+            elif gathered:
                 b+=text(x,cy+13,' · '.join('ABCD'[c] for c in sorted(ag[step][r])),26,bold=True,anchor='middle')
                 incoming='ABCD'[(r-step)%4]
                 b+=text(x,cy+43,('새로 받은 조각: '+incoming,'New chunk: '+incoming),19,MUTED,anchor='middle')
@@ -111,8 +120,9 @@ for LANG in ['ko','en']:
                 b+=text(x,cy+13,f'{"ABCD"[c]} = {v}',26,bold=True,anchor='middle')
                 b+=text(x,cy+43,f'{incoming} + {vectors[r][c]}',21,MUTED,anchor='middle')
         note=('받은 조각을 보관\n다시 더하지 않음','Keep received chunks\nNo further addition') if gathered else ('받은 값 + 자기 입력\n네 GPU가 동시에 합산','Received + local input\nAll four GPUs reduce')
+        if step==0:note=('A · B · C · D\n배열의 1 · 2 · 3 · 4번째 위치','A · B · C · D\nArray positions 1 · 2 · 3 · 4')
         b+=text(600,y+278,note,21,MUTED,anchor='middle')
-        if step<3:b+=arrow(600,y+526,600,y+551)
+        if continuous and step<3:b+=arrow(600,y+526,600,y+551)
         return b
 
     b=text(48,204,('시작: GPU마다 A · B · C · D의 입력 보관','Start: each GPU holds inputs for A · B · C · D'),26,bold=True)
@@ -139,13 +149,14 @@ for LANG in ['ko','en']:
     assert tree_states[0][2]==[x+y for x,y in zip(vectors[2],vectors[3])]
     assert tree_states[1][0]==[sum(v[c] for v in vectors) for c in range(4)]
     titles=[('1단계 · 아래에서 두 곳으로 합산','Step 1 · reduce in two places'),('2단계 · GPU 0에 전체 합 완성','Step 2 · complete the sum on GPU 0'),('3단계 · GPU 0에서 GPU 2로 배포','Step 3 · broadcast from GPU 0 to GPU 2'),('4단계 · GPU 1과 GPU 3에도 배포','Step 4 · broadcast to GPUs 1 and 3')]
-    for i,state in enumerate(tree_states):
-        y=410+i*510;b+=text(48,y+24,titles[i],28,bold=True)
+    def tree_panel(y,i):
+        state=vectors if i<0 else tree_states[i]
+        b=text(48,y+24,('시작 · 각 GPU의 입력','Start · input on each GPU') if i<0 else titles[i],28,bold=True)
         centers=[(600,y+101),(290,y+274),(910,y+274),(910,y+442)]
         # Light edges show the fixed tree; arrowheads mark only this step's transfers.
         edges=[(450,y+160,330,y+214),(750,y+160,870,y+214),(910,y+338,910,y+381)]
         for x1,y1,x2,y2 in edges:b+=f'<path d="M{x1},{y1} L{x2},{y2}" stroke="{LINE}" stroke-width="2.5"/>'
-        active_edges=[[0,2],[1],[1],[0,2]][i]
+        active_edges=[] if i<0 else [[0,2],[1],[1],[0,2]][i]
         for e in active_edges:
             x1,y1,x2,y2=edges[e]
             b+=arrow(x2,y2,x1,y1) if i<2 else arrow(x1,y1,x2,y2)
@@ -153,8 +164,26 @@ for LANG in ['ko','en']:
             b+=rect(x-174,cy-53,348,106,FILLS[r],COLORS[r])+text(x,cy-19,f'GPU {r}'+(' · root' if r==0 else ''),24,COLORS[r],True,anchor='middle')
             b+=text(x,cy+23,str(state[r]),21,bold=True,anchor='middle')
         msg=[('1 → 0, 3 → 2\n두 전달과 합산을 동시에','1 → 0, 3 → 2\nBoth transfers reduce in parallel'),('2 → 0\n부분합끼리 더하기','2 → 0\nAdd the two partial sums'),('0 → 2\n완성된 배열을 복사','0 → 2\nCopy the completed array'),('0 → 1, 2 → 3\n다시 더하지 않고 복사','0 → 1, 2 → 3\nCopy without adding again')][i]
+        if i<0:msg=('같은 위치끼리 합산할 네 배열','Four arrays to sum position by position')
         b+=text(80,y+416,msg,23,MUTED)
+        return b
+    for i in range(4):b+=tree_panel(410+i*510,i)
     save(a,'03-tree',('Tree: 모아서 더하고 다시 펼치기','Tree: reduce, then broadcast'),('화살표 하나가 배열 전체를 전달합니다. 상자는 전달 후의 값, 옅은 선은 트리 연결입니다.','Each arrow carries a whole array. Boxes show values after transfer; faint lines show tree edges.'),b,2465,('같은 트리 배치를 네 번 보여줍니다. 두 단계로 GPU 0에 합산하고, 화살표를 뒤집어 두 단계로 모든 GPU에 배포합니다.','Four panels keep the same tree layout: two reduction steps to GPU 0, followed by two broadcast steps along reversed edges.'))
+    # Interactive frames reuse the exact same state and geometry as the overview.
+    for figure,count,title in [('01',4,('Ring: 조각을 전달하며 합산하기','Ring: pass chunks and accumulate')),('02',4,('Ring: 완성된 조각을 모두에게','Ring: distribute the completed chunks')),('03',5,('Tree: 모아서 더하고 다시 펼치기','Tree: reduce, then broadcast'))]:
+        frames=[]
+        for step in range(count):
+            label=('시작 상태','Starting state') if step==0 else ((f'전달 {step}단계',f'Transfer step {step}') if figure!='03' else titles[step-1])
+            subtitle=('색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다.','Colors and positions identify GPUs and remain fixed across steps.') if step==0 else (('화살표: 보내는 조각 · 상자: 받은 뒤의 결과','Arrows: sent chunks · Boxes: results after receipt') if figure=='01' else (('화살표: 보내는 조각 · 상자: 보관한 조각','Arrows: sent chunks · Boxes: chunks retained') if figure=='02' else ('화살표: 배열 전체 전달 · 상자: 전달 후의 값','Arrows: whole-array transfers · Boxes: values after transfer')))
+            body=tree_panel(210,step-1) if figure=='03' else ring_panel(210,step,figure=='02',False)
+            if figure=='01' and step==3:body+=text(48,786,('합산 완료: GPU마다 결과 조각 하나씩 보관','Reduction complete: each GPU holds one result chunk'),24,bold=True)
+            if figure=='02' and step==3:body+=text(48,786,'[A, B, C, D] = [1111, 2222, 3333, 4444]',24,bold=True)
+            alt=tr(title)+' — '+tr(label)+'. '+tr(subtitle)
+            slug=f'{figure}-step-{step}'
+            save(a,slug,title,subtitle,body,830,alt)
+            MANIFEST.pop() # Frames are catalogued separately from the overview PNGs.
+            frames.append(dict(slug=slug,label=tr(label),alt=alt))
+        STEPS[LANG][figure]=frames
     b=banner(198,('논리적 Ring: 통신 상대와 순서','Logical ring: peers and order'),'GPU 0 → GPU 1 → GPU 2 → GPU 3 → GPU 0')
     b+=text(48,360,('실제 하드웨어: GPU들이 스위치를 통해 연결된 예','Physical hardware: GPUs connected through a switch'),26,bold=True)
     for i,x in enumerate([48,336,624,912]):
@@ -291,3 +320,5 @@ for LANG in ['ko','en']:
 assert len(MANIFEST)==46
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
+
+(ROOT/'src/data/ring-tree-steps.json').write_text(json.dumps(STEPS,ensure_ascii=False,indent=2)+'\n')

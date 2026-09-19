@@ -6,6 +6,8 @@ description: "Follow Ring and Tree implementations of the same All-Reduce result
 date: 2026-09-18
 ---
 
+import RingTreeSteps from "../../../components/RingTreeSteps.astro";
+
 [Collective Communication: Combinations and Extensions](/en/posts/collective-communication-combinations/) described All-Reduce as combining matching array positions across GPUs and returning the result to everyone. That definition does not specify who sends to whom first.
 
 **A collective names the required result; its algorithm determines how transfers produce it.** We will follow the same inputs through a Ring, which passes chunks between neighbors, and a Tree, which reduces and redistributes along branches. We will then compare steps and data volume, and distinguish the drawn connections from physical hardware.
@@ -20,9 +22,9 @@ Suppose each GPU holds a four-element array. Call the first position chunk A, th
 
 Send each chunk to a neighbor, which adds its local input at the same position. Once the chunk has passed through the other three GPUs, all four contributions are included. Circulating different chunks simultaneously lets us **leave one completed chunk on each GPU. This is Reduce-Scatter implemented with a ring**.
 
-The figure first shows the four GPUs’ inputs, then follows three transfers from top to bottom. GPU positions and colors stay fixed. Arrows identify the chunk being sent, while GPU boxes show the sum computed after receipt.
+The figure starts with the four GPUs’ inputs. Use **Next** to follow the three transfers in sequence. GPU positions and colors stay fixed. Arrows identify the chunk being sent, while GPU boxes show the sum computed after receipt.
 
-[![Four GPUs arranged in a ring exchange and reduce chunks in three steps. Arrows show sent values and boxes show sums after receipt.](/images/collective-ring-tree/en/01-ring-reduce-scatter.png)](/images/collective-ring-tree/en/01-ring-reduce-scatter.png)
+<RingTreeSteps locale="en" figure="01" />
 
 Each GPU box in a step tracks the chunk reduced in that step, not the GPU’s entire memory. Each GPU also retains the local inputs needed for addition. On the first transfer, GPU 1 sends its A value, 10, to GPU 2. GPU 2 adds its local value 100 to obtain 110. GPU 3 then adds 1000 to obtain 1110. Finally, GPU 0 adds 1, completing A=1111.
 
@@ -32,7 +34,7 @@ Other chunks move simultaneously at other positions in the ring. After three tra
 
 Reduction is complete, but each GPU holds only part of the result. Forward these completed chunks in the same ring order. Retaining received chunks while forwarding them to the next neighbor gradually collects all chunks. This phase is All-Gather. The figure keeps the same circular GPU placement and shows the growing collection over three steps.
 
-[![Four GPUs arranged in a ring each forward one chunk per step. After three steps, all hold A through D.](/images/collective-ring-tree/en/02-ring-all-gather.png)](/images/collective-ring-tree/en/02-ring-all-gather.png)
+<RingTreeSteps locale="en" figure="02" />
 
 On the first step, GPU 0 sends A to GPU 1 and receives D from GPU 3. It then forwards D while receiving C. After three steps, every GPU holds A through D. **These are completed values, so they are copied without being added again.**
 
@@ -40,9 +42,9 @@ The GPU boxes list chunks held after each step, while each arrow identifies the 
 
 ## Reducing and Broadcasting Through a Tree
 
-A Tree defines parent–child relationships between participants. In a simple example, GPU 1 first sends to 0, and GPU 3 to 2. These two reductions proceed together, then GPU 2 sends its partial sum to GPU 0. Finally, the complete sum travels back along reversed edges. GPU positions stay fixed across the four panels below. Dark arrows show the transfers performed in that step, and GPU boxes show values after the transfers.
+A Tree defines parent–child relationships between participants. In a simple example, GPU 1 first sends to 0, and GPU 3 to 2. These two reductions proceed together, then GPU 2 sends its partial sum to GPU 0. Finally, the complete sum travels back along reversed edges. Use **Next** in the figure below to follow two reduction steps and two broadcast steps. GPU positions stay fixed. Dark arrows show the transfers performed in that step, and GPU boxes show values after the transfers.
 
-[![Four panels keep the same tree layout: two reduction steps to GPU 0, followed by two broadcast steps along reversed edges.](/images/collective-ring-tree/en/03-tree.png)](/images/collective-ring-tree/en/03-tree.png)
+<RingTreeSteps locale="en" figure="03" />
 
 Two reduction steps produce the full sum at GPU 0; two broadcast steps distribute it. There are fewer steps than in the ring example, but **each transfer carries the entire array**. Four steps therefore do not establish that this tree is faster than a six-step ring.
 
