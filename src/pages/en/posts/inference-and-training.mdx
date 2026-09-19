@@ -55,7 +55,7 @@ Some information must remain available for the next task even after a model comp
 
 Training retains **activations**, intermediate values from the forward pass needed for the backward pass. It also needs **gradients** of the weights and **optimizer state**, such as accumulated statistics used to update the weights. Together with the weights, these values are major components of GPU memory use. Exactly what is stored, and how much, depends on the training method and optimizer: some activations may be recomputed when needed, or state may be placed in other memory.
 
-Inference performs neither the backward pass nor weight updates, so it does not need gradients or optimizer state. Instead, the **KV cache** of requests being generated occupies GPU memory. A KV cache **stores keys and values from earlier tokens for reuse when generating the next token**. For now, the key point is that these values remain available as generation continues. The next article will explain what is stored and how it is reused.
+Inference performs neither the backward pass nor weight updates, so it does not need gradients or optimizer state. Instead, the **KV cache** of requests being generated occupies GPU memory. A KV cache **stores keys and values from earlier tokens for reuse when generating the next token**. For now, the key point is that these values remain available as generation continues. The next article, [Inference and the KV Cache](/en/posts/inference-kv-cache/), will explain what is stored and how it is reused.
 
 [![Both training and inference need model weights, intermediate values, and workspace during execution. Training retains activations for the backward pass, gradients, and optimizer state, while inference retains a KV cache for subsequent generation. Box sizes do not represent actual memory proportions.](/images/inference-and-training/en/03-memory-state.png)](/images/inference-and-training/en/03-memory-state.png)
 
@@ -89,4 +89,4 @@ Training also aims to make progress with the same resources while maintaining tr
 
 Although SFT is generally included in post-training, our series follows a teaching sequence that places pretraining and SFT in the training stage, followed by RL-based post-training. RL-based processes connect the two execution patterns, for example by using generated results for training.
 
-Having examined how the inference engine handles requests, we will next look more closely at how a single request generates tokens. In the next article, we will follow what is newly computed and which earlier computations are reused when calculating the next token.
+Having examined how the inference engine handles requests, we will next look more closely at how a single request generates tokens. In [Inference and the KV Cache](/en/posts/inference-kv-cache/), we will follow what is newly computed and which earlier computations are reused when calculating the next token.

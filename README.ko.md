@@ -63,3 +63,9 @@
 #### 워크로드
 
 - [같은 모델, 다른 워크로드: 추론과 학습](https://llm-systems-engineering.pages.dev/posts/inference-and-training/)
+
+### 추론
+
+#### 워크로드
+
+- [추론과 KV 캐시](https://llm-systems-engineering.pages.dev/posts/inference-kv-cache/)
