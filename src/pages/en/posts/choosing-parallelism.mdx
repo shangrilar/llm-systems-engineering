@@ -2,60 +2,62 @@
 layout: ../../../layouts/Post.astro
 articleId: choosing-parallelism
 title: "How Should We Arrange Multiple GPUs?"
-description: "Compare replicas and compute groups on the same four GPUs, choosing parallelization using memory fit, latency, throughput, and communication."
+description: "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput."
 date: 2026-09-18
 ---
 
-After learning several parallelization methods, the next question is which to enable. It is better to start with **what currently prevents execution and which outcome needs improvement**. A model that does not fit, a slow individual request, and a growing request queue can call for different placements.
+When using multiple GPUs, the first problem is **to load the model and build a configuration that can actually process the workload**. Once that works, we can add more groups running the same model to handle different inputs. We then adjust whether to devote more GPUs to one model's computation or keep more independent replicas.
 
-We will arrange four GPUs in three ways. First, we will check whether required data fits on each GPU, then compare latency and throughput among feasible arrangements. Finally, we will relate placement to connectivity and other parallelization methods, and identify what to measure after a change.
+This article follows **making room to run → replicating the working group → adjusting partitioning and replication**. We use inference with a Dense model that processes independent requests using fixed weights. We connect the methods introduced earlier, while keeping the figures focused on TP and DP.
 
-## Grouping the Same GPUs in Different Ways
+## First, make room to run the workload
 
-Consider a dense model processing independent requests with fixed weights. One full model per GPU gives four replicas. Alternatively, partition each model across two GPUs and create two such replicas, or let all four GPUs cooperate on one model execution.
+Loading model weights onto a GPU does not by itself make the workload runnable. Memory is also needed for activations produced during computation, state maintained for each request, communication buffers, and other uses. A configuration is feasible when **the values needed to process the target inputs fit on each GPU**.
 
-[![Compare four single-GPU replicas, two two-GPU TP replicas, and one four-GPU TP replica.](/images/choosing-parallelism/en/01-layouts.png)](/images/choosing-parallelism/en/01-layouts.png)
+If the weights are too large, the model can be partitioned across GPUs. [TP](/en/posts/tensor-parallelism/) divides weights and their computation, while [PP](/en/posts/pipeline-parallelism/) divides model layers. For a MoE model, [EP](/en/posts/expert-parallelism/) can partition expert weights. If one GPU already handles the required workload adequately, there is no need to start by partitioning it.
 
-With two two-GPU replicas, GPUs 0 and 1 form one TP group, and GPUs 2 and 3 another. GPUs within a group communicate for the same request; the two replicas receive different requests. This is TP 2 × DP 2 in our example.
+For the figure, suppose the model weights occupy 24 GiB and each GPU has 24 GiB available. GiB is a capacity unit based on powers of two. We assume another 8 GiB per GPU for request state, activations, buffers, and other execution memory besides weights.
 
-Larger groups can divide a model’s weights and some computation further, but leave fewer independent replicas on the same four GPUs. Compare both resources assigned per request and independently operated model groups. Framework option names may have different group meanings for different model components; here we refer to the actual placement inside each border.
+[![One GPU cannot hold 24 GiB of weights plus 8 GiB for execution. With TP2, each GPU holds 12 GiB of weights and 8 GiB for execution, leaving 4 GiB free.](/images/choosing-parallelism/en/01-make-it-fit.png)](/images/choosing-parallelism/en/01-make-it-fit.png)
 
-## Filtering Deployments by Memory Fit
+On the left, weights alone consume all 24 GiB. Adding the 8 GiB needed for execution brings the total to 32 GiB, which does not fit. Connecting more GPUs does not automatically turn their memory into one large space: the configuration must actually partition weights or data used during execution.
 
-Assume 24 GiB of usable memory per GPU and 32 GiB of model weights. GiB measures memory capacity using powers of two. Assume weights divide evenly with TP and that each GPU additionally needs 8 GiB for request state, activations, communication buffers, and other storage.
+On the right, TP partitions the weights across two GPUs. W1 through W4 represent four weight shards. GPU 0 holds W1 and W2, while GPU 1 holds W3 and W4, reducing weights per GPU to 12 GiB. Adding 8 GiB for execution gives 20 GiB, leaving 4 GiB free. The two GPUs can now form **a group that jointly computes each request**.
 
-[![With 24 GiB GPUs, 32 GiB weights and 8 GiB extra state, per-GPU totals are 40, 24 and 16 GiB.](/images/choosing-parallelism/en/02-memory.png)](/images/choosing-parallelism/en/02-memory.png)
+These numbers illustrate a capacity relationship. In practice, not all weights may partition evenly, and execution memory changes with input length, the number of requests processed together, and TP size. Peak memory use and headroom therefore need to be checked while running the target workload. [vLLM's parallelism guidance](https://docs.vllm.ai/en/latest/serving/parallelism_scaling/) likewise describes choosing GPUs to hold the model, then checking memory and concurrency capacity for processing requests.
 
-The four-replica arrangement is ruled out: weights alone need 32 GiB on each GPU. Although the four GPUs total 96 GiB, each must hold the data required locally. Their memories do not automatically become one large shared memory.
+## Replicate the working group to increase throughput
 
-TP 2 uses 16 GiB of weights plus 8 GiB of additional storage, totaling 24 GiB. It fits arithmetically but has no headroom for larger inputs or transient usage. TP 4 uses 16 GiB total, leaving 8 GiB. That is a reason to examine TP 4 under these assumptions, not yet a conclusion that it is faster.
+Suppose two GPUs can now process the workload, and two more GPUs are available. We can place the same weight shards from GPUs 0 and 1 on GPUs 2 and 3 to create **another model replica**. Running that additional model replica also takes two GPUs.
 
-These are **assumptions for capacity arithmetic, not measured memory usage of a real model**. Actual additional storage depends on batch size, context length, TP degree, and implementation. Not all weights may divide evenly. Check peak usage under the intended workload, not merely successful loading with one request.
+In the next figure, requests A and B go to group 1, and C and D go to group 2. W shards with the same name and color contain identical weights. Double-headed arrows indicate communication within a group.
 
-## Evaluating Latency and Throughput Together
+[![Replicate the TP group on GPUs0 and1 onto GPUs2 and3. GPUs0 and2 hold W1/W2; GPUs1 and3 hold W3/W4. Both GPUs in group1 compute A/B, and both GPUs in group2 compute C/D.](/images/choosing-parallelism/en/02-replicate-the-group.png)](/images/choosing-parallelism/en/02-replicate-the-group.png)
 
-Which fitting deployment is preferable? TP can accelerate a request by dividing computation, but adds communication and waiting between operations. TP 4 need not beat TP 2. More replicas can process different requests, but long per-replica execution or insufficient demand can limit the benefit.
+Within group 1, both GPU 0 and GPU 1 participate in computing A and B. They hold different parts of the weights, so each performs its assigned computation and exchanges the required results. GPU 0 does not handle only A while GPU 1 handles only B. In group 2, the two GPUs similarly compute C and D together.
 
-[![Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.](/images/choosing-parallelism/en/03-goals.png)](/images/choosing-parallelism/en/03-goals.png)
+The two groups, however, process different requests. This is **TP 2 × DP 2**. TP 2 means that two GPUs jointly process one partitioned model replica, and DP 2 means running two copies of that configuration. **The unit replicated by DP may be a single GPU or a model replica spanning multiple GPUs.** [vLLM's DP documentation](https://docs.vllm.ai/en/stable/serving/data_parallel_deployment/) also describes running multiple TP-partitioned replicas to process independent request batches.
 
-User-visible latency runs from arrival to completion and includes queueing. Throughput is completed work per unit time. With varying request lengths, compare input and output token workloads as well as request counts. In sequential token generation, time to the first result and intervals between subsequent results can also be distinguished.
+More replicas create room to process more requests in the same amount of time. The number of GPUs participating in one request stays the same, while more groups become available for other requests. Throughput can increase when enough requests arrive and work is distributed evenly across the groups. With too few requests or work concentrated in one group, gains need not match the replica count.
 
-Let q₂ be sustained throughput of one two-GPU group and q₄ that of one four-GPU group. With enough input and no extra contention between replicas, two two-GPU replicas provide roughly 2q₂ overall. **Whether q₄ exceeds 2q₂ must be measured.** Higher throughput obtained by allowing long queues may also violate a latency target.
+This example uses Dense inference with fixed weights. The two groups do not need to combine model intermediate results with each other while computing their requests; each group maintains the state of its own requests. A through D illustrate assignment, not a limit of two requests per group.
 
-First specify acceptable latency and input conditions, then compare sustained throughput while satisfying them. Inspect latency distributions so a good average does not hide very slow requests. Deployments that fail for lack of memory must be resolved before entering a speed ranking.
+## Adjust GPUs per model and the number of replicas
 
-## Matching Combinations to Connectivity
+Being able to run on two GPUs does not mean using the remaining GPUs for replication is always optimal. The same four GPUs can hold **two model replicas on two GPUs each**, or **one model replica on four GPUs**. We first found a configuration that could run the workload; now we compare performance among feasible configurations.
 
-If the links within GPU pairs 0–1 and 2–3 are fast and links between pairs slower, keeping repeatedly communicating TP groups within the pairs is a candidate. The same TP degree can incur different shared-link traffic depending on group membership. The distinction between logical relationships and physical links from [Ring and Tree](/en/posts/collective-ring-tree/) matters again.
+[![The same four GPUs form two TP2 replicas or one TP4 replica. Both arrangements process requests A/B/C/D; compare memory headroom per GPU, request latency, total throughput, and communication within each group.](/images/choosing-parallelism/en/03-balance-shards-and-replicas.png)](/images/choosing-parallelism/en/03-balance-shards-and-replicas.png)
 
-Combine other methods according to the remaining problem. Consider SP for replicated activations around TP regions, and CP for long-context attention and activations. PP partitions model layers but needs enough inputs and balanced stages to fill the pipeline. MoE models can partition experts with EP, considering routing distribution and token exchange together.
+In TP 2 × DP 2 at the top, requests are assigned to two groups. In TP 4 × DP 1 below, all four GPUs form one group and participate in computing the requests. **One group can also batch multiple requests together.** Having one replica therefore does not restrict it to processing one request at a time.
 
-Do not assume every parallelization degree is an independent factor to multiply into the GPU count. The SP described earlier changes activation placement within an existing TP group. Draw actual group membership and identify what is replicated or partitioned before describing a combination.
+Increasing TP size can distribute weights and the computation that can be partitioned across more GPUs. It may shorten execution time for one request or increase memory headroom, but communication and waiting between operations also matter. Four participating GPUs are not always faster than two.
 
-## Checking the New Bottleneck After a Change
+Conversely, smaller TP groups allow more replicas on the same GPU budget. More groups can handle different requests, but each group's processing speed and the number of requests it can batch affect total throughput. **Doubling the number of replicas alone does not establish that total throughput doubles.**
 
-Record the model, precision, input/output length distributions, request arrival pattern, GPUs, links, and software when comparing deployments. Also record execution settings tuned for each placement, and distinguish initial preparation from steady execution. If conditions differ, explain which change the comparison reflects.
+Compare latency and throughput together. Latency runs from a request's arrival to its completion, including time spent in a queue. Throughput is work completed per unit time. With the same model, precision, input and output lengths, and arrival conditions, compare **sustained throughput within the allowed latency target**. Examine slow requests as well as the average.
 
-For each candidate, inspect peak memory, latency distribution, sustained throughput, and failures. Then examine the execution timeline: is work waiting for computation, delayed transfers, or a heavily loaded participant? Adding durations of overlapping computation and communication can misrepresent overall completion time.
+Which GPUs form each group also matters. If links within GPUs 0–1 and within GPUs 2–3 are fast, but the connection between those pairs is slower, keeping TP's repeated communication inside each pair may be beneficial. The figure's arrows are not a cable diagram, so distinguish [logical relationships from physical connections](/en/posts/collective-ring-tree/).
 
-[From Operation Optimization to Model Performance](/en/posts/model-performance-and-bottlenecks/) showed how optimization can move a bottleneck. GPU placement does too. Communication may become limiting after computation is divided; queueing may become more important after memory pressure is relieved. **Choose a placement that meets the objective, then find the next constraint in the changed end-to-end execution.** That is the process of selecting and optimizing parallelization.
+If activations or a long context consume much of the memory during execution, methods introduced earlier, such as [SP](/en/posts/sequence-parallelism/) or [CP](/en/posts/context-parallelism/), can be considered alongside the initial configuration. A model partition chosen first can still be revised based on the target inputs and measured results.
+
+**First make the workload runnable, replicate that configuration, then adjust partitioning and replication to meet the actual goal.** This is a starting order for reasoning. Changing placement can change whether computation, communication, or request queueing limits the overall run, so memory, latency, and throughput must be checked again in the new configuration.

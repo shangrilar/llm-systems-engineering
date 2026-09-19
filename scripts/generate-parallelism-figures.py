@@ -82,9 +82,6 @@ gather=[{r} for r in range(4)]; ag=[gather]
 for _ in range(3):
     gather=[gather[r]|gather[(r-1)%4] for r in range(4)];ag.append(gather)
 assert all(s==set(range(4)) for s in gather)
-assert [1*1+2*2,1*3+2*4]==[5,11]
-assert (2*3+1*10)/3==16/3
-assert max((m+s+1 for m in range(4) for s in range(4)))==7
 
 for LANG in ['ko','en']:
     a='collective-ring-tree'
@@ -214,26 +211,7 @@ for LANG in ['ko','en']:
     b+=text(48,828,('Ring의 이웃이라고 전용 케이블로 직접 연결된 것은 아닙니다.','Logical neighbors need not have a dedicated direct cable.'),25,bold=True)
     save(a,'04-logical-physical',('전달 순서와 실제 연결을 구별하기','Separate transfer order from physical links'),('위는 알고리즘의 관계, 아래는 가능한 물리 연결의 한 예입니다.','Top: algorithmic relationship. Bottom: one possible physical topology.'),b,884,('논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.','A logical ring can run over a physical shared-switch topology.'))
 
-    a='choosing-parallelism'
-    for r,(label,groups) in enumerate([( ('모델 네 벌 · DP','Four replicas · DP'),[[0],[1],[2],[3]]),(('두 GPU씩 두 벌 · TP + DP','Two replicas of two GPUs · TP + DP'),[[0,1],[2,3]]),(('네 GPU로 한 벌 · TP','One replica across four GPUs · TP'),[[0,1,2,3]])]):
-        y=212+r*226;b=('' if r==0 else b)+text(48,y,label,26,bold=True)
-        for g,group in enumerate(groups):
-            x=48+group[0]*280;w=len(group)*280-16;b+=rect(x,y+29,w,140,FILLS[g],COLORS[g])
-            for i in group:b+=text(48+i*280+132,y+83,f'GPU {i}',25,anchor='middle')+text(48+i*280+132,y+127,('W 전체' if len(group)==1 else f'W의 1/{len(group)}','Full W' if len(group)==1 else f'1/{len(group)} of W'),23,anchor='middle')
-    b+=text(48,901,('같은 테두리 안의 GPU들이 한 모델 실행을 함께 담당합니다.','GPUs inside one border cooperate on the same model execution.'),24,bold=True)
-    save(a,'01-layouts',('GPU 네 개를 배치하는 세 가지 방법','Three ways to arrange four GPUs'),('예시는 dense 모델의 가중치를 균등하게 나눌 수 있는 TP를 가정합니다.','Assume TP can evenly partition the dense model’s weights in this example.'),b,951,('4개 단일 GPU 복제본, 2개의 2-GPU TP 복제본, 1개의 4-GPU TP 복제본을 비교합니다.','Compare four single-GPU replicas, two two-GPU TP replicas, and one four-GPU TP replica.'))
-    b=banner(194,('GPU당 사용 가능 메모리 24 GiB / 모델 가중치 32 GiB','Usable memory: 24 GiB per GPU / model weights: 32 GiB'),('요청 상태·중간값·임시 공간 등에 GPU당 8 GiB가 필요하다고 가정','Assume 8 GiB per GPU for request state, activations, and temporary storage'))
-    b= b+table(344,[('배치','Deployment'),('가중치 / GPU','Weights / GPU'),('총 사용 / GPU','Total / GPU'),('판단','Decision')],[
-      ['DP × 4','32 GiB','32 + 8 = 40 GiB',('초과','Too large')],['TP 2 × DP 2','16 GiB','16 + 8 = 24 GiB',('여유 없음','No headroom')],['TP 4 × DP 1','8 GiB','8 + 8 = 16 GiB',('8 GiB 여유','8 GiB headroom')]], [280,250,294,280],111)
-    b+=text(48,795,('모델 가중치만 들어간다고 실행에 필요한 메모리까지 충족되는 것은 아닙니다.','Fitting the weights alone does not establish that the workload fits.'),24,bold=True)
-    save(a,'02-memory',('속도를 비교하기 전에 메모리부터','Check memory before comparing speed'),('실제 모델 벤치마크가 아닌, 가정을 둔 용량 계산 예시입니다.','An assumed capacity example, not a benchmark of a real model.'),b,851,('24GiB GPU와 32GiB 모델에서 추가 상태 8GiB를 포함하면 세 배치가 각각 40,24,16GiB를 사용합니다.','With 24 GiB GPUs, 32 GiB weights and 8 GiB extra state, per-GPU totals are 40, 24 and 16 GiB.'))
-    b=box(48,216,510,212,('한 요청의 완료','Completion of one request'),('도착 → 대기 → 실행 → 완료\n사용자는 대기 시간도 경험합니다.','Arrival → queue → execution → completion\nThe user experiences queueing too.'),0)+box(642,216,510,212,('여러 요청의 처리량','Throughput across requests'),('같은 시간에 완료한 작업량\n같은 입력·출력 조건으로 비교합니다.','Work completed per unit time\nCompare matching input/output conditions.'),1)
-    b+=arrow(303,443,303,495)+arrow(897,443,897,495)
-    b+=banner(513,('목표를 만족하는 배치에서 전체 완료를 확인','Check end-to-end completion for feasible deployments'),('계산 감소 ↔ 반복 통신 · 대기 · 동시에 처리할 복제본 수','Less computation ↔ repeated communication, waiting, and replica count'))
-    b+=table(665,[('측정 조건','Measurement conditions'),('함께 기록할 항목','Record together')],[[('같은 모델·정밀도·입력/출력 길이·요청 도착 패턴','Same model, precision, lengths, and arrival pattern'),('메모리 최고 사용량·응답 시간 분포·처리량·통신과 대기','Peak memory, latency distribution, throughput, communication and waiting')]], [552,552],152)
-    save(a,'03-goals',('응답 시간과 처리량을 함께 판단하기','Evaluate latency and throughput together'),('모든 경우에 가장 좋은 병렬화 하나가 정해져 있지는 않습니다.','There is no single best parallelization for every workload.'),b,919,('요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.','Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.'))
-
-assert len(MANIFEST)==14
+assert len(MANIFEST)==8
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
 

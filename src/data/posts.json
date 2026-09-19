@@ -835,17 +835,17 @@
       "ko": {
         "slug": "choosing-parallelism",
         "title": "여러 GPU를 어떻게 배치할까?",
-        "description": "같은 네 GPU를 복제본과 계산 그룹으로 다르게 배치하며, 메모리 적합성·응답 시간·처리량·통신을 기준으로 병렬화 조합을 판단합니다.",
+        "description": "먼저 작업을 실행할 수 있게 모델을 나누고, 그 구성을 복제한 뒤, 응답 시간과 처리량에 맞춰 GPU 배치를 조정합니다.",
         "published": true
       },
       "en": {
         "slug": "choosing-parallelism",
         "title": "How Should We Arrange Multiple GPUs?",
-        "description": "Compare replicas and compute groups on the same four GPUs, choosing parallelization using memory fit, latency, throughput, and communication.",
+        "description": "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "5f5d5b4d36e17a2bcc973e3a4d5836053a346432b6a416ea263c1eb22256b628",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "47d59bf55fe1c6f25dd017309d60a24cb1bc3b7e3c9f86f0f2e081ea42ee039a",
+        "reviewNote": "2026-09-20: Compared the three-section Korean and English rewrite and three bilingual figure pairs. Checked the assumed 24+8 and 12+8 GiB capacities, replicated TP2 groups, fixed four-GPU TP2×DP2 versus TP4×DP1 comparison, batching within a replica, Dense inference scope and performance conditions. Figures reviewed separately from the body revision. Authoring review, not final user approval."
       }
     }
   },

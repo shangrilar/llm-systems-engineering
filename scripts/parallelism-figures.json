@@ -40,36 +40,6 @@
     "height": 884
   },
   {
-    "article": "choosing-parallelism",
-    "slug": "01-layouts",
-    "locale": "ko",
-    "title": "GPU 네 개를 배치하는 세 가지 방법",
-    "alt": "4개 단일 GPU 복제본, 2개의 2-GPU TP 복제본, 1개의 4-GPU TP 복제본을 비교합니다.",
-    "path": "public/images/choosing-parallelism/01-layouts.svg",
-    "width": 1200,
-    "height": 951
-  },
-  {
-    "article": "choosing-parallelism",
-    "slug": "02-memory",
-    "locale": "ko",
-    "title": "속도를 비교하기 전에 메모리부터",
-    "alt": "24GiB GPU와 32GiB 모델에서 추가 상태 8GiB를 포함하면 세 배치가 각각 40,24,16GiB를 사용합니다.",
-    "path": "public/images/choosing-parallelism/02-memory.svg",
-    "width": 1200,
-    "height": 851
-  },
-  {
-    "article": "choosing-parallelism",
-    "slug": "03-goals",
-    "locale": "ko",
-    "title": "응답 시간과 처리량을 함께 판단하기",
-    "alt": "요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.",
-    "path": "public/images/choosing-parallelism/03-goals.svg",
-    "width": 1200,
-    "height": 919
-  },
-  {
     "article": "collective-ring-tree",
     "slug": "01-ring-reduce-scatter",
     "locale": "en",
@@ -108,35 +78,5 @@
     "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
     "width": 1200,
     "height": 884
-  },
-  {
-    "article": "choosing-parallelism",
-    "slug": "01-layouts",
-    "locale": "en",
-    "title": "Three ways to arrange four GPUs",
-    "alt": "Compare four single-GPU replicas, two two-GPU TP replicas, and one four-GPU TP replica.",
-    "path": "public/images/choosing-parallelism/en/01-layouts.svg",
-    "width": 1200,
-    "height": 951
-  },
-  {
-    "article": "choosing-parallelism",
-    "slug": "02-memory",
-    "locale": "en",
-    "title": "Check memory before comparing speed",
-    "alt": "With 24 GiB GPUs, 32 GiB weights and 8 GiB extra state, per-GPU totals are 40, 24 and 16 GiB.",
-    "path": "public/images/choosing-parallelism/en/02-memory.svg",
-    "width": 1200,
-    "height": 851
-  },
-  {
-    "article": "choosing-parallelism",
-    "slug": "03-goals",
-    "locale": "en",
-    "title": "Evaluate latency and throughput together",
-    "alt": "Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.",
-    "path": "public/images/choosing-parallelism/en/03-goals.svg",
-    "width": 1200,
-    "height": 919
   }
 ]

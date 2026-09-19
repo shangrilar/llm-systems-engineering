@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL, fileURLToPath} from 'node:url';
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const figs=(await Promise.all(['parallelism','collective'].map(x=>fs.readFile(repo+'/scripts/'+x+'-figures.json','utf8').then(JSON.parse)))).flat();
+const figs=(await Promise.all((process.argv.length>2?process.argv.slice(2):['parallelism','collective']).map(x=>fs.readFile(repo+'/scripts/'+x+'-figures.json','utf8').then(JSON.parse)))).flat();
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({deviceScaleFactor:2});
 const report=[];
