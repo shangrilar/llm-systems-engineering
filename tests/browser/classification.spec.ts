@@ -8,13 +8,20 @@ for (const locale of ['ko', 'en'] as const) {
   test(`${locale}: grouped catalog and article classification`, async ({ page }) => {
     const prefix = locale === 'en' ? '/en' : '';
     await page.goto(`${prefix}/`);
-    await expect(page.locator('.article-track > h3')).toHaveText([locale === 'ko' ? '공통' : 'Shared Concepts']);
-    await expect(page.locator('.article-category > h4')).toHaveText(locale === 'ko' ? ['모델', '하드웨어'] : ['Models', 'Hardware']);
-    for (const category of [null, 'model', 'hardware']) {
-      const expected = catalog.filter(p => p.category === category && p.locales[locale]?.published)
-        .sort((a, b) => a.order - b.order).map(p => `${prefix}/posts/${p.locales[locale]!.slug}/`);
-      const links = page.locator(`[data-category="${category ?? 'overview'}"] .post-link`);
-      expect(await links.evaluateAll(es => es.map(e => e.getAttribute('href')))).toEqual(expected);
+    await expect(page.locator('.article-track > h3')).toHaveText(locale === 'ko' ? ['공통', '추론'] : ['Shared Concepts', 'Inference']);
+    for (const track of ['shared', 'inference']) {
+      const group = page.locator(`[data-track="${track}"]`);
+      const categories = track === 'shared' ? [null, 'model', 'hardware', 'workload'] : ['workload'];
+      const labels = track === 'shared'
+        ? (locale === 'ko' ? ['모델', '하드웨어', '워크로드'] : ['Models', 'Hardware', 'Workloads'])
+        : [locale === 'ko' ? '워크로드' : 'Workloads'];
+      await expect(group.locator('.article-category > h4')).toHaveText(labels);
+      for (const category of categories) {
+        const expected = catalog.filter(p => p.track === track && p.category === category && p.locales[locale]?.published)
+          .sort((a, b) => a.order - b.order).map(p => `${prefix}/posts/${p.locales[locale]!.slug}/`);
+        const links = group.locator(`[data-category="${category ?? 'overview'}"] .post-link`);
+        expect(await links.evaluateAll(es => es.map(e => e.getAttribute('href')))).toEqual(expected);
+      }
     }
     await expect(page.locator('.post-link')).toHaveCount(catalog.filter(p => p.locales[locale]?.published).length);
     await mkdir('test-results/classification', { recursive: true });
@@ -28,5 +35,8 @@ for (const locale of ['ko', 'en'] as const) {
     await page.locator(`.post-link[href="${prefix}/posts/${slug}/"]`).click();
     await expect(page.locator('.article-header .eyebrow')).toContainText(locale === 'ko' ? '공통 · 하드웨어' : 'Shared Concepts · Hardware');
     await expect(page.locator('article nav:not(.article-toc) a').last()).toHaveAttribute('href', `${prefix}/posts/gpu-network-data-path/`);
+    await page.goto(`${prefix}/posts/inference-kv-cache/`);
+    await expect(page.locator('.article-header .eyebrow')).toContainText(locale === 'ko' ? '추론 · 워크로드' : 'Inference · Workloads');
+    await expect(page.locator('article nav:not(.article-toc) a').last()).toHaveAttribute('href', `${prefix}/posts/prefill-and-decode/`);
   });
 }

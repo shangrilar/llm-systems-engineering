@@ -848,5 +848,180 @@
         "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
       }
     }
+  },
+  {
+    "articleId": "inference-and-training",
+    "order": 35,
+    "track": "shared",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-and-training",
+        "title": "같은 모델, 다른 워크로드: 추론과 학습",
+        "description": "준비된 데이터를 처리하는 학습과 새로 도착하는 요청에 대응하는 추론을 비교하고, 토큰 생성과 가중치 갱신에서 요청 관리까지 실행 흐름을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-and-training",
+        "title": "Same Model, Different Workloads: Inference and Training",
+        "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "662badda207767d01586d311b05a495a573f7d3b4b46af1e56289d3f83110773",
+        "reviewNote": "2026-09-19: Revised Korean and English workload framing, five section headings, request-arrival assumptions, loss and weight-update explanation, and both execution comparison figures reviewed. Static figures checked separately from the prose revision. User review pending. 2026-09-19: Compared the revised state-management section and new memory-figure alt text in both languages: shared weights, saved training activations, gradients, optimizer state, a brief KV-cache definition and next-article link, temporary computation memory, and request-dependent KV growth agree. Figure review is recorded separately. 2026-09-19: Removed the corresponding sentence about arrows and time proportions from both languages at the user’s request; the rest of the paragraph is unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "inference-kv-cache",
+    "order": 36,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-kv-cache",
+        "title": "추론과 KV 캐시",
+        "description": "토큰 생성 루프에서 과거 K/V를 재사용하는 이유와, 선택한 출력 토큰·계산이 끝난 KV·요청 종료의 관계를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-kv-cache",
+        "title": "Inference and the KV Cache",
+        "description": "Follow token generation to understand why past keys and values can be reused, and distinguish selected output tokens, computed KV state, and request completion.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5bdbdd7cce1590b92f24a58db734c34dcd68286f78605b2837b45f8738ef12bd",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+      }
+    }
+  },
+  {
+    "articleId": "prefill-and-decode",
+    "order": 37,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "prefill-and-decode",
+        "title": "Prefill과 Decode",
+        "description": "이번에 처리하는 토큰 수와 참조하는 문맥 길이를 구별하고, 가중치 재사용과 KV 읽기가 계산량·데이터 이동·병목을 바꾸는 이유를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "prefill-and-decode",
+        "title": "Prefill and Decode",
+        "description": "Distinguish newly processed tokens from the context they attend to, and examine how weight reuse and KV reads shape computation, memory traffic, and bottlenecks.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "be74383649c108b61fc78e7d5f66c30dfb1148d8aa6749a212cc217d4e7bbdac",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+      }
+    }
+  },
+  {
+    "articleId": "batching-and-scheduling",
+    "order": 38,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "batching-and-scheduling",
+        "title": "배치와 스케줄링",
+        "description": "길이와 도착 시점이 다른 요청을 함께 실행하며, 요청별 상태를 유지하고 토큰 예산과 KV 공간에 맞춰 다음 작업을 선택하는 과정을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "batching-and-scheduling",
+        "title": "Batching and Scheduling",
+        "description": "See how requests with different lengths and arrival times run together while preserving independent state and respecting token budgets and KV capacity.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "50a8d7419572069c0b30c5317b37ccbee75f38180bec3c34205c0c5585832713",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+      }
+    }
+  },
+  {
+    "articleId": "paged-kv-cache",
+    "order": 39,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "paged-kv-cache",
+        "title": "KV 캐시 관리와 PagedAttention",
+        "description": "요청마다 늘고 사라지는 KV를 블록으로 관리하고, 논리적 토큰 순서와 물리적 저장 위치를 연결해 공간을 할당·회수하는 과정을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "paged-kv-cache",
+        "title": "KV Cache Management and PagedAttention",
+        "description": "Manage growing and ending requests in KV blocks, mapping logical token order to physical storage for flexible allocation and reclamation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "d7956ff28ec955d7c8a66b080dea6f8b04581b3544060c3fb5648ed4b5bff9f6",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending. Korean token ranges use en dashes to prevent Markdown strikethrough; English already uses the same range notation."
+      }
+    }
+  },
+  {
+    "articleId": "inference-preemption",
+    "order": 40,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-preemption",
+        "title": "KV 캐시가 부족할 때: 요청 중단과 재개",
+        "description": "실행 보류와 KV 회수를 구별하고, 토큰 이력을 보존한 채 재계산이나 복원으로 중단한 요청을 재개하는 과정과 비용을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-preemption",
+        "title": "When KV Capacity Runs Out: Pausing and Resuming Requests",
+        "description": "Distinguish deferring execution from reclaiming KV space, then examine how recomputation or restoration resumes a request while preserving its token history.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "d798fa4887758651c10fb85ea6fff81ef75dbe14b4caad7633ff278f416c6d9c",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+      }
+    }
+  },
+  {
+    "articleId": "inference-metrics",
+    "order": 41,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-metrics",
+        "title": "추론 성능 지표: 대기 시간과 처리량",
+        "description": "생성과 출력 전달의 관측 경계를 바탕으로 TTFT·TPOT·ITL과 처리량을 정의하고, 부하 조건과 지연 분포를 함께 해석합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-metrics",
+        "title": "Inference Metrics: Latency and Throughput",
+        "description": "Define TTFT, TPOT, ITL, and throughput using explicit generation and delivery boundaries, then interpret them alongside load conditions and latency distributions.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "e1d311c4f3c8de936a8ee7eb473846694de1bd7a18b4ddc41f94903c7656f341",
+        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+      }
+    }
   }
 ]

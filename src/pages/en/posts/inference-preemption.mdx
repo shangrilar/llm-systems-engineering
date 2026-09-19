@@ -1,0 +1,68 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: inference-preemption
+title: "When KV Capacity Runs Out: Pausing and Resuming Requests"
+description: "Distinguish deferring execution from reclaiming KV space, then examine how recomputation or restoration resumes a request while preserving its token history."
+date: 2026-09-19
+---
+
+[KV Cache Management and PagedAttention](/en/posts/paged-kv-cache/) divided each request's cache into small blocks, allocated them as needed, and returned them after completion. But if every block is occupied and an ongoing request needs to generate a longer output, flexible addressing alone cannot create new space.
+
+This article distinguishes temporarily deferring execution from reclaiming storage. It then follows how an engine can reclaim an ongoing request's KV and later rebuild its computation state while preserving the token history already generated. Finally, it examines the costs of recomputation and moving KV to another storage tier.
+
+## A request can keep growing after admission
+
+Having enough room for a request's input KV when it is admitted does not mean that all the space it will need until completion has been secured. In ordinary generation, each selected token adds a new KV position when it is fed back as input. The final output length is also difficult to know exactly in advance.
+
+Reserving space for the entire maximum output length can reduce this problem, but may hold storage unnecessarily for requests that finish early. Allocating only as needed uses space more flexibly, yet can run out when a request later needs more. The engine must manage both how many requests it admits and the resources of requests making progress.
+
+If a new request C lacks space, the engine can keep C waiting. This delays admission of work that has not started. But if A and B are already running and A has no block for its next position, leaving C in the queue may not solve the immediate problem.
+
+## Removing a request from a batch versus reclaiming KV
+
+Consider a small example with a different capacity from the previous article: only four physical blocks. A and B exclusively own two each, leaving no free blocks. A needs one more block to process its next input. We will choose B for preemption here; this example does not identify the optimal request to choose.
+
+[![Leaving B out of the current batch frees no blocks if its KV is retained. Returning B's two KV blocks allows one new block to be assigned to A.](/images/inference-preemption/en/01-reclaim-kv.png)](/images/inference-preemption/en/01-reclaim-kv.png)
+
+Excluding B from this execution while retaining its GPU KV leaves the block pool as `[A, A, B, B]`. The step processes fewer tokens, but gains no storage. This may be enough when B is deferred because of the execution-token budget, but it does not provide A with new KV space.
+
+Actually returning B's two KV blocks changes the pool to `[A, A, free, free]`. Assigning one to A gives `[A, A, A, free]`. B has not finished: it remains **a request whose computation state must be recovered before it can resume**.
+
+We call this choice to reclaim an ongoing request's resources so that others can progress **preemption**. This article focuses on request management under KV pressure, with decisions usually made between model execution steps. It is not describing a mechanism for forcibly interrupting a kernel already running on the GPU.
+
+## Preserve token history and rebuild computation state
+
+Does discarding KV also erase the sentence generated so far? Not if the history of input and output token IDs is retained separately. Token history records which token occupied each position; KV is the layer-by-layer state obtained by computing that history through the model. They are different data.
+
+Separate from the storage-reclamation example, let us focus on B's token boundary. The model has processed inputs p0, p1, p2 to select x0, then fed x0 back in to select and deliver x1. Immediately before preemption, the history is `p0 p1 p2 x0 x1`, but computed KV covers only `p0 p1 p2 x0`. Since x1 is the input to the next execution, it does not have its own KV yet.
+
+[![Preemption preserves the history p0, p1, p2, x0, x1 and releases GPU KV. Resumption computes this fixed history to rebuild KV, then selects and delivers only the new output x2.](/images/inference-preemption/en/02-recompute-resume.png)](/images/inference-preemption/en/02-recompute-resume.png)
+
+With **recomputation**, the engine returns GPU KV and later computes the preserved history as input once space becomes available again. In the figure, the entire `p0 p1 p2 x0 x1` sequence is processed as known tokens. This creates KV through x1, and the logits at the final position can select a new x2. With no prefix reuse, this example recomputes the whole history; the actual recovery range can depend on retained cache and the engine's approach.
+
+x0 and x1 are not sampled again. They are used as already determined input history. They are not sent to the user again either: delivery continues with the new x2. Generating the original answer again from scratch is different from rebuilding the computation state needed to continue that answer.
+
+Alongside token history, the engine must retain generation settings, positions, progress state, and the boundary of outputs already delivered. Even if the recovery forward pass processes many positions, the restored past positions must not be counted as new outputs. The preemption discussion in the [PagedAttention paper](https://arxiv.org/html/2309.06180v1) and [vLLM's operational documentation](https://docs.vllm.ai/en/latest/configuration/optimization/#preemption) describe cases of pausing requests and rebuilding their computation state when space runs short.
+
+## The costs of recomputation and transfer
+
+Another possibility is **swapping**: move KV to storage outside the GPU and bring it back later. Because the values themselves are preserved, resumption need not recompute the entire past in the same way. It instead requires time to transfer KV out and back, along with separate storage such as CPU memory.
+
+| Method | What is preserved during the pause | Main work needed to resume |
+| --- | --- | --- |
+| Recompute | Token history and request state | Compute the required history to rebuild KV |
+| Swap | Request state and KV in another storage tier | Transfer KV back to the GPU and prepare the next computation |
+
+This is a conceptual comparison. It does not mean that every engine offers both methods or selects between them using the same criteria. Applying either method to an implementation requires checking that version's support and settings.
+
+Which method costs less also depends on the conditions. Recomputation time depends on the number of tokens to recover and model execution efficiency. Transfer time depends on the KV data size, available transfer bandwidth, and contention with other transfers. Longer contexts can increase both costs, but they need not grow at the same rate.
+
+A KV transfer must also finish safely before that GPU storage can be reused for another request. The principle that merely marking a request as excluded from the batch does not immediately free memory applies to swapping as well.
+
+## Enable progress at the cost of waiting
+
+Preemption lets some requests continue when space is insufficient. The paused requests, meanwhile, bear the costs of waiting and recovery. A request paused after its first output may experience a long gap before the next one; a pause before the first output can delay its initial response.
+
+Admitting many requests and repeatedly pausing and recomputing them can spend work on the same history while making less progress on new output. Neither the preemption count alone nor a higher concurrent-request count is enough to establish better operation. Waiting requests, throughput of actual new output, and latency distributions need to be considered together.
+
+These symptoms are reasons to revisit admission policy, batch limits, and the KV budget. We will leave complex priority and fairness policies to later topics. First, [Inference Metrics: Latency and Throughput](/en/posts/inference-metrics/) examines how waiting and recovery appear in the times observed by users.

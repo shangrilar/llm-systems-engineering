@@ -60,3 +60,18 @@
 - [PP: 모델의 층을 나누어 실행하기](https://llm-systems-engineering.pages.dev/posts/pipeline-parallelism/)
 - [EP: Expert를 나누고 토큰 보내기](https://llm-systems-engineering.pages.dev/posts/expert-parallelism/)
 - [여러 GPU를 어떻게 배치할까?](https://llm-systems-engineering.pages.dev/posts/choosing-parallelism/)
+
+#### 워크로드
+
+- [같은 모델, 다른 워크로드: 추론과 학습](https://llm-systems-engineering.pages.dev/posts/inference-and-training/)
+
+### 추론
+
+#### 워크로드
+
+- [추론과 KV 캐시](https://llm-systems-engineering.pages.dev/posts/inference-kv-cache/)
+- [Prefill과 Decode](https://llm-systems-engineering.pages.dev/posts/prefill-and-decode/)
+- [배치와 스케줄링](https://llm-systems-engineering.pages.dev/posts/batching-and-scheduling/)
+- [KV 캐시 관리와 PagedAttention](https://llm-systems-engineering.pages.dev/posts/paged-kv-cache/)
+- [KV 캐시가 부족할 때: 요청 중단과 재개](https://llm-systems-engineering.pages.dev/posts/inference-preemption/)
+- [추론 성능 지표: 대기 시간과 처리량](https://llm-systems-engineering.pages.dev/posts/inference-metrics/)

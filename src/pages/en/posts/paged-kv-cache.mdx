@@ -1,0 +1,84 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: paged-kv-cache
+title: "KV Cache Management and PagedAttention"
+description: "Manage growing and ending requests in KV blocks, mapping logical token order to physical storage for flexible allocation and reclamation."
+date: 2026-09-19
+---
+
+[Batching and Scheduling](/en/posts/batching-and-scheduling/) showed that a new request may have to wait for KV space even when the execution-token budget can accommodate it. That storage cannot simply be assigned once and left unchanged. It must grow as generation progresses and become available to other requests after completion.
+
+This article first calculates how large KV can become, then examines the difficulties of assigning a large contiguous region to each request. It then introduces block management and PagedAttention, which separate logical token order from physical storage locations on the GPU. Each request in these examples holds its own independent KV.
+
+## Memory that grows with requests
+
+GPU memory holds more than model weights. Activations and temporary workspace are needed during computation, and ongoing requests retain KV for later steps. Even when the weights remain fixed, total memory use changes with the number of requests and their context lengths.
+
+If all layers use the same form of full attention and K and V have equal head dimensions, the actual KV data size can be calculated as follows:
+
+```text
+KV bytes per token position
+= 2 × number of layers × number of KV heads × head dimension × bytes per element
+
+Total KV data size
+= KV bytes per position × sum of stored positions across requests
+```
+
+The factor 2 represents K and V. The head count is the **number of KV heads**, not query heads. This distinction directly affects capacity in architectures such as [GQA](https://arxiv.org/abs/2305.13245), where multiple query heads share K/V.
+
+Consider a hypothetical model with 32 layers, 8 KV heads, head dimension 128, and 2 bytes per element. KV for one position occupies `2 × 32 × 8 × 128 × 2 = 131,072` bytes, or 128 KiB. Storing 4,096 positions takes 512 MiB for one request; eight such requests require 4 GiB. Model weights and temporary workspace are not included.
+
+This is the size of the stored values. The actual allocation can differ because of unused space within allocation units, metadata, and partitioning across devices. The formula also cannot be applied unchanged to architectures such as sliding-window attention or MLA, which retain different state.
+
+## Reserve contiguous space in advance
+
+Reserving a contiguous region large enough for each request's maximum length makes addressing simple. If the output ends early, however, some reserved space remains unused. Generous allocations made because the final length is unknown reduce the number of requests that can be accommodated at once.
+
+Allocating only the currently needed contiguous region and expanding it later has its own difficulties. If B occupies the space immediately after A, A cannot easily expand in place. Its data may need to move to another, larger region. Total free space can also be sufficient but scattered across several locations, preventing allocation of one contiguous region. This latter problem is called external fragmentation.
+
+The extent of this waste depends on the actual allocation scheme. Not every implementation using contiguous arrays reserves the maximum length. The common question here is **whether a contiguous token order also requires one contiguous physical storage region**. The [PagedAttention paper](https://arxiv.org/html/2309.06180v1) presents a KV management design that relaxes this constraint.
+
+## Translate logical order into block addresses
+
+Suppose one block stores K/V for four token positions. If request A has KV for ten positions, it needs three logical blocks. L0 holds t0–t3, L1 holds t4–t7, and L2 holds t8–t9, leaving its final two slots empty for now. Here t0 through t9 are positions in the context, including input and generated history.
+
+The physical block pool provides storage P0 through P5. A's logical blocks can be assigned to P3, P0, and P5, in that order. The table recording this correspondence is the **block table**.
+
+[![Request A's logical blocks L0, L1, and L2 map to physical blocks P3, P0, and P5. The block table recovers token order even when physical locations are noncontiguous.](/images/paged-kv-cache/en/01-block-mapping.png)](/images/paged-kv-cache/en/01-block-mapping.png)
+
+For example, to find the K/V for t6, divide `6 ÷ 4`: the quotient gives logical block 1, and the remainder gives position 2 within the block. Looking up L1 in the table identifies P0, so the computation can access position 2 of P0. All position indices start at 0.
+
+```text
+Token position 6
+→ logical block 1, position 2 within the block
+→ look up L1 → P0 in the table
+→ position 2 of physical block P0
+```
+
+The figure omits detailed layer and head layouts to focus on the mapping principle. An implementation must read the correct K/V for each layer, and physical array layouts for K and V can differ across implementations. A box does not mean that all of the model's KV is mixed together without distinction.
+
+## Compute attention over scattered KV
+
+Allocating scattered storage does not automatically let the model read it. Attention execution must also receive the request's block table and valid context length so it can locate the required K/V. **PagedAttention computes attention by accessing noncontiguous KV blocks.**
+
+A's token order is still t0, t1, …, t9. Its values simply reside in physical blocks P3, P0, and P5. The arrows in the figure express logical-block-to-address mappings; they do not require the GPU to execute one block at a time in that sequence. The two unused slots in the final block are not part of the valid context.
+
+Changing the addresses must preserve the meaning of attention. If A's Q reads B's KV, or separately normalized block results are simply averaged, the result is a different operation from the original attention. Kernels may partition and accumulate work differently, but they must still compute the weighted combination over the full valid context.
+
+The engine's block allocation and table management must agree with the kernel's interpretation of those addresses. This article explains that connection. Tiling and memory-access optimization inside the kernel belong to the separate hardware topics.
+
+## Grow, return, and reallocate blocks
+
+When A processes a new token, it uses a free slot in its last block if one remains. If the block is full, A obtains another block from the pool and appends it to its logical table. The previous blocks do not all need to move to a larger contiguous region.
+
+After A finishes, no further computation is needed for that request, so its exclusively owned blocks can return to the pool. When C arrives, it can store its new KV in the same physical space.
+
+[![A completes and returns P0, P3, and P5. C receives P0 and P5 for its six input tokens, while B retains P1.](/images/paged-kv-cache/en/02-reuse-blocks.png)](/images/paged-kv-cache/en/02-reuse-blocks.png)
+
+In the figure, A returns P0, P3, and P5; C, with six input tokens, receives two of them: P0 and P5. B retains P1 and its table. **What is reused is the storage space.** A's contents do not become C's context. C's K/V is written into C's valid positions.
+
+Blocks do not eliminate all waste. An allocated block can have unused capacity, such as the two empty slots in the last of the three blocks holding A's ten positions. In the simple model that allocates equal-sized, exclusively owned blocks only as needed, the final block of a request can have fewer than one block's worth of unused slots. Smaller blocks reduce this slack but also change table-management and access costs, among other factors.
+
+The basic example has no prefix sharing. If several requests share a block, completing one request does not immediately allow that block to be returned. The engine must also track whether other requests still reference it. Prefix caching will extend this discussion later.
+
+PagedAttention places growing and shrinking KV flexibly, but it does not make the physical block pool infinite. If no free blocks remain and an ongoing request needs to generate a longer output, another decision is required. [When KV Capacity Runs Out: Pausing and Resuming Requests](/en/posts/inference-preemption/) examines which state must be preserved and which space can be reclaimed.
