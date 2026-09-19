@@ -848,5 +848,30 @@
         "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
       }
     }
+  },
+  {
+    "articleId": "inference-and-training",
+    "order": 35,
+    "track": "shared",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-and-training",
+        "title": "같은 모델, 다른 워크로드: 추론과 학습",
+        "description": "준비된 데이터를 처리하는 학습과 새로 도착하는 요청에 대응하는 추론을 비교하고, 토큰 생성과 가중치 갱신에서 요청 관리까지 실행 흐름을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-and-training",
+        "title": "Same Model, Different Workloads: Inference and Training",
+        "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "868a4dd49278cb71e622303c9fb98e4bcf5f1ce518fdd49f6f2041f65308a9a5",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision."
+      }
+    }
   }
 ]

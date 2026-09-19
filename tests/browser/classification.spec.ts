@@ -9,8 +9,8 @@ for (const locale of ['ko', 'en'] as const) {
     const prefix = locale === 'en' ? '/en' : '';
     await page.goto(`${prefix}/`);
     await expect(page.locator('.article-track > h3')).toHaveText([locale === 'ko' ? '공통' : 'Shared Concepts']);
-    await expect(page.locator('.article-category > h4')).toHaveText(locale === 'ko' ? ['모델', '하드웨어'] : ['Models', 'Hardware']);
-    for (const category of [null, 'model', 'hardware']) {
+    await expect(page.locator('.article-category > h4')).toHaveText(locale === 'ko' ? ['모델', '하드웨어', '워크로드'] : ['Models', 'Hardware', 'Workloads']);
+    for (const category of [null, 'model', 'hardware', 'workload']) {
       const expected = catalog.filter(p => p.category === category && p.locales[locale]?.published)
         .sort((a, b) => a.order - b.order).map(p => `${prefix}/posts/${p.locales[locale]!.slug}/`);
       const links = page.locator(`[data-category="${category ?? 'overview'}"] .post-link`);

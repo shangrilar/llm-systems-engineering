@@ -60,3 +60,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [PP: Partition and Execute Model Layers](https://llm-systems-engineering.pages.dev/en/posts/pipeline-parallelism/)
 - [EP: Partition Experts and Route Tokens](https://llm-systems-engineering.pages.dev/en/posts/expert-parallelism/)
 - [How Should We Arrange Multiple GPUs?](https://llm-systems-engineering.pages.dev/en/posts/choosing-parallelism/)
+
+#### Workloads
+
+- [Same Model, Different Workloads: Inference and Training](https://llm-systems-engineering.pages.dev/en/posts/inference-and-training/)
