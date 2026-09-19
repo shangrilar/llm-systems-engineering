@@ -819,8 +819,8 @@
         "description": "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "897c777ceaea160b04816f1f42d77e6ffa4850af1dc3fcd2f7b6f2f6cff3633d",
-        "reviewNote": "2026-09-19: Compared five Korean/English sections, four figures and 13 states per language. Same-GPU DP attention and EP expert placement, local routing, token independence, source return, Top-1 weight-one example, Top-2 weighted combination and load counts checked. SVGs reviewed separately from body revision."
+        "sourceRevision": "dae9ee6cb44745f1df399df9e51a83d606b1bd5b1bad14f5db3373f24889d3eb",
+        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks."
       }
     }
   },

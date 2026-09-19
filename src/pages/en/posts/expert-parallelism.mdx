@@ -20,6 +20,8 @@ The two GPUs hold identical copies of attention and other common-layer weights. 
 
 Expert placement is different. E0 and E1 reside on GPU 0; E2 and E3 reside on GPU 1. These are **four MLPs with different weights**, not replicas of the same weights. The **router**, which chooses experts for each token, has replicated weights on the two GPUs. Each GPU selects from all four experts for its own tokens.
 
+Each GPU stores only some expert weights, but attention and router weights remain replicated. Halving the number of experts per GPU therefore does not halve total memory usage.
+
 <SequenceContextFigures locale="en" article="ep" figure="1" />
 
 GPU 0 and GPU 1 stay in the same positions from top to bottom. After computing attention, they send tokens to the selected experts in the MoE block. Once results return, each GPU continues computing its own inputs. **The GPUs are not divided into separate DP and EP sets: weight placement and data flow change by model part on the same GPUs.**
@@ -68,10 +70,4 @@ An expert selected frequently can concentrate computation, input-buffer demand, 
 
 Three times as many tokens does not mean exactly three times the execution time. The figure shows that dividing weights into equal counts and balancing incoming work are different tasks. Expert placement must therefore be considered together with the distribution produced by routing.
 
-## Weigh partitioned weights against added communication
-
-EP reduces the need for each GPU to store every expert's weights. Here, each GPU holds two of four experts. But replicated attention, router, and other common weights remain, and space is also needed for dispatched inputs and returned outputs. Halving the number of experts per GPU does not halve total GPU memory usage.
-
-Training and inference both follow routing, dispatch, expert computation, return, and combination in the forward pass. Training adds backward gradient transfers and weight updates. The figures show forward passes; they omit training gradient synchronization for DP replicas and backward scheduling.
-
-The key idea is **that different model parts can use different parallelism strategies**. Common layers apply the same weights to different inputs, while expert layers partition weights and exchange the tokens that need them. [How Should We Arrange Multiple GPUs?](/en/posts/choosing-parallelism/) next examines how to choose and combine these strategies.
+With EP, the same GPUs can use DP for common layers and exchange the tokens needed by their experts. The next article will examine how to choose and combine parallelism strategies.

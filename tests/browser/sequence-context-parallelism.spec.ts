@@ -51,7 +51,7 @@ for (const locale of ['ko', 'en'] as const) {
         await expect(page.locator('#figure-1 select')).toHaveValue('pp-01-step-0');
       }
       if (article === 'ep') {
-        await expect(page.locator('.prose h2')).toHaveCount(5);
+        await expect(page.locator('.prose h2')).toHaveCount(4);
         await expect(page.locator('#figure-2 select')).toHaveValue('ep-02-step-0');
       }
       if (article === 'cp') await expect(page.locator('#figure-4 select')).toHaveValue('cp-04-step-0');
