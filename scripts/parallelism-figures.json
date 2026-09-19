@@ -40,26 +40,6 @@
     "height": 884
   },
   {
-    "article": "pipeline-parallelism",
-    "slug": "01-stages",
-    "locale": "ko",
-    "title": "PP: 층을 나누고 중간값 전달하기",
-    "alt": "여덟 층을 두 층씩 네 GPU에 배치하고 입력이 순서대로 모든 단계를 통과합니다.",
-    "path": "public/images/pipeline-parallelism/01-stages.svg",
-    "width": 1200,
-    "height": 778
-  },
-  {
-    "article": "pipeline-parallelism",
-    "slug": "02-schedule",
-    "locale": "ko",
-    "title": "여러 입력으로 파이프라인 채우기",
-    "alt": "4개 GPU의 대각선 일정에서 네 마이크로배치를 7슬롯 동안 처리하며 시작과 끝에 빈 슬롯이 생깁니다.",
-    "path": "public/images/pipeline-parallelism/02-schedule.svg",
-    "width": 1200,
-    "height": 891
-  },
-  {
     "article": "expert-parallelism",
     "slug": "01-dispatch",
     "locale": "ko",
@@ -158,26 +138,6 @@
     "path": "public/images/collective-ring-tree/en/04-logical-physical.svg",
     "width": 1200,
     "height": 884
-  },
-  {
-    "article": "pipeline-parallelism",
-    "slug": "01-stages",
-    "locale": "en",
-    "title": "PP: partition layers and pass activations",
-    "alt": "Eight layers are placed two per GPU; an input passes through all four stages in order.",
-    "path": "public/images/pipeline-parallelism/en/01-stages.svg",
-    "width": 1200,
-    "height": 778
-  },
-  {
-    "article": "pipeline-parallelism",
-    "slug": "02-schedule",
-    "locale": "en",
-    "title": "Fill the pipeline with multiple inputs",
-    "alt": "A diagonal four-GPU schedule completes four microbatches in seven slots, with idle slots at the start and end.",
-    "path": "public/images/pipeline-parallelism/en/02-schedule.svg",
-    "width": 1200,
-    "height": 891
   },
   {
     "article": "expert-parallelism",

@@ -1,11 +1,12 @@
 ---
 import steps from '../data/sp-cp-steps.json';
-interface Props { locale: 'ko' | 'en'; article: 'sp' | 'cp'; figure: string }
+import ppSteps from '../data/pp-steps.json';
+interface Props { locale: 'ko' | 'en'; article: 'sp' | 'cp' | 'pp'; figure: string }
 const { locale, article, figure } = Astro.props;
-const figures: Record<string, {slug: string; label: string; alt: string; height: number}[]> = steps[locale][article];
+const figures: Record<string, {slug: string; label: string; alt: string; height: number}[]> = article === 'pp' ? ppSteps[locale] : steps[locale][article];
 const frames = figures[figure];
 const interactive = frames.length > 1;
-const base = `/images/${article === 'sp' ? 'sequence-parallelism' : 'context-parallelism'}/${locale === 'en' ? 'en/' : ''}`;
+const base = `/images/${article === 'sp' ? 'sequence-parallelism' : article === 'cp' ? 'context-parallelism' : 'pipeline-parallelism'}/${locale === 'en' ? 'en/' : ''}`;
 const overview = frames[frames.length - 1].slug;
 const t = locale === 'ko' ? {
   prev: '← 이전', next: '다음 →', reset: '처음', label: `그림 ${Number(figure)} 단계 선택`,

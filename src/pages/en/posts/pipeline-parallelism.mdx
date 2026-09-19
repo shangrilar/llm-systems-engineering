@@ -2,53 +2,66 @@
 layout: ../../../layouts/Post.astro
 articleId: pipeline-parallelism
 title: "PP: Partition and Execute Model Layers"
-description: "Place layers on different GPUs and pass activations between them, then overlap microbatches and examine remaining pipeline idle time."
+description: "Place model layers across GPUs, then split the same batch into microbatches to overlap computation for different inputs."
 date: 2026-09-18
 ---
 
-So far, we have divided matrices or tokens within the same layer. Models also have an order in which each layer consumes its predecessor’s output. **Pipeline parallelism, or PP**, places these layers across GPUs.
+import SequenceContextFigures from '../../../components/SequenceContextFigures.astro';
 
-If an input must still traverse layers in order, how can several GPUs work simultaneously? We will first examine stage placement and activation transfers, then feed small batches consecutively so different stages work together. Finally, we will distinguish remaining idle time and the requirements of training and inference.
+So far, we have partitioned features or tokens within a layer. A model also has an ordering in which one layer uses the preceding layer's output. **Pipeline parallelism (PP)** places these layers across multiple GPUs. Each GPU holds part of the model, allowing a model that is difficult to fit on one GPU to be distributed across several.
 
-## Partitioning Layers and Passing Activations
+Partitioning layers does not immediately make every GPU compute at once. Later GPUs must wait for results from earlier GPUs. This article first examines layer placement and the directions of forward and backward passes. We then see what it means to split a batch into smaller groups, and compare whole-batch execution with microbatch execution to follow how GPUs work together. Finally, we examine the remaining waits and the effect of partition size.
 
-Place eight layers on four GPUs, two per GPU. GPU 0 owns layers 0 and 1, GPU 1 owns layers 2 and 3, and so on. A group of assigned layers is a **pipeline stage**. Here each stage uses one GPU.
+## Connect partitioned layers through forward and backward passes
 
-[![Eight layers are placed two per GPU; an input passes through all four stages in order.](/images/pipeline-parallelism/en/01-stages.png)](/images/pipeline-parallelism/en/01-stages.png)
+Consider a model with eight Transformer layers. GPU 0 handles layers 0 and 1, GPU 1 layers 2 and 3, GPU 2 layers 4 and 5, and GPU 3 layers 6 and 7. Each group of layers assigned to a GPU is a **pipeline stage**. Here, each stage uses one GPU. We omit the remaining input and output components to focus on the connections between these eight layers.
 
-After computing its layers, GPU 0 sends the output activations to GPU 1, which uses them as input for its next layers. Weights remain at their assigned stages; **activations move**, rather than the weights being sent forward each time. Training also introduces gradients traveling backward.
+Computation from input to output is the **forward pass**. Once GPU 0 computes the first two layers, it sends their output activations to GPU 1. GPU 1 uses those values to compute the next two layers, continuing this way through GPU 3. Rather than moving weights to the next GPU each time, **weights stay at their stages while intermediate values move**.
 
-For a single input, a stage cannot start until its predecessor produces the required result. Four GPUs therefore cannot execute that input’s four stages at once. Each GPU does store fewer layers, however, allowing the model to be distributed across their memories.
+During training, the model's output and the target are used to compute a **loss**, a value representing error. The **backward pass** retraces the computation toward earlier layers, computing gradients that describe how each value affects the loss. Use Next in the figure to compare the forward and backward directions.
 
-## Overlapping Small Input Batches
+<SequenceContextFigures locale="en" article="pp" figure="1" />
 
-A **microbatch** is a smaller part of an input batch. Feed four microbatches A, B, C, and D in order. While an earlier stage computes B, a later stage can compute A. The [GPipe paper](https://arxiv.org/abs/1811.06965) describes this approach of partitioning minibatches for pipelined execution.
+The backward pass proceeds from GPU 3 toward GPU 0. For example, GPU 1 backpropagates through its layers using gradients received from the later stage and values obtained during the forward pass. **It computes gradients for its own weights locally and sends gradients of its input activations to the preceding stage, GPU 0.** The reverse arrows show these activation-gradient transfers.
 
-[![A diagonal four-GPU schedule completes four microbatches in seven slots, with idle slots at the start and end.](/images/pipeline-parallelism/en/02-schedule.png)](/images/pipeline-parallelism/en/02-schedule.png)
+Either direction requires the results of preceding computations. In a forward pass for one input, GPU 1 cannot begin before GPU 0 has produced the activations. Multiple GPUs do not compute all layers of the same input simultaneously. Reducing this wait requires overlapping computation for different inputs.
 
-Each slot represents one stage computation; all stage times are assumed equal and communication time is omitted. In slot four, GPUs 0 through 3 compute D, C, B, and A respectively. **Different layers of different inputs overlap; dependent layers of the same input do not execute simultaneously.**
+## Split one batch into multiple microbatches
 
-All four microbatches finish after seven slots, versus sixteen if each were sent through the whole pipeline before starting the next. A alone still takes four slots. Higher throughput across inputs must be distinguished from shorter execution of one input.
+A **batch** is a group of inputs processed together. If input sequences A, B, C, and D form one batch, its batch size is four. Each input contains multiple tokens.
 
-## Waiting While Filling and Draining
+A **microbatch** is a smaller group formed by splitting that batch. Here, we place A, B, C, and D in separate microbatches of size one: **a batch of size four executed as four groups of size one**. There are still four inputs, and each input's token sequence remains intact.
 
-Slots are idle before the first input reaches later stages and after the last input leaves earlier stages. Such idle regions are called **pipeline bubbles**.
+<SequenceContextFigures locale="en" article="pp" figure="2" />
 
-In the equal-duration forward schedule above, p stages and m microbatches require `m + p − 1` slots to finish. There are `p(m+p−1)` total GPU time slots and `pm` compute slots:
+This does not mean assigning A to GPU 0 and B to GPU 1 and stopping there. Each GPU holds only some model layers, so **A, B, C, and D must all pass through GPU 0 to GPU 3**. What changes is the size of the group passing through each stage. Size one is only an example; a batch of size eight could instead be split into four microbatches of size two.
 
-```text
-Fraction of slots used for computation = m / (m + p − 1)
-p = 4, m = 4 → 4 / 7 ≈ 57%
-```
+For training, distinguish splitting execution into smaller groups from changing how often weights are updated. This article assumes a configuration that uses the same weights throughout the four microbatches' forward and backward passes, accumulates gradients for the whole batch, then **updates the weights once**. This is the approach described in the [GPipe paper](https://arxiv.org/abs/1811.06965). It does not turn the batch into four training steps that update weights after each input.
 
-This is a ratio derived from the illustrated schedule, not measured GPU compute utilization. Increasing m reduces the relative fill/drain cost, but splitting a fixed input batch too finely can shrink matrix operations and increase communication frequency and management overhead.
+## Overlap computation for different inputs
 
-Unequal stage times introduce more waiting around the slowest stage. Equal layer counts do not ensure equal durations. Embedding/output-layer sizes, attention input length, and activation volume at stage boundaries also matter.
+When the batch is passed as a whole, GPU 1 waits until GPU 0 has computed all four inputs. With microbatches, GPU 0 can send A's result to GPU 1 as soon as A is ready. While GPU 1 computes A, GPU 0 computes B. **Each input retains its computation order, while computations for different inputs overlap.**
 
-## Scheduling Training and Inference
+Compare these executions using the same four GPUs and the same four inputs. To make the difference clear, assume that each stage takes one time slot to compute one input and four slots to compute the whole batch of four. All stages take the same time, and communication time is omitted. The next figure compares **forward passes only** under these assumptions; it does not show total training time including backpropagation.
 
-Training runs a backward pass after the forward pass. Backpropagation starts from the loss and computes gradients for earlier operations, connecting stages in reverse too. How forward and backward passes of multiple microbatches are scheduled affects both waiting and retained activations. Our figure shows only the forward pass, not a complete training schedule.
+<SequenceContextFigures locale="en" article="pp" figure="3" />
 
-Inference can overlap independent requests across stages. A single token-by-token generation request still needs the previous token’s result before its next input is determined. PP cannot remove that dependency. Too few requests make it difficult to fill the pipeline.
+At the top, GPU 0 computes the entire batch for four slots. GPU 1 then receives the result and computes for another four slots, followed by GPU 2 and GPU 3. All four inputs finish passing through the last GPU after 16 slots. Each GPU's block represents processing all four inputs together.
 
-TP can also be used inside each PP stage. This introduces both inter-stage transfers and within-layer collectives, requiring evaluation against GPU connectivity, memory, and input conditions. [EP: Partition Experts and Route Tokens](/en/posts/expert-parallelism/) next examines destinations that vary by token rather than following only a fixed layer sequence.
+At the bottom, GPU 0 passes A to GPU 1 after one slot. During the next slot, GPU 0 computes B while GPU 1 computes A. As later stages fill, the interval from time 3 to 4 has GPU 0 computing D, GPU 1 computing C, GPU 2 computing B, and GPU 3 computing A simultaneously. A finishes after four slots, and all inputs, including D, finish after seven.
+
+In this example, **finishing the same four inputs in seven slots instead of 16 increases throughput**. Throughput is the amount of work completed per unit time. No input skips required layers, and no computation is removed. Each GPU performs four slots of computation in either case; what changes is the time spent waiting for other GPUs.
+
+In practice, computing a batch of size four does not necessarily take exactly four times as long as computing a batch of size one. Larger-batch matrix operations may be more efficient, and transferring microbatches also costs communication time. The 16-versus-seven comparison therefore illustrates **how sending smaller groups onward lets the next GPU start sooner**, rather than guaranteeing an actual speedup.
+
+## Balance remaining waits against microbatch size
+
+The microbatch diagram still contains gaps. Initially, later GPUs wait for A to reach them. At the end, earlier GPUs become idle after D leaves them, while D continues through later stages. These empty periods while filling and draining the pipeline are called **bubbles**. At the bottom of the figure, the interval after slot seven is already past the end of this batch's forward pass.
+
+Sending more microbatches through the pipeline can reduce the fraction spent waiting at the start and end. But splitting a fixed batch too finely makes individual matrix operations smaller, potentially reducing GPU efficiency while increasing the number of transfers and the cost of managing execution. More microbatches do not always mean faster execution.
+
+Unequal stage times introduce additional waiting around a slow stage. Assigning two layers per GPU does not guarantee equal execution times. In practice, each stage's computation, memory usage, and data transferred across its boundaries must be considered together.
+
+Inference can also overlap different inputs across stages. However, when a request generates tokens one at a time, the previous token's result is needed to determine the next input, so that dependency remains. Having enough inputs to make progress together also affects how well the pipeline can be filled.
+
+PP distributes model layers across GPUs and uses microbatches to overlap computation for different inputs. The next article, [EP: Partition Experts and Route Tokens](/en/posts/expert-parallelism/), examines a case where the computation destination varies by token, rather than following a fixed layer sequence.

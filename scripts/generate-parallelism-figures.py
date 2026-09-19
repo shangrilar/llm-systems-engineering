@@ -214,23 +214,6 @@ for LANG in ['ko','en']:
     b+=text(48,828,('Ring의 이웃이라고 전용 케이블로 직접 연결된 것은 아닙니다.','Logical neighbors need not have a dedicated direct cable.'),25,bold=True)
     save(a,'04-logical-physical',('전달 순서와 실제 연결을 구별하기','Separate transfer order from physical links'),('위는 알고리즘의 관계, 아래는 가능한 물리 연결의 한 예입니다.','Top: algorithmic relationship. Bottom: one possible physical topology.'),b,884,('논리적으로 Ring 순서로 전달해도 네 GPU가 공유 스위치를 거칠 수 있습니다.','A logical ring can run over a physical shared-switch topology.'))
 
-    a='pipeline-parallelism'
-    b=text(48,212,('모델의 층을 연속된 네 구간으로 배치','Place consecutive model layers on four stages'),26,bold=True)
-    for i,x in enumerate([48,328,608,888]):
-        b+=box(x,275,232,253,f'GPU {i}',(f'층 {2*i} · {2*i+1}\n이 구간의 가중치\n이 구간의 계산',f'Layers {2*i} · {2*i+1}\nStage weights\nStage computation'),i)
-        if i<3:b+=arrow(x+237,396,x+275,396)
-    b+=banner(623,('입력 → GPU 0 → GPU 1 → GPU 2 → GPU 3 → 출력','Input → GPU 0 → GPU 1 → GPU 2 → GPU 3 → Output'),('단계 사이에는 이전 층의 출력인 중간값을 전달합니다.','Each stage sends the activations produced by its final layer.'))
-    save(a,'01-stages',('PP: 층을 나누고 중간값 전달하기','PP: partition layers and pass activations'),('한 입력의 계산은 앞 단계의 결과를 받은 뒤 다음 단계로 진행합니다.','For one input, a stage depends on the preceding stage’s result.'),b,778,('여덟 층을 두 층씩 네 GPU에 배치하고 입력이 순서대로 모든 단계를 통과합니다.','Eight layers are placed two per GPU; an input passes through all four stages in order.'))
-    b=text(48,208,('한 칸 = 한 단계 계산 / A·B·C·D = 서로 다른 마이크로배치','One slot = one stage computation / A–D = different microbatches'),22,bold=True)
-    for j in range(7): b+=text(285+j*126,269,str(j+1),24,anchor='middle')
-    for i in range(4):
-        b+=text(48,332+i*98,f'GPU {i}',26,COLORS[i],True)
-        for j in range(7):
-            active=0<=j-i<4
-            b+=rect(228+j*126,294+i*98,112,76,FILLS[(j-i)%4] if active else '#F1F4F7')+text(284+j*126,343+i*98,chr(65+j-i) if active else '—',28,anchor='middle')
-    b+=banner(747,('같은 시각에 다른 입력의 다른 층을 계산','Different stages process different inputs at the same time'),('네 마이크로배치는 7칸에 완료됩니다. A 하나는 4칸이 필요합니다.','Four microbatches finish in 7 slots. A alone still needs 4 slots.'))
-    save(a,'02-schedule',('여러 입력으로 파이프라인 채우기','Fill the pipeline with multiple inputs'),('동일한 단계 시간, 순전파만 표시, 통신 시간은 생략한 일정입니다.','Equal stage times; forward pass only; communication time omitted.'),b,891,('4개 GPU의 대각선 일정에서 네 마이크로배치를 7슬롯 동안 처리하며 시작과 끝에 빈 슬롯이 생깁니다.','A diagonal four-GPU schedule completes four microbatches in seven slots, with idle slots at the start and end.'))
-
     a='expert-parallelism'
     b=table(199,[('순서','Order'),'GPU 0 · E0, E1','GPU 1 · E2, E3'],[
       [('토큰의 출발','Token origin'),'t0 → E0; t1 → E2','t2 → E1; t3 → E2'],[('Expert로 전달','Dispatch to experts'),'E0: t0\nE1: t2','E2: t1, t3\nE3: —'],[('Expert 계산','Expert computation'),'E0(t0), E1(t2)','E2(t1), E2(t3)'],[('출발지로 결과 회수','Return to origin'),'y(t0), y(t1)','y(t2), y(t3)']], [272,416,416],128)
@@ -269,7 +252,7 @@ for LANG in ['ko','en']:
     b+=table(665,[('측정 조건','Measurement conditions'),('함께 기록할 항목','Record together')],[[('같은 모델·정밀도·입력/출력 길이·요청 도착 패턴','Same model, precision, lengths, and arrival pattern'),('메모리 최고 사용량·응답 시간 분포·처리량·통신과 대기','Peak memory, latency distribution, throughput, communication and waiting')]], [552,552],152)
     save(a,'03-goals',('응답 시간과 처리량을 함께 판단하기','Evaluate latency and throughput together'),('모든 경우에 가장 좋은 병렬화 하나가 정해져 있지는 않습니다.','There is no single best parallelization for every workload.'),b,919,('요청의 대기와 실행 시간을 구별하고 메모리, 응답 시간 분포, 처리량을 같은 조건에서 측정합니다.','Distinguish queueing from execution and compare memory, latency distributions, and throughput under matching conditions.'))
 
-assert len(MANIFEST)==24
+assert len(MANIFEST)==20
 (ROOT/'scripts/parallelism-figures.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(MANIFEST)} SVGs; numerical example checks passed.')
 
