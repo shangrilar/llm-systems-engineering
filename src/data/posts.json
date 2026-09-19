@@ -794,8 +794,8 @@
         "description": "Place model layers across GPUs, then split the same batch into microbatches to overlap computation for different inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "bdf424083a712272f580d55dba0d659599460f4f8334478cb28a35e52cca6438",
-        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision."
+        "sourceRevision": "a1b5fa6b4cd2bd6af09426061632f01044cc92c4c93098979b89f36ea6c25958",
+        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages."
       }
     }
   },

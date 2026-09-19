@@ -74,4 +74,4 @@ Unequal stage times introduce additional waiting around a slow stage. Assigning 
 
 Inference can also overlap different inputs across stages. However, when a request generates tokens one at a time, the previous token's result is needed to determine the next input, so that dependency remains. Having enough inputs to make progress together also affects how well the pipeline can be filled.
 
-PP distributes model layers across GPUs and uses microbatches to overlap computation for different inputs. The next article, [EP: Partition Experts and Route Tokens](/en/posts/expert-parallelism/), examines a case where the computation destination varies by token, rather than following a fixed layer sequence.
+PP distributes model layers across GPUs and uses microbatches to overlap computation for different inputs.
