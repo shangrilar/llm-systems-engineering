@@ -1,0 +1,73 @@
+---
+import steps from '../data/ring-tree-steps.json';
+interface Props { locale: 'ko' | 'en'; figure: '01' | '02' | '03' }
+const { locale, figure } = Astro.props;
+const frames = steps[locale][figure];
+const base = `/images/collective-ring-tree/${locale === 'en' ? 'en/' : ''}`;
+const overview = { '01': '01-ring-reduce-scatter', '02': '02-ring-all-gather', '03': '03-tree' }[figure];
+const t = locale === 'ko' ? {
+  prev: '← 이전', next: '다음 →', reset: '처음', label: `그림 ${Number(figure)} 단계 선택`,
+  expand: '현재 단계 그림 확대', overview: '전체 단계 한눈에 보기',
+  help: '다음을 눌러 전달 과정을 따라가세요. 그림을 누르면 확대할 수 있습니다.',
+  noScript: '단계 버튼은 JavaScript가 필요합니다. 전체 단계 그림에서 과정을 볼 수 있습니다.',
+} : {
+  prev: '← Previous', next: 'Next →', reset: 'Reset', label: `Figure ${Number(figure)} step`,
+  expand: 'Enlarge the current step', overview: 'View all steps together',
+  help: 'Use Next to follow the transfers. Click the figure to enlarge it.',
+  noScript: 'Step controls require JavaScript. The overview shows the full sequence.',
+};
+---
+<div class="communication-steps" id={`figure-${Number(figure)}`} data-communication-steps data-base={base}>
+  <div class="toolbar">
+    <button data-prev type="button" disabled>{t.prev}</button>
+    <select data-steps aria-label={t.label} disabled>
+      {frames.map(frame => <option value={frame.slug} data-alt={frame.alt}>{frame.label}</option>)}
+    </select>
+    <button data-next type="button" disabled>{t.next}</button>
+    <button data-reset type="button" disabled>{t.reset}</button>
+  </div>
+  <a data-stage-link href={`${base}${frames[0].slug}.svg`} target="_blank" aria-label={t.expand}>
+    <img data-stage src={`${base}${frames[0].slug}.svg`} alt={frames[0].alt} width="1200" height="830" loading="lazy" />
+  </a>
+  <p class="step-info"><span data-status role="status" aria-live="polite">{frames[0].label}</span><a href={`${base}${overview}.png`}>{t.overview}</a></p>
+  <p class="help">{t.help}</p>
+  <noscript><p>{t.noScript}</p></noscript>
+</div>
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+  button, select { font: inherit; padding: 10px 13px; border: 1px solid #bdccd9; border-radius: 8px; background: white; color: #182c40; min-height: 44px; }
+  button:disabled { opacity: .4; }
+  select { flex: 1; min-width: 160px; max-width: 100%; }
+  [data-stage-link] { display: block; }
+  img { width: 100%; height: auto; }
+  .step-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; }
+  .help { font-size: 14px; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #2470bb; outline-offset: 3px; }
+</style>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-communication-steps]').forEach(root => {
+    const select = root.querySelector<HTMLSelectElement>('[data-steps]')!;
+    const prev = root.querySelector<HTMLButtonElement>('[data-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
+    const reset = root.querySelector<HTMLButtonElement>('[data-reset]')!;
+    const image = root.querySelector<HTMLImageElement>('[data-stage]')!;
+    function show(n: number) {
+      select.selectedIndex = Math.max(0, Math.min(select.options.length - 1, n));
+      const option = select.selectedOptions[0];
+      const src = root.dataset.base + option.value + '.svg';
+      image.src = src;
+      image.alt = option.dataset.alt!;
+      root.querySelector<HTMLAnchorElement>('[data-stage-link]')!.href = src;
+      root.querySelector('[data-status]')!.textContent = option.textContent;
+      prev.disabled = select.selectedIndex === 0;
+      next.disabled = select.selectedIndex === select.options.length - 1;
+    }
+    select.disabled = false;
+    reset.disabled = false;
+    show(0);
+    prev.addEventListener('click', () => show(select.selectedIndex - 1));
+    next.addEventListener('click', () => show(select.selectedIndex + 1));
+    select.addEventListener('change', () => show(select.selectedIndex));
+    reset.addEventListener('click', () => show(0));
+  });
+</script>

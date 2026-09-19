@@ -50,3 +50,6 @@
 - [GPU 사이에서 데이터를 전달하기](https://llm-systems-engineering.pages.dev/posts/gpu-communication-basics/)
 - [GPU 통신을 수행하는 SM과 복사 엔진](https://llm-systems-engineering.pages.dev/posts/gpu-communication-engines/)
 - [서버 사이의 GPU 통신과 CPU의 역할](https://llm-systems-engineering.pages.dev/posts/gpu-network-data-path/)
+- [집합 통신의 기본 동작](https://llm-systems-engineering.pages.dev/posts/collective-communication-basics/)
+- [집합 통신의 조합과 확장](https://llm-systems-engineering.pages.dev/posts/collective-communication-combinations/)
+- [집합 통신은 어떻게 전달될까: Ring과 Tree](https://llm-systems-engineering.pages.dev/posts/collective-ring-tree/)

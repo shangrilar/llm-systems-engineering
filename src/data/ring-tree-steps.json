@@ -1,0 +1,148 @@
+{
+  "ko": {
+    "01": [
+      {
+        "slug": "01-step-0",
+        "label": "시작 상태",
+        "alt": "Ring: 조각을 전달하며 합산하기 — 시작 상태. 색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다."
+      },
+      {
+        "slug": "01-step-1",
+        "label": "전달 1단계",
+        "alt": "Ring: 조각을 전달하며 합산하기 — 전달 1단계. 전체 벡터에서 합산되는 위치를 강조합니다. 화살표는 보내는 조각입니다."
+      },
+      {
+        "slug": "01-step-2",
+        "label": "전달 2단계",
+        "alt": "Ring: 조각을 전달하며 합산하기 — 전달 2단계. 전체 벡터에서 합산되는 위치를 강조합니다. 화살표는 보내는 조각입니다."
+      },
+      {
+        "slug": "01-step-3",
+        "label": "전달 3단계",
+        "alt": "Ring: 조각을 전달하며 합산하기 — 전달 3단계. 전체 벡터에서 합산되는 위치를 강조합니다. 화살표는 보내는 조각입니다."
+      }
+    ],
+    "02": [
+      {
+        "slug": "02-step-0",
+        "label": "시작 상태",
+        "alt": "Ring: 완성된 조각을 모두에게 — 시작 상태. 색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다."
+      },
+      {
+        "slug": "02-step-1",
+        "label": "전달 1단계",
+        "alt": "Ring: 완성된 조각을 모두에게 — 전달 1단계. 받은 결과로 빈 위치를 채웁니다. 화살표는 보내는 조각입니다."
+      },
+      {
+        "slug": "02-step-2",
+        "label": "전달 2단계",
+        "alt": "Ring: 완성된 조각을 모두에게 — 전달 2단계. 받은 결과로 빈 위치를 채웁니다. 화살표는 보내는 조각입니다."
+      },
+      {
+        "slug": "02-step-3",
+        "label": "전달 3단계",
+        "alt": "Ring: 완성된 조각을 모두에게 — 전달 3단계. 받은 결과로 빈 위치를 채웁니다. 화살표는 보내는 조각입니다."
+      }
+    ],
+    "03": [
+      {
+        "slug": "03-step-0",
+        "label": "시작 상태",
+        "alt": "Tree: 모아서 더하고 다시 펼치기 — 시작 상태. 색과 위치는 GPU를 구별합니다. 다음 단계에서도 같은 위치를 유지합니다."
+      },
+      {
+        "slug": "03-step-1",
+        "label": "1단계 · 아래에서 두 곳으로 합산",
+        "alt": "Tree: 모아서 더하고 다시 펼치기 — 1단계 · 아래에서 두 곳으로 합산. 화살표: 배열 전체 전달 · 상자: 전달 후의 값"
+      },
+      {
+        "slug": "03-step-2",
+        "label": "2단계 · GPU 0에 전체 합 완성",
+        "alt": "Tree: 모아서 더하고 다시 펼치기 — 2단계 · GPU 0에 전체 합 완성. 화살표: 배열 전체 전달 · 상자: 전달 후의 값"
+      },
+      {
+        "slug": "03-step-3",
+        "label": "3단계 · GPU 0에서 GPU 2로 배포",
+        "alt": "Tree: 모아서 더하고 다시 펼치기 — 3단계 · GPU 0에서 GPU 2로 배포. 화살표: 배열 전체 전달 · 상자: 전달 후의 값"
+      },
+      {
+        "slug": "03-step-4",
+        "label": "4단계 · GPU 1과 GPU 3에도 배포",
+        "alt": "Tree: 모아서 더하고 다시 펼치기 — 4단계 · GPU 1과 GPU 3에도 배포. 화살표: 배열 전체 전달 · 상자: 전달 후의 값"
+      }
+    ]
+  },
+  "en": {
+    "01": [
+      {
+        "slug": "01-step-0",
+        "label": "Starting state",
+        "alt": "Ring: pass chunks and accumulate — Starting state. Colors and positions identify GPUs and remain fixed across steps."
+      },
+      {
+        "slug": "01-step-1",
+        "label": "Transfer step 1",
+        "alt": "Ring: pass chunks and accumulate — Transfer step 1. The updated position is highlighted in each full vector. Arrows show sent chunks."
+      },
+      {
+        "slug": "01-step-2",
+        "label": "Transfer step 2",
+        "alt": "Ring: pass chunks and accumulate — Transfer step 2. The updated position is highlighted in each full vector. Arrows show sent chunks."
+      },
+      {
+        "slug": "01-step-3",
+        "label": "Transfer step 3",
+        "alt": "Ring: pass chunks and accumulate — Transfer step 3. The updated position is highlighted in each full vector. Arrows show sent chunks."
+      }
+    ],
+    "02": [
+      {
+        "slug": "02-step-0",
+        "label": "Starting state",
+        "alt": "Ring: distribute the completed chunks — Starting state. Colors and positions identify GPUs and remain fixed across steps."
+      },
+      {
+        "slug": "02-step-1",
+        "label": "Transfer step 1",
+        "alt": "Ring: distribute the completed chunks — Transfer step 1. Fill missing positions with received results. Arrows show sent chunks."
+      },
+      {
+        "slug": "02-step-2",
+        "label": "Transfer step 2",
+        "alt": "Ring: distribute the completed chunks — Transfer step 2. Fill missing positions with received results. Arrows show sent chunks."
+      },
+      {
+        "slug": "02-step-3",
+        "label": "Transfer step 3",
+        "alt": "Ring: distribute the completed chunks — Transfer step 3. Fill missing positions with received results. Arrows show sent chunks."
+      }
+    ],
+    "03": [
+      {
+        "slug": "03-step-0",
+        "label": "Starting state",
+        "alt": "Tree: reduce, then broadcast — Starting state. Colors and positions identify GPUs and remain fixed across steps."
+      },
+      {
+        "slug": "03-step-1",
+        "label": "Step 1 · reduce in two places",
+        "alt": "Tree: reduce, then broadcast — Step 1 · reduce in two places. Arrows: whole-array transfers · Boxes: values after transfer"
+      },
+      {
+        "slug": "03-step-2",
+        "label": "Step 2 · complete the sum on GPU 0",
+        "alt": "Tree: reduce, then broadcast — Step 2 · complete the sum on GPU 0. Arrows: whole-array transfers · Boxes: values after transfer"
+      },
+      {
+        "slug": "03-step-3",
+        "label": "Step 3 · broadcast from GPU 0 to GPU 2",
+        "alt": "Tree: reduce, then broadcast — Step 3 · broadcast from GPU 0 to GPU 2. Arrows: whole-array transfers · Boxes: values after transfer"
+      },
+      {
+        "slug": "03-step-4",
+        "label": "Step 4 · broadcast to GPUs 1 and 3",
+        "alt": "Tree: reduce, then broadcast — Step 4 · broadcast to GPUs 1 and 3. Arrows: whole-array transfers · Boxes: values after transfer"
+      }
+    ]
+  }
+}

@@ -1,0 +1,106 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: collective-communication-combinations
+title: "Collective Communication: Combinations and Extensions"
+description: "Understand All-Gather, All-Reduce, Reduce-Scatter, and All-to-All through the data and output placement needed by the next computation."
+date: 2026-09-18
+---
+
+[The Basic Operations of Collective Communication](/en/posts/collective-communication-basics/) covered Broadcast for copying the same data, Scatter for distributing chunks, Gather for collecting chunks, and Reduce for combining corresponding values. We will now use these operations to consider **what form of result the GPUs continuing the computation need**.
+
+A result collected at one GPU may be needed on every GPU for the next computation. Conversely, combining values may require everyone’s inputs, while each GPU needs only part of the result. Each GPU may also need to send its chunks to different destinations.
+
+This article first explores All-Gather and All-Reduce, which give everyone the collected or reduced result. It then extends to Reduce-Scatter, which partitions the reduced result, and All-to-All, which exchanges chunks by destination. Rather than memorize each new name, we will follow **what happens to the inputs and where the outputs are placed**.
+
+As before, the figures use a communication group of four GPUs, with GPU numbers matching ranks. Input and output buffers are separate. Colors follow the data’s source, and values wrapped across multiple rows still form one continuous array.
+
+## All-Gather: Sharing the Collected Result
+
+Gather placed the concatenation of each GPU’s array at one root. **All-Gather gives every participant that complete concatenated array.**
+
+Suppose GPUs 0–3 hold `[1, 2]`, `[10, 20]`, `[100, 200]`, and `[1000, 2000]` respectively. After All-Gather, all four GPUs hold `[1, 2, 10, 20, 100, 200, 1000, 2000]`.
+
+[![All-Gather concatenates the four two-element input chunks in rank order, producing the same eight-element output on every GPU.](/images/collective-communication-combinations/en/combinations-01-all-gather.png)](/images/collective-communication-combinations/en/combinations-01-all-gather.png)
+
+The concatenation rule is the same as Gather’s. Rank 0’s chunk is followed by those of ranks 1, 2, and 3. The order is the same wherever we read the result, and each GPU’s own input is included.
+
+To understand All-Gather, imagine **gathering everything in one place, then broadcasting it to everyone**. This produces the same data result. But this relationship explains the result, not the implementation. The library need not actually execute two phases that collect everything at one GPU and redistribute it. All-Gather does not require a root that alone receives the result. [NCCL collective operations](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html)
+
+Reading “All” as “everyone now participates” can be confusing. Gather already involves the group’s participants. What changes with All-Gather is that **everyone holds the collected result**.
+
+Each GPU’s input has two elements, but its output has eight. This is useful if the next computation requires all the other GPUs’ chunks too. Each GPU consequently needs space for the full result.
+
+## All-Reduce: Sharing the Reduced Result
+
+A GPU does not always need every other GPU’s raw input. Sometimes it can proceed with values combined at corresponding positions. **All-Reduce gives every participant the position-wise reduced result.**
+
+Keep the same inputs and apply addition. The first elements sum to 1111, and the second elements to 2222. All-Reduce places the same `[1111, 2222]` on every GPU.
+
+[![All-Reduce sums corresponding elements of the four inputs; every GPU receives [1111,2222].](/images/collective-communication-combinations/en/combinations-02-all-reduce.png)](/images/collective-communication-combinations/en/combinations-02-all-reduce.png)
+
+All-Gather and All-Reduce both put results on every GPU, but **they form those results differently**. All-Gather concatenates elements, giving eight output elements in this example. All-Reduce combines corresponding positions, giving two. Each GPU holds a sum to which everyone contributed, rather than the individual inputs from other GPUs.
+
+We can understand this as reducing to a root and then broadcasting the result. Again, this describes an equivalent mathematical result, rather than specifying the execution method.
+
+“All” in All-Reduce likewise means that everyone holds the reduced result. It does not mean adding every element into one number. Values are combined at each array position, and that whole result array is shared. As with Reduce, operations other than addition are possible.
+
+## Reduce-Scatter: Partitioning the Reduced Result
+
+With All-Reduce, every GPU holds the entire reduced result. If the GPUs divide the next computation, however, each may need only the sum for its own portion. **Reduce-Scatter combines corresponding positions and distributes chunks of that result among the participants.**
+
+To show four GPUs receiving one element each, we now give each GPU four input elements.
+
+```text
+GPU 0: [   1,    2,    3,    4]
+GPU 1: [  10,   20,   30,   40]
+GPU 2: [ 100,  200,  300,  400]
+GPU 3: [1000, 2000, 3000, 4000]
+```
+
+The full position-wise sum is `[1111, 2222, 3333, 4444]`. Partitioned in rank order, GPU 0 receives `[1111]`, GPU 1 `[2222]`, GPU 2 `[3333]`, and GPU 3 `[4444]`.
+
+[![Four four-element arrays are summed by position. GPUs 0–3 receive 1111,2222,3333,4444 respectively. The central full sum describes the result, not a required intermediate buffer.](/images/collective-communication-combinations/en/combinations-03-reduce-scatter.png)](/images/collective-communication-combinations/en/combinations-03-reduce-scatter.png)
+
+Each GPU receives one element, but **every GPU’s input contributes to that element**. For example, GPU 2’s result, 3333, is not computed solely from its own input value 300. It sums the third elements from all four GPUs: 3, 30, 300, and 3000.
+
+Comparison with Scatter also reveals the difference. Scatter distributes an array already present at the root. Reduce-Scatter first conceptually combines the inputs from multiple GPUs position by position, then partitions the reduced result. Reading the name as Reduce plus Scatter helps explain this relationship.
+
+The full sum in the center of the figure describes the result. It does not require completing the full sum at a particular GPU before distributing it. Implementations can organize communication and computation around the GPUs receiving each result chunk, for example.
+
+What happens if we apply All-Gather to these outputs? Collecting `[1111]`, `[2222]`, `[3333]`, and `[4444]` in the same rank order gives every GPU `[1111, 2222, 3333, 4444]`. This is **the same mathematical result as All-Reduce on the same inputs**.
+
+```text
+Reduce-Scatter → All-Gather
+Partition the reduced result → Collect the chunks so everyone has the result
+```
+
+This relationship explains why the operations are often used together. If the whole result is needed, we can collect it again; if each GPU can continue with its own chunk, we can keep it partitioned. Whether to replicate the whole result or retain chunks depends on the next computation’s data requirements.
+
+## All-to-All: Exchanging Chunks by Destination
+
+So far, we have shared a complete result or partitioned one reduced result. Now consider **each GPU holding a different chunk for every destination GPU**. All-to-All exchanges those chunks according to their destinations.
+
+Each box in the figure represents one data chunk. The label `0 → 2` does not ask us to compute with the numbers 0 and 2. It marks **a chunk prepared by GPU 0 for GPU 2**. Here, all chunks have equal size.
+
+[![Each GPU sends one chunk for each destination and receives its own destination chunks from all source GPUs in rank order. Labels indicate source to destination; colors follow the source.](/images/collective-communication-combinations/en/combinations-04-all-to-all.png)](/images/collective-communication-combinations/en/combinations-04-all-to-all.png)
+
+On the input side, GPU 0 holds `0 → 0`, `0 → 1`, `0 → 2`, and `0 → 3`. Every other GPU also holds one chunk for each destination, 0 through 3.
+
+Follow GPU 2 on the output side. It holds `0 → 2`, `1 → 2`, `2 → 2`, and `3 → 2`: the chunks prepared for it by GPUs 0, 1, 2, and 3. They appear in source-rank order, including GPU 2’s own assigned chunk. A GPU’s own chunk need not cross a link to another GPU.
+
+Comparison with All-Gather makes the difference clear. All-Gather replicates each GPU’s entire input to everyone, so all GPUs hold the same complete array. All-to-All sends each input chunk to its designated destination, so **different GPUs receive different contents**. Each GPU exchanges with all peers but does not receive every input in full.
+
+In this figure, every GPU has four input chunks and four output chunks. Initially, chunks are grouped as “one GPU’s chunks for different destinations”; afterward, they are grouped as “different GPUs’ chunks for one destination.” Values within the chunks are not added.
+
+This exchange can also be constructed from a Send for each destination and a Recv for each source. Expressing it as a collective makes the group’s exchange rule explicit. [NCCL examples combining Send and Recv](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/p2p.html)
+
+Choose among the four operations by the result the next computation needs.
+
+| Data needed by the next computation | Collective |
+| --- | --- |
+| The complete array formed by concatenating each GPU’s chunk | All-Gather |
+| The entire position-wise reduced result | All-Reduce |
+| Each GPU’s assigned chunk of the position-wise reduced result | Reduce-Scatter |
+| The chunks each GPU prepared for my destination | All-to-All |
+
+So far, we have examined the relationship between inputs and outputs. Even for the same result, there are different choices for whom to send data to first, in which order to forward it, and where to combine it. [Ring and Tree](/en/posts/collective-ring-tree/) explain **how a collective’s result is produced through actual transfers**.
