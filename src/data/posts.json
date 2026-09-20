@@ -910,17 +910,17 @@
       "ko": {
         "slug": "prefill-and-decode",
         "title": "Prefill과 Decode",
-        "description": "이번에 처리하는 토큰 수와 참조하는 문맥 길이를 구별하고, 가중치 재사용과 KV 읽기가 계산량·데이터 이동·병목을 바꾸는 이유를 설명합니다.",
+        "description": "입력을 함께 처리하는 Prefill과 새 토큰을 하나씩 처리하는 Decode를 비교하고, 처리 토큰 수와 가중치 재사용이 GPU의 병목을 바꾸는 이유를 설명합니다.",
         "published": true
       },
       "en": {
         "slug": "prefill-and-decode",
         "title": "Prefill and Decode",
-        "description": "Distinguish newly processed tokens from the context they attend to, and examine how weight reuse and KV reads shape computation, memory traffic, and bottlenecks.",
+        "description": "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "be74383649c108b61fc78e7d5f66c30dfb1148d8aa6749a212cc217d4e7bbdac",
-        "reviewNote": "2026-09-19: Korean and English prose, section order, claims, assumptions, numeric examples, links, and all bilingual figures compared during authoring review. User final review pending."
+        "sourceRevision": "85bba6124e7ed26f8a73441ef8e9b1ba18ccfa44f542066d4034c11f4ce5bd98",
+        "reviewNote": "2026-09-20: Revised Korean and English prose compared paragraph by paragraph, including five sections, five localized figures, numbered captions, alt text, examples, formulas, emphasis and links. Token/KV boundaries, linear-operation Roofline scope and the short KV-read limitation agree. Static PNG/SVG figures reviewed separately; user final review pending."
       }
     }
   },

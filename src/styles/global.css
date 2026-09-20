@@ -3,6 +3,9 @@
 
 /* Article images fit the reading column while keeping their aspect ratio. */
 .prose img{display:block;max-width:100%;height:auto;margin:28px auto}
+.prose .article-figure{margin:28px 0}
+.prose .article-figure img{margin:0 auto}
+.prose .article-figure figcaption{margin-top:10px;font-size:14px;line-height:1.6;color:#526058;word-break:keep-all}
 .prose pre{border:1px solid var(--line);border-radius:8px;line-height:1.7}
 .prose pre code{display:block;background:transparent;padding:0;white-space:pre-wrap;overflow-wrap:anywhere}
 

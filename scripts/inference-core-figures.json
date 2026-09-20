@@ -78,36 +78,58 @@
   },
   {
     "article": "prefill-and-decode",
-    "slug": "01-token-positions",
+    "slug": "01-prefill-decode-flow",
     "locale": "ko",
-    "title": "이번 계산 위치와 참조할 문맥",
-    "alt": "Prefill은 네 입력 위치의 projection과 MLP를 계산하고 삼각형 causal attention을 적용합니다. Decode는 요청마다 한 입력 위치만 계산하지만 각 Q는 자기 요청의 길이 L인 K/V를 참조합니다.",
-    "caption": "Decode에서 새로 계산하는 위치 수는 요청당 하나입니다. 과거 위치의 토큰별 연산을 다시 하지 않아도, attention은 누적 문맥의 K/V를 읽습니다.",
-    "path": "public/images/prefill-and-decode/01-token-positions.svg",
+    "title": "Prefill에서 시작해 Decode를 반복합니다",
+    "alt": "Prefill은 입력 p0 p1 p2 p3의 네 위치를 계산하고 각 층에 네 위치의 KV를 남겨 x0를 선택합니다. 다음 Decode는 x0 한 위치를 계산해 KV를 다섯 위치로 늘리고 x1을 선택합니다. 이어서 x1 한 위치를 계산해 KV를 여섯 위치로 늘리고 x2를 선택합니다. 새로 선택된 출력 자체의 KV는 아직 없습니다.",
+    "caption": "Prefill은 입력 문맥의 여러 위치를 처리하고, 이후 Decode는 방금 선택한 한 토큰을 처리합니다. 각 층의 KV는 실제로 입력으로 처리한 위치까지 저장됩니다.",
+    "path": "public/images/prefill-and-decode/01-prefill-decode-flow.svg",
     "width": 1200,
-    "height": 1260
+    "height": 1270
   },
   {
     "article": "prefill-and-decode",
-    "slug": "02-weight-reuse",
+    "slug": "02-compute-and-context",
+    "locale": "ko",
+    "title": "처리하는 토큰 수와 참조하는 문맥 길이는 다릅니다",
+    "alt": "Prefill은 p0 p1 p2 p3 네 위치를 처리하므로 토큰별 Projection과 MLP의 행은 네 개입니다. Decode는 새 x0 한 위치를 처리하므로 한 행입니다. Prefill의 Attention 참조는 네 행 네 열의 causal 삼각형이고, Decode의 x0 Q는 p0 p1 p2 p3 x0 다섯 위치의 K와 V를 참조합니다. T는 이번 처리 위치 수이고 L은 현재 위치를 포함한 참조 문맥 길이입니다.",
+    "caption": "토큰별 연산의 크기는 이번에 처리할 T에 따라 달라집니다. Attention은 각 Q에서 허용된 문맥을 참조하므로, Decode의 T가 1이어도 문맥 L이 길어지면 Attention 계산과 K/V 읽기가 늘어납니다.",
+    "path": "public/images/prefill-and-decode/02-compute-and-context.svg",
+    "width": 1200,
+    "height": 1300
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "03-weight-reuse",
     "locale": "ko",
     "title": "같은 가중치로 더 많은 토큰 계산하기",
-    "alt": "T가 1인 경우 가중치 W를 한 토큰에 쓰고 T가 4이면 같은 W를 네 토큰에 재사용합니다. 가중치 읽기만 고려한 산술 집약도는 원소당 s바이트일 때 약 2T/s입니다.",
-    "caption": "가중치 크기가 같아도 이번에 함께 처리하는 토큰 수가 많으면 재사용이 늘어납니다. 이 비율은 선형 연산의 직관용 근사이며 모델 전체의 정확한 산술 집약도는 아닙니다.",
-    "path": "public/images/prefill-and-decode/02-weight-reuse.svg",
+    "alt": "동일한 W를 입력 토큰 하나와 네 개에 사용하는 두 경우를 비교합니다. 출력 행과 선형 연산량은 하나에서 네 개로 늘지만 가중치 데이터량은 같습니다. 각 비교 막대는 해당 항목의 한 토큰 값을 기준으로 합니다.",
+    "caption": "고정된 선형 연산에서 연산량은 처리 토큰 수에 비례합니다. 가중치를 한 벌 읽는 단순 근사이며 입력·출력 이동과 실제 캐시·타일링 효과는 생략합니다.",
+    "path": "public/images/prefill-and-decode/03-weight-reuse.svg",
     "width": 1200,
-    "height": 1240
+    "height": 1110
   },
   {
     "article": "prefill-and-decode",
-    "slug": "03-memory-reads",
+    "slug": "04-prefill-decode-roofline",
     "locale": "ko",
-    "title": "가중치 재사용과 KV 읽기는 다릅니다",
-    "alt": "요청 A B C는 동일한 가중치 W를 재사용하지만 자기 요청의 독립된 KV를 각각 읽습니다. 배칭은 가중치 재사용을 늘려도 누적 문맥을 읽는 비용을 없애지 않습니다.",
-    "caption": "작은 배치의 decode에서는 가중치와 누적 K/V의 읽기 비용을 함께 봐야 합니다. 가중치는 요청 간 재사용할 수 있지만 독립적인 KV는 요청 수와 문맥 길이에 따라 늘어납니다.",
-    "path": "public/images/prefill-and-decode/03-memory-reads.svg",
+    "title": "처리 토큰 수가 선형 연산의 병목을 바꿉니다",
+    "alt": "Roofline의 기울어진 대역폭 상한 아래는 memory-bound, 수평 연산 성능 상한 아래는 compute-bound 영역입니다. 작은 배치 Decode의 적은 새 토큰과 충분한 입력 Prefill의 많은 토큰을 각각 낮은 산술 강도와 높은 산술 강도의 예로 표시합니다.",
+    "caption": "같은 가중치를 더 많은 토큰에 쓰면 선형 연산의 산술 강도가 높아집니다. 짧은 Prefill이나 큰 Decode 배치는 다른 위치에 올 수 있으며 실제 성능은 상한보다 낮을 수 있습니다. Attention의 KV 읽기는 다음 그림에서 따로 봅니다.",
+    "path": "public/images/prefill-and-decode/04-prefill-decode-roofline.svg",
     "width": 1200,
-    "height": 1234
+    "height": 1100
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "05-request-kv-reads",
+    "locale": "ko",
+    "title": "요청이 늘면 읽을 KV도 늘어납니다",
+    "alt": "동일한 문맥 길이의 요청 하나와 세 개를 비교합니다. W는 모든 요청이 공통으로 사용하지만, A B C의 이번 토큰 계산은 각각 KV(A), KV(B), KV(C)를 읽습니다. 읽기 대상은 W와 KV 하나에서 W와 서로 다른 KV 세 개로 늘어납니다.",
+    "caption": "각 요청이 현재 입력 위치를 포함한 다섯 위치를 참조하는 기본 예시입니다. 요청을 모으면 가중치 재사용은 늘지만 독립된 문맥의 KV 읽기도 추가됩니다. 화살표는 현재 토큰 계산의 데이터 의존 관계이며 특정 HBM 접근 순서를 뜻하지 않습니다.",
+    "path": "public/images/prefill-and-decode/05-request-kv-reads.svg",
+    "width": 1200,
+    "height": 1130
   },
   {
     "article": "inference-and-training",
@@ -188,35 +210,57 @@
   },
   {
     "article": "prefill-and-decode",
-    "slug": "01-token-positions",
+    "slug": "01-prefill-decode-flow",
     "locale": "en",
-    "title": "Positions computed now and context attended to",
-    "alt": "Prefill computes projections and MLPs at four input positions with triangular causal attention. Decode computes one new input position per request, while each Q attends to its own request’s K/V of length L.",
-    "caption": "Decode computes one new position per request. Even without re-running token-wise operations at earlier positions, attention reads K/V across the accumulated context.",
-    "path": "public/images/prefill-and-decode/en/01-token-positions.svg",
+    "title": "Start with prefill, then repeat decode",
+    "alt": "Prefill computes four input positions p0 p1 p2 p3, leaves KV for four positions in each layer, and selects x0. Decode computes x0 alone, extends KV to five positions, and selects x1. The next decode computes x1 alone, extends KV to six positions, and selects x2. The newly selected output does not yet have its own KV.",
+    "caption": "Prefill processes multiple prompt positions; each subsequent decode processes the token just selected. Each layer’s KV extends only through positions already processed as input.",
+    "path": "public/images/prefill-and-decode/en/01-prefill-decode-flow.svg",
     "width": 1200,
-    "height": 1260
+    "height": 1270
   },
   {
     "article": "prefill-and-decode",
-    "slug": "02-weight-reuse",
+    "slug": "02-compute-and-context",
+    "locale": "en",
+    "title": "Tokens processed and context length are different",
+    "alt": "Prefill processes four positions p0 p1 p2 p3, giving four rows for token-wise projection and MLP operations. Decode processes only the new x0, giving one row. Prefill attention follows a causal triangle with four rows and four columns; the decode query at x0 reads K and V at five positions p0 p1 p2 p3 x0. T is the number of positions processed now; L is context length including the current position.",
+    "caption": "Token-wise work scales with the T positions processed now. Attention reads the context allowed for each query, so even with decode T equal to one, a longer context L increases attention work and K/V reads.",
+    "path": "public/images/prefill-and-decode/en/02-compute-and-context.svg",
+    "width": 1200,
+    "height": 1300
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "03-weight-reuse",
     "locale": "en",
     "title": "Compute more tokens with the same weights",
-    "alt": "With T=1, W is used for one token; with T=4, the same W is reused across four tokens. Considering weight reads alone gives an arithmetic-intensity approximation of 2T/s for s bytes per weight element.",
-    "caption": "Even with the same weight size, processing more token positions together increases reuse. This ratio is an intuition for a linear operation, not the exact arithmetic intensity of the entire model.",
-    "path": "public/images/prefill-and-decode/en/02-weight-reuse.svg",
+    "alt": "Two cases use the same W with one and four input tokens. Output rows and linear-operation FLOPs increase fourfold while weight bytes stay the same. Each bar is relative to that metric’s one-token value.",
+    "caption": "For a fixed linear operation, FLOPs scale with the number of processed tokens. This simplified comparison assumes one read of the weights and omits input/output traffic and actual caching or tiling effects.",
+    "path": "public/images/prefill-and-decode/en/03-weight-reuse.svg",
     "width": 1200,
-    "height": 1240
+    "height": 1110
   },
   {
     "article": "prefill-and-decode",
-    "slug": "03-memory-reads",
+    "slug": "04-prefill-decode-roofline",
     "locale": "en",
-    "title": "Weight reuse and KV reads behave differently",
-    "alt": "Requests A, B, and C reuse the same weights W, but each reads its own independent KV. Batching improves weight reuse without removing the cost of reading accumulated context.",
-    "caption": "For small-batch decode, consider both weight and accumulated K/V reads. Weights can be reused across requests, whereas independent KV grows with request count and context length.",
-    "path": "public/images/prefill-and-decode/en/03-memory-reads.svg",
+    "title": "Token count changes the bottleneck of linear operations",
+    "alt": "The sloped bandwidth ceiling marks the memory-bound region, and the flat compute ceiling marks the compute-bound region. Few new tokens in small-batch decode and many tokens in sufficiently large prefill illustrate low and high arithmetic intensity respectively.",
+    "caption": "Reusing weights across more tokens raises linear-operation arithmetic intensity. Short prefill or large decode batches can fall elsewhere, and actual performance can lie below the ceiling. The next figure treats attention’s KV reads separately.",
+    "path": "public/images/prefill-and-decode/en/04-prefill-decode-roofline.svg",
     "width": 1200,
-    "height": 1234
+    "height": 1100
+  },
+  {
+    "article": "prefill-and-decode",
+    "slug": "05-request-kv-reads",
+    "locale": "en",
+    "title": "More requests add more KV reads",
+    "alt": "Compare one and three requests with equal context lengths. All requests share W, while their current-token computations read KV(A), KV(B), and KV(C) separately. The read set grows from W plus one KV cache to W plus three independent KV caches.",
+    "caption": "In this baseline example, each request attends to five positions including its current input. Batching improves weight reuse while adding independent KV reads. Arrows show data dependencies of the current-token computation, not a prescribed HBM access order.",
+    "path": "public/images/prefill-and-decode/en/05-request-kv-reads.svg",
+    "width": 1200,
+    "height": 1130
   }
 ]

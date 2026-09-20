@@ -2,96 +2,102 @@
 layout: ../../../layouts/Post.astro
 articleId: prefill-and-decode
 title: "Prefill and Decode"
-description: "Distinguish newly processed tokens from the context they attend to, and examine how weight reuse and KV reads shape computation, memory traffic, and bottlenecks."
+description: "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks."
 date: 2026-09-19
 ---
 
-In [Inference and the KV Cache](/en/posts/inference-kv-cache/), we followed how processing the input context selects the first output token, after which new tokens enter the model while past K/V is reused. Both stages execute the same model’s forward pass, but they present different shapes of work to the GPU. The first computes several input positions together; an ordinary generation step computes one new position per request.
+In [Inference and the KV Cache](/en/posts/inference-kv-cache/), we examined how storing K/V for past positions reduces repeated computation. Generation with a cache first processes the input context together, then processes one new input at a time while reading past KV. We call these two stages **Prefill** and **Decode**.
 
-Understanding this difference explains why token generation with a small batch is often limited by memory bandwidth. We will first distinguish positions computed now from the context attention accesses. We will then separate weight reuse from KV reads and examine the conditions under which computation or data movement becomes the bottleneck. Our baseline is a dense Transformer with fixed weights and ordinary autoregressive generation.
+Both stages use the same model, but they compute different numbers of tokens at a time. In this article, we will examine how this difference affects computation and weight reuse. We will then use the Roofline model to compare their bottlenecks, and finally consider the cost of KV reads that remains even when processing multiple requests together.
 
-## How many tokens enter the same model
+## The execution flow of Prefill and Decode
 
-During **prefill**, which first processes the input context, the model can compute several supplied tokens together. With input p0·p1·p2·p3, it computes representations at four positions and uses the logits at the final position to select the first output token, x0. The causal mask remains in place, so computation at p1 does not attend to the future input p2.
+**Prefill is the stage that first processes the supplied input context.** If the input is `p0 p1 p2 p3`, the model processes all four positions together. It stores their K/V in the cache at each layer, then uses the prediction scores at the final input position, `p3`, to select the first output token, `x0`.
 
-During the subsequent **decode**, the model processes x0 as new input and selects x1. The next execution receives x1. We cannot feed an as-yet unselected x2 into the current execution, so generation within a request has a sequential dependency.
+**Decode is the stage that processes a new input token to select the next output token.** When `x0`, selected during Prefill, enters as the next input, the model computes that position while attending to stored past K/V. It adds the newly computed K/V for `x0` to the cache and uses the execution result to select the next output, `x1`. It then repeats the process, feeding in `x1` to select `x2`.
 
-Here, one token means **one token per request**. If eight requests all participate in decode, the execution processes eight new positions in total. It does not mean the entire batch processes only one token. We will treat methods that verify several candidates together, such as speculative decoding, separately as extensions of this basic loop.
+<figure class="article-figure">
+  <a href="/images/prefill-and-decode/en/01-prefill-decode-flow.png"><img src="/images/prefill-and-decode/en/01-prefill-decode-flow.png" alt="Prefill processes four inputs, p0 through p3, selects x0, and stores KV for four positions. Decode then takes x0 and x1 as successive inputs to select x1 and x2, growing the computed KV to five and six positions." /></a>
+  <figcaption>Figure 1. The execution flow of Prefill and Decode</figcaption>
+</figure>
 
-[![Prefill computes Q for multiple input positions together. Decode computes Q for one new position per request, attending to that request’s accumulated K/V.](/images/prefill-and-decode/en/01-token-positions.png)](/images/prefill-and-decode/en/01-token-positions.png)
+In Figure 1, Prefill processes four inputs together, while each Decode processes one input. The initially supplied inputs are already known, so they can be computed together. By contrast, a generated token is determined only after the preceding execution finishes. We cannot feed `x0` into the next execution before selecting it.
 
-In the figure, T is the number of token positions computed in the current execution, and L is the context length a request attends to. Their values may be equal, but they generally mean different things. A single basic prefill request has T=L; a single decode request has T=1 while L can be in the thousands.
+The distinction between token selection and KV computation from the previous article still applies. Immediately after selecting `x0`, only KV for `p0` through `p3` exists. **KV for `x0` is created when `x0` enters the next execution.** Prefill's result selects the first output token; repeated Decode executions select the outputs that follow.
 
-## Compute new positions and attend to past context
+## Token count and attended context length
 
-We can divide Transformer operations into two groups. Q/K/V projections, the attention output projection, and MLPs apply the same weights to the vector at each token position. Normalization and residual connections are also performed per token in the model assumed here. Decode with a KV cache **runs these operations on the new position**. It does not rerun MLPs over every past position at each step. Calling an operation token-wise does not mean its input vector contains no context information: that vector already reflects context incorporated by earlier attention.
+To understand the GPU's work, we need to distinguish **the number of tokens processed now** from **the context length that Attention accesses**. Figure 2 shows a single request, using T for the current token count and L for the attended context length, including the current input.
 
-By contrast, attention’s QKᵀ and AV combine information across positions. The current position’s Q uses both previously stored K/V and the current position’s K/V. Even with just one newly computed token, a longer context therefore increases attention’s work. [The Transformers cache explanation](https://huggingface.co/docs/transformers/cache_explanation) shows how current K/V is combined with the past cache so the new Q can attend to the accumulated context.
+<figure class="article-figure">
+  <a href="/images/prefill-and-decode/en/02-compute-and-context.png"><img src="/images/prefill-and-decode/en/02-compute-and-context.png" alt="Prefill's token-wise operations compute four rows, while Attention accesses a triangular region that excludes future positions. Decode's token-wise operations compute only the x0 row, but Attention accesses five positions, p0 through x0." /></a>
+  <figcaption>Figure 2. Token count and attended context length</figcaption>
+</figure>
 
-Showing only one head with dimension d gives the following shapes. L includes the current input position.
+First, consider the token-wise operations at the top of the figure. The projections that create Q/K/V, the Attention output projection, and the matrix multiplications in the MLP **apply the same weights to the vector at each token position.** For a fixed model size, the computation in these linear operations is proportional to the number of tokens processed now. Prefill computes four rows, while the following Decode computes only one row for the new input, `x0`. It does not rerun projections or MLPs for past positions `p0` through `p3`.
 
-```text
-One basic prefill request:
-Q [L, d] × Kᵀ [d, L] → logical score shape [L, L]
+Attention, shown at the bottom, accesses a different range of positions. Rows represent the Q positions computed now, and columns represent the K/V positions they access. Prefill computes Q for all four positions together, but each position attends only to itself and earlier positions. The accessed cells therefore form a triangle. During Decode, one new Q attends to K/V for the four past positions and the current `x0`. **Even with just one newly processed token, Attention uses five positions.**
 
-One ordinary decode request:
-Q [1, d] × Kᵀ [d, L] → logical score shape [1, L]
-```
+As generation continues and the context grows, ordinary Decode still receives one new input per request. A single request's projection and MLP computation therefore stays roughly constant, while the KV accessed by Attention and the associated computation grow. This is why token count alone cannot explain the entire model's computation. [The Transformers cache explanation](https://huggingface.co/docs/transformers/v4.57.0/en/cache_explanation#attention-matrices) also shows how a new Q uses both past and current K/V.
 
-Prefill’s causal mask excludes future positions. These are also logical computational shapes; they do not mean the entire score matrix must be stored in GPU memory. [FlashAttention](/en/posts/flash-attention/) uses this distinction to reduce memory traffic from large intermediate arrays.
+Here, one token means **one token per request, not per entire batch**. If eight requests are grouped into one Decode batch, the execution processes eight new inputs in total. In the sections that follow, we will examine weight reuse in terms of this total number of tokens processed together in one execution.
 
-Suppose eight requests each attend to a context of 2,048 tokens, including the current position. Before execution, each request has KV for 2,047 past positions, to which it adds K/V for one new input. Projections and MLPs compute eight new positions in total, while attention accesses 2,048 positions within each request’s own context. **Understanding the full workload requires both T for token-wise operations and L for attention.**
+## Computing multiple tokens with the same weights
 
-## Computation per set of weights read
+The model's weights are the same during Prefill and Decode. Whether processing one token or several, the same linear layer needs the same weights. The difference is **how many tokens we can compute with the weights we read**.
 
-We can write a token-wise linear operation as follows. Here, d_in and d_out are the input and output vector dimensions.
+<figure class="article-figure">
+  <a href="/images/prefill-and-decode/en/03-weight-reuse.png"><img src="/images/prefill-and-decode/en/03-weight-reuse.png" alt="The same-sized weights W are applied to one input token or four input tokens. The amount of weight data stays the same, but output rows increase from one to four, and linear computation also increases fourfold." /></a>
+  <figcaption>Figure 3. Reusing weights across multiple tokens</figcaption>
+</figure>
+
+The left side of Figure 3 uses W to compute one input row. The right side computes four input rows with the same W. The amount of weight data stays the same, while the outputs to compute and the linear computation increase fourfold. Computing multiple inputs together lets us reuse weights fetched from memory across the rows. Both grouping one request's Prefill tokens and grouping several requests' Decode tokens create this opportunity.
+
+For a linear operation with input and output dimensions d_in and d_out, respectively, the relationship is as follows. T is the number of tokens processed together in this execution.
 
 ```text
 X [T, d_in] × W [d_in, d_out] → Y [T, d_out]
-```
 
-Increasing T adds output rows without changing the size of W. After fetching a weight value, the operation can reuse it across several input rows. From the perspective of this linear operation, grouping one request’s prefill tokens or several requests’ decode tokens both create opportunities for reuse.
-
-[![The same-sized weights W are used to compute one token or four tokens. Processing more tokens together increases computation relative to weight reads.](/images/prefill-and-decode/en/02-weight-reuse.png)](/images/prefill-and-decode/en/02-weight-reuse.png)
-
-[Arithmetic intensity](/en/posts/gpu-arithmetic-intensity-and-fusion/) describes how much computation is performed relative to the data moved. Counting a multiplication and an addition as one FLOP each, and storing each weight element in s bytes, gives this simple view of the linear operation:
-
-```text
 Computation ≈ 2 × T × d_in × d_out FLOPs
-Weight data = s × d_in × d_out bytes
-
-Approximation when weight reads dominate:
-Computation / weight data ≈ 2T/s FLOP/byte
+Number of weight elements = d_in × d_out
 ```
 
-This approximation counts one read of the weights and omits input/output traffic and the effects of tiling and caching in a real kernel. It is neither the exact arithmetic intensity of the entire model nor a measured execution speed. [NVIDIA’s matrix multiplication performance guide](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html) likewise estimates bottlenecks by comparing the ratio of computation to data movement with the hardware’s ratio of compute performance to bandwidth.
+Counting a multiplication and an addition as one FLOP each, computation grows in proportion to T. The size of W does not change. Thus, **if weight reads account for a large share of data movement, processing more tokens together increases computation relative to the data moved.** [NVIDIA's matrix multiplication performance guide](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html) also uses this ratio of computation to data movement to analyze bottlenecks.
 
-For an illustrative linear layer with d_in=d_out=4,096 and two bytes per element, W occupies 32 MiB. Let us vary only T in this single-layer example. GFLOPs means a billion FLOPs, while MiB means 2²⁰ bytes.
+The figure simplifies the comparison by assuming one read of the weights. In practice, inputs and outputs also move, and the kernel's execution strategy and caching can cause the same weights to be read again. The relationship to focus on is the opportunity to reuse the same weights for more computation, rather than a fixed ratio of actual memory accesses.
 
-| Tokens processed now, T | Computation | Weight data | Approximate ratio counting weights alone |
-| --- | --- | --- | --- |
-| 1 | About 0.0336 GFLOPs | 32 MiB | 1 FLOP/byte |
-| 8 | About 0.2684 GFLOPs | 32 MiB | 8 FLOP/byte |
-| 128 | About 4.2950 GFLOPs | 32 MiB | 128 FLOP/byte |
+## Bottlenecks in Prefill and Decode
 
-Counting one transfer each of the input and output lowers the last row’s ratio to about 120.47 FLOP/byte. As T grows, the approximation that omits input/output traffic becomes less accurate. The intuition to retain is that **using the same weights for more tokens increases the computation performed relative to the weights read**.
+As we saw in [Arithmetic Intensity and Roofline](/en/posts/gpu-arithmetic-intensity-and-fusion/), **arithmetic intensity is the ratio of computation to data movement**. Here, we will consider the bytes read from and written to HBM, the GPU's memory. Performing more computation for the same amount of data moved increases arithmetic intensity.
 
-## Why reads matter in small decode batches
+The Roofline model relates this ratio to the GPU's memory bandwidth and compute performance. The horizontal axis is arithmetic intensity, and the vertical axis is computation performed per second. Execution must satisfy both the rate at which memory can supply data and the rate at which the compute units can perform calculations, so the lower of the two limits determines the throughput ceiling.
 
-The GPU’s compute units need weights and inputs before they can work. When a model is larger than the on-chip cache and weights must continually arrive from HBM, processing just one new token reads many weights while performing little computation per value. Faster compute units will not reduce total execution time proportionally if data cannot arrive quickly enough. This is the first reason small-batch decode is often limited by memory bandwidth.
+<figure class="article-figure">
+  <a href="/images/prefill-and-decode/en/04-prefill-decode-roofline.png"><img src="/images/prefill-and-decode/en/04-prefill-decode-roofline.png" alt="The left side of the Roofline has a sloped ceiling determined by bandwidth and arithmetic intensity, while the right side has a horizontal ceiling determined by GPU compute performance. Small-batch Decode is shown on the left and Prefill with enough input tokens on the right." /></a>
+  <figcaption>Figure 4. The Roofline for Prefill and Decode</figcaption>
+</figure>
 
-The second source of reads is KV. We no longer need to recompute past K/V, but we still need to access it to calculate attention for the current Q. Longer contexts increase both the data read and the attention computation. Caching replaces recomputation with storage and reads. During decode, a query head has only one new Q, leaving little opportunity to reuse the past K/V it reads across multiple new positions. Increasing context length alone does not increase that reuse.
+On the left side of Figure 4, there is little computation relative to the data moved. Even when the GPU has spare compute capacity, it cannot receive the required data quickly enough. We call this <strong>memory-bound</strong>. The memory limit here is the speed of data movement, rather than a shortage of storage space.
 
-[![Weights are reused across new-token computation for multiple requests, while each request’s KV represents its own context. Memory bandwidth limits and insufficient storage capacity are separate issues.](/images/prefill-and-decode/en/03-memory-reads.png)](/images/prefill-and-decode/en/03-memory-reads.png)
+Small-batch Decode that must fetch a large model's weights from HBM is likely to face this condition. With one request, there is only one new input to process, but its computation still needs the model's weights. Reading many weights while performing little computation per value makes it difficult to fully use the GPU's high compute performance.
 
-Requests A, B, and C share weights W. In our baseline, however, A reads KV(A), B reads KV(B), and C reads KV(C). Grouping more requests increases reuse of W without merging all their KV reads into a single shared context. We must therefore distinguish cases dominated by weight reads from those where long-context KV reads contribute substantially. [The JAX Scaling Book’s inference analysis](https://jax-ml.github.io/scaling-book/inference/) also analyzes the weight cost of linear operations separately from the KV cost of attention.
+On the right side of the figure, by contrast, computation is large relative to data movement, so the rate at which the compute units finish calculations determines the ceiling. We call this <strong>compute-bound</strong>. Prefill with a sufficiently long input processes many tokens together and reuses weights, making it easier for its linear operations to reach this condition. Even a single request can contain many tokens to process.
 
-The memory issue here is **the speed at which data can be fetched**. It differs from lacking enough space to store KV. Growing context can affect both, but reducing a reading bottleneck and finding storage capacity require separate consideration.
+Decode also increases weight reuse in linear operations when it groups new inputs from multiple requests. The names Prefill and Decode therefore do not fix the bottleneck. **What matters is the number of tokens processed together in one execution.** Prefill with a short input and Decode with a large batch can occupy different positions from the examples shown in the figure.
 
-## Bottleneck conditions and the move to batching
+This figure applies the Roofline model to linear operations that use weights. The lines and two markers illustrate performance ceilings and execution conditions; they are not measurements of a particular model. Actual throughput can fall below the ceiling depending on factors such as kernel execution efficiency, and the token count at which the bottleneck changes varies with the GPU, model, and data type.
 
-Prefill can reuse weights across many input tokens, making it easier to use the available compute performance. With enough tokens computed together, finishing the arithmetic may take longer than supplying the data. The same explanation does not automatically apply to very short inputs or small executions, however.
+## Batching benefits and KV reads
 
-Larger decode batches also increase reuse in linear operations. Longer contexts, on the other hand, can increase the share of time spent reading KV. The boundary also depends on GQA’s reduced number of KV heads, data precision, GPU bandwidth and compute performance, and the efficiency of the actual kernels. Different operations can have different bottlenecks, so rather than assigning one label to all inference, we should examine **which part takes time under which execution conditions**.
+So far, we have focused on weight reuse. Can we then solve the memory bottleneck by continuing to increase the Decode batch? In actual Decode, we also need to account for **reading each request's distinct KV cache**, in addition to the weights.
 
-A request must wait for its next token, but new inputs from other requests may already be ready. Computing them together can increase weight reuse. The problem then extends beyond collecting more tokens: we must decide how long requests of different lengths and arrival times should wait, and which resources their execution may use. [Batching and Scheduling](/en/posts/batching-and-scheduling/) examines those decisions.
+<figure class="article-figure">
+  <a href="/images/prefill-and-decode/en/05-request-kv-reads.png"><img src="/images/prefill-and-decode/en/05-request-kv-reads.png" alt="Increasing from one request to three with the same context length shares weights W, but adds KV(B) and KV(C) to the KV(A) that must be read. Each request attends to K/V from its own context." /></a>
+  <figcaption>Figure 5. KV reads as the number of requests grows</figcaption>
+</figure>
+
+Figure 5 shows an example where each request attends to five positions, including its current input. Request A alone uses W and A's KV. Processing B and C together with A reuses the same W for more token computation, but B's and C's KV must each be read as well. A longer context within one request also increases the KV that request reads. [The JAX Scaling Book's inference analysis](https://jax-ml.github.io/scaling-book/inference/) likewise distinguishes the weight cost of linear operations from the KV cost of Attention.
+
+Thus, **batching can increase weight reuse, but it does not eliminate the cost of reading each request's KV.** In particular, as KV reads account for a larger share of the work, the benefit of increasing the batch becomes limited. This is why the preceding Roofline explanation of weight reuse cannot be extended unchanged to Decode as a whole.
+
+Executing multiple requests together is an important way to improve Decode efficiency. In practice, however, requests have different arrival times and context lengths, and GPU resources are limited. [Batching and Scheduling](/en/posts/batching-and-scheduling/) examines how to group these requests and decide what to include in the next execution.
