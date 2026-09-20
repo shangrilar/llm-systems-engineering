@@ -919,8 +919,33 @@
         "description": "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "6df82ac633aeb3d8e3f65716677873da265094852db033faf861a2d1a8eebce3",
-        "reviewNote": "2026-09-20: Revised Korean and English prose compared paragraph by paragraph, including five sections, five localized figures, numbered captions, alt text, examples, formulas, emphasis and links. Token/KV boundaries, linear-operation Roofline scope and the short KV-read limitation agree. Static PNG/SVG figures reviewed separately. 2026-09-20: User authorized publication after final verification. Changed only the matching closing link to future-reading guidance for the unpublished batching and scheduling article."
+        "sourceRevision": "85bba6124e7ed26f8a73441ef8e9b1ba18ccfa44f542066d4034c11f4ce5bd98",
+        "reviewNote": "2026-09-20: Previously reviewed bilingual prose and five figure pairs preserved. Matching final-paragraph links to the newly published Batching and Scheduling article restored in both languages."
+      }
+    }
+  },
+  {
+    "articleId": "batching-and-scheduling",
+    "order": 38,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "batching-and-scheduling",
+        "title": "배치와 스케줄링",
+        "description": "정적 배칭의 한계에서 출발해 매 실행의 요청 구성을 바꾸는 과정을 살펴보고, 필요한 계산과 KV 공간을 확인하는 방법과 미사용 예약 공간의 문제를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "batching-and-scheduling",
+        "title": "Batching and Scheduling",
+        "description": "Explore the limits of static batching, how batch membership changes between executions, how to check computation and KV space requirements, and why unused reservations make requests wait.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "7a32e00027b3b5dc2557aeb5ae79e0ca8acd6e9c9cc1c86411cc0a42b94e75dd",
+        "reviewNote": "2026-09-20: Korean and English paragraphs, five sections, two subsections, four figure pairs, captions, alt text, numeric examples, and scope compared. Unpublished PagedAttention article is named without a link in both languages. Final release requested by user."
       }
     }
   }
