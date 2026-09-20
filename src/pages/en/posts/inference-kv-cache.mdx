@@ -68,4 +68,4 @@ When `x1` becomes the next input, its KV is created and `x2` is selected. In the
 
 Distinguishing this boundary makes clear what the next execution needs to compute. It reuses past positions whose KV is already available and computes the just-selected, still-unprocessed token as new input. Repeating this process extends both the output and the KV cache.
 
-Initially, we processed the given input context together. Later, we processed one new input while reading past KV. In the next article, we will name these two executions prefill and decode and examine how the number of tokens computed together and the length of the attended context affect computation and memory reads.
+Initially, we processed the given input context together. Later, we processed one new input while reading past KV. In [Prefill and Decode](/en/posts/prefill-and-decode/), we will name these two executions and examine how the number of tokens computed together and the length of the attended context affect computation and memory reads.

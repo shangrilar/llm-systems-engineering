@@ -70,3 +70,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 #### Workloads
 
 - [Inference and the KV Cache](https://llm-systems-engineering.pages.dev/en/posts/inference-kv-cache/)
+- [Prefill and Decode](https://llm-systems-engineering.pages.dev/en/posts/prefill-and-decode/)

@@ -869,8 +869,8 @@
         "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a3833d37e54c5ddeca8500827bf63912ec58254950985c2959900316587ebeb4",
-        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged."
+        "sourceRevision": "662badda207767d01586d311b05a495a573f7d3b4b46af1e56289d3f83110773",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
       }
     }
   },
@@ -894,8 +894,33 @@
         "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "891e86faf6dd5a2c8c1ebc37f7fbf444303b8cc191ad2041346901a42fda7131",
-        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification."
+        "sourceRevision": "09efe1ff063d558d3d9e6ed9f07556fea491f100f85957c78d64d49959f576fc",
+        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "prefill-and-decode",
+    "order": 37,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "prefill-and-decode",
+        "title": "Prefill과 Decode",
+        "description": "입력을 함께 처리하는 Prefill과 새 토큰을 하나씩 처리하는 Decode를 비교하고, 처리 토큰 수와 가중치 재사용이 GPU의 병목을 바꾸는 이유를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "prefill-and-decode",
+        "title": "Prefill and Decode",
+        "description": "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "6df82ac633aeb3d8e3f65716677873da265094852db033faf861a2d1a8eebce3",
+        "reviewNote": "2026-09-20: Revised Korean and English prose compared paragraph by paragraph, including five sections, five localized figures, numbered captions, alt text, examples, formulas, emphasis and links. Token/KV boundaries, linear-operation Roofline scope and the short KV-read limitation agree. Static PNG/SVG figures reviewed separately. 2026-09-20: User authorized publication after final verification. Changed only the matching closing link to future-reading guidance for the unpublished batching and scheduling article."
       }
     }
   }

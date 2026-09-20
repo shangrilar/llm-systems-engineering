@@ -85,7 +85,7 @@ Suppose request A needs a short answer, B is writing a long document, and C arri
 
 There is more than one goal. For conversational services, both a quick first response and steady subsequent output matter. When processing many documents in advance, completing the total workload within a time and cost budget may matter more. Running more requests together can improve server throughput without reducing each user’s waiting time by the same proportion. This is why we consider response-time constraints alongside throughput.
 
-Training also aims to make progress with the same resources while maintaining training quality. We will not reduce this distinction to “training is always compute-bound and inference is always memory-bound.” Even within generation, processing the input context has a different computational shape from extending the output one token at a time. A later article on Prefill and Decode will examine that distinction.
+Training also aims to make progress with the same resources while maintaining training quality. We will not reduce this distinction to “training is always compute-bound and inference is always memory-bound.” Even within generation, processing the input context has a different computational shape from extending the output one token at a time. [Prefill and Decode](/en/posts/prefill-and-decode/) examines that distinction.
 
 Although SFT is generally included in post-training, our series follows a teaching sequence that places pretraining and SFT in the training stage, followed by RL-based post-training. RL-based processes connect the two execution patterns, for example by using generated results for training.
 
