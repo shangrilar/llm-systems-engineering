@@ -969,8 +969,33 @@
         "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "df93bdcdd642da30c0695feea568cb5a5444289defe7b8a5450f6554c87e88ce",
-        "reviewNote": "2026-09-20: Rewritten Korean and English compared paragraph by paragraph: six H2 sections, one H3, six figures, allocation/computation boundaries, B/C counts and addresses, attention scope, shared-prefix conditions, copy-on-write and reference counts. All twelve bilingual PNGs visually reviewed. Standalone release leaves the unpublished preemption follow-up as plain text."
+        "sourceRevision": "293a58d0f97ed3ea4b1f37cceb8e51ac1fbb580217a93eebc03874a694a3e1cb",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication."
+      }
+    }
+  },
+  {
+    "articleId": "inference-preemption",
+    "order": 40,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-preemption",
+        "title": "KV 캐시가 부족할 때: 요청 중단과 재개",
+        "description": "생성 중 KV 공간이 부족해지는 상황에서 일부 요청을 중단해 블록을 확보하고, 보존한 토큰 이력이나 KV로 요청을 재개하는 과정과 출력 지연을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-preemption",
+        "title": "When KV Capacity Runs Out: Pausing and Resuming Requests",
+        "description": "When KV space runs out during generation, pause some requests to reclaim blocks, then resume them from retained token history or KV. Explore how this process delays output.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a9b7d84b9c685c89cbdb6b2ef237998fcb1dcf244ae965fc8c28e9516ccd7478",
+        "reviewNote": "2026-09-20: Korean and English paragraphs, five sections, five figures and captions, numeric examples, comparison table, and token/KV boundaries compared. English figures visually reviewed."
       }
     }
   }
