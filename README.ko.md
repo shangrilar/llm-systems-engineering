@@ -74,3 +74,4 @@
 - [배치와 스케줄링](https://llm-systems-engineering.pages.dev/posts/batching-and-scheduling/)
 - [KV 캐시 관리와 PagedAttention](https://llm-systems-engineering.pages.dev/posts/paged-kv-cache/)
 - [KV 캐시가 부족할 때: 요청 중단과 재개](https://llm-systems-engineering.pages.dev/posts/inference-preemption/)
+- [추론 성능 지표: 대기 시간과 처리량](https://llm-systems-engineering.pages.dev/posts/inference-metrics/)

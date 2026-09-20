@@ -1,0 +1,112 @@
+[
+  {
+    "article": "inference-metrics",
+    "slug": "01-request-latency",
+    "locale": "ko",
+    "title": "한 요청에서 지연 시간 읽기",
+    "alt": "제출 0ms, 토큰 수신 100·130·170ms, 종료 180ms. TTFT 100ms, ITL 30·40ms, TPOT 35ms/token, E2E 180ms.",
+    "caption": "TTFT에는 첫 출력까지의 대기와 처리·전달이 포함됩니다. 교육용 수신 시각입니다.",
+    "path": "public/images/inference-metrics/01-request-latency.svg",
+    "width": 1200,
+    "height": 880
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "02-counting-throughput",
+    "locale": "ko",
+    "title": "같은 시간 동안 처리한 양 세기",
+    "alt": "10초 안에서 A·B·C가 중첩 실행해 모두 완료하며 출력은 각각3·5·2개. 요청 처리량0.3requests/s, 출력 처리량1token/s.",
+    "caption": "앞 그림과 별개의 교육용 실행입니다. 한 요청의 TPOT 역수와 전체 처리량을 구별합니다.",
+    "path": "public/images/inference-metrics/02-counting-throughput.svg",
+    "width": 1200,
+    "height": 985
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "03-average-and-gaps",
+    "locale": "ko",
+    "title": "평균이 같아도 출력 간격은 다릅니다",
+    "alt": "두 출력열의 ITL은35·35ms와5·65ms. TPOT는둘다35ms/token이지만두번째에는65ms공백이있습니다.",
+    "caption": "첫 토큰 수신을 상대시간0으로 맞춘 비교입니다.",
+    "path": "public/images/inference-metrics/03-average-and-gaps.svg",
+    "width": 1200,
+    "height": 930
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "04-request-latency-distribution",
+    "locale": "ko",
+    "title": "일부 요청이 더 오래 기다립니다",
+    "alt": "정렬한20개요청의TTFT막대.10번째190ms가p50,19번째600ms가p95,20번째1000ms.순위올림방식을사용한예시.",
+    "caption": "교육용 작은 표본입니다. 실제 꼬리 지연 추정에는 충분한 표본이 필요하며 도구의 백분위수 규칙도 확인합니다.",
+    "path": "public/images/inference-metrics/04-request-latency-distribution.svg",
+    "width": 1200,
+    "height": 1000
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "05-goodput-targets",
+    "locale": "ko",
+    "title": "지연 목표를 만족한 처리량 세기",
+    "alt": "10초간10개요청완료.8개는TTFT1초이하와TPOT50ms/token이하를함께만족.2개는하나의목표초과.처리량1request/s,goodput0.8requests/s,달성률80%.",
+    "caption": "이 그림은 목표를 모두 충족하며 성공 완료한 요청 수/관측 시간으로 요청 기준goodput을 정의합니다.",
+    "path": "public/images/inference-metrics/05-goodput-targets.svg",
+    "width": 1200,
+    "height": 955
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "01-request-latency",
+    "locale": "en",
+    "title": "Read latency on one request timeline",
+    "alt": "Submit at 0ms, tokens at 100, 130 and 170ms, end at 180ms. TTFT 100ms, ITLs 30 and 40ms, TPOT 35ms/token, E2E 180ms.",
+    "caption": "TTFT includes waiting, processing and delivery until the first output. Illustrative receipt times.",
+    "path": "public/images/inference-metrics/en/01-request-latency.svg",
+    "width": 1200,
+    "height": 880
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "02-counting-throughput",
+    "locale": "en",
+    "title": "Count work over the same time window",
+    "alt": "A, B and C overlap and complete within 10 seconds with 3, 5 and 2 outputs. Request throughput is 0.3 requests/s and output throughput is 1 token/s.",
+    "caption": "A separate illustrative run. The inverse of one request’s TPOT is not aggregate throughput.",
+    "path": "public/images/inference-metrics/en/02-counting-throughput.svg",
+    "width": 1200,
+    "height": 985
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "03-average-and-gaps",
+    "locale": "en",
+    "title": "The same average can hide different gaps",
+    "alt": "Two streams have ITLs of 35/35ms and 5/65ms. Both have TPOT 35ms/token, but the second has a 65ms gap.",
+    "caption": "Both timelines start at relative time zero when the first token is received.",
+    "path": "public/images/inference-metrics/en/03-average-and-gaps.svg",
+    "width": 1200,
+    "height": 930
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "04-request-latency-distribution",
+    "locale": "en",
+    "title": "Some requests wait much longer",
+    "alt": "Sorted TTFT bars for 20 requests. The 10th is 190ms (p50), the 19th 600ms (p95), and the 20th 1000ms, using nearest-rank percentiles.",
+    "caption": "A small illustrative sample. Tail estimates need enough samples; check the tool’s percentile convention.",
+    "path": "public/images/inference-metrics/en/04-request-latency-distribution.svg",
+    "width": 1200,
+    "height": 1000
+  },
+  {
+    "article": "inference-metrics",
+    "slug": "05-goodput-targets",
+    "locale": "en",
+    "title": "Count throughput that meets latency targets",
+    "alt": "Ten requests complete in ten seconds. Eight meet both TTFT ≤1s and TPOT ≤50ms/token; two miss one target. Throughput 1 request/s, goodput 0.8 requests/s, attainment 80%.",
+    "caption": "Request goodput here is successfully completed requests meeting all targets divided by observation time.",
+    "path": "public/images/inference-metrics/en/05-goodput-targets.svg",
+    "width": 1200,
+    "height": 955
+  }
+]
