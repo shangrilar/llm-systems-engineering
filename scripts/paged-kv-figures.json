@@ -1,0 +1,134 @@
+[
+  {
+    "article": "paged-kv-cache",
+    "slug": "01-needed-blocks",
+    "locale": "ko",
+    "title": "예약 공간을 필요한 블록으로 바꾸기",
+    "alt": "24칸 KV 풀에서 B의 실제 KV는 6칸이다. 20칸을 예약하면 미사용 예약이 14칸이고 가용 공간은 4칸이어서 입력 6토큰의 C가 기다린다. 블록당 4칸으로 B에 2블록, C에 2블록을 배정하면 2블록이 남는다. C의 블록은 배정만 되었고 아직 KV를 계산하지 않아 비어 있다.",
+    "caption": "비교 대상은 GPU 전체 메모리가 아니라 같은 크기의 KV 풀입니다. B의 다음 입력으로 KV가 7칸이 되어도 기존 2블록에 들어갑니다. C에는 입력 6토큰을 처리할 공간 2블록을 배정했으며, 이 시점에는 실제 KV가 없습니다.",
+    "path": "public/images/paged-kv-cache/01-needed-blocks.svg",
+    "width": 1200,
+    "height": 918
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "02-logical-physical",
+    "locale": "ko",
+    "title": "토큰 순서와 저장 위치 연결하기",
+    "alt": "B의 논리 블록 L0는 토큰 위치 0에서 3의 KV를 담고 물리 블록 P3에 저장된다. L1은 위치 4에서 6의 KV를 담고 P0에 저장된다. C의 L0와 L1은 각각 P1과 P4에 저장된다. P2와 P5는 비어 있다. 각 논리 블록에서 블록 테이블을 거쳐 실제 KV 셀까지 연결선이 이어진다.",
+    "caption": "B의 토큰 순서는 L0 다음 L1이지만 실제 저장 위치는 P3 다음 P0입니다. 블록 테이블이 두 순서를 연결하므로 요청별 KV를 큰 연속 공간에 둘 필요가 없습니다. 왼쪽 논리 블록은 같은 데이터를 설명하는 관점이며, 별도의 KV 복사본이 아닙니다.",
+    "path": "public/images/paged-kv-cache/02-logical-physical.svg",
+    "width": 1200,
+    "height": 1040
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "03-growing-blocks",
+    "locale": "ko",
+    "title": "생성에 맞춰 블록 늘리기",
+    "alt": "B의 KV 7개는 P3와 P0에 있습니다. 입력 위치 7을 처리하면 P0의 마지막 칸이 채워집니다. 다음 입력 위치 8을 처리할 때 새 P5를 배정하고 L2를 연결합니다. 기존 B와 C의 블록은 이동하지 않습니다.",
+    "caption": "숫자는 요청 안의 KV 위치 번호입니다. 새 토큰을 입력으로 처리할 때 KV가 기록되며, 빈칸이 있으면 그대로 쓰고 블록이 가득 차면 하나를 더 배정합니다. 마지막 블록 안의 미사용 칸은 남을 수 있습니다.",
+    "path": "public/images/paged-kv-cache/03-growing-blocks.svg",
+    "width": 1200,
+    "height": 1150
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "04-paged-attention-read",
+    "locale": "ko",
+    "title": "흩어진 KV로 Attention 계산하기",
+    "alt": "B의 블록 테이블은 L0를 P3, L1을 P0, L2를 P5에 연결합니다. 현재 입력 위치 8의 Q는 P3의 4개, P0의 4개, P5의 1개 KV로 하나의 Attention 결과를 계산합니다. C의 KV, 빈 P2, P5의 미사용 칸은 제외합니다.",
+    "caption": "연결선은 Attention에 참여하는 데이터의 관계를 나타냅니다. KV를 하나의 연속 버퍼로 복사하는 단계가 아닙니다. 위치 8의 Q는 현재 입력의 KV를 포함해 유효한 9개 위치를 참조합니다.",
+    "path": "public/images/paged-kv-cache/04-paged-attention-read.svg",
+    "width": 1200,
+    "height": 1040
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "05-shared-prefix",
+    "locale": "ko",
+    "title": "여러 응답이 공통 KV를 공유하기",
+    "alt": "위쪽은 두 응답이 같은 프롬프트 p0부터 p5까지의 KV를 각자 복사하여 물리 블록 네 개를 쓰는 장면이다. 아래쪽은 두 개의 별도 블록 테이블이 같은 P0와 P1을 가리켜 물리 블록 두 개만 쓰는 장면이다. P0에는 p0부터 p3, P1에는 p4와 p5가 있고 마지막 두 칸은 비어 있다.",
+    "caption": "공통 입력을 처리한 뒤, 각 응답의 다음 입력을 처리하기 전의 상태다. 같은 문맥에서 계산된 공통 prefix의 KV를 공유하며, 두 응답의 블록 테이블은 각각 유지한다. 칸의 p0부터 p5는 토큰 위치에 대응하는 KV를 뜻한다.",
+    "path": "public/images/paged-kv-cache/05-shared-prefix.svg",
+    "width": 1200,
+    "height": 1010
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "06-copy-on-write",
+    "locale": "ko",
+    "title": "쓰기가 필요할 때 공유 블록 분리하기",
+    "alt": "첫 상태에서 두 응답은 p0부터 p3까지 든 P0와 p4, p5가 든 부분 블록 P1을 공유한다. 응답 1의 새 입력 a0를 처리하면서 공유 꼬리 블록에 KV를 써야 하므로 P2를 배정해 p4와 p5만 복사하고 a0의 KV를 추가한다. 응답 2는 이제 혼자 참조하는 원래 P1에 b0의 KV를 추가한다. P0는 계속 공유되고 총 세 물리 블록을 쓴다.",
+    "caption": "응답 1이 먼저 쓰는 예시다. 복사의 조건은 출력 토큰 선택 자체가 아니라 공유 블록에 KV를 기록해야 하는 순간이다. 두 응답이 모두 복사하면 네 블록이 필요하지만, 이 예시에서는 첫 블록을 공유해 세 블록으로 충분하다. 마지막 미사용 칸은 남아 있다.",
+    "path": "public/images/paged-kv-cache/06-copy-on-write.svg",
+    "width": 1200,
+    "height": 1080
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "01-needed-blocks",
+    "locale": "en",
+    "title": "Replace a large reservation with needed blocks",
+    "alt": "B has 6 KV positions in a 24-position pool. Reserving 20 leaves 14 unused reserved positions and only 4 free, so C with 6 input tokens waits. With 4 positions per block, assigning 2 blocks to B and 2 to C leaves 2 free blocks. C’s assigned blocks are still empty because its inputs have not yet been processed.",
+    "caption": "Both rows show the same KV pool, not all GPU memory. B’s next input increases its KV to 7 positions, still within its 2 blocks. C receives 2 blocks for its 6 inputs, but these blocks do not yet contain computed KV.",
+    "path": "public/images/paged-kv-cache/en/01-needed-blocks.svg",
+    "width": 1200,
+    "height": 918
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "02-logical-physical",
+    "locale": "en",
+    "title": "Connect token order to storage locations",
+    "alt": "B’s logical block L0 contains KV for token positions 0 through 3 in physical block P3. Its L1 contains positions 4 through 6 in P0. C’s L0 and L1 map to P1 and P4. P2 and P5 are free. Connectors run from every logical block through its table entry to the actual KV cells.",
+    "caption": "B’s logical order is L0 then L1, while their storage locations are P3 then P0. The table connects these orders, so each request does not need one large contiguous region. The logical view on the left describes the same data; it is not an additional KV copy.",
+    "path": "public/images/paged-kv-cache/en/02-logical-physical.svg",
+    "width": 1200,
+    "height": 1040
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "03-growing-blocks",
+    "locale": "en",
+    "title": "Grow the allocation as generation proceeds",
+    "alt": "B’s 7 KV positions occupy P3 and P0. Processing input position 7 fills P0. Processing position 8 allocates P5 and adds L2 to the table. Existing B and C blocks do not move.",
+    "caption": "Numbers identify KV positions within each request. KV is written when a token is processed as input. An existing empty slot is used first; another block is allocated when needed. The last block can still have unused slots.",
+    "path": "public/images/paged-kv-cache/en/03-growing-blocks.svg",
+    "width": 1200,
+    "height": 1150
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "04-paged-attention-read",
+    "locale": "en",
+    "title": "Compute attention over scattered KV",
+    "alt": "B maps L0 to P3, L1 to P0 and L2 to P5. Q at input position 8 uses 4 KV positions in P3, 4 in P0 and 1 in P5 to compute one attention result. C’s KV, free P2 and unused P5 slots are excluded.",
+    "caption": "Connectors show which operands participate in attention, not a copy into a contiguous buffer. Q at position 8 attends to all 9 valid positions, including the current input’s KV.",
+    "path": "public/images/paged-kv-cache/en/04-paged-attention-read.svg",
+    "width": 1200,
+    "height": 1040
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "05-shared-prefix",
+    "locale": "en",
+    "title": "Sharing common KV across responses",
+    "alt": "The top duplicates the KV for prompt positions p0 through p5 for two responses, using four physical blocks. Below, two separate block tables both reference P0 and P1, using only two physical blocks. P0 holds p0 through p3; P1 holds p4 and p5 with two unused slots.",
+    "caption": "This is after processing the common prompt and before processing each response’s next input. The responses share KV for the common prefix computed in the same context, while keeping separate block tables. Cell labels p0 through p5 denote KV for those token positions.",
+    "path": "public/images/paged-kv-cache/en/05-shared-prefix.svg",
+    "width": 1200,
+    "height": 1010
+  },
+  {
+    "article": "paged-kv-cache",
+    "slug": "06-copy-on-write",
+    "locale": "en",
+    "title": "Splitting a shared block when a write is needed",
+    "alt": "Initially, both responses share full block P0 with p0 through p3 and partial tail P1 with p4 and p5. Processing a0 for response 1 requires a write to the shared tail, so P2 is allocated, p4 and p5 are copied, and the KV for a0 is appended. Response 2 then appends the KV for b0 to the original P1, which it now references exclusively. P0 stays shared and only three physical blocks are used.",
+    "caption": "Response 1 writes first in this example. Copying is triggered by a required KV write to a shared block, rather than by selecting an output token. Fully separate copies would need four blocks; keeping the first block shared needs only three here. The final unused slots remain.",
+    "path": "public/images/paged-kv-cache/en/06-copy-on-write.svg",
+    "width": 1200,
+    "height": 1080
+  }
+]

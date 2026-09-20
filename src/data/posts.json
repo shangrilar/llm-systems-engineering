@@ -944,8 +944,33 @@
         "description": "Explore the limits of static batching, how batch membership changes between executions, how to check computation and KV space requirements, and why unused reservations make requests wait.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "7a32e00027b3b5dc2557aeb5ae79e0ca8acd6e9c9cc1c86411cc0a42b94e75dd",
-        "reviewNote": "2026-09-20: Korean and English paragraphs, five sections, two subsections, four figure pairs, captions, alt text, numeric examples, and scope compared. Unpublished PagedAttention article is named without a link in both languages. Final release requested by user."
+        "sourceRevision": "1a42dc507af561026546262c901a2019b887a26d8e695772f2994a76c8a25974",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved. The closing PagedAttention follow-up is now a link in both languages after publication of that article; paragraph content otherwise unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "paged-kv-cache",
+    "order": 39,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "paged-kv-cache",
+        "title": "KV 캐시 관리와 PagedAttention",
+        "description": "필요한 만큼 KV 블록을 배정하고, 흩어진 KV로 Attention을 계산하는 과정을 살펴봅니다. 같은 입력에서 여러 응답을 만들 때의 블록 공유와 Copy-on-write도 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "paged-kv-cache",
+        "title": "KV Cache Management and PagedAttention",
+        "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "df93bdcdd642da30c0695feea568cb5a5444289defe7b8a5450f6554c87e88ce",
+        "reviewNote": "2026-09-20: Rewritten Korean and English compared paragraph by paragraph: six H2 sections, one H3, six figures, allocation/computation boundaries, B/C counts and addresses, attention scope, shared-prefix conditions, copy-on-write and reference counts. All twelve bilingual PNGs visually reviewed. Standalone release leaves the unpublished preemption follow-up as plain text."
       }
     }
   }

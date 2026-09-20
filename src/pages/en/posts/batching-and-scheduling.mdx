@@ -119,4 +119,4 @@ The scheduler therefore cannot stop at calculating token counts and KV requireme
 
 Even if continuous batching lets us change the set of requests at each execution, large unused reservations make it difficult to admit enough new requests. Updating batch membership frequently and using KV space efficiently are problems that must be addressed together.
 
-Could we allocate space as KV grows instead of reserving a large region for the maximum length? The next article, *KV Cache Management and PagedAttention*, examines how to allocate KV in small units and read a request's KV even when its storage locations are not contiguous.
+Could we allocate space as KV grows instead of reserving a large region for the maximum length? The next article, [KV Cache Management and PagedAttention](/en/posts/paged-kv-cache/), examines how to allocate KV in small units and read a request's KV even when its storage locations are not contiguous.
