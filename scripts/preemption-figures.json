@@ -1,0 +1,112 @@
+[
+  {
+    "article": "inference-preemption",
+    "slug": "01-growing-pressure",
+    "locale": "ko",
+    "title": "생성 중 부족해지는 KV 공간",
+    "alt": "네 블록에 A와 B의 KV가 각각 7칸씩 들어 있다. 각 마지막 블록의 한 칸을 채워 8칸이 되면 모든 칸이 찬다. 다음 위치 8의 KV를 쓰려면 새 블록이 필요하지만 가용 블록은 없다.",
+    "caption": "처음부터 가용 블록은 0개여도 이미 배정된 블록의 남은 칸에는 KV를 쓸 수 있습니다. 그 칸까지 차면 추가 블록이 필요합니다. 앞 글과 별도의 4블록 예시입니다.",
+    "path": "public/images/inference-preemption/01-growing-pressure.svg",
+    "width": 1200,
+    "height": 1060
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "02-reclaim-blocks",
+    "locale": "ko",
+    "title": "B의 KV를 회수해 A 진행시키기",
+    "alt": "첫 장면에서 B를 실행에서 제외해도 A와 B의 블록 두 개씩이 그대로 남아 가용 블록은 없다. B의 독점 블록 두 개를 반환하면 두 블록이 빈다. A에 하나를 배정하고 다음 입력의 KV를 쓰면 A는 KV 9칸을 세 블록에 보유하고 한 블록이 남는다. B는 이력을 보존하고 재개를 기다린다.",
+    "caption": "B를 중단 대상으로 고른 예시이며 최적 정책을 뜻하지 않습니다. 반환은 블록을 재배정 가능한 상태로 바꾸는 동작입니다. 실행 중인 GPU 커널을 강제로 끊는 장면이 아닙니다.",
+    "path": "public/images/inference-preemption/02-reclaim-blocks.svg",
+    "width": 1200,
+    "height": 1025
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "03-recompute-state",
+    "locale": "ko",
+    "title": "보존한 토큰으로 KV 재계산하기",
+    "alt": "요청 B의 입력 p0부터 p6과 출력 x0, x1 이력은 중단 중에도 보존한다. 원래 KV는 x0까지 8개이며 x1의 KV는 없다. GPU KV를 반환한 뒤 공간을 확보하면 알려진 토큰 9개를 모델에 입력한다. 기존 KV 8개를 복구하고 x1의 KV를 처음 계산하며, 새 x2만 선택해 사용자에게 전달한다.",
+    "caption": "여기서는 재사용할 캐시 없이 전체 이력을 한 번에 처리하는 예시입니다. 복구한 8개 KV와 새로 계산한 x1의 KV를 구별했습니다. x2를 선택한 직후에는 x2 자신의 KV가 아직 없습니다.",
+    "path": "public/images/inference-preemption/03-recompute-state.svg",
+    "width": 1200,
+    "height": 1115
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "04-swap-state",
+    "locale": "ko",
+    "title": "KV를 GPU 밖에 보관했다가 복원하기",
+    "alt": "Swap의 세 단계. B의 KV 8개를 GPU에서 CPU로 복사하고, 복사 완료 후 GPU 두 블록을 반환한다. 나중에 GPU 공간을 확보하면 두 블록에 KV를 복원한다. 토큰 이력 p0부터 p6, x0, x1은 유지한다. 복원 후 x1을 처리할 세 번째 블록을 배정해 KV 9개를 만들고 새 출력 x2를 전달한다.",
+    "caption": "재계산 대신 이미 계산한 KV를 별도 메모리에 보관할 수도 있습니다. GPU 블록은 전송이 끝난 뒤 반환하고, 재개할 때 KV를 복원합니다. 복원한 KV는 x0까지이므로 아직 KV가 없는 x1을 처리할 블록을 추가로 배정합니다. Swap에는 보관 공간과 왕복 전송이 필요하며, 엔진마다 지원 방식은 다릅니다.",
+    "path": "public/images/inference-preemption/04-swap-state.svg",
+    "width": 1200,
+    "height": 1188
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "05-output-gap",
+    "locale": "ko",
+    "title": "중단과 복구가 늘리는 출력 간격",
+    "alt": "같은 시간축에서 요청 A와 B, 블록 변화, B의 출력 이벤트를 비교한다. B가 x0와 x1을 전달한 뒤 중단해 두 블록을 반환하면 A는 한 블록을 추가하고 KV 9개에서 12개까지 진행한다. A가 완료해 세 블록을 반환하면 B가 세 블록을 배정받아 알려진 9개 토큰으로 KV를 재계산한다. 대기와 재계산 중에는 새 출력이 없으며, 이후 x2와 x3가 전달된다.",
+    "caption": "이 예시는 A의 완료로 공간이 확보된 뒤 B가 재계산하는 경로입니다. B는 알려진 토큰 9개로 KV를 복구하고 새 출력 x2부터 생성을 이어 갑니다. 이미 전달한 x0·x1을 다시 보내지 않으며, 대기와 복구만큼 출력 간격이 길어집니다. 시간선은 처리 순서를 보여 주는 예시이며 실측 시간 비율이 아닙니다.",
+    "path": "public/images/inference-preemption/05-output-gap.svg",
+    "width": 1200,
+    "height": 1024
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "01-growing-pressure",
+    "locale": "en",
+    "title": "Running out of KV space during generation",
+    "alt": "A and B each hold seven KV positions in a four-block pool. Each fills its final empty slot, reaching eight positions. Processing position eight then requires a new block, but none is free.",
+    "caption": "Even with zero free blocks, requests can use empty slots in their allocated blocks. Once those slots fill, another block is needed. This is a separate four-block example.",
+    "path": "public/images/inference-preemption/en/01-growing-pressure.svg",
+    "width": 1200,
+    "height": 1060
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "02-reclaim-blocks",
+    "locale": "en",
+    "title": "Reclaim B’s KV so A can proceed",
+    "alt": "Skipping B leaves two blocks each allocated to A and B. Releasing B’s two exclusive blocks frees two. A takes one and processes its next input, reaching nine KV positions in three blocks with one block still free. B retains its history and waits to resume.",
+    "caption": "Choosing B is an example, not an optimal policy. Releasing a block makes it available for reassignment. This does not depict interrupting a running GPU kernel.",
+    "path": "public/images/inference-preemption/en/02-reclaim-blocks.svg",
+    "width": 1200,
+    "height": 1025
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "03-recompute-state",
+    "locale": "en",
+    "title": "Rebuild KV from retained tokens",
+    "alt": "B retains prompt p0 through p6 and outputs x0 and x1 while paused. Its original eight KV positions cover through x0, not x1. After releasing KV and obtaining space again, nine known tokens enter the model. Eight KV positions are rebuilt, x1’s KV is computed for the first time, and only new x2 is selected and delivered.",
+    "caption": "This example processes the entire history together without a reusable cache. Eight rebuilt KV positions are distinguished from x1’s newly computed KV. Immediately after selecting x2, its own KV has not yet been computed.",
+    "path": "public/images/inference-preemption/en/03-recompute-state.svg",
+    "width": 1200,
+    "height": 1115
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "04-swap-state",
+    "locale": "en",
+    "title": "Store KV outside the GPU, then restore it",
+    "alt": "Three swap stages: copy B’s eight KV slots from GPU to CPU, release two GPU blocks only after the copy completes, and restore the KV into two blocks when GPU space becomes available. The history p0 through p6, x0, and x1 is retained. A third block is allocated to process x1, producing nine KV slots and the new output x2.",
+    "caption": "Instead of recomputing, KV can be stored in separate memory. GPU blocks are released after the transfer completes; KV is restored when the request resumes. The restored KV covers only through x0, so another block is allocated to process x1. Swapping requires storage space and transfers in both directions, and support varies by engine.",
+    "path": "public/images/inference-preemption/en/04-swap-state.svg",
+    "width": 1200,
+    "height": 1188
+  },
+  {
+    "article": "inference-preemption",
+    "slug": "05-output-gap",
+    "locale": "en",
+    "title": "Pausing and recovery extend the output gap",
+    "alt": "A and B, block changes, and B’s output events share one timeline. After delivering x0 and x1, B pauses and releases two blocks. A adds one block and grows from nine to twelve KV slots. When A completes and releases three blocks, B allocates three blocks and recomputes KV from nine known tokens. No new output is delivered while B waits or recomputes; x2 and x3 follow afterward.",
+    "caption": "In this example, B recomputes after A completes and frees space. B rebuilds KV from nine known tokens, then continues with the new output x2 without sending x0 or x1 again. Waiting and recovery lengthen the output gap. The timeline illustrates the execution order, not measured time ratios.",
+    "path": "public/images/inference-preemption/en/05-output-gap.svg",
+    "width": 1200,
+    "height": 1024
+  }
+]

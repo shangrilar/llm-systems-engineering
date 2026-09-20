@@ -1,0 +1,117 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: inference-preemption
+title: "When KV Capacity Runs Out: Pausing and Resuming Requests"
+description: "When KV space runs out during generation, pause some requests to reclaim blocks, then resume them from retained token history or KV. Explore how this process delays output."
+date: 2026-09-19
+---
+
+[KV Cache Management and PagedAttention](/en/posts/paged-kv-cache/) reduced wasted storage by allocating only the blocks needed as KV grew. But as generation continues, the KV actually needed also grows. Even with flexible block management, there can come a point when no blocks remain available to allocate.
+
+This article begins with ongoing requests running out of KV space. It then explains how pausing some requests makes room for others to progress, and how the paused requests can later resume. We will compare recomputing the KV needed to resume with storing it outside the GPU and bringing it back, then examine how these operations affect the time users spend waiting.
+
+## Running out of KV space during generation
+
+Having space for a request's input KV when it first runs does not mean that all the space needed until generation ends has been secured. Each time a selected output token is processed as the next input, new KV is added. Once the last block is full, another block is needed.
+
+Let us use a smaller pool than in the previous article. The entire KV pool consists of 4 physical blocks, each holding KV for four positions. Requests A and B use 2 blocks each and share no blocks. A cell in the figure represents storage for one token position's KV, and its number indicates the position within that request.
+
+Initially, A and B each have KV for 7 positions. Each request has 8 allocated slots, leaving one slot empty in its last block. <strong>Even with 0 free blocks, a request can process its next input if an already allocated block has an empty slot.</strong>
+
+<figure class="article-figure">
+  <a href="/images/inference-preemption/en/01-growing-pressure.png"><img src="/images/inference-preemption/en/01-growing-pressure.png" alt="Four blocks hold 7 KV positions each for A and B. Processing each request's next input fills its last empty slot, bringing its KV to 8 positions. The following input at position 8 needs a new block, but no free blocks remain." /></a>
+  <figcaption>Figure 1. Once the remaining slots in existing blocks are filled, the next input needs a new block.</figcaption>
+</figure>
+
+In Figure 1, processing one more input for each request brings both to 8 KV positions. Every slot in the four blocks is now full. A needs a third block to process its following input at position 8, but none is available in the pool. B faces the same problem if it continues generating. Since positions are numbered from 0, the KV at position 8 is the ninth KV position.
+
+This can happen even without new requests arriving. The outputs of requests already running can grow long enough to exhaust the space. Keeping new requests in the waiting queue prevents additional occupancy, but does not create the space A and B currently need.
+
+Reserving space up to the maximum output length can reduce later shortages. The tradeoff is that even requests that finish early can occupy large regions for a long time. Allocating only as needed reduces this reservation waste, but also requires a decision about how to proceed when additional space runs out during generation.
+
+## Pause requests and release KV blocks
+
+Suppose we pause B so that A can continue. We will examine what happens when B is chosen, leaving the policy for deciding which request to pause first to a later discussion.
+
+Excluding B from the next batch reduces the number of tokens processed in that execution. However, if B's KV remains on the GPU, its two blocks remain occupied. **Reducing the set of requests to execute and reclaiming KV storage are different operations.** To provide the new block A needs, B's blocks must actually be released.
+
+<figure class="article-figure">
+  <a href="/images/inference-preemption/en/02-reclaim-blocks.png"><img src="/images/inference-preemption/en/02-reclaim-blocks.png" alt="Merely skipping B's execution leaves both A's and B's blocks in place, with 0 free blocks. Releasing B's exclusive blocks P2 and P3 frees two blocks. A then receives P2 and writes KV for position 8, leaving one free block. B retains its token history while waiting to resume." /></a>
+  <figcaption>Figure 2. Releasing B's KV blocks lets A receive a new block and continue generating.</figcaption>
+</figure>
+
+The first scene in Figure 2 skips only B's execution, so the free-block count remains 0. In the next scene, releasing P2 and P3, which B exclusively owned, raises that count to 2. The engine allocates P2 to A and connects it in A's block table. When A processes its next input, KV for position 8 is written into P2's first slot. A now stores 9 KV positions in 3 blocks, leaving P3 as the one free block.
+
+Releasing a block means making its space available for allocation again. It does not require setting every value to zero. Another request can later receive that space and write its own KV. This example uses exclusive blocks, so both blocks can be reclaimed. As we saw in the previous article, shared blocks still referenced by other requests must remain in place.
+
+Pausing an ongoing request and reclaiming its resources so that other requests can progress is called <strong>preemption</strong>. Here we focus on request-level preemption in response to KV space shortages. The engine adjusts which requests will run between model execution steps; this does not mean forcibly interrupting a GPU kernel that is already running.
+
+Paused B is neither completed nor canceled. It waits to resume while preserving request state such as its input and generated token history, generation settings, and how much output has already been delivered. Because its GPU KV has been released, however, the KV needed for computation must be made available when B runs again.
+
+## Recompute KV from token history
+
+First, consider <strong>recomputation</strong>: release GPU KV and compute the required KV again later. To understand this approach, distinguish token history from KV. Token history contains the input and selected output token IDs in order. KV is the result of processing those tokens through the model. **Retaining token history preserves which tokens to compute with, even when their KV is gone.**
+
+We will continue with B from the previous figure. B's input consists of 7 tokens, p0 through p6. It processed the input to select x0, then processed x0 as its next input to select and deliver x1 before being paused.
+
+Its token history now contains 9 tokens: the 7 input tokens plus outputs x0 and x1. Its GPU KV, however, covers only 8 positions: the 7 input tokens and x0. Since x1 is the token that will enter the next execution, it does not yet have its own KV. This is the same state in which B filled its two blocks in the previous figure.
+
+<figure class="article-figure">
+  <a href="/images/inference-preemption/en/03-recompute-state.png"><img src="/images/inference-preemption/en/03-recompute-state.png" alt="B retains its token history, p0 through p6, x0, and x1, while paused. After releasing GPU KV and securing space again, the engine feeds these nine fixed tokens into the model. It rebuilds the previous 8 KV positions, computes x1's KV for the first time, and delivers only the new output x2 to the user." /></a>
+  <figcaption>Figure 3. Retained token history rebuilds KV so generation can continue after the outputs already delivered.</figcaption>
+</figure>
+
+In the middle of Figure 3, B has no GPU KV, but its token history and the already delivered x0 and x1 remain unchanged. Once the engine decides to run B again and secures enough space, it feeds the 9 retained tokens into the model. This example has no reusable cache, so the entire history is processed together.
+
+We can divide the result into two parts. Recomputing the 8 KV positions for p0 through p6 and x0 rebuilds state that was computed before, while x1's KV is computed for the first time. Storing 9 KV positions in total requires 3 blocks. The computation at the final input position, x1, can select and deliver a new token x2. The KV for x2 itself will be created when that token is processed as the next input.
+
+During recomputation, x0 and x1 are inputs whose values are already determined. They are neither sampled again nor sent to the user again. The engine rebuilds the computation state needed to continue the preserved answer, delivering only the new output from x2 onward.
+
+The distinction from [Prefill and Decode](/en/posts/prefill-and-decode/) appears again here. When the answer was first generated, the next outputs were unknown and had to be generated one at a time. At recomputation time, all past outputs are known, so they can be processed together with the input as one token sequence. The [recomputation discussion in the PagedAttention paper](https://arxiv.org/html/2309.06180v1#S4.SS5) also describes appending the generated history to the input and computing it in a prefill pass.
+
+The original generation process therefore does not need to be repeated token by token. There is still a cost to performing computation that was already done. A longer history to recover means more tokens to process again. If an engine can reuse some KV, the required recovery range may be smaller.
+
+## Restore KV stored outside the GPU
+
+Another way to reclaim GPU KV space is to keep the computed values in memory outside the GPU. Bringing those values back to the GPU when the request runs again is the approach called <strong>swapping</strong>. Here we will use CPU memory for storage. This is an alternative available at the same point of preemption, not an additional step performed after recomputation.
+
+Return to the point where B had delivered x1 and held 8 KV positions in two blocks. The engine copies B's KV to CPU memory. Once the copy has finished and the values are safely stored, it can release the two GPU blocks and allocate that space to other requests. Overwriting the space before the transfer finishes could lose the KV being preserved, so the engine must also manage when blocks are released.
+
+<figure class="article-figure">
+  <a href="/images/inference-preemption/en/04-swap-state.png"><img src="/images/inference-preemption/en/04-swap-state.png" alt="The engine copies B's 8 KV positions from GPU to CPU, then releases the two GPU blocks. Once GPU space is available later, it restores those 8 KV positions into two blocks. It allocates a third block to process the retained last output x1, bringing KV to 9 positions and delivering a new x2." /></a>
+  <figcaption>Figure 4. Computed KV is stored outside the GPU, restored to the GPU, and then used to process the next input.</figcaption>
+</figure>
+
+In the middle of Figure 4, B's GPU blocks have been released, but its 8 KV positions remain in CPU memory. Its token history and request state are also retained. When enough space is available to resume B, the engine allocates GPU blocks again and brings the stored KV into them. The newly assigned blocks can be at different locations from before, as long as the block table points to the current storage locations.
+
+Processing x1 is still necessary after restoring KV, because the stored KV extends only through x0. Both existing blocks are full, so the engine allocates one more block, processes x1 as input, and writes its new KV. This brings KV to 9 positions and allows the next output x2 to be selected. This path restores stored values instead of recomputing the previous 8 KV positions.
+
+The resources required by the two methods can be distinguished as follows.
+
+| Method | What is retained during the pause | Work to prepare for resumption | Additional cost |
+| --- | --- | --- | --- |
+| Recompute | Token history and request state | Recompute the required KV from retained history | Model computation |
+| Swap | Token history and request state, plus KV stored in CPU memory | Restore stored KV to the GPU | Storage memory and transfers in both directions |
+
+Recomputation cost depends on the number of tokens to process and the model's execution efficiency. Swapping cost depends on how much KV must be moved and the available transfer bandwidth between CPU and GPU. Which method is preferable therefore varies with context length, hardware, and how the engine executes work. The [PagedAttention paper](https://arxiv.org/html/2309.06180v1#S4.SS5) compares both methods while considering computation performance and transfer bandwidth together.
+
+This comparison explains the principles of the two methods. Which methods are actually supported and chosen depends on the engine and its version.
+
+## Output delays from pausing and recovery
+
+Finally, let us follow the recomputation example over time. When B pauses after delivering x0 and x1, its two blocks are released. A receives one of them and continues generating, while B waits to resume without GPU KV.
+
+In this example, A grows from 9 to 12 KV positions and then finishes generating. This fits within 3 blocks, so no further block is needed. Once A completes and releases its three blocks, the engine allocates the three blocks B needs and recomputes KV from its 9 retained tokens.
+
+<figure class="article-figure">
+  <a href="/images/inference-preemption/en/05-output-gap.png"><img src="/images/inference-preemption/en/05-output-gap.png" alt="While A and B are generating, B pauses and releases two blocks. A adds one block, grows from 9 to 12 KV positions, and completes. B then receives three blocks, recomputes KV, and continues delivering new outputs x2 and x3. Waiting and recovery create a long gap between B's x1 and x2." /></a>
+  <figcaption>Figure 5. Reclaiming B's space lets A progress, while waiting and recovery delay B's next output.</figcaption>
+</figure>
+
+The bottom of Figure 5 shows B's outputs as received by the user. After x1, no new output arrives while B waits and recomputes KV. Generation continues only after recomputation finishes and x2 is selected and delivered. The user experiences a long gap between x1 and x2. The [vLLM preemption documentation](https://docs.vllm.ai/en/latest/configuration/optimization/#preemption) also explains that pausing and recomputation can increase request latency.
+
+In this example, A's completion makes room for B to resume. More generally, the resumption time depends on total available space and execution order as well as other requests completing. A request does not necessarily run the moment space becomes available. The scheduler must decide which requests to execute next alongside the others.
+
+Preemption lets some requests continue when resources are insufficient. The paused requests, in turn, must wait and recover the state needed to run again. If this happens repeatedly, the engine may compute the same history or transfer the same KV many times while producing little new output.
+
+The number of requests admitted at once is therefore not enough to judge how well inference is progressing. We also need to examine how much new output was actually produced, how long users waited for the first output, and how long the gaps between outputs became. The next article, *Inference Metrics: Latency and Throughput*, explains how to measure the waiting, execution, and recovery processes covered so far.
