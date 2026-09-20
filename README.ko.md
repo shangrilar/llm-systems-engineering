@@ -70,3 +70,4 @@
 #### 워크로드
 
 - [추론과 KV 캐시](https://llm-systems-engineering.pages.dev/posts/inference-kv-cache/)
+- [Prefill과 Decode](https://llm-systems-engineering.pages.dev/posts/prefill-and-decode/)

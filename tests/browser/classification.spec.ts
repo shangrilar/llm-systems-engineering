@@ -37,7 +37,8 @@ for (const locale of ['ko', 'en'] as const) {
     await expect(page.locator('article nav:not(.article-toc) a').last()).toHaveAttribute('href', `${prefix}/posts/gpu-network-data-path/`);
     await page.goto(`${prefix}/posts/inference-kv-cache/`);
     await expect(page.locator('.article-header .eyebrow')).toContainText(locale === 'ko' ? '추론 · 워크로드' : 'Inference · Workloads');
-    await expect(page.locator('article nav:not(.article-toc) a')).toHaveCount(1);
+    await expect(page.locator('article nav:not(.article-toc) a')).toHaveCount(2);
     await expect(page.locator('article nav:not(.article-toc) a').first()).toHaveAttribute('href', `${prefix}/posts/inference-and-training/`);
+    await expect(page.locator('article nav:not(.article-toc) a').last()).toHaveAttribute('href', `${prefix}/posts/prefill-and-decode/`);
   });
 }

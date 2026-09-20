@@ -41,11 +41,11 @@ def text(x, y, value, size=24, color=INK, bold=False, width=None, anchor='start'
 def rect(x,y,w,h,fill='white',stroke=LINE,dash=False):
     return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{fill}" stroke="{stroke}" stroke-width="1.5"'+(' stroke-dasharray="6 5"' if dash else '')+'/>'
 
-def arrow(x1,y1,x2,y2,color=MUTED):
-    return f'<path d="M{x1},{y1} L{x2},{y2}" stroke="{color}" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>'
+def arrow(x1,y1,x2,y2,color=MUTED,marker='arrow'):
+    return f'<path d="M{x1},{y1} L{x2},{y2}" stroke="{color}" stroke-width="2.5" fill="none" marker-end="url(#{marker})"/>'
 
-def patharrow(d,color=MUTED):
-    return f'<path d="{d}" stroke="{color}" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>'
+def patharrow(d,color=MUTED,marker='arrow'):
+    return f'<path d="{d}" stroke="{color}" stroke-width="2.5" fill="none" marker-end="url(#{marker})"/>'
 
 def box(x,y,w,h,title,body='',fill=BLUEF,color=BLUE):
     return f'<g data-box="{x},{y},{w},{h}">'+rect(x,y,w,h,fill,color)+text(x+20,y+35,title,25,color,True,width=w-40)+text(x+20,y+78,body,22,width=w-40)+'</g>'
@@ -249,7 +249,151 @@ for LANG in ['ko','en']:
     b+=text(48,1363,('둥근 칸: 토큰 · 나뉜 사각형: K·V · 점선 칸: 아직 계산하지 않은 K·V','Rounded cell: token · Split rectangle: K/V · Dashed cell: K/V not yet computed'),22,MUTED,width=1104)
     save(a,'04-kv-boundary',('토큰 선택과 KV 계산은 한 실행 차이가 납니다','Token selection and KV computation are one execution apart'),('방금 선택한 토큰이 다음 입력으로 들어가면서 자기 K·V가 만들어집니다.','A just-selected token obtains its own K/V when it becomes input to the next execution.'),b,1440,('x0를 선택한 직후 KV는 p0 p1 p2까지만 있습니다. x0가 다음 입력으로 들어가 각 층의 KV(x0)를 만들고 x1을 선택합니다. 그때 x1의 KV는 없으며 다음 실행에 x1을 입력해야 KV(x1)가 만들어지고 x2를 선택합니다.','Immediately after selecting x0, KV exists only for p0 p1 p2. The next execution consumes x0, creates its K/V in each layer, and selects x1. At that point x1 has no own KV; consuming x1 in the following execution creates its K/V and selects x2.'),('출력 토큰을 고르는 것과 그 토큰의 K·V를 계산하는 것은 서로 다른 실행에서 일어납니다. 새 출력은 다음 실행의 입력이 되어야 자기 K·V를 만듭니다.','Selecting an output token and computing its K/V happen in different executions. The new output obtains its own K/V when consumed as the next input.'))
 
-assert len(MANIFEST) == 14
+    a='prefill-and-decode'
+    b='<defs>'+''.join(f'<marker id="flow-{name}" viewBox="0 0 12 12" refX="10" refY="6" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M2 2 L10 6 L2 10" fill="none" stroke="{color}" stroke-width="2.5"/></marker>' for name,color in [('write',ORANGE),('read',TEAL)])+'</defs>'
+    for i,(inputs,output) in enumerate([(['p0','p1','p2','p3'],'x0'),(['x0'],'x1'),(['x1'],'x2')]):
+        y=227+i*330
+        phase='Prefill' if i==0 else 'Decode'
+        b+=text(48,y,phase,29,BLUE,True)
+        b+=text(48,y+38,(f'이번 입력 {len(inputs)}개',f'{len(inputs)} input position'+('s' if len(inputs)>1 else '')),23,MUTED)
+        for j,t in enumerate(inputs):
+            b+=token(48+j*86,y+60,t,'plain' if i==0 else 'new',76)
+        b+=arrow(48+(len(inputs)-1)*86+88,y+88,484,y+88)
+        b+=rect(494,y+46,258,100,BLUEF,BLUE)
+        b+=text(623,y+86,('모델','Model'),28,BLUE,True,anchor='middle')
+        b+=text(623,y+122,(f'{len(inputs)}개 위치 계산',f'Compute {len(inputs)} position'+('s' if len(inputs)>1 else '')),23,BLUE,anchor='middle')
+        b+=arrow(766,y+88,1026,y+88)
+        b+=text(894,y+67,('다음 토큰 선택','Select next token'),22,MUTED,anchor='middle')
+        b+=token(1038,y+60,output,'new',86)
+        b+=text(1030,y+163,(f'KV({output})는 아직 없음',f'No KV({output}) yet'),19,ORANGE,anchor='middle')
+        context=['p0','p1','p2','p3']+(['x0','x1'][:i])
+        b+=text(48,y+217,('각 층의 KV 캐시','KV cache in each layer'),24,TEAL,True)
+        b+=text(48,y+251,(f'실행 후 {len(context)}개 위치',f'{len(context)} positions after this pass'),23,TEAL)
+        for j,t in enumerate(context):
+            b+=kv_cell(494+j*78,y+192,t,'new' if i==0 or j==len(context)-1 else 'old',68)
+        for j in (range(4) if i==0 else [len(context)-1]):
+            b+=patharrow(f'M623,{y+151} V{y+172} H{528+j*78} V{y+184}',ORANGE,'flow-write')
+        if i>0:
+            b+=arrow(528,y+184,528,y+154,TEAL,'flow-read')
+            b+=text(495,y+177,('기존 KV 읽기','Read past KV'),20,TEAL,anchor='end')
+        if i<2:
+            b+=patharrow(f'M1134,{y+88} H1168 V{y+289} H26 V{y+418} H38',ORANGE,'flow-write')
+            b+=text(400,y+319,(f'{output}를 다음 입력으로',f'{output} becomes the next input'),23,ORANGE)
+    b+=text(48,1212,('KV 칸: 초록은 이전 계산 재사용 · 주황은 이번에 계산','KV cells: green reuses past work · orange is computed in this pass'),22,MUTED,width=1104)
+    save(a,'01-prefill-decode-flow',('Prefill에서 시작해 Decode를 반복합니다','Start with prefill, then repeat decode'),('한 요청의 입력, 선택한 출력, 각 층에 남는 KV를 함께 따라갑니다.','Follow one request’s input, selected output, and KV retained in each layer.'),b,1270,('Prefill은 입력 p0 p1 p2 p3의 네 위치를 계산하고 각 층에 네 위치의 KV를 남겨 x0를 선택합니다. 다음 Decode는 x0 한 위치를 계산해 KV를 다섯 위치로 늘리고 x1을 선택합니다. 이어서 x1 한 위치를 계산해 KV를 여섯 위치로 늘리고 x2를 선택합니다. 새로 선택된 출력 자체의 KV는 아직 없습니다.','Prefill computes four input positions p0 p1 p2 p3, leaves KV for four positions in each layer, and selects x0. Decode computes x0 alone, extends KV to five positions, and selects x1. The next decode computes x1 alone, extends KV to six positions, and selects x2. The newly selected output does not yet have its own KV.'),('Prefill은 입력 문맥의 여러 위치를 처리하고, 이후 Decode는 방금 선택한 한 토큰을 처리합니다. 각 층의 KV는 실제로 입력으로 처리한 위치까지 저장됩니다.','Prefill processes multiple prompt positions; each subsequent decode processes the token just selected. Each layer’s KV extends only through positions already processed as input.'))
+
+    b=text(48,223,'Prefill',29,BLUE,True)+text(650,223,'Decode',29,ORANGE,True)
+    b+=text(48,265,('새로 처리할 입력','Input positions to process'),24,MUTED)+text(650,265,('새로 처리할 입력','Input positions to process'),24,MUTED)
+    for j,t in enumerate(['p0','p1','p2','p3']):b+=token(48+j*92,289,t,'plain',80)
+    b+=token(650,289,'x0','new',80)
+    b+=text(420,326,'T = 4',28,BLUE,True)+text(805,326,'T = 1',28,ORANGE,True)
+    b+=text(48,408,('토큰별 연산의 행 수','Rows in token-wise operations'),27,bold=True)
+    b+=text(48,449,('Projection · MLP 등','Projection · MLP, etc.'),23,MUTED)
+    for x,n,fill,color,labels in [(48,4,BLUEF,BLUE,['p0','p1','p2','p3']),(650,1,ORANGEF,ORANGE,['x0'])]:
+        for j,t in enumerate(labels):
+            yy=476+j*49
+            b+=text(x+36,yy+31,t,23,color,True,anchor='middle')
+            b+=rect(x+84,yy,348,40,fill,color)
+            for k in range(1,6):b+=f'<path d="M{x+84+k*58},{yy} V{yy+40}" stroke="{color}" stroke-width="1"/>'
+        b+=text(x+258,715,('각 행에 같은 가중치 적용','Same weights for each row'),23,color,anchor='middle')
+    b+=f'<path d="M48,749 H1152" stroke="{LINE}"/>'
+    b+=text(48,798,('Attention이 참조하는 위치','Positions read by attention'),27,bold=True)
+    b+=text(48,842,('행: 이번 Q · 열: 참조할 K/V 위치','Rows: current Q · columns: K/V positions'),23,MUTED)
+    for x,labels,queries in [(126,['p0','p1','p2','p3'],['p0','p1','p2','p3']),(730,['p0','p1','p2','p3','x0'],['x0'])]:
+        for j,t in enumerate(labels):b+=text(x+j*73+32,889,t,22,TEAL,True,anchor='middle')
+        for r,q in enumerate(queries):
+            yy=909+r*57
+            b+=text(x-22,yy+36,q,22,BLUE if x==126 else ORANGE,True,anchor='end')
+            for c,t in enumerate(labels):
+                active=x==730 or c<=r
+                fill,color=(TEALF,TEAL) if active else ('#F7F9FB',LINE)
+                b+=rect(x+c*73,yy,64,49,fill,color)
+                b+=text(x+c*73+32,yy+34,'●' if active else '×',20,TEAL if active else MUTED,anchor='middle')
+        b+=text(x,1178,f'T = {len(queries)}   ·   L = {len(labels)}',26,BLUE if x==126 else ORANGE,True)
+    b+=text(650,1026,('현재 x0의 K/V도 참조','Read current x0’s K/V too'),23,TEAL)
+    b+=text(650,1070,('L 증가 → Attention 계산·읽기 증가','L grows → more attention work and reads'),22,MUTED,width=495)
+    b+=text(650,1132,('● 참조   × 미래 위치: 참조하지 않음','● Read   × Future position: not read'),22,MUTED)
+    b+=text(48,1245,('T: 이번에 처리하는 위치 수   ·   L: 현재 위치를 포함한 참조 문맥 길이','T: positions processed now   ·   L: context length, including the current position'),23,MUTED,width=1104)
+    save(a,'02-compute-and-context',('처리하는 토큰 수와 참조하는 문맥 길이는 다릅니다','Tokens processed and context length are different'),('캐시가 있으면 과거 위치의 토큰별 연산을 반복하지 않아도, Attention은 과거 K/V를 읽습니다.','With a cache, past token-wise work is skipped, but attention still reads past K/V.'),b,1300,('Prefill은 p0 p1 p2 p3 네 위치를 처리하므로 토큰별 Projection과 MLP의 행은 네 개입니다. Decode는 새 x0 한 위치를 처리하므로 한 행입니다. Prefill의 Attention 참조는 네 행 네 열의 causal 삼각형이고, Decode의 x0 Q는 p0 p1 p2 p3 x0 다섯 위치의 K와 V를 참조합니다. T는 이번 처리 위치 수이고 L은 현재 위치를 포함한 참조 문맥 길이입니다.','Prefill processes four positions p0 p1 p2 p3, giving four rows for token-wise projection and MLP operations. Decode processes only the new x0, giving one row. Prefill attention follows a causal triangle with four rows and four columns; the decode query at x0 reads K and V at five positions p0 p1 p2 p3 x0. T is the number of positions processed now; L is context length including the current position.'),('토큰별 연산의 크기는 이번에 처리할 T에 따라 달라집니다. Attention은 각 Q에서 허용된 문맥을 참조하므로, Decode의 T가 1이어도 문맥 L이 길어지면 Attention 계산과 K/V 읽기가 늘어납니다.','Token-wise work scales with the T positions processed now. Attention reads the context allowed for each query, so even with decode T equal to one, a longer context L increases attention work and K/V reads.'))
+
+    # One weight matrix, more token rows. Each metric is normalized separately.
+    b=''
+    for x,n in [(48,1),(636,4)]:
+        cx=x+258
+        b+=text(cx,221,('입력 토큰 1개','One input token') if n==1 else ('입력 토큰 4개','Four input tokens'),28,BLUE,True,anchor='middle')
+        b+=rect(cx-95,265,190,132,PURPLEF,PURPLE)
+        for j in range(1,5):
+            b+=f'<path d="M{cx-95+j*38},265 V397 M{cx-95}, {265+j*26.4} H{cx+95}" stroke="{PURPLE}" opacity=".18"/>'
+        b+=rect(cx-35,301,70,56,PURPLEF,PURPLE)+text(cx,339,'W',33,PURPLE,True,anchor='middle')
+        for j in range(n):
+            xx=cx-43 if n==1 else x+24+j*120
+            b+=arrow(cx,412,xx+43,489,PURPLE)+token(xx,504,f't{j}','new')
+            b+=arrow(xx+43,575,xx+43,610,BLUE)
+            b+=rect(xx,626,86,18,BLUEF,BLUE)
+        b+=text(cx,691,('출력 1행','One output row') if n==1 else ('출력 4행','Four output rows'),24,BLUE,True,anchor='middle')
+        b+=text(x,771,('가중치 데이터량','Weight bytes'),24,PURPLE,True)
+        b+=rect(x,790,240,38,PURPLEF,PURPLE)+text(x+258,818,'1×',25,PURPLE,True)
+        b+=text(x,884,('선형 연산량','Linear-operation FLOPs'),24,BLUE,True)
+        for j in range(n): b+=rect(x+j*60,903,56,38,BLUEF,BLUE)
+        b+=text(x+n*60+16,931,f'{n}×',25,BLUE,True)
+    b+=text(48,1001,('각 항목의 1토큰 값을 기준으로 비교 · 가중치 한 벌을 읽는 근사','Each metric is relative to its one-token value · One read of the weights assumed'),22,MUTED,width=1104)
+    b+=text(48,1054,('여러 토큰: 한 요청의 Prefill 또는 여러 요청의 Decode','Multiple tokens: prefill of one request, or decode across requests'),23,bold=True,width=1104)
+    save(a,'03-weight-reuse',('같은 가중치로 더 많은 토큰 계산하기','Compute more tokens with the same weights'),('가중치의 크기는 같고, 함께 계산하는 입력과 출력 행이 늘어납니다.','The weight matrix stays the same size while more input and output rows are computed.'),b,1110,('동일한 W를 입력 토큰 하나와 네 개에 사용하는 두 경우를 비교합니다. 출력 행과 선형 연산량은 하나에서 네 개로 늘지만 가중치 데이터량은 같습니다. 각 비교 막대는 해당 항목의 한 토큰 값을 기준으로 합니다.','Two cases use the same W with one and four input tokens. Output rows and linear-operation FLOPs increase fourfold while weight bytes stay the same. Each bar is relative to that metric’s one-token value.'),('고정된 선형 연산에서 연산량은 처리 토큰 수에 비례합니다. 가중치를 한 벌 읽는 단순 근사이며 입력·출력 이동과 실제 캐시·타일링 효과는 생략합니다.','For a fixed linear operation, FLOPs scale with the number of processed tokens. This simplified comparison assumes one read of the weights and omits input/output traffic and actual caching or tiling effects.'))
+
+    # Qualitative Roofline for weight-using linear operations, not a benchmark.
+    b=text(48,220,('연산 처리량','Compute throughput'),25,bold=True)
+    b+=arrow(145,765,145,265)+arrow(145,765,1145,765)
+    b+=f'<path d="M145,765 L705,355" fill="none" stroke="{BLUE}" stroke-width="6"/>'
+    b+=f'<path d="M705,355 H1110" fill="none" stroke="{ORANGE}" stroke-width="6"/>'
+    b+=f'<path d="M145,355 H705 V765" fill="none" stroke="{LINE}" stroke-width="2" stroke-dasharray="7 7"/>'
+    b+=text(460,306,('대역폭 × 산술 강도','Bandwidth × arithmetic intensity'),24,BLUE,True,anchor='middle')
+    b+=text(920,306,('GPU 연산 성능 상한','GPU compute ceiling'),24,ORANGE,True,anchor='middle')
+    for x,y in [(330,765-(330-145)*410/560),(955,355)]:
+        b+=f'<circle cx="{x}" cy="{y}" r="10" fill="white" stroke="{INK}" stroke-width="3"/>'
+    b+=text(190,466,('작은 배치의 Decode','Small-batch decode'),26,BLUE,True)
+    b+=text(190,505,('적은 새 입력 토큰','Few new input tokens'),23,MUTED)
+    b+=arrow(330,526,330,589,BLUE)
+    b+=text(810,448,('충분한 입력의 Prefill','Prefill with enough input'),25,ORANGE,True)
+    b+=text(810,488,('많은 입력 토큰','Many input tokens'),23,MUTED)
+    b+=arrow(955,418,955,374,ORANGE)
+    b+=text(330,817,('낮음','Low'),23,MUTED,anchor='middle')+text(955,817,('높음','High'),23,MUTED,anchor='middle')
+    b+=text(665,867,('산술 강도 · FLOP/byte','Arithmetic intensity · FLOP/byte'),27,bold=True,anchor='middle')
+    b+=text(350,708,('Memory-bound','Memory-bound'),24,BLUE,True,anchor='middle')
+    b+=text(917,708,('Compute-bound','Compute-bound'),24,ORANGE,True,anchor='middle')
+    b+=arrow(226,929,1080,929,PURPLE)
+    b+=text(654,975,('처리 토큰 수 ↑ → 가중치 재사용 ↑ → 산술 강도 ↑','More tokens → more weight reuse → higher arithmetic intensity'),25,PURPLE,True,anchor='middle')
+    b+=text(48,1044,('선은 처리량의 상한 · 위치는 실행 조건의 예시이며 실측값이 아닙니다.','The line is a throughput ceiling; positions illustrate conditions, not measurements.'),22,MUTED,width=1104)
+    save(a,'04-prefill-decode-roofline',('처리 토큰 수가 선형 연산의 병목을 바꿉니다','Token count changes the bottleneck of linear operations'),('가중치를 사용하는 선형 연산에 Roofline을 적용합니다.','Apply the Roofline model to linear operations that use model weights.'),b,1100,('Roofline의 기울어진 대역폭 상한 아래는 memory-bound, 수평 연산 성능 상한 아래는 compute-bound 영역입니다. 작은 배치 Decode의 적은 새 토큰과 충분한 입력 Prefill의 많은 토큰을 각각 낮은 산술 강도와 높은 산술 강도의 예로 표시합니다.','The sloped bandwidth ceiling marks the memory-bound region, and the flat compute ceiling marks the compute-bound region. Few new tokens in small-batch decode and many tokens in sufficiently large prefill illustrate low and high arithmetic intensity respectively.'),('같은 가중치를 더 많은 토큰에 쓰면 선형 연산의 산술 강도가 높아집니다. 짧은 Prefill이나 큰 Decode 배치는 다른 위치에 올 수 있으며 실제 성능은 상한보다 낮을 수 있습니다. Attention의 KV 읽기는 다음 그림에서 따로 봅니다.','Reusing weights across more tokens raises linear-operation arithmetic intensity. Short prefill or large decode batches can fall elsewhere, and actual performance can lie below the ceiling. The next figure treats attention’s KV reads separately.'))
+
+    # Request count varies; each independent context has the same five positions.
+    b=''
+    for x,n in [(48,1),(636,3)]:
+        cx=x+258
+        b+=text(cx,222,('요청 1개','One request') if n==1 else ('요청 3개','Three requests'),28,BLUE,True,anchor='middle')
+        b+=rect(cx-90,260,180,82,PURPLEF,PURPLE)+text(cx,313,'W',32,PURPLE,True,anchor='middle')
+        for j in range(n):
+            xx=cx-75 if n==1 else x+5+j*173
+            label='ABC'[j]
+            b+=arrow(cx,357,xx+75,422,PURPLE)
+            b+=rect(xx,438,150,68,BLUEF,BLUE)
+            b+=text(xx+75,481,f'{label}: '+tr(('새 토큰 1개','1 new token')),20,BLUE,True,anchor='middle')
+            b+=arrow(xx+75,589,xx+75,520,TEAL)
+            b+=text(xx+75,703,f'KV({label})',25,TEAL,True,anchor='middle')
+            for k in range(5):
+                b+=rect(xx+3+k*29,603,26,54,TEALF,TEAL)
+                b+=f'<path d="M{xx+3+k*29},630 H{xx+29+k*29}" stroke="{TEAL}" stroke-width="1"/>'
+            b+=text(xx+75,754,('5개 위치','5 positions'),20,MUTED,anchor='middle')
+        b+=text(x,840,('한 단계에서 읽는 대상','Reads in one decode step'),25,bold=True)
+        b+=rect(x,873,92,70,PURPLEF,PURPLE)+text(x+46,917,'W',27,PURPLE,True,anchor='middle')
+        for j in range(n):
+            xx=x+125+j*130
+            b+=text(xx-(17 if j==0 else 12),917,'+',24,MUTED,anchor='middle')
+            b+=rect(xx,873,106,70,TEALF,TEAL)+text(xx+53,915,f'KV({"ABC"[j]})',22,TEAL,True,anchor='middle')
+    b+=text(48,1003,('가중치는 공통으로 사용 · 읽을 KV는 요청마다 추가','Weights are shared · Each request adds its own KV reads'),26,bold=True,width=1104)
+    b+=text(48,1058,('동일한 모델·문맥 길이, 독립 KV의 예 · 칸 크기는 데이터량의 비율이 아닙니다.','Same model and context length, independent KV · Cell sizes do not represent byte ratios.'),22,MUTED,width=1104)
+    save(a,'05-request-kv-reads',('요청이 늘면 읽을 KV도 늘어납니다','More requests add more KV reads'),('한 번의 Decode에서 요청마다 새 입력 하나와 자기 문맥을 사용합니다.','In one decode step, each request uses one new input and its own context.'),b,1130,('동일한 문맥 길이의 요청 하나와 세 개를 비교합니다. W는 모든 요청이 공통으로 사용하지만, A B C의 이번 토큰 계산은 각각 KV(A), KV(B), KV(C)를 읽습니다. 읽기 대상은 W와 KV 하나에서 W와 서로 다른 KV 세 개로 늘어납니다.','Compare one and three requests with equal context lengths. All requests share W, while their current-token computations read KV(A), KV(B), and KV(C) separately. The read set grows from W plus one KV cache to W plus three independent KV caches.'),('각 요청이 현재 입력 위치를 포함한 다섯 위치를 참조하는 기본 예시입니다. 요청을 모으면 가중치 재사용은 늘지만 독립된 문맥의 KV 읽기도 추가됩니다. 화살표는 현재 토큰 계산의 데이터 의존 관계이며 특정 HBM 접근 순서를 뜻하지 않습니다.','In this baseline example, each request attends to five positions including its current input. Batching improves weight reuse while adding independent KV reads. Arrows show data dependencies of the current-token computation, not a prescribed HBM access order.'))
+
+assert len(MANIFEST) == 24
 for article in {f['article'] for f in MANIFEST}:
     ko = [(f['slug'],f['width'],f['height']) for f in MANIFEST if f['article']==article and f['locale']=='ko']
     en = [(f['slug'],f['width'],f['height']) for f in MANIFEST if f['article']==article and f['locale']=='en']
