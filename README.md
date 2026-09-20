@@ -74,3 +74,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Batching and Scheduling](https://llm-systems-engineering.pages.dev/en/posts/batching-and-scheduling/)
 - [KV Cache Management and PagedAttention](https://llm-systems-engineering.pages.dev/en/posts/paged-kv-cache/)
 - [When KV Capacity Runs Out: Pausing and Resuming Requests](https://llm-systems-engineering.pages.dev/en/posts/inference-preemption/)
+- [Inference Metrics: Latency and Throughput](https://llm-systems-engineering.pages.dev/en/posts/inference-metrics/)

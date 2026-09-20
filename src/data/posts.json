@@ -994,8 +994,33 @@
         "description": "When KV space runs out during generation, pause some requests to reclaim blocks, then resume them from retained token history or KV. Explore how this process delays output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a9b7d84b9c685c89cbdb6b2ef237998fcb1dcf244ae965fc8c28e9516ccd7478",
-        "reviewNote": "2026-09-20: Korean and English paragraphs, five sections, five figures and captions, numeric examples, comparison table, and token/KV boundaries compared. English figures visually reviewed."
+        "sourceRevision": "ef51239e06954c8ed9a10ff182508fd1ddbcd9731ceafd856f8ff35bb9c72c84",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the follow-up metrics link is restored in both languages."
+      }
+    }
+  },
+  {
+    "articleId": "inference-metrics",
+    "order": 41,
+    "track": "inference",
+    "category": "workload",
+    "date": "2026-09-19",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "inference-metrics",
+        "title": "추론 성능 지표: 대기 시간과 처리량",
+        "description": "한 요청의 기다림과 서버 전체 처리량을 측정하고, 평균에 가려진 출력 공백과 요청별 지연을 살펴본 뒤 지연 목표를 만족한 처리량인 Goodput으로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "inference-metrics",
+        "title": "Inference Metrics: Latency and Throughput",
+        "description": "Measure one request's waits and overall server throughput, examine output gaps and request latencies hidden by averages, then connect them to goodput: throughput that meets latency targets.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "d90e732759c82e694fd01d1d29a48d998505faf6f5c4f583b6e53ab279851872",
+        "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed."
       }
     }
   }
