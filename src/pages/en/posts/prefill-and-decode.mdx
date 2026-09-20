@@ -100,4 +100,4 @@ Figure 5 shows an example where each request attends to five positions, includin
 
 Thus, **batching can increase weight reuse, but it does not eliminate the cost of reading each request's KV.** In particular, as KV reads account for a larger share of the work, the benefit of increasing the batch becomes limited. This is why the preceding Roofline explanation of weight reuse cannot be extended unchanged to Decode as a whole.
 
-Executing multiple requests together is an important way to improve Decode efficiency. In practice, however, requests have different arrival times and context lengths, and GPU resources are limited. The next article will cover batching and scheduling and examine how to group these requests and decide what to include in the next execution.
+Executing multiple requests together is an important way to improve Decode efficiency. In practice, however, requests have different arrival times and context lengths, and GPU resources are limited. [Batching and Scheduling](/en/posts/batching-and-scheduling/) examines how to group these requests and decide what to include in the next execution.
