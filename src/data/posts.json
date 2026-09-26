@@ -1147,7 +1147,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "prefill-and-decode/01-prefill-decode-flow",
+      "prefill-and-decode/02-compute-and-context",
+      "prefill-and-decode/03-weight-reuse",
+      "prefill-and-decode/04-prefill-decode-roofline",
+      "prefill-and-decode/05-request-kv-reads"
+    ],
     "locales": {
       "ko": {
         "slug": "prefill-and-decode",
@@ -1161,8 +1167,8 @@
         "description": "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "85bba6124e7ed26f8a73441ef8e9b1ba18ccfa44f542066d4034c11f4ce5bd98",
-        "reviewNote": "2026-09-20: Previously reviewed bilingual prose and five figure pairs preserved. Matching final-paragraph links to the newly published Batching and Scheduling article restored in both languages."
+        "sourceRevision": "b928155081393f885013898aa90f19bf0c5f83ef43d576982e41cb5e262853ac",
+        "reviewNote": "2026-09-20: Previously reviewed bilingual prose and five figure pairs preserved. Matching final-paragraph links to the newly published Batching and Scheduling article restored in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes, and the short article figcaptions were removed because captions are now inside the images."
       }
     }
   },
