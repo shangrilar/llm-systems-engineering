@@ -400,7 +400,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "cpu-gpu-work-execution/01-host-code-and-device-work",
+      "cpu-gpu-work-execution/02-enqueue-and-execute",
+      "cpu-gpu-work-execution/03-host-waits-for-result",
+      "cpu-gpu-work-execution/04-stream-event-dependency"
+    ],
     "locales": {
       "ko": {
         "slug": "cpu-gpu-work-execution",
@@ -413,9 +418,9 @@
         "title": "How the CPU and GPU Execute Work Together",
         "description": "Distinguish CPU requests from GPU execution, then use buffers, streams, and events to explain data preparation, completion waits, and execution order.",
         "published": true,
-        "sourceRevision": "a66f25291a3abe26f77ddbf8badd89b9b9d62b8df7ca125f8112f22a4847ace8",
+        "sourceRevision": "0e9ac8e956bb0bac40651c23de6dc4b94c852a71d5ef8c887902423595afdb5c",
         "translationStatus": "reviewed",
-        "reviewNote": "2026-09-17: Compared all six sections, paragraph order, emphasis, the x/u/y array example, two illustrative code blocks and their comments, the stream-order sketch, source links and four image alt texts against the approved Korean manuscript. Both languages preserve the distinction between submission and completion, allocation and copying, CPU waits and GPU dependencies, and conditional concurrency. CUDA syntax is not assumed. All four figure pairs retain shared geometry and colors with selected English font sizes; static SVG/PNG assets are reviewed separately from the body revision."
+        "reviewNote": "2026-09-17: Compared all six sections, paragraph order, emphasis, the x/u/y array example, two illustrative code blocks and their comments, the stream-order sketch, source links and four image alt texts against the approved Korean manuscript. Both languages preserve the distinction between submission and completion, allocation and copying, CPU waits and GPU dependencies, and conditional concurrency. CUDA syntax is not assumed. All four figure pairs retain shared geometry and colors with selected English font sizes; static SVG/PNG assets are reviewed separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
