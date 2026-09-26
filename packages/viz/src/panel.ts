@@ -1,9 +1,11 @@
 import {C,markerId,type Tone} from './theme';
 import {svgText,tr,wrap,type Label,type Locale} from './text';
-// One titled panel in local coordinates. `compose` scales it into the figure's column width.
+// One panel in local coordinates. `compose` scales it into the figure's column width.
+// A `null` title leaves the whole area to the drawing (e.g. one full-width panel of 1120 with `layout: 'wide'`).
 export class Panel {
   parts:string[]=[];
-  constructor(public locale:Locale,public title:Label,public height:number,public width=520){
+  constructor(public locale:Locale,public title:Label|null,public height:number,public width=520){
+    if(title===null)return;
     this.text(0,30,title,{size:25,weight:600,width});
     this.line(0,68,width,68,C.line,1);
   }

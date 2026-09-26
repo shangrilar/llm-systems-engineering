@@ -5,16 +5,17 @@ import {chromium} from 'playwright';
 import {compose,type FigureSpec} from './frame';
 import {tr,type Locale} from './text';
 export interface LayoutIssues {bounds:string[];overlaps:string[][];containers:string[]}
-// Renders ko/en × desktop/mobile SVG and 2× PNG into `<root>/public/images/<articleId>/[en/]`,
+// Renders ko/en × each screen as SVG and 2× PNG into `<outDir>/<articleId>/[en/]` (default `<root>/public/images`),
 // checks text layout in Chromium, and writes `<qaDir>/<number>.json`. Visual review is still manual.
-export async function buildFigure(spec:FigureSpec,{root,qaDir,source}:{root:string;qaDir:string;source:string}){
+export async function buildFigure(spec:FigureSpec,{root,qaDir,source,outDir=path.join(root,'public/images')}:{root:string;qaDir:string;source:string;outDir?:string}){
+  const screens=spec.screens??['desktop','mobile'];
   const browser=await chromium.launch({headless:true});
   const page=await browser.newPage({deviceScaleFactor:2});
   const records:any[]=[];
   try{
-    for(const locale of ['ko','en'] as Locale[])for(const mobile of [false,true]){
+    for(const locale of ['ko','en'] as Locale[])for(const mobile of screens.map(s=>s==='mobile')){
       const result=compose(spec,locale,mobile);
-      const folder=path.join(root,'public/images',spec.articleId,locale==='en'?'en':'');
+      const folder=path.join(outDir,spec.articleId,locale==='en'?'en':'');
       await fs.mkdir(folder,{recursive:true});
       const name=spec.figureId+(mobile?'-mobile':'');
       const file=path.join(folder,name+'.svg');
