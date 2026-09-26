@@ -1088,7 +1088,11 @@
     "track": "shared",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-and-training/01-execution",
+      "inference-and-training/02-request-lifecycle",
+      "inference-and-training/03-memory-state"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-and-training",
@@ -1102,8 +1106,8 @@
         "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "662badda207767d01586d311b05a495a573f7d3b4b46af1e56289d3f83110773",
-        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
+        "sourceRevision": "59925f730dda0f366e54e29c6bc2bd45a21a6566987f9aaa74b3c1530b7e9b96",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
