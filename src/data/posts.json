@@ -32,7 +32,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "embedding-to-lm-head/01-model-overview",
+      "embedding-to-lm-head/02-tokenizer",
+      "embedding-to-lm-head/03-embedding-lookup",
+      "embedding-to-lm-head/04-decoder-shape",
+      "embedding-to-lm-head/05-lm-head"
+    ],
     "locales": {
       "ko": {
         "slug": "embedding-to-lm-head",
@@ -45,9 +51,9 @@
         "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
         "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
         "published": true,
-        "sourceRevision": "13f934401570aff874f35212651c6709fefb84d80502338155890d96d65e51b7",
+        "sourceRevision": "a557f3e6307f3c89b75772fc5e14ddd51f264865de8248afab701b3b1b5d88c0",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values."
+        "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
