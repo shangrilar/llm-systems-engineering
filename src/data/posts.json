@@ -521,7 +521,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-13",
-    "figureIds": [],
+    "figureIds": [
+      "online-softmax/01-stable-softmax",
+      "online-softmax/02-max-and-exp-sum",
+      "online-softmax/03-online-update"
+    ],
     "locales": {
       "ko": {
         "slug": "online-softmax",
@@ -535,8 +539,8 @@
         "description": "Explore why stable softmax subtracts the maximum, how the maximum and exponential sum work together, and how online softmax updates them with each new chunk of scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "e0189766beb9bfa83fd781e3386720a534031c48b965d94cf7aaa6f4dea99a20",
-        "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared."
+        "sourceRevision": "c07c444e2b33779b2edbd6a7fe9edc5e908b5dc085c72d3964592b8bf5acb6fb",
+        "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
