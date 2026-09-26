@@ -1,0 +1,133 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"attention-and-mlp",figureId:"02-matrix-multiply",number:"02-matrix-multiply",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 2","Figure 2"],
+  title:["행렬 곱: 입력 성분들을 조합해 출력 만들기","Matrix multiplication: combine input components"],
+  subtitle:["가중치 행렬의 각 열이 출력 성분 하나를 만듭니다. 여기서는 d = 4, m = 8입니다.","Each weight-matrix column produces one output component. Here, d = 4 and m = 8."],
+  alt:["입력 [1,2,−1,0]과 4×8 가중치 행렬을 곱하면 [−2,1,0.5,−1,3,0,−0.5,2]가 된다. 세 번째 열 [2,−1,−0.5,1]과 세 번째 출력 0.5를 강조하고 네 곱의 합을 보여준다. 각 토큰에는 같은 행렬을 따로 적용한다.","Multiplying [1,2,-1,0] by the 4×8 matrix gives [-2,1,0.5,-1,3,0,-0.5,2]. Column 3, [2,-1,-0.5,1], and output component 3, 0.5, are highlighted along with the sum of four products. The same matrix applies independently at every token position."],
+  caption:["입력과 가중치는 설명용 수치입니다. 다음 그림의 첫 선형 변환에 해당하며 bias는 생략했습니다.","Values are illustrative. This is the next figure’s first linear transformation, with bias omitted."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,977,1104,[48,205]);
+    p.el('text',{x:600,y:222,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["토큰 하나의 d개 성분으로 m개의 출력 성분을 만듭니다.","Use one token’s d components to produce m output components."]);
+    p.el('text',{x:792,y:272,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["가중치 행렬 W · d × m = 4 × 8","Weight matrix W · d × m = 4 × 8"]);
+    p.el('text',{x:204,y:377,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},["입력 x · 1 × 4","Input x · 1 × 4"]);
+    p.el("rect",{x:60,y:410,width:72,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:96,y:447,fill:C.blue,"font-size":28,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:132,y:410,width:72,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:168,y:447,fill:C.blue,"font-size":28,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:204,y:410,width:72,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:240,y:447,fill:C.blue,"font-size":28,"font-weight":400,"text-anchor":"middle"},"−1");
+    p.el("rect",{x:276,y:410,width:72,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:312,y:447,fill:C.blue,"font-size":28,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el('text',{x:410,y:447,fill:C.ink,"font-size":38,"font-weight":600,"text-anchor":"middle"},"×");
+    p.el('text',{x:519,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:480,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:519,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:480,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:519,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:480,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:519,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:480,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:519,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("path",{d:"M519.0,566 L519.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:480,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:519,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"−2");
+    p.el('text',{x:597,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:558,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:597,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:558,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:597,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:558,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:597,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:558,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:597,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("path",{d:"M597.0,566 L597.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:558,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:597,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el('text',{x:675,y:308,fill:C.teal,"font-size":19,"font-weight":600,"text-anchor":"middle"},"3");
+    p.el("rect",{x:636,y:326,width:78,height:56,rx:0,fill:C.tealFill,stroke:"#9FC8C1","stroke-width":1});
+    p.el('text',{x:675,y:363,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("rect",{x:636,y:382,width:78,height:56,rx:0,fill:C.tealFill,stroke:"#9FC8C1","stroke-width":1});
+    p.el('text',{x:675,y:419,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"−1");
+    p.el("rect",{x:636,y:438,width:78,height:56,rx:0,fill:C.tealFill,stroke:"#9FC8C1","stroke-width":1});
+    p.el('text',{x:675,y:475,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"−0.5");
+    p.el("rect",{x:636,y:494,width:78,height:56,rx:0,fill:C.tealFill,stroke:"#9FC8C1","stroke-width":1});
+    p.el('text',{x:675,y:531,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("path",{d:"M675.0,566 L675.0,622",fill:"none",stroke:C.teal,"stroke-width":3,"marker-end":markerUrl(C.teal)});
+    p.el("rect",{x:636,y:638,width:78,height:56,rx:0,fill:C.tealFill,stroke:"#9FC8C1","stroke-width":1});
+    p.el('text',{x:675,y:675,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"0.5");
+    p.el('text',{x:753,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"4");
+    p.el("rect",{x:714,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:753,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:714,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:753,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:714,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:753,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:714,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:753,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("path",{d:"M753.0,566 L753.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:714,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:753,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"−1");
+    p.el('text',{x:831,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"5");
+    p.el("rect",{x:792,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:831,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:792,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:831,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:792,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:831,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:792,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:831,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("path",{d:"M831.0,566 L831.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:792,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:831,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el('text',{x:909,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"6");
+    p.el("rect",{x:870,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:909,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:870,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:909,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:870,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:909,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:870,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:909,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("path",{d:"M909.0,566 L909.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:870,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:909,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el('text',{x:987,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"7");
+    p.el("rect",{x:948,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:987,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:948,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:987,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:948,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:987,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0.5");
+    p.el("rect",{x:948,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:987,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("path",{d:"M987.0,566 L987.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:948,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:987,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"−0.5");
+    p.el('text',{x:1065,y:308,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"8");
+    p.el("rect",{x:1026,y:326,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:1065,y:363,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:1026,y:382,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:1065,y:419,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:1026,y:438,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:1065,y:475,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:1026,y:494,width:78,height:56,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
+    p.el('text',{x:1065,y:531,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"−1");
+    p.el("path",{d:"M1065.0,566 L1065.0,622",fill:"none",stroke:C.slate,"stroke-width":1.7,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:1026,y:638,width:78,height:56,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:1065,y:675,fill:C.blue,"font-size":24,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el('text',{x:278,y:675,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},["출력 z · 1 × 8","Output z · 1 × 8"]);
+    p.el('text',{x:600,y:753,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},"x (1 × 4)  ×  W (4 × 8)  =  z (1 × 8)");
+    p.el("rect",{x:48,y:796,width:1104,height:255,rx:14,fill:C.tealFill,stroke:"#C8DFDA","stroke-width":1.5});
+    p.el('text',{x:80,y:841,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"start"},["세 번째 열로 세 번째 출력 성분을 계산합니다.","Column 3 produces output component 3."]);
+    p.raw("<text x=\"600\" y=\"912\" fill=\"#287D78\" font-size=\"28\" font-weight=\"600\" text-anchor=\"middle\">z<tspan baseline-shift=\"sub\" font-size=\"70%\">3</tspan> = 1 × 2 + 2 × (−1) + (−1) × (−0.5) + 0 × 1 = 0.5</text>");
+    p.el('text',{x:80,y:977,fill:C.ink,"font-size":23,"font-weight":400,"text-anchor":"start"},["입력과 열의 성분을 위치별로 곱한 뒤, 네 결과를 더합니다.","Multiply matching input and column components, then sum the four products."]);
+    p.el('text',{x:80,y:1020,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"start"},["각 출력 성분은 입력 성분들의 가중합입니다.","Each output component is a weighted sum of the input components."]);
+    p.el('text',{x:600,y:1116,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"middle"},["모든 토큰에 같은 W를 각각 적용합니다. 토큰끼리는 섞이지 않습니다.","Apply the same W separately to every token; token positions do not mix."]);
+    p.el('text',{x:600,y:1165,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"X (T × d)  ×  W (d × m)  =  Z (T × m)");
+    return [p];
+  },
+} satisfies FigureSpec;

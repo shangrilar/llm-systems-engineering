@@ -93,7 +93,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "attention-and-mlp/01-token-information",
+      "attention-and-mlp/02-matrix-multiply",
+      "attention-and-mlp/03-basic-mlp",
+      "attention-and-mlp/04-gated-mlp",
+      "attention-and-mlp/05-gate-effect"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-and-mlp",
@@ -107,8 +113,8 @@
         "description": "Compare Attention and MLP, then explore matrix multiplication and the computations inside basic and gated MLPs.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1.",
-        "sourceRevision": "68a848973732657619e166c9431edb1aaf5e88ccfbf4f5d695d5cf8985f2034a"
+        "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images.",
+        "sourceRevision": "9214898f5c6f266e7e885ac612d204b12ba5a202aeccefec9af8a474a3a84568"
       }
     }
   },
