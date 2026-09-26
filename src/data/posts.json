@@ -795,7 +795,25 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "collective-ring-tree/01-ring-reduce-scatter",
+      "collective-ring-tree/01-step-0",
+      "collective-ring-tree/01-step-1",
+      "collective-ring-tree/01-step-2",
+      "collective-ring-tree/01-step-3",
+      "collective-ring-tree/02-ring-all-gather",
+      "collective-ring-tree/02-step-0",
+      "collective-ring-tree/02-step-1",
+      "collective-ring-tree/02-step-2",
+      "collective-ring-tree/02-step-3",
+      "collective-ring-tree/03-step-0",
+      "collective-ring-tree/03-step-1",
+      "collective-ring-tree/03-step-2",
+      "collective-ring-tree/03-step-3",
+      "collective-ring-tree/03-step-4",
+      "collective-ring-tree/03-tree",
+      "collective-ring-tree/04-logical-physical"
+    ],
     "locales": {
       "ko": {
         "slug": "collective-ring-tree",
@@ -809,8 +827,8 @@
         "description": "Follow Ring and Tree implementations of the same All-Reduce result, and relate communication time to steps, data volume, and physical links.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "c42561ec82e668afcb786cde90192b0bf4a748ca34800f89f57a41f841ba99d9",
-        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article."
+        "sourceRevision": "27723ab563cd46a9580fda7a5b455d88be997135139b141533ee92564c65367a",
+        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
