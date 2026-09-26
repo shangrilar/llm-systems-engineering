@@ -22,7 +22,6 @@ date: 2026-09-19
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/01-batch-composition.png"><img src="/images/batching-and-scheduling/01-batch-composition.png" alt="A와 B가 Decode 중인 상태에서 실행 1에 A가 완료되고 C가 도착합니다. 정적 배칭은 실행 3에서 B까지 끝나야 실행 4에 C를 넣습니다. 연속 배칭은 실행 2부터 B의 Decode와 C의 Prefill을 함께 넣습니다." /></a>
-  <figcaption>그림 1. 정적 배칭과 연속 배칭</figcaption>
 </figure>
 
 그림 1은 동시에 최대 두 요청을 실행하는 예시입니다. A와 B는 이미 Decode 중이며, 실행 1에서 A가 끝난 직후 C가 도착합니다. 정적 배칭에서는 실행 2와 3에 B만 남습니다. C는 B까지 끝난 뒤 실행 4에서 시작합니다.
@@ -41,7 +40,6 @@ date: 2026-09-19
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/02-scheduling-cycle.png"><img src="/images/batching-and-scheduling/02-scheduling-cycle.png" alt="실행 결과 A가 완료되고 B는 계속 생성합니다. A의 KV 공간을 반환하고 B를 유지합니다. 대기 중인 C와 D 중 C를 먼저 검토해 필요한 계산과 KV 공간이 허용하면 합류시킵니다. 다음 배치는 B의 Decode와 C의 Prefill이며, 실행 결과를 다시 반영합니다." /></a>
-  <figcaption>그림 2. 실행 결과를 반영하고 다음 배치를 구성하는 과정</figcaption>
 </figure>
 
 그림 2의 과정을 순서대로 살펴보겠습니다.
@@ -69,7 +67,6 @@ date: 2026-09-19
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/03-work-and-state.png"><img src="/images/batching-and-scheduling/03-work-and-state.png" alt="B는 기존 KV 6개를 유지하며 새 입력 1개를 처리해 KV가 7개로 늘어납니다. C는 입력 6개를 처리해 KV 6개를 만듭니다. 이번 처리량은 7토큰으로 예산 8개 이내이며, 실행 뒤 실제 KV는 13개 위치 분량으로 용량 24개 이내입니다." /></a>
-  <figcaption>그림 3. 이번에 처리할 토큰 수와 실행 뒤 유지할 KV</figcaption>
 </figure>
 
 그림 3의 위쪽 막대가 이번에 처리할 7토큰입니다. B가 과거에 처리한 6개 위치는 여기에 다시 더하지 않습니다. 그 위치의 K/V는 캐시에 있기 때문입니다. 다만 B의 Attention은 과거 KV를 읽습니다. 토큰 예산은 새로 처리할 위치를 세는 기준이며, 문맥 길이에 따라 달라지는 KV 읽기와 Attention의 계산량까지 모두 표현하지는 않습니다. 같은 토큰 수가 항상 같은 실행 시간을 뜻하지 않는 이유입니다.
@@ -106,7 +103,6 @@ KV 캐시는 요청이 진행되는 동안 계속 늘어납니다. 지금 B가 6
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/04-reserved-memory.png"><img src="/images/batching-and-scheduling/04-reserved-memory.png" alt="KV 용량 24개 중 B에 20개가 예약되어 있습니다. B의 현재 실제 KV는 6개이고 나머지 14개는 미사용 예약 공간입니다. 새 요청에 배정할 수 있는 공간은 4개뿐이므로 KV 6개가 필요한 C는 합류하지 못합니다. B와 C가 실행 뒤 실제로 저장할 KV는 합계 13개입니다." /></a>
-  <figcaption>그림 4. 실제 KV 요구량이 용량보다 작아도 예약 공간 때문에 기다리는 요청</figcaption>
 </figure>
 
 그림 위쪽에서 B가 실제 KV를 저장한 공간은 6개입니다. 빗금으로 표시한 14개는 B에 예약되어 있지만 아직 사용하지 않은 공간입니다. 둘을 합친 20개가 B의 몫이고, 다른 요청에 새로 배정할 수 있는 빈 공간은 `24 − 20 = 4`개뿐입니다.
