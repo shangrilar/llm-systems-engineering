@@ -867,7 +867,23 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "tensor-parallelism/01-step-0",
+      "tensor-parallelism/01-step-1",
+      "tensor-parallelism/01-step-2",
+      "tensor-parallelism/02-step-0",
+      "tensor-parallelism/02-step-1",
+      "tensor-parallelism/02-step-2",
+      "tensor-parallelism/03-step-0",
+      "tensor-parallelism/03-step-1",
+      "tensor-parallelism/03-step-2",
+      "tensor-parallelism/04-step-0",
+      "tensor-parallelism/04-step-1",
+      "tensor-parallelism/04-step-2",
+      "tensor-parallelism/05-step-0",
+      "tensor-parallelism/05-step-1",
+      "tensor-parallelism/05-step-2"
+    ],
     "locales": {
       "ko": {
         "slug": "tensor-parallelism",
@@ -881,8 +897,8 @@
         "description": "Partition weight matrices by columns and rows, then connect these partitions in FFN and attention to avoid intermediate communication.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "7eb1dc51b23cc9af52c4a389b2cc76b2f24d889731cb264b44d87a31dd41a605",
-        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+        "sourceRevision": "22e98640cbdd6527089fdabb22ff50b5f7818552b5590a7fc4a444de2546d660",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
