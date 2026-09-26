@@ -265,7 +265,7 @@
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
         "published": true,
-        "sourceRevision": "8641419860215f16f41db377a87f20b4fe22d82a1ffb6c0074c3b7ecb0ddbe5c",
+        "sourceRevision": "8cffdfff1a23c044e049c0df8c3cdd1fff40dc59c0b842ed2c502c607b9805fa",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the existing note became a caption, and captions for figures 1–3 were newly written in both languages from the article text."
       }
@@ -277,7 +277,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "cpu-and-gpu/01-parallel-computation",
+      "cpu-and-gpu/02-cpu-gpu-architecture",
+      "cpu-and-gpu/03-host-device-flow",
+      "cpu-and-gpu/04-feeding-compute"
+    ],
     "locales": {
       "ko": {
         "slug": "cpu-and-gpu",
@@ -290,9 +295,9 @@
         "title": "CPU and GPU: Two Devices That Execute Model Computation",
         "description": "Explore why GPUs are used, how CPU and GPU designs differ, how host and device work together, and why compute units need a supply of data.",
         "published": true,
-        "sourceRevision": "5fae6d32a85fe1dfedc43b40f47441df92138ab46bd0bb080cb078af74c57dd7",
+        "sourceRevision": "45bac92df4258b3a230c19400e76aeaa41e87684c9a5dea9ee7c34ad41ae057d",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision."
+        "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and the caption for figure 4 was newly written in both languages from the article text."
       }
     }
   },
