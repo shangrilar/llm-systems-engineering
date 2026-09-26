@@ -10,37 +10,41 @@ export default {
   caption:["Qwen3 실제 예시 · ␣는 공백을 보이게 쓴 기호입니다. 특수 토큰은 추가하지 않았습니다.","Actual Qwen3 example. ␣ marks a space. No special tokens were added."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,511,1104,[48,205]);
+    const p=new Panel(locale,null,511,1104,[48,206]);
+    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
+    p.raw("<g transform=\"translate(-48 -205)\">");
     p.el('text',{x:80,y:244,fill:C.muted,"font-size":23,"font-weight":600,"text-anchor":"start"},["입력 텍스트","Input text"]);
     p.el("rect",{x:80,y:268,width:340,height:92,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:250,y:324,fill:C.ink,"font-size":34,"font-weight":500,"text-anchor":"middle"},"Hello world!");
-    p.el("path",{d:"M440,314 L504,314",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M440,314 L504,314",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:528,y:268,width:300,height:92,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:678,y:314,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},"Tokenizer");
     p.el('text',{x:678,y:345,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"Qwen3");
     p.el('text',{x:80,y:495,fill:C.muted,"font-size":24,"font-weight":600,"text-anchor":"start"},["토큰 조각","Token pieces"]);
     p.el('text',{x:80,y:627,fill:C.muted,"font-size":24,"font-weight":600,"text-anchor":"start"},["토큰 ID","Token IDs"]);
-    p.el("line",{"x1":678,"y1":370,"x2":678,"y2":388,stroke:"#8191A0","stroke-width":2.5});
-    p.el("line",{"x1":440,"y1":388,"x2":1000,"y2":388,stroke:"#8191A0","stroke-width":2.5});
-    p.el("path",{d:"M440,388 L440,438",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
-    p.el("path",{d:"M720,388 L720,438",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
-    p.el("path",{d:"M1000,388 L1000,438",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("line",{"x1":678,"y1":370,"x2":678,"y2":388,stroke:C.slate,"stroke-width":2.5});
+    p.el("line",{"x1":440,"y1":388,"x2":1000,"y2":388,stroke:C.slate,"stroke-width":2.5});
+    p.el("path",{d:"M440,388 L440,438",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M720,388 L720,438",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M1000,388 L1000,438",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:330,y:450,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:440,y:495,fill:C.ink,"font-size":31,"font-weight":500,"text-anchor":"middle"},"Hello");
-    p.el("path",{d:"M440,532 L440,569",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M440,532 L440,569",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:330,y:582,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:440,y:627,fill:C.ink,"font-size":30,"font-weight":600,"text-anchor":"middle"},"9707");
     p.el("rect",{x:610,y:450,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:720,y:495,fill:C.ink,"font-size":31,"font-weight":500,"text-anchor":"middle"},"␣world");
-    p.el("path",{d:"M720,532 L720,569",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M720,532 L720,569",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:610,y:582,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:720,y:627,fill:C.ink,"font-size":30,"font-weight":600,"text-anchor":"middle"},"1879");
     p.el("rect",{x:890,y:450,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:1000,y:495,fill:C.ink,"font-size":31,"font-weight":500,"text-anchor":"middle"},"!");
-    p.el("path",{d:"M1000,532 L1000,569",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M1000,532 L1000,569",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:890,y:582,width:220,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:1000,y:627,fill:C.ink,"font-size":30,"font-weight":600,"text-anchor":"middle"},"0");
     p.el('text',{x:678,y:700,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["토큰마다 고유한 ID가 대응합니다.","Each token has its own ID."]);
+    p.raw('</g>');
+    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;

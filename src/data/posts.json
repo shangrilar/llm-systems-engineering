@@ -51,7 +51,7 @@
         "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
         "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
         "published": true,
-        "sourceRevision": "a557f3e6307f3c89b75772fc5e14ddd51f264865de8248afab701b3b1b5d88c0",
+        "sourceRevision": "718843b7c1cce893973f4d05cea72cbfa136315ef92eee933559be399becb4e8",
         "translationStatus": "reviewed",
         "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
@@ -63,7 +63,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "residual-and-rmsnorm/01-residual-stream",
+      "residual-and-rmsnorm/02-residual-addition",
+      "residual-and-rmsnorm/03-rmsnorm",
+      "residual-and-rmsnorm/04-final-rmsnorm"
+    ],
     "locales": {
       "ko": {
         "slug": "residual-and-rmsnorm",
@@ -76,9 +81,9 @@
         "title": "The Flow Through a Decoder Block: Residual Connections and RMSNorm",
         "description": "Explore a decoder block around its residual stream, then follow vector addition and RMSNorm across each token’s d components.",
         "published": true,
-        "sourceRevision": "02ab2806526191bd8e8cec365ba8992522c36b40a2af55af555dd273c7059940",
+        "sourceRevision": "a47eff756eeabf9e3dd2af594d63473835b7866d5ac0d54901ee4e95b6aa7110",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples."
+        "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -184,7 +189,7 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "7d8451e564ae00db7b6c17ade1428f264adffa9e9283abc50666c4485fdcec83",
+        "sourceRevision": "0d73f46d46fe6ec08c7264596c64438201927924f1c768b582938798c7841945",
         "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }

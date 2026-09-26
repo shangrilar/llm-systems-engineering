@@ -10,7 +10,9 @@ export default {
   caption:["ID는 실제 토크나이저 결과이며, d = 4와 벡터 값은 설명용 예시입니다. V는 어휘 크기입니다.","Real token IDs; d = 4 and vector values are illustrative. V denotes vocabulary size."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,698,1104,[48,205]);
+    const p=new Panel(locale,null,698,1104,[48,206]);
+    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
+    p.raw("<g transform=\"translate(-48 -205)\">");
     p.el('text',{x:140,y:243,fill:C.muted,"font-size":25,"font-weight":600,"text-anchor":"middle"},["토큰 ID","Token IDs"]);
     p.el('text',{x:534,y:243,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},["임베딩 테이블 E","Embedding table E"]);
     p.el('text',{x:993,y:243,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},["출력 임베딩","Output embeddings"]);
@@ -122,13 +124,15 @@ export default {
     p.el('text',{x:565,y:743,fill:"#94A1AD","font-size":23,"font-weight":400,"text-anchor":"middle"},"0.6");
     p.el("rect",{x:596,y:708,width:62,height:54,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
     p.el('text',{x:627,y:743,fill:"#94A1AD","font-size":23,"font-weight":400,"text-anchor":"middle"},"−0.4");
-    p.el("path",{d:"M218,537 L259,537",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
-    p.el("path",{d:"M689,537 L748,537",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M218,537 L259,537",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M689,537 L748,537",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el('text',{x:534,y:811,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["전체 크기 V × d","Full table: V × d"]);
     p.el('text',{x:534,y:843,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["일부 행 생략","Some rows omitted"]);
     p.el('text',{x:993,y:731,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"middle"},["입력 순서대로","In input order"]);
     p.el('text',{x:993,y:776,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},["토큰 3개 × d","3 tokens × d"]);
     p.el('text',{x:600,y:887,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"middle"},["① ② ③은 입력 토큰의 순서입니다.","① ② ③ mark the input token order."]);
+    p.raw('</g>');
+    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;
