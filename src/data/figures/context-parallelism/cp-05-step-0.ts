@@ -1,0 +1,148 @@
+import {C,Panel,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"context-parallelism",figureId:"cp-05-step-0",number:"cp-05-step-0",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 5","Figure 5"],
+  title:["인과적 어텐션에서는 토큰 배치도 중요합니다","Token placement matters for causal attention"],
+  subtitle:["토큰 8개 · GPU 2개 · 각 GPU의 Q가 계산할 토큰 쌍 수를 비교","8 tokens · 2 GPUs · Compare the token pairs computed by each GPU’s Q"],
+  alt:["GPU 0과 GPU 1이 각각 네 토큰을 맡는다. 계산할 토큰 쌍은 10 대 26이다. 원래 토큰 위치와 causal mask는 변하지 않는다.","Each GPU owns four tokens. Token-pair counts are 10 and 26. Original positions and the causal mask stay unchanged."],
+  caption:["첫 단계는 앞뒤로 나눈 배치(10 대 26), 다음 단계는 앞뒤 토큰을 묶은 배치입니다.","The first step splits tokens front and back (10 vs. 26); the next pairs front and back tokens."],
+  sources:[],
+  defs:"<marker id=\"ported-arrow\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M1 1 L9 5 L1 9\" fill=\"none\" stroke=\"#5C6C7C\" stroke-width=\"1.5\" /></marker>",
+  panels(locale:Locale){
+    const p=new Panel(locale,null,843,1104,[48,148]);
+    p.el('text',{x:600,y:159,"font-size":27,fill:C.ink,"font-weight":700,"text-anchor":"middle"},["연속한 토큰 4개씩 배치","Assign four consecutive tokens per GPU"]);
+    p.el('text',{x:156,y:280.9,"font-size":22,fill:C.blue,"font-weight":700,"text-anchor":"end"},"t0");
+    p.el('text',{x:206,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t0");
+    p.el("rect",{x:173,y:238,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:206,y:281.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:305,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:371,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:437,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:503,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:569,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:238,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:346.9,"font-size":22,fill:C.blue,"font-weight":700,"text-anchor":"end"},"t1");
+    p.el('text',{x:272,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t1");
+    p.el("rect",{x:173,y:304,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:206,y:347.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:304,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:272,y:347.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:371,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:437,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:503,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:569,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:304,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:412.9,"font-size":22,fill:C.blue,"font-weight":700,"text-anchor":"end"},"t2");
+    p.el('text',{x:338,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t2");
+    p.el("rect",{x:173,y:370,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:206,y:413.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:370,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:272,y:413.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:370,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:338,y:413.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:370,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:437,y:370,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:503,y:370,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:569,y:370,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:370,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:478.9,"font-size":22,fill:C.blue,"font-weight":700,"text-anchor":"end"},"t3");
+    p.el('text',{x:404,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t3");
+    p.el("rect",{x:173,y:436,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:206,y:479.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:436,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:272,y:479.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:436,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:338,y:479.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:436,width:66,height:66,rx:0,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:404,y:479.56,"font-size":24,fill:C.blue,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:437,y:436,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:503,y:436,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:569,y:436,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:436,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:544.9000000000001,"font-size":22,fill:C.orange,"font-weight":700,"text-anchor":"end"},"t4");
+    p.el('text',{x:470,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t4");
+    p.el("rect",{x:173,y:502,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:206,y:545.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:502,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:272,y:545.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:502,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:338,y:545.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:502,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:404,y:545.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:437,y:502,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:470,y:545.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:503,y:502,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:569,y:502,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:502,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:610.9000000000001,"font-size":22,fill:C.orange,"font-weight":700,"text-anchor":"end"},"t5");
+    p.el('text',{x:536,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t5");
+    p.el("rect",{x:173,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:206,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:272,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:338,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:404,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:437,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:470,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:503,y:568,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:536,y:611.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:569,y:568,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:635,y:568,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:676.9000000000001,"font-size":22,fill:C.orange,"font-weight":700,"text-anchor":"end"},"t6");
+    p.el('text',{x:602,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t6");
+    p.el("rect",{x:173,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:206,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:272,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:338,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:404,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:437,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:470,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:503,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:536,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:569,y:634,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:602,y:677.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:635,y:634,width:66,height:66,rx:0,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:156,y:742.9000000000001,"font-size":22,fill:C.orange,"font-weight":700,"text-anchor":"end"},"t7");
+    p.el('text',{x:668,y:216,"font-size":20,fill:C.muted,"font-weight":400,"text-anchor":"middle"},"t7");
+    p.el("rect",{x:173,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:206,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:239,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:272,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:305,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:338,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:371,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:404,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:437,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:470,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:503,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:536,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:569,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:602,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:635,y:700,width:66,height:66,rx:0,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:668,y:743.56,"font-size":24,fill:C.orange,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:775,y:260,width:355,height:198,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:797,y:300,"font-size":26,fill:C.blue,"font-weight":700,"text-anchor":"start"},"GPU 0");
+    p.el('text',{x:797,y:343,"font-size":23,fill:C.ink,"font-weight":700,"text-anchor":"start"},"t0 · t1 · t2 · t3");
+    p.el('text',{x:797,y:390,"font-size":23,fill:C.ink,"font-weight":400,"text-anchor":"start"},"1 + 2 + 3 + 4");
+    p.el('text',{x:797,y:431,"font-size":25,fill:C.blue,"font-weight":700,"text-anchor":"start"},["= 10개 토큰 쌍","= 10 token pairs"]);
+    p.el("rect",{x:775,y:500,width:355,height:198,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:797,y:540,"font-size":26,fill:C.orange,"font-weight":700,"text-anchor":"start"},"GPU 1");
+    p.el('text',{x:797,y:583,"font-size":23,fill:C.ink,"font-weight":700,"text-anchor":"start"},"t4 · t5 · t6 · t7");
+    p.el('text',{x:797,y:630,"font-size":23,fill:C.ink,"font-weight":400,"text-anchor":"start"},"5 + 6 + 7 + 8");
+    p.el('text',{x:797,y:671,"font-size":25,fill:C.orange,"font-weight":700,"text-anchor":"start"},["= 26개 토큰 쌍","= 26 token pairs"]);
+    p.el('text',{x:436,y:820,"font-size":21,fill:C.muted,"font-weight":400,"text-anchor":"middle"},["행: Q 토큰 / 열: K 토큰 / ●: 계산할 참조","Rows: Q tokens / Columns: K tokens / ●: Computed pair"]);
+    p.el("rect",{x:173,y:871,width:922,height:44,rx:10,fill:C.purpleFill,stroke:C.purpleFill,"stroke-width":1.5});
+    p.el('text',{x:634,y:900,"font-size":20,fill:C.purple,"font-weight":700,"text-anchor":"middle"},["토큰 수는 같아도 계산량이 다릅니다.","Equal token counts can still mean unequal work."]);
+    p.el('text',{x:600,y:976,"font-size":21,fill:C.ink,"font-weight":400,"text-anchor":"middle"},["늦은 토큰일수록 더 많은 앞선 토큰을 참조합니다.","Later tokens attend to more preceding tokens."]);
+    return [p];
+  },
+} satisfies FigureSpec;
