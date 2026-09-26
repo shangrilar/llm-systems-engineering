@@ -247,7 +247,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "model-summary/01-model-and-block",
+      "model-summary/02-attention-connected",
+      "model-summary/03-mlp-and-moe",
+      "model-summary/04-token-dependencies"
+    ],
     "locales": {
       "ko": {
         "slug": "model-summary",
@@ -260,9 +265,9 @@
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
         "published": true,
-        "sourceRevision": "58f01751db0a6941297478f1e7acfd8266a30b0438a0d4ba727a38c300f2b0df",
+        "sourceRevision": "8641419860215f16f41db377a87f20b4fe22d82a1ffb6c0074c3b7ecb0ddbe5c",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
+        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the existing note became a caption, and captions for figures 1–3 were newly written in both languages from the article text."
       }
     }
   },
