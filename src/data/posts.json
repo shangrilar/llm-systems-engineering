@@ -550,7 +550,21 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-14",
-    "figureIds": [],
+    "figureIds": [
+      "flash-attention/01-value-before-normalization",
+      "flash-attention/02-rescale-both-accumulators",
+      "flash-attention/03-step-01",
+      "flash-attention/03-step-02",
+      "flash-attention/03-step-03",
+      "flash-attention/03-step-04",
+      "flash-attention/03-step-05",
+      "flash-attention/03-step-06",
+      "flash-attention/03-step-07",
+      "flash-attention/03-step-08",
+      "flash-attention/03-step-09",
+      "flash-attention/03-tiled-online-attention",
+      "flash-attention/04-memory-traffic"
+    ],
     "locales": {
       "ko": {
         "slug": "flash-attention",
@@ -564,8 +578,8 @@
         "description": "Explore joint accumulation of the Value weighted sum and exponential sum, then follow FlashAttention-2 tiles to complete the output and reduce memory traffic from large intermediate matrices.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09365bfd5f6be2e199a1d3331b9fde3b2d9a5afa26bbf5b5aed858e6279b784c",
-        "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision."
+        "sourceRevision": "4c42878e2a31f9477877b65ac44be254e7f7625c8483bb8d9d50eb7fe4447f3a",
+        "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
