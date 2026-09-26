@@ -45,7 +45,7 @@ export default {
     p.el('text',{x:1010,y:616,fill:C.teal,"font-size":30,"font-weight":400,"text-anchor":"middle"},"1");
     p.el("path",{d:"M240,540 L1120,540",fill:"none",stroke:C.line,"stroke-width":2});
     p.el('text',{x:600,y:694,fill:C.ink,"font-size":26,"font-weight":600,"text-anchor":"middle"},["입력에 따라 계산한 Gate 값이 각 성분에 곱해집니다.","Input-dependent Gate values multiply the corresponding Up values."]);
-    p.el("rect",{x:48,y:737,width:1104,height:415,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:48,y:737,width:1104,height:415,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el("rect",{x:355,y:769,width:18,height:18,rx:3,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
     p.el('text',{x:385,y:785,fill:C.blue,"font-size":21,"font-weight":400,"text-anchor":"start"},["Up 값","Up value"]);
     p.el("rect",{x:655,y:769,width:18,height:18,rx:3,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});

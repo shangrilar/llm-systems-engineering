@@ -1,12 +1,12 @@
 // Shared palette for the site's educational diagrams. Each tone has a line color and a matching fill.
 // Values follow the published model and hardware series. `indigo` marks communication in hardware figures;
-// `slate` is the lighter gray of connector arrows.
+// `slate` is the lighter gray of connector arrows; `surface` is the faint background of grouping panels.
 export const C = {
   ink:'#182C40', muted:'#5C6C7C', line:'#DCE4EC', paper:'#FFFFFF',
   blue:'#2470BB', blueFill:'#EDF5FD', teal:'#287D78', tealFill:'#EDF7F5',
   orange:'#B55B22', orangeFill:'#FFF2E6', purple:'#7954A3', purpleFill:'#F3EEF8',
   gray:'#657789', grayFill:'#F1F4F7', red:'#B34242', redFill:'#FFF0EE',
-  indigo:'#4C60A8', indigoFill:'#EEF1FC', slate:'#8191A0',
+  indigo:'#4C60A8', indigoFill:'#EEF1FC', slate:'#8191A0', surface:'#F8FAFC',
 };
 export type Tone = 'blue'|'teal'|'orange'|'purple'|'gray'|'red'|'indigo';
 // PNGs are reviewed on macOS (Arial + Apple SD Gothic Neo); other systems fall back to Noto Sans KR.

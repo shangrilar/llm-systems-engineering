@@ -51,7 +51,7 @@
         "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
         "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
         "published": true,
-        "sourceRevision": "718843b7c1cce893973f4d05cea72cbfa136315ef92eee933559be399becb4e8",
+        "sourceRevision": "0e3078525694149d1dca3b9588786ee79059b9e6bcc41e96b5b12e430b27e008",
         "translationStatus": "reviewed",
         "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
@@ -81,7 +81,7 @@
         "title": "The Flow Through a Decoder Block: Residual Connections and RMSNorm",
         "description": "Explore a decoder block around its residual stream, then follow vector addition and RMSNorm across each token’s d components.",
         "published": true,
-        "sourceRevision": "a47eff756eeabf9e3dd2af594d63473835b7866d5ac0d54901ee4e95b6aa7110",
+        "sourceRevision": "c779015658ab9acc709d8722441b6e4c477994d93eaf5c6815c227cfd53b0efb",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
@@ -114,7 +114,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images.",
-        "sourceRevision": "9214898f5c6f266e7e885ac612d204b12ba5a202aeccefec9af8a474a3a84568"
+        "sourceRevision": "8a125b80f05e118e0ece5ab3603c88915de97f937e3fbf05893cb3d4135e0c4c"
       }
     }
   },
@@ -143,7 +143,7 @@
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "c615dfff0f29de1893808869c1a10c57a0cd8d2edd7d940b72e75b88f8f630c5",
+        "sourceRevision": "4867b88b84bd2b21fb753da918819bca9bc891bbd0d602ae39003588dc445b75",
         "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -154,7 +154,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "core-attention/01-headwise-flow",
+      "core-attention/02-scores-and-scale",
+      "core-attention/03-causal-mask",
+      "core-attention/04-softmax",
+      "core-attention/05-weighted-values"
+    ],
     "locales": {
       "ko": {
         "slug": "core-attention",
@@ -168,8 +174,8 @@
         "description": "Follow Core Attention within each head through QKᵀ, scaling, a causal mask, Softmax, and a weighted sum of Value vectors.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a79dd82e7ca1b6357bdf83af8960878d09e7430a91244ad4bfb19cd5de6102e2",
-        "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately."
+        "sourceRevision": "b45ca41b7d44946c5d2dfd9535274344ded5393d6cae1a492d646d64b7d6ba64",
+        "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -200,7 +206,7 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "0d73f46d46fe6ec08c7264596c64438201927924f1c768b582938798c7841945",
+        "sourceRevision": "72c33d1243a58724cc9424f3dd47e0e1fc5812858d9c813de9d6704bb905bfc1",
         "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }

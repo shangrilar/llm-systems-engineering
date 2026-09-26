@@ -133,7 +133,7 @@ export default {
     p.el("rect",{x:1032,y:726,width:36,height:28,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
     p.el("rect",{x:1068,y:726,width:36,height:28,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
     p.el("path",{d:"M960,766 L960,816",fill:"none",stroke:C.blue,"stroke-width":2.5,"marker-end":markerUrl(C.blue)});
-    p.el("rect",{x:96,y:832,width:1008,height:96,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:96,y:832,width:1008,height:96,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:600,y:864,fill:C.gray,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Core Attention");
     p.el('text',{x:600,y:892,fill:C.gray,"font-size":21,"font-weight":400,"text-anchor":"middle"},["내부 계산은 다음 편에서 살펴봅니다.","We will explore the computation in the next article."]);
     p.el("path",{d:"M600,941 L600,975",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
