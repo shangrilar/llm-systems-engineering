@@ -1,0 +1,135 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"rope",figureId:"06-attention-scores",number:"06-attention-scores",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 6","Figure 6"],
+  title:["위치가 반영되면 Attention 점수도 달라집니다","Position information changes Attention scores"],
+  subtitle:["T = 3 · dh = 4 · 점수는 √dh = 2로 나눈 값","T = 3 · dh = 4 · scores are divided by √dh = 2"],
+  alt:["이전 편 Q/K를 그대로 사용한다. 위치에 따라 두 성분 쌍을 회전하고 스케일링한 점수를 전후 비교한다. 대각선은 같고 비대각선은 달라진다. 마스크, Softmax, PV로 이어진다.","Reuse the previous article’s Q and K. Rotate two component pairs by position and compare scaled scores. Diagonal entries stay the same and off-diagonal entries change, followed by masking, Softmax and PV."],
+  caption:["한 칸당 회전각 30° / 10°는 설명용입니다. 소수는 셋째 자리까지 반올림했습니다.","Illustrative rates: 30° / 10° per position. Decimals are rounded to three places."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,1209,1104,[48,205]);
+    p.el("rect",{x:48,y:205,width:1104,height:60,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:80,y:244,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"start"},["Head 1 · 이전 편과 같은 Q·K에 위치 0·1·2의 회전을 적용합니다.","Head 1 · apply rotations at positions 0, 1, 2 to the previous article’s Q and K."]);
+    p.el('text',{x:300,y:322,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Q · 3 × 4");
+    p.el("rect",{x:140,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:180,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:220,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:260,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:300,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:340,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:380,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:420,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:140,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:180,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:220,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:260,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:300,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:340,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:380,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:420,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:140,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:180,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:220,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:260,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:300,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:340,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:380,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:420,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el('text',{x:900,y:322,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"K · 3 × 4");
+    p.el("rect",{x:740,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:780,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:820,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:860,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:900,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:940,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:980,y:350,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:1020,y:383.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:740,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:780,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:820,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:860,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:900,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:940,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:980,y:399,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:1020,y:432.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:740,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:780,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:820,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:860,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el("rect",{x:900,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:940,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:980,y:448,width:80,height:49,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:1020,y:481.5,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el('text',{x:600,y:544,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["같은 Q·K에서 시작하고, RoPE 적용 여부만 바꿉니다.","Start from the same Q and K; change only whether RoPE is applied."]);
+    p.el("path",{d:"M48,587 L1152,587",fill:"none",stroke:C.line,"stroke-width":2});
+    p.el('text',{x:315,y:642,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},["RoPE 적용 전","Without RoPE"]);
+    p.el('text',{x:315,y:686,fill:C.blue,"font-size":26,"font-weight":600,"text-anchor":"middle"},"QKᵀ / √dh");
+    p.el("rect",{x:165,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:215,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:265,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:315,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el("rect",{x:365,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:415,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1.5");
+    p.el("rect",{x:165,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:215,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el("rect",{x:265,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:315,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1.5");
+    p.el("rect",{x:365,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:415,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:165,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:215,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el("rect",{x:265,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:315,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"0");
+    p.el("rect",{x:365,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:415,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el("rect",{x:165,y:883,width:300,height:64,rx:0,fill:"none",stroke:C.blue,"stroke-width":3});
+    p.el('text',{x:215,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el('text',{x:315,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el('text',{x:415,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el('text',{x:148,y:796,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"1");
+    p.el('text',{x:148,y:860,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"2");
+    p.el('text',{x:148,y:924,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"3");
+    p.el('text',{x:885,y:642,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},["RoPE 적용 후","With RoPE"]);
+    p.el('text',{x:885,y:686,fill:C.blue,"font-size":26,"font-weight":600,"text-anchor":"middle"},"Q′K′ᵀ / √dh");
+    p.el("rect",{x:735,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:785,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1");
+    p.el("rect",{x:835,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:885,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"3.467");
+    p.el("rect",{x:935,y:755,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:985,y:796,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-0.64");
+    p.el("rect",{x:735,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:785,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"2.439");
+    p.el("rect",{x:835,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:885,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"1.5");
+    p.el("rect",{x:935,y:819,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:985,y:860,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-1.497");
+    p.el("rect",{x:735,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:785,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"0.866");
+    p.el("rect",{x:835,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:885,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"-0.43");
+    p.el("rect",{x:935,y:883,width:100,height:64,rx:0,fill:C.blueFill,stroke:"#C8DCEE","stroke-width":1});
+    p.el('text',{x:985,y:924,fill:C.blue,"font-size":25,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el("rect",{x:735,y:883,width:300,height:64,rx:0,fill:"none",stroke:C.blue,"stroke-width":3});
+    p.el('text',{x:785,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"1");
+    p.el('text',{x:885,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"2");
+    p.el('text',{x:985,y:738,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"3");
+    p.el('text',{x:718,y:796,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"1");
+    p.el('text',{x:718,y:860,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"2");
+    p.el('text',{x:718,y:924,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"end"},"3");
+    p.el('text',{x:600,y:813,fill:C.teal,"font-size":22,"font-weight":600,"text-anchor":"middle"},["점수 비교","Compare scores"]);
+    p.el('text',{x:600,y:884,fill:C.teal,"font-size":40,"font-weight":600,"text-anchor":"middle"},"≠");
+    p.el('text',{x:600,y:1000,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},["행 = Query 토큰 · 열 = Key 토큰 · 토큰 3의 행 강조","Rows = Query tokens · columns = Key tokens · token 3 row highlighted"]);
+    p.el('text',{x:600,y:1067,fill:C.ink,"font-size":26,"font-weight":600,"text-anchor":"middle"},["자기 자신과의 점수는 같고, 다른 위치와의 점수는 달라집니다.","Self-scores stay the same; scores across different positions change."]);
+    p.el('text',{x:600,y:1111,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},["같은 위치의 Q·K에는 동일한 회전이 적용되기 때문입니다.","Q and K at the same position receive the same rotation."]);
+    p.el("path",{d:"M600,1140 L600,1178",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("rect",{x:80,y:1196,width:1040,height:76,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:600,y:1228,fill:C.gray,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Causal mask → Softmax → PV");
+    p.el('text',{x:600,y:1256,fill:C.gray,"font-size":21,"font-weight":400,"text-anchor":"middle"},["달라진 점수로 Value를 반영하는 비중을 계산","Use the new scores to determine weights on the Values"]);
+    p.el("rect",{x:48,y:1330,width:1104,height:76,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:600,y:1374,fill:C.blue,"font-size":26,"font-weight":600,"text-anchor":"middle"},["이제 점수에는 Q·K의 내용과 상대 위치가 함께 반영됩니다.","Scores now reflect both the Q–K content and relative position."]);
+    return [p];
+  },
+} satisfies FigureSpec;
