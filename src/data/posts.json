@@ -1208,7 +1208,14 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "paged-kv-cache/01-needed-blocks",
+      "paged-kv-cache/02-logical-physical",
+      "paged-kv-cache/03-growing-blocks",
+      "paged-kv-cache/04-paged-attention-read",
+      "paged-kv-cache/05-shared-prefix",
+      "paged-kv-cache/06-copy-on-write"
+    ],
     "locales": {
       "ko": {
         "slug": "paged-kv-cache",
@@ -1222,8 +1229,8 @@
         "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "293a58d0f97ed3ea4b1f37cceb8e51ac1fbb580217a93eebc03874a694a3e1cb",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication."
+        "sourceRevision": "db9ec5066eac77e6d774e6e5c18483bfb8bb1b8233c265f84fe9d624fe39d09e",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages. Figure 2 was redrawn with shared primitives (cells, curve)."
       }
     }
   },
