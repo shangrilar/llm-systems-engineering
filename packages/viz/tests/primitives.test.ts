@@ -52,3 +52,21 @@ describe('primitives',()=>{
     expect(p.svg()).toContain('x="200" y="0" width="400"');
   });
 });
+
+describe('ported elements',()=>{
+  it('writes literal elements with escaped bilingual text',()=>{
+    const p=new Panel('en',null,100,1104);
+    p.el('rect',{x:1,y:2,width:3,height:4,fill:C.blueFill});
+    p.el('text',{x:5,y:6,'font-size':20},['가 & 나','A & B']);
+    expect(p.svg()).toBe(`<rect x="1" y="2" width="3" height="4" fill="${C.blueFill}"/><text x="5" y="6" font-size="20">A &amp; B</text>`);
+  });
+  it('adds figure-level defs and keeps the eyebrow, title, subtitle and rule positions',()=>{
+    const {svg}=compose({articleId:'t',figureId:'f',number:'0',eyebrow:'그림 1',title:'T',subtitle:'S',alt:'A',caption:'C',sources:[],layout:'wide',defs:'<pattern id="hatch"/>',panels:l=>[new Panel(l,null,10,1104)]},'ko');
+    expect(svg).toContain('<pattern id="hatch"/></defs>');
+    expect(svg).toContain('y="49" fill="#2470BB" font-size="18"');
+    expect(svg).toContain('y="99" fill="#182C40" font-size="36" font-weight="700"');
+    expect(svg).toContain('y="141" fill="#5C6C7C" font-size="23"');
+    expect(svg).toContain('<path d="M48,170 H1152"');
+    expect(svg).toContain('translate(48 206)');
+  });
+});

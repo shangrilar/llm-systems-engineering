@@ -1,10 +1,11 @@
 import {C,markerId,type Tone} from './theme';
-import {svgText,tr,wrap,type Label,type Locale} from './text';
+import {esc,svgText,tr,wrap,type Label,type Locale} from './text';
 // One panel in local coordinates. `compose` scales it into the figure's column width.
 // A `null` title leaves the whole area to the drawing (e.g. one full-width panel of 1120 with `layout: 'wide'`).
 export class Panel {
   parts:string[]=[];
-  constructor(public locale:Locale,public title:Label|null,public height:number,public width=520){
+  // `origin` is the local point placed at the panel's top-left, so ported figures keep their original coordinates.
+  constructor(public locale:Locale,public title:Label|null,public height:number,public width=520,public origin:readonly [number,number]=[0,0]){
     if(title===null)return;
     this.text(0,30,title,{size:25,weight:600,width});
     this.line(0,68,width,68,C.line,1);
@@ -31,6 +32,15 @@ export class Panel {
     this.text(x+w/2,y+h/2+8,label,{size:22,color:C[tone],weight:600,anchor:'middle',width:w-12});
   }
   circle(x:number,y:number,r:number,fill:string,stroke=C.line){this.parts.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}"/>`);}
-  raw(s:string){this.parts.push(s);}
-  svg(){return this.parts.join('');}
+  // Any SVG element with literal attributes; `content` is the text of a <text> element. Used by figures
+  // ported from earlier generators, which keep their exact geometry.
+  el(tag:string,attrs:Record<string,string|number>,content?:Label){
+    const a=Object.entries(attrs).map(([k,v])=>` ${k}="${esc(v)}"`).join('');
+    this.parts.push(content===undefined?`<${tag}${a}/>`:`<${tag}${a}>${esc(tr(content,this.locale))}</${tag}>`);
+  }
+  raw(s:Label){this.parts.push(tr(s,this.locale));}
+  svg(){
+    const [x,y]=this.origin,body=this.parts.join('');
+    return x||y?`<g transform="translate(${-x} ${-y})">${body}</g>`:body;
+  }
 }

@@ -42,7 +42,9 @@ export default {
 - 패널은 기본 폭 520의 자체 좌표계를 쓴다. 데스크톱은 한 줄에 두 패널(`layout:'wide'`이면 한 패널), 모바일은 세로로 쌓고 폭에 맞게 축소한다.
 - `mobile` 인자로 좁은 화면의 배치를 바꿀 수 있다.
 - `new Panel(locale, null, height, 1120)`과 `layout:'wide'`를 함께 쓰면 제목 없는 전체 폭 패널 하나에 자유롭게 그린다.
-- 그림 틀 옵션: `eyebrow`(제목 위 짧은 표시, 예: “그림 2”), `captionIn:'article'`(캡션을 본문 `<figcaption>`에 두고 이미지에서 뺀다), `screens:['desktop']`(`<img>` 하나로 넣는 그림처럼 모바일 변형이 필요 없을 때).
+- 표준 그림 틀: eyebrow(“그림 N” / “Figure N”) → 제목(36/700) → 부제 → 구분선 → 패널 → 구분선 → **캡션(이미지 안 하단)**. 모든 공개 그림은 eyebrow와 캡션을 둔다.
+- 그 밖의 옵션: `captionIn:'article'`(캡션을 이미지에서 뺀다. 표준 그림에는 쓰지 않는다), `screens:['desktop']`(`<img>` 하나로 넣는 그림처럼 모바일 변형이 필요 없을 때), `defs`(패턴 등 그림 전체의 `<defs>`).
+- 이전 생성기에서 옮긴 그림은 `new Panel(locale, null, h, 1104, [48, y0])`로 원래 좌표를 유지하고 `p.el(tag, attrs, label)`로 요소를 그대로 쓴다. 수정할 때 해당 부분을 공통 도형으로 바꾼다.
 
 ## 공통 도형
 
