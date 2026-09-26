@@ -1,0 +1,131 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"attention-memory-and-softmax",figureId:"02-intermediate-memory",number:"02-intermediate-memory",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 2","Figure 2"],
+  title:["중간 행렬의 저장과 데이터 이동","Storing and Moving Intermediate Matrices"],
+  subtitle:["점수와 확률을 전역 메모리에 저장하는 구현에서 생기는 이동을 봅니다.","Data movement in an implementation that stores scores and probabilities in global memory."],
+  alt:["중간 S와 P를 전역 메모리에 저장하는 기본 구현의 경로를 나타낸다. QK 전치 계산이 S를 저장하고 다음 계산이 다시 읽어 스케일링과 마스크 및 Softmax를 수행한다. 이 계산은 P를 저장하고 PV가 P를 다시 읽는다. 스케일링과 마스크마다 별도 중간 행렬을 그리지 않는다. Q K V의 입력과 O 출력의 이동은 중간 행렬에 집중하기 위해 생략했다. 전역 메모리는 논리적 메모리 공간이며 캐시가 관여하므로 모든 접근이 HBM의 물리적 전송과 일대일 대응하지 않는다. 긴 시퀀스의 큰 중간 행렬은 HBM 저장 및 이동 부담을 만든다. 토큰 수가 두 배가 되면 점수와 확률 행렬 각각의 요소 수가 네 배가 된다. 도형은 4×4와 8×8 크기 비교이며 처리 시간을 나타내지 않는다.","A basic implementation stores intermediate S and P in global memory. QK transpose writes S, and the next computation rereads it for scaling, masking, and Softmax. That computation writes P, which PV rereads. Separate intermediates are not shown for each scaling and masking step. Q, K, V input traffic and O output traffic are omitted to focus on intermediates. Global memory is a logical memory space; caches mean accesses do not correspond one-to-one with physical HBM transfers. Large intermediates for long sequences increase HBM storage and transfer costs. Doubling token count quadruples the elements in each score and probability matrix. The 4 × 4 and 8 × 8 shapes compare sizes, not execution times."],
+  caption:["Q·K·V 입력과 O 출력의 이동은 생략했습니다. 캐시가 관여하므로 모든 접근이 HBM 전송과 일대일로 대응하지는 않습니다.","Movement of the Q, K, V inputs and O output is omitted. Caches are involved, so not every access maps one-to-one to an HBM transfer."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,1114,1104,[48,206]);
+    p.el('text',{x:76,y:223,fill:C.ink,"font-size":25,"font-weight":700,"text-anchor":"start"},["GPU 내부의 계산","Computation on the GPU"]);
+    p.el("rect",{x:76,y:255,width:260,height:136,rx:12,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:206,y:298,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"middle"},["점수 계산","Compute scores"]);
+    p.el('text',{x:206,y:340,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"QKᵀ");
+    p.el("rect",{x:470,y:255,width:260,height:136,rx:12,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:600,y:298,fill:C.ink,"font-size":(locale==='ko'?27:23),"font-weight":700,"text-anchor":"middle"},["확률 계산","Compute probabilities"]);
+    p.el('text',{x:600,y:340,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},["스케일링·마스크","Scaling · Masking"]);
+    p.el('text',{x:600,y:372,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"Softmax");
+    p.el("rect",{x:864,y:255,width:260,height:136,rx:12,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:994,y:298,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"middle"},["출력 계산","Compute output"]);
+    p.el('text',{x:994,y:340,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},"PV");
+    p.el("rect",{x:48,y:543,width:1104,height:300,rx:12,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:76,y:585,fill:C.orange,"font-size":25,"font-weight":700,"text-anchor":"start"},["전역 메모리","Global memory"]);
+    p.el('text',{x:76,y:620,fill:C.orange,"font-size":22,"font-weight":400,"text-anchor":"start"},["중간 행렬","Intermediate matrices"]);
+    p.el("rect",{x:235,y:630,width:280,height:102,rx:12,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:375,y:689,fill:C.orange,"font-size":25,"font-weight":600,"text-anchor":"middle"},["점수 S · T × T","Scores S · T × T"]);
+    p.el("rect",{x:686,y:630,width:280,height:102,rx:12,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:826,y:689,fill:C.orange,"font-size":25,"font-weight":600,"text-anchor":"middle"},["확률 P · T × T","Probabilities P · T × T"]);
+    p.el("path",{d:"M210,404 L310,616",fill:"none",stroke:C.orange,"stroke-width":3,"marker-end":markerUrl(C.orange)});
+    p.el('text',{x:159,y:480,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"start"},["저장","Store"]);
+    p.el("path",{d:"M447,616 L548,404",fill:"none",stroke:C.orange,"stroke-width":3,"marker-end":markerUrl(C.orange)});
+    p.el('text',{x:535,y:499,fill:C.orange,"font-size":22,"font-weight":700,"text-anchor":"start"},["다시 읽기","Reread"]);
+    p.el("path",{d:"M654,404 L755,616",fill:"none",stroke:C.orange,"stroke-width":3,"marker-end":markerUrl(C.orange)});
+    p.el('text',{x:720,y:480,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"start"},["저장","Store"]);
+    p.el("path",{d:"M900,616 L1001,404",fill:"none",stroke:C.orange,"stroke-width":3,"marker-end":markerUrl(C.orange)});
+    p.el('text',{x:990,y:499,fill:C.orange,"font-size":22,"font-weight":700,"text-anchor":"start"},["다시 읽기","Reread"]);
+    p.el('text',{x:600,y:799,fill:C.orange,"font-size":25,"font-weight":600,"text-anchor":"middle"},["중간 결과를 크게 저장할수록, 다음 계산에 전달할 데이터도 많아집니다.","Larger stored intermediates mean more data to pass to the next computation."]);
+    p.el("rect",{x:48,y:891,width:1104,height:348,rx:12,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:76,y:938,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"start"},["토큰 수가 늘면 중간 행렬은 더 빠르게 커집니다.","Intermediate matrices grow faster than the token count."]);
+    p.el("rect",{x:202,y:1025,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:227,y:1025,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:252,y:1025,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:277,y:1025,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:202,y:1050,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:227,y:1050,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:252,y:1050,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:277,y:1050,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:202,y:1075,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:227,y:1075,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:252,y:1075,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:277,y:1075,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:202,y:1100,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:227,y:1100,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:252,y:1100,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:277,y:1100,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:252,y:1170,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"T × T");
+    p.el("path",{d:"M399,1080 L599,1080",fill:"none",stroke:C.muted,"stroke-width":2,"marker-end":markerUrl(C.muted)});
+    p.el('text',{x:499,y:1044,fill:C.ink,"font-size":25,"font-weight":700,"text-anchor":"middle"},["토큰 수 2배","Twice the tokens"]);
+    p.el("rect",{x:752,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:982,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1007,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1032,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1057,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1082,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1107,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1132,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:752,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:777,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:802,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:827,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:852,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:877,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:902,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("rect",{x:927,y:1157,width:22,height:22,rx:3,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:852,y:1220,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"2T × 2T = 4T²");
+    p.el('text',{x:499,y:1127,fill:C.orange,"font-size":25,"font-weight":700,"text-anchor":"middle"},["요소 수 4배","Four times the elements"]);
+    p.el('text',{x:600,y:1303,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"middle"},["큰 점수·확률 행렬의 저장과 재읽기를 줄일 수 있을까요?","Can we reduce writes and rereads of large score and probability matrices?"]);
+    return [p];
+  },
+} satisfies FigureSpec;
