@@ -1059,7 +1059,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "choosing-parallelism/01-make-it-fit",
+      "choosing-parallelism/02-replicate-the-group",
+      "choosing-parallelism/03-balance-shards-and-replicas"
+    ],
     "locales": {
       "ko": {
         "slug": "choosing-parallelism",
@@ -1073,8 +1077,8 @@
         "description": "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "9cbfabbba6f35ddbba023c5fabf47daa6f1750e797748001ef0ead262c18032f",
-        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval."
+        "sourceRevision": "3544b47de1fdcad3995a7399615ab448c4e858272f3d6c22e8e1cdaa1c91650c",
+        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
