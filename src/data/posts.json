@@ -124,7 +124,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "attention-projections/01-attention-overview",
+      "attention-projections/02-qkv-projections",
+      "attention-projections/03-head-segments",
+      "attention-projections/04-output-projection"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-projections",
@@ -138,8 +143,8 @@
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09828dbd7128e18d922ce8e0df9bffaa8b12920a50918c265aeb332b8a2c31f4",
-        "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected."
+        "sourceRevision": "c615dfff0f29de1893808869c1a10c57a0cd8d2edd7d940b72e75b88f8f630c5",
+        "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
