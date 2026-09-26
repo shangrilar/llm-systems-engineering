@@ -734,7 +734,13 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "collective-communication-basics/basics-01-requests",
+      "collective-communication-basics/basics-02-broadcast",
+      "collective-communication-basics/basics-03-scatter",
+      "collective-communication-basics/basics-04-gather",
+      "collective-communication-basics/basics-05-reduce"
+    ],
     "locales": {
       "ko": {
         "slug": "collective-communication-basics",
@@ -748,8 +754,8 @@
         "description": "Compare Send/Recv with collectives, then follow the inputs and outputs of Broadcast, Scatter, Gather, and Reduce.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "2eeccc30fee8cb9b3c3a7f40295091b339e1e5a141d6f2ee2d33886c068c84fb",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "77a18c7047b9151b450ca062b2c011880d90aa526d756f75345051afc0ffc7a6",
+        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
