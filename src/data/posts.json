@@ -838,7 +838,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "data-parallelism/01-replicas",
+      "data-parallelism/02-gradients",
+      "data-parallelism/03-throughput"
+    ],
     "locales": {
       "ko": {
         "slug": "data-parallelism",
@@ -852,8 +856,8 @@
         "description": "Replicate a model across GPUs, distribute inputs, and distinguish inference request distribution from training gradient synchronization.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a3ff26d6012c0ee95b637b6e414b2b058e2cb527fc34cd3d9002ac95998fda60",
-        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+        "sourceRevision": "4c4e84a84b7a1332a58642df9954db7fbbccb202ff219a5f7ac434ac0c8a7b8a",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
