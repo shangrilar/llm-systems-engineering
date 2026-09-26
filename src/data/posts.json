@@ -705,7 +705,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-network-data-path/01-host-memory-staging",
+      "gpu-network-data-path/02-direct-gpu-memory",
+      "gpu-network-data-path/03-cpu-proxy"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-network-data-path",
@@ -719,8 +723,8 @@
         "description": "Explore transfer paths that reduce intermediate copies through CPU memory and the CPU role in helping network communication progress.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "8d11ae1f926f6dd7afc605304d73f03eae52cd72ee7df80529a972cfdadf2667",
-        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
+        "sourceRevision": "2e7f948452ab62b24dc684a34230129d69616439996a99a1cbcc601120674a84",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
