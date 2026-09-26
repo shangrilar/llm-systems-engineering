@@ -1271,7 +1271,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-metrics/01-request-latency",
+      "inference-metrics/02-counting-throughput",
+      "inference-metrics/03-average-and-gaps",
+      "inference-metrics/04-request-latency-distribution",
+      "inference-metrics/05-goodput-targets"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-metrics",
@@ -1285,8 +1291,8 @@
         "description": "Measure one request's waits and overall server throughput, examine output gaps and request latencies hidden by averages, then connect them to goodput: throughput that meets latency targets.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "d90e732759c82e694fd01d1d29a48d998505faf6f5c4f583b6e53ab279851872",
-        "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed."
+        "sourceRevision": "a2a2753f1ac973e344f2d7c4a81f3ec43bd9e21414073f899c6aeeb320f7ecbc",
+        "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages."
       }
     }
   }
