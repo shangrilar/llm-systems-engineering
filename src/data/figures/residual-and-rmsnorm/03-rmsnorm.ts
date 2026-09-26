@@ -10,11 +10,7 @@ export default {
   caption:["d = 4와 값은 설명용입니다. 출력은 소수 둘째 자리로 반올림했으며, 막대는 반올림 전 값입니다.","Illustrative d = 4. Output labels are rounded to two decimals; bars use unrounded values."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,821,1104,[48,206]);
-    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
-    p.raw("<g transform=\"translate(-48 -206)\">");
-    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
-    p.raw("<g transform=\"translate(-48 -205)\">");
+    const p=new Panel(locale,null,821,1104,[48,205]);
     p.el('text',{x:250,y:223,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},["입력 벡터 x","Input vector x"]);
     p.el('text',{x:950,y:223,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},["RMSNorm 출력","RMSNorm output"]);
     p.el("path",{d:"M70,274 V266 H430 V274",fill:"none",stroke:C.muted,"stroke-width":1.5});
@@ -70,10 +66,6 @@ export default {
     p.el('text',{x:80,y:907,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"start"},["분모가 0이 되지 않도록 더하는 작은 값 ε는 이 예시에서 생략했습니다.","The small ε term that prevents a zero denominator is omitted in this example."]);
     p.raw("<text x=\"600\" y=\"962\" fill=\"#287D78\" font-size=\"30\" font-weight=\"600\" text-anchor=\"middle\">y<tspan baseline-shift=\"sub\" font-size=\"70%\">i</tspan> = x<tspan baseline-shift=\"sub\" font-size=\"70%\">i</tspan> / √((x<tspan baseline-shift=\"sub\" font-size=\"70%\">1</tspan>² + … + x<tspan baseline-shift=\"sub\" font-size=\"70%\">d</tspan>²) / d + ε) × γ<tspan baseline-shift=\"sub\" font-size=\"70%\">i</tspan></text>");
     p.el('text',{x:600,y:1010,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"middle"},["토큰마다 따로 적용 · 입력과 출력 모두 d차원","Applied separately to each token · d dimensions in and out"]);
-    p.raw('</g>');
-    p.raw('</g>');
-    p.raw('</g>');
-    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;

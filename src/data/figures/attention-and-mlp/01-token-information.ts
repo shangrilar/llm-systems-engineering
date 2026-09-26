@@ -12,7 +12,7 @@ export default {
   panels(locale:Locale){
     const p=new Panel(locale,null,827,1104,[48,205]);
     p.el('text',{x:600,y:215,fill:C.ink,"font-size":26,"font-weight":600,"text-anchor":"middle"},["토큰 3의 벡터를 바꿀 때, 어느 입력을 사용할까요?","Which inputs contribute when transforming token 3?"]);
-    p.el("rect",{x:48,y:246,width:534,height:540,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:48,y:246,width:534,height:540,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:315,y:291,fill:C.ink,"font-size":29,"font-weight":600,"text-anchor":"middle"},"Attention");
     p.el('text',{x:148,y:339,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["토큰 1","Token 1"]);
     p.el("rect",{x:83,y:358,width:130,height:58,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
@@ -33,13 +33,13 @@ export default {
     p.el('text',{x:482,y:675,fill:C.blue,"font-size":18,"font-weight":600,"text-anchor":"middle"},["토큰 3 출력","Output · 3"]);
     p.el('text',{x:482,y:704,fill:C.blue,"font-size":20,"font-weight":400,"text-anchor":"middle"},["d차원 벡터","Vector · d"]);
     p.el('text',{x:315,y:757,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["토큰 1·2·3의 정보를 함께 반영합니다.","Combine information from tokens 1, 2 and 3."]);
-    p.el("rect",{x:618,y:246,width:534,height:540,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:618,y:246,width:534,height:540,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:885,y:291,fill:C.ink,"font-size":29,"font-weight":600,"text-anchor":"middle"},"MLP");
     p.el('text',{x:718,y:339,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["토큰 1","Token 1"]);
-    p.el("rect",{x:653,y:358,width:130,height:58,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:653,y:358,width:130,height:58,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:718,y:395,fill:C.gray,"font-size":21,"font-weight":600,"text-anchor":"middle"},["d차원 벡터","Vector · d"]);
     p.el('text',{x:885,y:339,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["토큰 2","Token 2"]);
-    p.el("rect",{x:820,y:358,width:130,height:58,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:820,y:358,width:130,height:58,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:885,y:395,fill:C.gray,"font-size":21,"font-weight":600,"text-anchor":"middle"},["d차원 벡터","Vector · d"]);
     p.el('text',{x:1052,y:339,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},["토큰 3","Token 3"]);
     p.el("rect",{x:987,y:358,width:130,height:58,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});

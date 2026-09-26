@@ -12,7 +12,7 @@ export default {
   panels(locale:Locale){
     const p=new Panel(locale,null,1164,1104,[48,205]);
     p.el('text',{x:600,y:220,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},["X는 같고, 세 가중치 행렬은 서로 다릅니다.","The input X is the same; the three weight matrices differ."]);
-    p.el("rect",{x:48,y:267,width:1104,height:282,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:48,y:267,width:1104,height:282,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:87,y:308,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"start"},"Q = X × Wq");
     p.el('text',{x:260,y:348,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"X · 3 × 8");
     p.el("rect",{x:140,y:382,width:30,height:32,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
@@ -206,7 +206,7 @@ export default {
     p.el("rect",{x:840,y:446,width:240,height:32,rx:0,fill:"none",stroke:C.blue,"stroke-width":2.5});
     p.el('text',{x:900,y:510,fill:C.blue,"font-size":18,"font-weight":600,"text-anchor":"middle"},"Head 1");
     p.el('text',{x:1020,y:510,fill:C.teal,"font-size":18,"font-weight":600,"text-anchor":"middle"},"Head 2");
-    p.el("rect",{x:48,y:575,width:1104,height:282,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:48,y:575,width:1104,height:282,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:87,y:616,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"start"},"K = X × Wk");
     p.el('text',{x:260,y:656,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"X · 3 × 8");
     p.el("rect",{x:140,y:690,width:30,height:32,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});
@@ -400,7 +400,7 @@ export default {
     p.el("rect",{x:840,y:754,width:240,height:32,rx:0,fill:"none",stroke:C.blue,"stroke-width":2.5});
     p.el('text',{x:900,y:818,fill:C.blue,"font-size":18,"font-weight":600,"text-anchor":"middle"},"Head 1");
     p.el('text',{x:1020,y:818,fill:C.teal,"font-size":18,"font-weight":600,"text-anchor":"middle"},"Head 2");
-    p.el("rect",{x:48,y:883,width:1104,height:282,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:48,y:883,width:1104,height:282,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:87,y:924,fill:C.ink,"font-size":24,"font-weight":600,"text-anchor":"start"},"V = X × Wv");
     p.el('text',{x:260,y:964,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"X · 3 × 8");
     p.el("rect",{x:140,y:998,width:30,height:32,rx:0,fill:C.grayFill,stroke:C.line,"stroke-width":1});

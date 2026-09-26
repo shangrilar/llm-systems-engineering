@@ -10,9 +10,7 @@ export default {
   caption:["한 칸당 회전각 30° / 10°는 설명용입니다. 소수는 셋째 자리까지 반올림했습니다.","Illustrative rates: 30° / 10° per position. Decimals are rounded to three places."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,1209,1104,[48,206]);
-    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
-    p.raw("<g transform=\"translate(-48 -205)\">");
+    const p=new Panel(locale,null,1209,1104,[48,205]);
     p.el("rect",{x:48,y:205,width:1104,height:60,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:80,y:244,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"start"},["Head 1 · 이전 편과 같은 Q·K에 위치 0·1·2의 회전을 적용합니다.","Head 1 · apply rotations at positions 0, 1, 2 to the previous article’s Q and K."]);
     p.el('text',{x:300,y:322,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Q · 3 × 4");
@@ -126,14 +124,12 @@ export default {
     p.el('text',{x:600,y:1000,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},["행 = Query 토큰 · 열 = Key 토큰 · 토큰 3의 행 강조","Rows = Query tokens · columns = Key tokens · token 3 row highlighted"]);
     p.el('text',{x:600,y:1067,fill:C.ink,"font-size":26,"font-weight":600,"text-anchor":"middle"},["자기 자신과의 점수는 같고, 다른 위치와의 점수는 달라집니다.","Self-scores stay the same; scores across different positions change."]);
     p.el('text',{x:600,y:1111,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"middle"},["같은 위치의 Q·K에는 동일한 회전이 적용되기 때문입니다.","Q and K at the same position receive the same rotation."]);
-    p.el("path",{d:"M600,1140 L600,1178",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
-    p.el("rect",{x:80,y:1196,width:1040,height:76,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el("path",{d:"M600,1140 L600,1178",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:80,y:1196,width:1040,height:76,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:600,y:1228,fill:C.gray,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Causal mask → Softmax → PV");
     p.el('text',{x:600,y:1256,fill:C.gray,"font-size":21,"font-weight":400,"text-anchor":"middle"},["달라진 점수로 Value를 반영하는 비중을 계산","Use the new scores to determine weights on the Values"]);
     p.el("rect",{x:48,y:1330,width:1104,height:76,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:600,y:1374,fill:C.blue,"font-size":26,"font-weight":600,"text-anchor":"middle"},["이제 점수에는 Q·K의 내용과 상대 위치가 함께 반영됩니다.","Scores now reflect both the Q–K content and relative position."]);
-    p.raw('</g>');
-    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;
