@@ -1,0 +1,134 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"collective-communication-combinations",figureId:"combinations-01-all-gather",number:"combinations-01-all-gather",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 1","Figure 1"],
+  title:["All-Gather: 모은 결과를 모두에게","All-Gather: collect and share"],
+  subtitle:["각자의 조각을 이어 붙인 전체 배열을 모든 GPU가 갖습니다.","Every GPU receives the full array formed by concatenating the input chunks."],
+  alt:["입력은 GPU별로 [1,2], [10,20], [100,200], [1000,2000]이다. All-Gather 완료 후 모든 GPU가 rank 순서로 이어 붙인 같은 8개 원소 배열을 갖는다. Gather 뒤 Broadcast를 수행한 것과 같은 데이터 결과를 설명하며 반드시 두 단계를 실행하는 구현이라는 뜻은 아니다. root를 지정할 필요가 없다.","All-Gather concatenates the four two-element input chunks in rank order, producing the same eight-element output on every GPU."],
+  caption:["Gather 뒤 Broadcast와 같은 데이터 결과를 설명하며, 구현이 반드시 두 단계로 실행된다는 뜻은 아닙니다. root는 지정하지 않습니다.","It gives the same data result as Gather followed by Broadcast; implementations need not run two steps. No root is specified."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,796,1104,[48,205]);
+    p.el('text',{x:48,y:205,fill:C.ink,"font-size":26,"font-weight":700,"text-anchor":"start"},["통신 전 · 입력 버퍼","Before communication · input buffers"]);
+    p.el("rect",{x:48,y:229,width:264,height:140,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:64,y:244,width:8,height:27,rx:3,fill:C.blue,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:84,y:267,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 0");
+    p.el("rect",{x:72,y:293,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:124,y:324,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("rect",{x:184,y:293,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:236,y:324,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("path",{d:"M180,378 V407",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:328,y:229,width:264,height:140,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:344,y:244,width:8,height:27,rx:3,fill:C.teal,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:364,y:267,fill:C.teal,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 1");
+    p.el("rect",{x:352,y:293,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:404,y:324,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"10");
+    p.el("rect",{x:464,y:293,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:516,y:324,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"20");
+    p.el("path",{d:"M460,378 V407",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:608,y:229,width:264,height:140,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:624,y:244,width:8,height:27,rx:3,fill:C.purple,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:644,y:267,fill:C.purple,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 2");
+    p.el("rect",{x:632,y:293,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:684,y:324,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"100");
+    p.el("rect",{x:744,y:293,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:796,y:324,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"200");
+    p.el("path",{d:"M740,378 V407",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:888,y:229,width:264,height:140,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:904,y:244,width:8,height:27,rx:3,fill:C.orange,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:924,y:267,fill:C.orange,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 3");
+    p.el("rect",{x:912,y:293,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:964,y:324,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1000");
+    p.el("rect",{x:1024,y:293,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:1076,y:324,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2000");
+    p.el("path",{d:"M1020,378 V407",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:48,y:417,width:1104,height:72,rx:12,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:600,y:463,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["각 GPU의 입력 2개 원소 → 각 GPU의 출력 8개 원소","Each GPU: 2 input elements → each GPU: 8 output elements"]);
+    p.el("path",{d:"M180,499 V534",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M460,499 V534",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M740,499 V534",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M1020,499 V534",fill:"none",stroke:C.muted,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el('text',{x:48,y:570,fill:C.ink,"font-size":26,"font-weight":700,"text-anchor":"start"},["통신 완료 후 · 출력 버퍼","After completion · output buffers"]);
+    p.el("rect",{x:48,y:595,width:264,height:298,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:64,y:610,width:8,height:27,rx:3,fill:C.blue,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:84,y:633,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 0");
+    p.el("rect",{x:72,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:124,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("rect",{x:184,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:236,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("rect",{x:72,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:124,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"10");
+    p.el("rect",{x:184,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:236,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"20");
+    p.el("rect",{x:72,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:124,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"100");
+    p.el("rect",{x:184,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:236,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"200");
+    p.el("rect",{x:72,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:124,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1000");
+    p.el("rect",{x:184,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:236,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2000");
+    p.el("rect",{x:328,y:595,width:264,height:298,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:344,y:610,width:8,height:27,rx:3,fill:C.teal,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:364,y:633,fill:C.teal,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 1");
+    p.el("rect",{x:352,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:404,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("rect",{x:464,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:516,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("rect",{x:352,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:404,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"10");
+    p.el("rect",{x:464,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:516,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"20");
+    p.el("rect",{x:352,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:404,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"100");
+    p.el("rect",{x:464,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:516,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"200");
+    p.el("rect",{x:352,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:404,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1000");
+    p.el("rect",{x:464,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:516,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2000");
+    p.el("rect",{x:608,y:595,width:264,height:298,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:624,y:610,width:8,height:27,rx:3,fill:C.purple,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:644,y:633,fill:C.purple,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 2");
+    p.el("rect",{x:632,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:684,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("rect",{x:744,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:796,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("rect",{x:632,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:684,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"10");
+    p.el("rect",{x:744,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:796,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"20");
+    p.el("rect",{x:632,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:684,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"100");
+    p.el("rect",{x:744,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:796,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"200");
+    p.el("rect",{x:632,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:684,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1000");
+    p.el("rect",{x:744,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:796,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2000");
+    p.el("rect",{x:888,y:595,width:264,height:298,rx:12,fill:"white",stroke:C.line,"stroke-width":1.5});
+    p.el("rect",{x:904,y:610,width:8,height:27,rx:3,fill:C.orange,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:924,y:633,fill:C.orange,"font-size":25,"font-weight":700,"text-anchor":"start"},"GPU 3");
+    p.el("rect",{x:912,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:964,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1");
+    p.el("rect",{x:1024,y:659,width:104,height:44,rx:7,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:1076,y:690,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2");
+    p.el("rect",{x:912,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:964,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"10");
+    p.el("rect",{x:1024,y:713,width:104,height:44,rx:7,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:1076,y:744,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"20");
+    p.el("rect",{x:912,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:964,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"100");
+    p.el("rect",{x:1024,y:767,width:104,height:44,rx:7,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:1076,y:798,fill:C.purple,"font-size":27,"font-weight":600,"text-anchor":"middle"},"200");
+    p.el("rect",{x:912,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:964,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"1000");
+    p.el("rect",{x:1024,y:821,width:104,height:44,rx:7,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:1076,y:852,fill:C.orange,"font-size":27,"font-weight":600,"text-anchor":"middle"},"2000");
+    p.el("rect",{x:48,y:927,width:1104,height:66,rx:12,fill:C.indigoFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:600,y:967,fill:C.indigo,"font-size":24,"font-weight":600,"text-anchor":"middle"},["같은 결과로 이해하기: Gather → Broadcast","Same result as: Gather → Broadcast"]);
+    return [p];
+  },
+} satisfies FigureSpec;
