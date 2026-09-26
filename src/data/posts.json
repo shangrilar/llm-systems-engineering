@@ -430,7 +430,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-arithmetic-intensity-and-fusion/01-compute-and-memory",
+      "gpu-arithmetic-intensity-and-fusion/02-arithmetic-intensity-roofline",
+      "gpu-arithmetic-intensity-and-fusion/03-reduce-and-overlap",
+      "gpu-arithmetic-intensity-and-fusion/04-elementwise-fusion"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-arithmetic-intensity-and-fusion",
@@ -444,8 +449,8 @@
         "description": "Connect memory and compute bottlenecks through arithmetic intensity and Roofline, then explore reduced data movement, concurrent progress, and element-wise kernel fusion.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "80b0ce3cf3761f1da7f3a0ec7cfabb45533901afc6dc0acd98e30ad25d9a7dbb",
-        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
+        "sourceRevision": "a620d4d588333f28d2bcce1d776a488ad3f17ca8d71aec5311f0adcc5cafeae1",
+        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
