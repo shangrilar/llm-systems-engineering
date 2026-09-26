@@ -10,7 +10,9 @@ export default {
   caption:["회전각은 설명용입니다. 실제 모델의 주파수 설정을 나타내지 않습니다.","Angles are illustrative, not a real model’s frequency settings."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,1218,1104,[48,205]);
+    const p=new Panel(locale,null,1218,1104,[48,206]);
+    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
+    p.raw("<g transform=\"translate(-48 -205)\">");
     p.el("rect",{x:48,y:205,width:1104,height:60,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:80,y:244,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"start"},["Head 1 · dh = 4 · 같은 입력을 고정해 위치에 따른 변화만 비교합니다.","Head 1 · dh = 4 · keep the input fixed to isolate the effect of position."]);
     p.el('text',{x:110,y:321,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["회전 전","Before rotation"]);
@@ -31,21 +33,21 @@ export default {
     p.el("path",{d:"M115,643 L355,643",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M235,523 L235,763",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:235,cy:643,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M235,643 L307,571",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M235,643 L307,571",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M235,643 L307.0,571.0",fill:"none",stroke:C.blue,"stroke-width":3,"marker-end":markerUrl(C.blue)});
     p.el('text',{x:235,y:805,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 0°");
     p.el('text',{x:235,y:849,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[1, 1]");
     p.el("path",{d:"M480,643 L720,643",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M600,523 L600,763",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:600,cy:643,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M600,643 L672,571",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M600,643 L672,571",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M600,643 L626.3538290724796,544.6461709275204",fill:"none",stroke:C.blue,"stroke-width":3,"marker-end":markerUrl(C.blue)});
     p.el('text',{x:600,y:805,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 30°");
     p.el('text',{x:600,y:849,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[0.366, 1.366]");
     p.el("path",{d:"M845,643 L1085,643",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M965,523 L965,763",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:965,cy:643,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M965,643 L1037,571",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M965,643 L1037,571",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M965,643 L938.6461709275204,544.6461709275204",fill:"none",stroke:C.blue,"stroke-width":3,"marker-end":markerUrl(C.blue)});
     p.el('text',{x:965,y:805,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 60°");
     p.el('text',{x:965,y:849,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[-0.366, 1.366]");
@@ -54,26 +56,28 @@ export default {
     p.el("path",{d:"M115,1067 L355,1067",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M235,947 L235,1187",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:235,cy:1067,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M235,1067 L307,1139",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M235,1067 L307,1139",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M235,1067 L307.0,1139.0",fill:"none",stroke:C.teal,"stroke-width":3,"marker-end":markerUrl(C.teal)});
     p.el('text',{x:235,y:1229,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 0°");
     p.el('text',{x:235,y:1273,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[1, -1]");
     p.el("path",{d:"M480,1067 L720,1067",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M600,947 L600,1187",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:600,cy:1067,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M600,1067 L672,1139",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M600,1067 L672,1139",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M600,1067 L683.408827008898,1125.40348942486",fill:"none",stroke:C.teal,"stroke-width":3,"marker-end":markerUrl(C.teal)});
     p.el('text',{x:600,y:1229,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 10°");
     p.el('text',{x:600,y:1273,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[1.158, -0.811]");
     p.el("path",{d:"M845,1067 L1085,1067",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("path",{d:"M965,947 L965,1187",fill:"none",stroke:C.line,"stroke-width":1.5});
     p.el("circle",{cx:965,cy:1067,r:120,fill:"none",stroke:C.line,"stroke-width":1.5});
-    p.el("path",{d:"M965,1067 L1037,1139",fill:"none",stroke:"#8191A0","stroke-width":1.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M965,1067 L1037,1139",fill:"none",stroke:C.slate,"stroke-width":1.5,"marker-end":markerUrl(C.muted)});
     p.el("path",{d:"M965,1067 L1057.2833190160336,1110.0324183771372",fill:"none",stroke:C.teal,"stroke-width":3,"marker-end":markerUrl(C.teal)});
     p.el('text',{x:965,y:1229,fill:C.teal,"font-size":24,"font-weight":600,"text-anchor":"middle"},"α = 20°");
     p.el('text',{x:965,y:1273,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"[1.282, -0.598]");
     p.el("rect",{x:48,y:1345,width:1104,height:70,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:600,y:1389,fill:C.ink,"font-size":26,"font-weight":600,"text-anchor":"middle"},["두 쌍을 다시 놓으면 네 성분 · 입출력 차원 dh = 4 유지","Place both pairs together: four components in, four components out"]);
+    p.raw('</g>');
+    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;

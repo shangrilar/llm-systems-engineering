@@ -10,7 +10,9 @@ export default {
   caption:["Causal mask는 순서에 따라 참조 범위를 정합니다. 위치 차이를 점수에 직접 반영하는 연산은 아닙니다.","The causal mask defines an order-based range; it does not directly encode position differences in the scores."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,1212,1104,[48,205]);
+    const p=new Panel(locale,null,1212,1104,[48,206]);
+    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
+    p.raw("<g transform=\"translate(-48 -205)\">");
     p.el("rect",{x:48,y:215,width:1104,height:188,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:76,y:250,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"start"},["디코더 블록","Decoder block"]);
     p.el("rect",{x:76,y:273,width:518,height:102,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
@@ -27,8 +29,8 @@ export default {
     p.el("rect",{x:622,y:498,width:518,height:102,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:881,y:535,fill:C.blue,"font-size":24,"font-weight":600,"text-anchor":"middle"},"Core Attention");
     p.el('text',{x:881,y:572,fill:C.ink,"font-size":22,"font-weight":400,"text-anchor":"middle"},["토큰 사이의 계산","Compute across tokens"]);
-    p.el("path",{d:"M600,410 L600,432",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
-    p.el("path",{d:"M600,636 L600,658",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M600,410 L600,432",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M600,636 L600,658",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:48,y:668,width:1104,height:222,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:76,y:705,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"start"},["Core Attention 내부","Inside Core Attention"]);
     p.el("rect",{x:76,y:734,width:304,height:125,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
@@ -59,6 +61,8 @@ export default {
     p.el('text',{x:600,y:1264,fill:C.blue,"font-size":22,"font-weight":600,"text-anchor":"middle"},["두 칸 전 · 참조 가능","2 positions earlier · allowed"]);
     p.el("rect",{x:48,y:1316,width:1104,height:93,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:600,y:1373,fill:C.teal,"font-size":29,"font-weight":600,"text-anchor":"middle"},["이 위치 차이를 Q·K의 비교에 어떻게 반영할까?","How can the Q–K comparison reflect this difference in position?"]);
+    p.raw('</g>');
+    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;

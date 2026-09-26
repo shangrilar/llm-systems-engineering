@@ -10,7 +10,9 @@ export default {
   caption:["수치는 설명용 예시 · logits는 확률이 아닙니다. 생성 시 마지막 위치의 점수로 다음 토큰을 선택합니다.","Illustrative scores, not probabilities. The last position’s logits are used to select the next token."],
   sources:[],
   panels(locale:Locale){
-    const p=new Panel(locale,null,537,1104,[48,205]);
+    const p=new Panel(locale,null,537,1104,[48,206]);
+    p.raw("<g transform=\"translate(48 206) scale(1)\" data-panel=\"1\">");
+    p.raw("<g transform=\"translate(-48 -205)\">");
     p.el('text',{x:284,y:248,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},["마지막 층의 토큰 표현","Final token representations"]);
     p.el('text',{x:982,y:248,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},["어휘별 점수","Vocabulary scores"]);
     p.el("line",{"x1":154,"y1":314,"x2":154,"y2":306,stroke:C.muted,"stroke-width":2});
@@ -77,14 +79,16 @@ export default {
     p.el('text',{x:1027,y:545,fill:C.orange,"font-size":23,"font-weight":400,"text-anchor":"middle"},"…");
     p.el("rect",{x:1069,y:503,width:84,height:68,rx:0,fill:C.orangeFill,stroke:"#EDD3BC","stroke-width":1});
     p.el('text',{x:1111,y:545,fill:C.orange,"font-size":23,"font-weight":400,"text-anchor":"middle"},"−0.5");
-    p.el("path",{d:"M434,468 L482,468",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M434,468 L482,468",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el("rect",{x:506,y:404,width:204,height:128,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:608,y:477,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},"LM Head");
-    p.el("path",{d:"M731,468 L791,468",fill:"none",stroke:"#8191A0","stroke-width":2.5,"marker-end":markerUrl("#8191A0")});
+    p.el("path",{d:"M731,468 L791,468",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.muted)});
     p.el('text',{x:284,y:625,fill:C.blue,"font-size":31,"font-weight":600,"text-anchor":"middle"},"T × d");
     p.el('text',{x:982,y:625,fill:C.orange,"font-size":31,"font-weight":600,"text-anchor":"middle"},"T × V");
     p.el('text',{x:982,y:663,fill:C.orange,"font-size":23,"font-weight":400,"text-anchor":"middle"},["각 칸 = 어휘 하나의 logit","One logit per vocabulary token"]);
     p.el('text',{x:600,y:725,fill:C.ink,"font-size":28,"font-weight":600,"text-anchor":"middle"},["토큰 수 T는 유지되고, 가로축의 의미가 바뀝니다.","Token count T stays the same; the columns now represent vocabulary tokens."]);
+    p.raw('</g>');
+    p.raw('</g>');
     return [p];
   },
 } satisfies FigureSpec;
