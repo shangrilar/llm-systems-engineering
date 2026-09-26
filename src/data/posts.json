@@ -1178,7 +1178,12 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "batching-and-scheduling/01-batch-composition",
+      "batching-and-scheduling/02-scheduling-cycle",
+      "batching-and-scheduling/03-work-and-state",
+      "batching-and-scheduling/04-reserved-memory"
+    ],
     "locales": {
       "ko": {
         "slug": "batching-and-scheduling",
@@ -1192,8 +1197,8 @@
         "description": "Explore the limits of static batching, how batch membership changes between executions, how to check computation and KV space requirements, and why unused reservations make requests wait.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "1a42dc507af561026546262c901a2019b887a26d8e695772f2994a76c8a25974",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved. The closing PagedAttention follow-up is now a link in both languages after publication of that article; paragraph content otherwise unchanged."
+        "sourceRevision": "e30593e1e040cc945905cd97f0bb805e306b9cc9dcb961213c2d010f9cb9f18b",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved. The closing PagedAttention follow-up is now a link in both languages after publication of that article; paragraph content otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions written from the figure notes and short article figcaptions (removed from the pages)."
       }
     }
   },
