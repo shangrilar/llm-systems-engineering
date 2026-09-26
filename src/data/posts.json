@@ -491,7 +491,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "attention-memory-and-softmax/01-attention-flow",
+      "attention-memory-and-softmax/02-intermediate-memory",
+      "attention-memory-and-softmax/03-tile-dependency",
+      "attention-memory-and-softmax/04-softmax-row-dependency"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-memory-and-softmax",
@@ -505,8 +510,8 @@
         "description": "Examine the cost of storing and rereading large score and probability matrices, and why a subset of scores cannot determine final Softmax probabilities.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision.",
-        "sourceRevision": "ab932002440150ee7616b3a9df2069711ef54faf6621210a72a1671898c7f520"
+        "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text.",
+        "sourceRevision": "7c999652bdc1072438ed7182bd7b0b05f857bcbdf48b51ebf4480507e6fe75cd"
       }
     }
   },
