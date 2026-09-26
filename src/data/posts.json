@@ -155,7 +155,14 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "rope/01-why-position",
+      "rope/02-rope-location",
+      "rope/03-pair-rotation",
+      "rope/04-position-and-pairs",
+      "rope/05-relative-position",
+      "rope/06-attention-scores"
+    ],
     "locales": {
       "ko": {
         "slug": "rope",
@@ -169,8 +176,8 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "953b5c665dc4c3bd6307ad40920c0307e375883f38bcaf908f9007c3297904d3",
-        "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately."
+        "sourceRevision": "7d8451e564ae00db7b6c17ade1428f264adffa9e9283abc50666c4485fdcec83",
+        "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
