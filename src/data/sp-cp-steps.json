@@ -64,7 +64,7 @@
           "slug": "cp-01-step-0",
           "label": "SP와 CP의 분할 범위",
           "alt": "SP와 TP의 결합은 정규화에서 토큰을 나누고 어텐션과 FFN에서는 모든 토큰의 일부 특징을 계산한다. CP 단독은 토큰을 나눠 맡고 어텐션에서 타 GPU 정보와 연결한다.",
-          "height": 1530
+          "height": 1674
         }
       ],
       "2": [
@@ -72,7 +72,7 @@
           "slug": "cp-02-step-0",
           "label": "다른 GPU의 K·V가 필요한 이유",
           "alt": "GPU 1의 Q(t3)는 GPU 0에 있는 토큰 t0,t1의 K,V도 필요하다. 하삼각형 행렬에서 GPU 경계를 넘는 참조를 보여준다.",
-          "height": 1050
+          "height": 1192
         }
       ],
       "3": [
@@ -80,31 +80,31 @@
           "slug": "cp-03-step-0",
           "label": "로컬 K·V 계산",
           "alt": "단계 1. GPU 0은 Q(t0,t1)을 유지하며 KV0 블록의 기여를 정규화 통계와 함께 누적한다.",
-          "height": 1350
+          "height": 1497
         },
         {
           "slug": "cp-03-step-1",
           "label": "첫 번째 전달과 계산",
           "alt": "단계 2. GPU 0은 Q(t0,t1)을 유지하며 KV0, KV3 블록의 기여를 정규화 통계와 함께 누적한다.",
-          "height": 1350
+          "height": 1497
         },
         {
           "slug": "cp-03-step-2",
           "label": "두 번째 전달과 계산",
           "alt": "단계 3. GPU 0은 Q(t0,t1)을 유지하며 KV0, KV3, KV2 블록의 기여를 정규화 통계와 함께 누적한다.",
-          "height": 1350
+          "height": 1497
         },
         {
           "slug": "cp-03-step-3",
           "label": "세 번째 전달과 계산",
           "alt": "단계 4. GPU 0은 Q(t0,t1)을 유지하며 KV0, KV3, KV2, KV1 블록의 기여를 정규화 통계와 함께 누적한다.",
-          "height": 1350
+          "height": 1497
         },
         {
           "slug": "cp-03-step-4",
           "label": "정규화된 출력 완성",
           "alt": "단계 5. GPU 0은 Q(t0,t1)을 유지하며 KV0, KV3, KV2, KV1 블록의 기여를 정규화 통계와 함께 누적한다.",
-          "height": 1350
+          "height": 1497
         }
       ],
       "4": [
@@ -112,31 +112,31 @@
           "slug": "cp-04-step-0",
           "label": "토큰별 Q·K·V",
           "alt": "각 GPU가 두 토큰의 두 헤드를 갖는다.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-1",
           "label": "Q·K·V All-to-All",
           "alt": "GPU 0은 모든 토큰의 h0, GPU 1은 모든 토큰의 h1의 Q,K,V를 갖는다.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-2",
           "label": "담당 헤드의 어텐션",
           "alt": "각 GPU가 담당 헤드의 전체 문맥 어텐션을 계산한다.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-3",
           "label": "출력의 역 All-to-All",
           "alt": "전체 토큰, 일부 헤드의 출력 O를 원래 토큰 소유자에게 보낸다.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-4",
           "label": "토큰별 출력 복원",
           "alt": "각 GPU가 담당 토큰의 모든 헤드 출력을 갖고 로컬 Output Projection과 FFN으로 이어간다.",
-          "height": 1070
+          "height": 1245
         }
       ],
       "5": [
@@ -144,13 +144,13 @@
           "slug": "cp-05-step-0",
           "label": "연속 토큰 분할",
           "alt": "GPU 0과 GPU 1이 각각 네 토큰을 맡는다. 계산할 토큰 쌍은 10 대 26이다. 원래 토큰 위치와 causal mask는 변하지 않는다.",
-          "height": 1020
+          "height": 1163
         },
         {
           "slug": "cp-05-step-1",
           "label": "앞·뒤 토큰을 묶은 분할",
           "alt": "GPU 0과 GPU 1이 각각 네 토큰을 맡는다. 계산할 토큰 쌍은 18 대 18이다. 원래 토큰 위치와 causal mask는 변하지 않는다.",
-          "height": 1020
+          "height": 1163
         }
       ]
     }
@@ -220,7 +220,7 @@
           "slug": "cp-01-step-0",
           "label": "Partitioning scope of SP and CP",
           "alt": "SP with TP splits tokens for normalization and features or heads for attention and FFN. CP alone assigns tokens across the model and communicates across GPUs inside attention.",
-          "height": 1530
+          "height": 1674
         }
       ],
       "2": [
@@ -228,7 +228,7 @@
           "slug": "cp-02-step-0",
           "label": "Why remote K·V is needed",
           "alt": "Q(t3) on GPU 1 also needs K,V for t0,t1 on GPU 0. The lower-triangular matrix shows references across the GPU boundary.",
-          "height": 1050
+          "height": 1192
         }
       ],
       "3": [
@@ -236,31 +236,31 @@
           "slug": "cp-03-step-0",
           "label": "Compute with local K·V",
           "alt": "Step 1. GPU 0 keeps Q(t0,t1) and accumulates contributions from KV0 with normalization statistics.",
-          "height": 1350
+          "height": 1527
         },
         {
           "slug": "cp-03-step-1",
           "label": "First transfer and computation",
           "alt": "Step 2. GPU 0 keeps Q(t0,t1) and accumulates contributions from KV0, KV3 with normalization statistics.",
-          "height": 1350
+          "height": 1527
         },
         {
           "slug": "cp-03-step-2",
           "label": "Second transfer and computation",
           "alt": "Step 3. GPU 0 keeps Q(t0,t1) and accumulates contributions from KV0, KV3, KV2 with normalization statistics.",
-          "height": 1350
+          "height": 1527
         },
         {
           "slug": "cp-03-step-3",
           "label": "Third transfer and computation",
           "alt": "Step 4. GPU 0 keeps Q(t0,t1) and accumulates contributions from KV0, KV3, KV2, KV1 with normalization statistics.",
-          "height": 1350
+          "height": 1527
         },
         {
           "slug": "cp-03-step-4",
           "label": "Complete normalized output",
           "alt": "Step 5. GPU 0 keeps Q(t0,t1) and accumulates contributions from KV0, KV3, KV2, KV1 with normalization statistics.",
-          "height": 1350
+          "height": 1527
         }
       ],
       "4": [
@@ -268,31 +268,31 @@
           "slug": "cp-04-step-0",
           "label": "Q·K·V by token",
           "alt": "Each GPU holds two heads for two tokens.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-1",
           "label": "Q·K·V All-to-All",
           "alt": "GPU 0 has h0 and GPU 1 has h1 for every token, for Q,K,V.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-2",
           "label": "Attention for the assigned head",
           "alt": "Each GPU computes full-context attention for its assigned head.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-3",
           "label": "Reverse All-to-All of outputs",
           "alt": "Send attention output O, partitioned by head, back to the original token owners.",
-          "height": 1070
+          "height": 1245
         },
         {
           "slug": "cp-04-step-4",
           "label": "Restore outputs by token",
           "alt": "Each GPU has all head outputs for its tokens and continues with local Output Projection and FFN.",
-          "height": 1070
+          "height": 1245
         }
       ],
       "5": [
@@ -300,13 +300,13 @@
           "slug": "cp-05-step-0",
           "label": "Consecutive token partition",
           "alt": "Each GPU owns four tokens. Token-pair counts are 10 and 26. Original positions and the causal mask stay unchanged.",
-          "height": 1020
+          "height": 1163
         },
         {
           "slug": "cp-05-step-1",
           "label": "Pair early and late tokens",
           "alt": "Each GPU owns four tokens. Token-pair counts are 18 and 18. Original positions and the causal mask stay unchanged.",
-          "height": 1020
+          "height": 1163
         }
       ]
     }
