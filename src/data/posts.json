@@ -460,7 +460,13 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "matmul-tiling-and-data-reuse/01-shared-inputs",
+      "matmul-tiling-and-data-reuse/02-shared-memory-reuse",
+      "matmul-tiling-and-data-reuse/03-register-reuse",
+      "matmul-tiling-and-data-reuse/04-tile-resource-tradeoff",
+      "matmul-tiling-and-data-reuse/05-pipelined-tiles"
+    ],
     "locales": {
       "ko": {
         "slug": "matmul-tiling-and-data-reuse",
@@ -474,8 +480,8 @@
         "description": "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision.",
-        "sourceRevision": "adfd5802a3a76ac1784b0afe973520b0299e707f51c3d4e932c87c41d2730c2c"
+        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. Figure 2 was redrawn with shared primitives (grid, outline).",
+        "sourceRevision": "bcd8c299255bc4f648f1d92bf074c258b70b813749a9a8da3060e24b488c283b"
       }
     }
   },
