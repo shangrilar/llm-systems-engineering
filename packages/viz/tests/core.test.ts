@@ -33,7 +33,7 @@ describe('compose',()=>{
     const desktop=compose(spec(),'ko'),wide=compose(spec('wide'),'ko'),mobile=compose(spec(),'ko',true);
     expect(desktop.width).toBe(1200);
     expect(mobile.width).toBe(360);
-    expect(desktop.svg).toContain('translate(40 ');
+    expect(desktop.svg).toContain('translate(48 ');
     expect(desktop.svg).toContain('translate(624 ');
     expect(wide.height).toBeGreaterThan(desktop.height);
     expect(mobile.svg).not.toContain('translate(624 ');
