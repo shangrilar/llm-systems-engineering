@@ -11,6 +11,7 @@
     "build": "node --import tsx scripts/build.ts",
     "preview": "astro preview",
     "sync:readme": "node --import tsx scripts/sync-readme.mjs",
+    "viz:build": "node --import tsx packages/viz/src/cli.ts",
     "check": "tsc --noEmit && node --import tsx scripts/check.ts",
     "test": "vitest run",
     "test:browser": "playwright test",
@@ -29,5 +30,8 @@
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

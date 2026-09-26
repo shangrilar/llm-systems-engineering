@@ -1,0 +1,13 @@
+{
+  "name": "@llm-systems/viz",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./build": "./src/build.ts"
+  },
+  "peerDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
