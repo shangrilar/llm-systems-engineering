@@ -908,7 +908,16 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "sequence-parallelism/sp-01-step-0",
+      "sequence-parallelism/sp-02-step-0",
+      "sequence-parallelism/sp-03-step-0",
+      "sequence-parallelism/sp-03-step-1",
+      "sequence-parallelism/sp-03-step-2",
+      "sequence-parallelism/sp-03-step-3",
+      "sequence-parallelism/sp-03-step-4",
+      "sequence-parallelism/sp-04-step-0"
+    ],
     "locales": {
       "ko": {
         "slug": "sequence-parallelism",
@@ -922,8 +931,8 @@
         "description": "Reduce activation duplication between TP regions, and alternate between token and feature partitioning to compute a Transformer layer.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "aea836906e42d4c32bc29699e3cae2879fb5593c4b44d669f619946cc5589f8f",
-        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+        "sourceRevision": "27646d380a20449dec1d8d8d590d5c66aa2f5a91cdf8acb2601c9f5d43a6a488",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },

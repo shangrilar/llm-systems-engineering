@@ -6,7 +6,7 @@
           "slug": "sp-01-step-0",
           "label": "TP만 적용한 레이어",
           "alt": "두 GPU가 어텐션 헤드와 FFN 중간 특징을 나누지만 정규화와 잔차 구간에는 동일한 4×4 활성값을 갖는다.",
-          "height": 1410
+          "height": 1555
         }
       ],
       "2": [
@@ -14,7 +14,7 @@
           "slug": "sp-02-step-0",
           "label": "토큰별 정규화와 잔차",
           "alt": "4×4 입력의 두 행씩을 GPU에 배치한다. 각 GPU에 한 토큰의 특징 네 개가 모두 있어 RMSNorm과 대응 토큰의 잔차 덧셈을 독립적으로 수행한다.",
-          "height": 1150
+          "height": 1298
         }
       ],
       "3": [
@@ -22,31 +22,31 @@
           "slug": "sp-03-step-0",
           "label": "SP: 토큰 조각",
           "alt": "토큰 조각 X; t2·t3의 전체 특징; SP: 토큰 조각",
-          "height": 1040
+          "height": 1181
         },
         {
           "slug": "sp-03-step-1",
           "label": "All-Gather: 입력 모으기",
           "alt": "모든 토큰의 X; 같은 X로 서로 다른 가중치 열을 계산; All-Gather: 입력 모으기",
-          "height": 1040
+          "height": 1181
         },
         {
           "slug": "sp-03-step-2",
           "label": "TP: 열 분할과 활성화",
           "alt": "활성화된 특징 조각 H1; 모든 토큰 · 중간 특징의 절반; TP: 열 분할과 활성화",
-          "height": 1040
+          "height": 1181
         },
         {
           "slug": "sp-03-step-3",
           "label": "TP: 행 분할의 부분합",
           "alt": "부분합 P1; 모든 토큰 · 출력 특징 전체의 부분합; TP: 행 분할의 부분합",
-          "height": 1040
+          "height": 1181
         },
         {
           "slug": "sp-03-step-4",
           "label": "Reduce-Scatter: 합산 후 토큰 분할",
           "alt": "완성된 출력의 토큰 조각; t2·t3의 전체 출력 특징; Reduce-Scatter: 합산 후 토큰 분할",
-          "height": 1040
+          "height": 1181
         }
       ],
       "4": [
@@ -54,7 +54,7 @@
           "slug": "sp-04-step-0",
           "label": "레이어 전체의 통신 경계",
           "alt": "SP 정규화 뒤 All-Gather, TP 어텐션 뒤 Reduce-Scatter, SP 잔차 및 정규화 뒤 All-Gather, TP FFN 뒤 Reduce-Scatter. 잔차는 담당 토큰의 배치를 유지한다.",
-          "height": 1790
+          "height": 1939
         }
       ]
     },
@@ -162,7 +162,7 @@
           "slug": "sp-01-step-0",
           "label": "TP-only layer",
           "alt": "Two GPUs split attention heads and FFN hidden features, but each holds the same 4×4 activations for normalization and residuals.",
-          "height": 1410
+          "height": 1555
         }
       ],
       "2": [
@@ -170,7 +170,7 @@
           "slug": "sp-02-step-0",
           "label": "Local normalization and residuals",
           "alt": "Split four tokens into two full-feature token rows per GPU. Normalize locally and add residuals with matching token ownership.",
-          "height": 1150
+          "height": 1328
         }
       ],
       "3": [
@@ -178,31 +178,31 @@
           "slug": "sp-03-step-0",
           "label": "SP token shards",
           "alt": "Each GPU holds two token rows of X.",
-          "height": 1040
+          "height": 1211
         },
         {
           "slug": "sp-03-step-1",
           "label": "Gather all token inputs",
           "alt": "All-Gather gives both GPUs the same X for all four tokens.",
-          "height": 1040
+          "height": 1211
         },
         {
           "slug": "sp-03-step-2",
           "label": "Column split + activation",
           "alt": "Each GPU computes two complete hidden features and applies ReLU locally.",
-          "height": 1040
+          "height": 1211
         },
         {
           "slug": "sp-03-step-3",
           "label": "Row split: partial sums",
           "alt": "Row-partitioned weights produce P0 and P1, partial sums for every output position.",
-          "height": 1040
+          "height": 1211
         },
         {
           "slug": "sp-03-step-4",
           "label": "Reduce and split by token",
           "alt": "Reduce-Scatter adds P0 and P1; GPU 0 keeps t0,t1 and GPU 1 keeps t2,t3.",
-          "height": 1040
+          "height": 1211
         }
       ],
       "4": [
@@ -210,7 +210,7 @@
           "slug": "sp-04-step-0",
           "label": "Communication boundaries across a layer",
           "alt": "All-Gather connects SP normalization to TP attention; Reduce-Scatter returns to SP residuals. The FFN repeats the same boundaries. Residuals retain their token layout.",
-          "height": 1790
+          "height": 1969
         }
       ]
     },
