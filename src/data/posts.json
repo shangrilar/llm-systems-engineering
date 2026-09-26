@@ -1117,7 +1117,12 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-kv-cache/01-generation-loop",
+      "inference-kv-cache/02-recomputation",
+      "inference-kv-cache/03-kv-reuse",
+      "inference-kv-cache/04-kv-boundary"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-kv-cache",
@@ -1131,8 +1136,8 @@
         "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09efe1ff063d558d3d9e6ed9f07556fea491f100f85957c78d64d49959f576fc",
-        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
+        "sourceRevision": "df6abc2f410f0d362d6c3b62054a0a92f0ea5eb84de56630f528d48df5a82fc2",
+        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
