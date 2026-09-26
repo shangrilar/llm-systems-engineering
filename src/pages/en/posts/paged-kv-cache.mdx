@@ -22,7 +22,6 @@ B needs 2 blocks to hold its current KV for 6 positions. Allocating 8 slots leav
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/01-needed-blocks.png"><img src="/images/paged-kv-cache/en/01-needed-blocks.png" alt="In a 24-slot KV pool, B has actual KV in 6 slots. Reserving 20 leaves 14 reserved but unused and only 4 free, so C's 6 input tokens must wait. With 4 slots per block, allocating 2 blocks each to B and C leaves 2 blocks free. C's blocks are allocated but still empty because its KV has not yet been computed." /></a>
-  <figcaption>Figure 1. Replacing a large reservation with the blocks currently needed allows C to join within the same capacity.</figcaption>
 </figure>
 
 The lower half of Figure 1 allocates 8 slots each to B and C, or 16 in total, with 8 still free. By not tying up all the space B might need much later, the engine can make room for C. If B grows longer, it can receive additional blocks then.
@@ -43,7 +42,6 @@ B's first logical block, L0, can be stored in P3, and its second, L1, in P0. The
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/02-logical-physical.png"><img src="/images/paged-kv-cache/en/02-logical-physical.png" alt="B's logical block L0 contains KV for token positions 0 through 3 and is stored in physical block P3. L1 contains positions 4 through 6 and is stored in P0. C's L0 and L1 are stored in P1 and P4, respectively. P2 and P5 are free. Connections run from each logical block through the block table to the actual KV cells." /></a>
-  <figcaption>Figure 2. The block table connects token order within a request to actual KV storage locations.</figcaption>
 </figure>
 
 In Figure 2, B's logical order is L0 followed by L1, while its storage locations are P3 followed by P0. C uses its own table to find P1 and P4. The logical blocks on the left and physical blocks on the right show the same data from different perspectives; they do not represent two stored copies of the KV.
@@ -69,7 +67,6 @@ When it processes the following input at position 8, both existing blocks are fu
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/03-growing-blocks.png"><img src="/images/paged-kv-cache/en/03-growing-blocks.png" alt="B's 7 KV positions occupy P3 and P0. Processing input position 7 fills the last slot in P0. Processing the next input at position 8 allocates P5 and connects L2 to it. The existing blocks of B and C do not move." /></a>
-  <figcaption>Figure 3. After filling the last block, the engine attaches a new one while keeping existing KV in place.</figcaption>
 </figure>
 
 In Figure 3, only the last empty slot and one new block change. B's past KV does not need to be copied into a larger contiguous region, and C retains P1 and P4. **Storage grows in units of blocks, rather than by expanding the entire request's allocation as one region.**
@@ -88,7 +85,6 @@ Let us continue with B processing input position 8. The Q computed from the curr
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/04-paged-attention-read.png"><img src="/images/paged-kv-cache/en/04-paged-attention-read.png" alt="B's block table maps L0 to P3, L1 to P0, and L2 to P5. The Q for current input position 8 computes one attention result using 4 KV positions in P3, 4 in P0, and 1 in P5. C's KV, free block P2, and unused slots in P5 are excluded." /></a>
-  <figcaption>Figure 4. The current Q uses the same request's 9 valid KV positions, excluding other requests and unused slots.</figcaption>
 </figure>
 
 The connections in Figure 4 show which KV participates in attention. They do not represent a step that first gathers scattered KV into a separate contiguous buffer. KV is read while remaining in its own physical blocks. P1 and P4, which hold C's KV, do not participate in B's computation, and the three unused slots in P5 are also excluded.
@@ -107,7 +103,6 @@ The simplest approach is to copy the input KV for each response. Each response n
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/05-shared-prefix.png"><img src="/images/paged-kv-cache/en/05-shared-prefix.png" alt="The upper half shows two responses each copying KV for the same prompt, p0 through p5, using four physical blocks. The lower half shows two separate block tables pointing to the same P0 and P1, using only two physical blocks. P0 contains p0 through p3, and P1 contains p4 and p5 with two empty slots." /></a>
-  <figcaption>Figure 5. Each response keeps its own block table, while the common input's KV is stored only once.</figcaption>
 </figure>
 
 In the lower half of Figure 5, P0 holds KV for p0 through p3, and P1 holds KV for p4 and p5. Both responses map L0 to P0 and L1 to P1 in their own tables. The physical blocks holding the input KV decrease from 4 to 2.
@@ -126,7 +121,6 @@ The engine must then copy the shared block that needs a write and point the writ
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/en/06-copy-on-write.png"><img src="/images/paged-kv-cache/en/06-copy-on-write.png" alt="Initially, both responses share P0, containing p0 through p3, and the partial block P1, containing p4 and p5. Processing response 1's new input a0 requires a write to the shared tail block, so that block is copied to a new P2, preserving the KV for p4 and p5 before adding a0's KV. Response 2 then writes b0's KV into the original P1, which it now references alone. P0 remains shared, and three physical blocks are used in total." /></a>
-  <figcaption>Figure 6. Only the last shared block that needs new KV is split; the full first block remains shared.</figcaption>
 </figure>
 
 Let us follow the changes in Figure 6.

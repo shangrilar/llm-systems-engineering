@@ -22,7 +22,6 @@ B의 현재 KV 6개를 담으려면 블록 2개가 필요합니다. 8칸을 배�
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/01-needed-blocks.png"><img src="/images/paged-kv-cache/01-needed-blocks.png" alt="24칸 KV 풀에서 B의 실제 KV는 6칸이다. 20칸을 예약하면 미사용 예약이 14칸이고 가용 공간은 4칸이어서 입력 6토큰의 C가 기다린다. 블록당 4칸으로 B에 2블록, C에 2블록을 배정하면 2블록이 남는다. C의 블록은 배정만 되었고 아직 KV를 계산하지 않아 비어 있다." /></a>
-  <figcaption>그림 1. 큰 예약 공간을 필요한 블록으로 바꾸면 같은 용량에서 C를 받아들일 수 있습니다.</figcaption>
 </figure>
 
 그림 1의 아래쪽에서는 B와 C에 각각 8칸, 합계 16칸을 배정하고도 8칸이 남습니다. B의 먼 미래에 필요할 공간을 모두 묶어 두지 않았기 때문에 C가 사용할 공간을 확보할 수 있습니다. 이후 B가 더 길어지면 그때 블록을 추가로 배정합니다.
@@ -43,7 +42,6 @@ B의 첫 논리 블록 L0를 P3에, 두 번째 L1을 P0에 저장해도 됩니�
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/02-logical-physical.png"><img src="/images/paged-kv-cache/02-logical-physical.png" alt="B의 논리 블록 L0는 토큰 위치 0에서 3의 KV를 담고 물리 블록 P3에 저장된다. L1은 위치 4에서 6의 KV를 담고 P0에 저장된다. C의 L0와 L1은 각각 P1과 P4에 저장된다. P2와 P5는 비어 있다. 각 논리 블록에서 블록 테이블을 거쳐 실제 KV 셀까지 연결선이 이어진다." /></a>
-  <figcaption>그림 2. 블록 테이블이 요청 안의 토큰 순서와 실제 KV 저장 위치를 연결합니다.</figcaption>
 </figure>
 
 그림 2에서 B의 논리적 순서는 L0 다음 L1이지만, 저장 위치는 P3 다음 P0입니다. C는 별도의 테이블로 자기 블록 P1과 P4를 찾습니다. 왼쪽의 논리 블록과 오른쪽의 물리 블록은 같은 데이터를 서로 다른 관점에서 보여주는 것이며, KV를 두 벌 저장했다는 뜻은 아닙니다.
@@ -69,7 +67,6 @@ B가 다음 입력, 즉 위치 7의 토큰을 처리하면 그 빈칸에 KV를 �
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/03-growing-blocks.png"><img src="/images/paged-kv-cache/03-growing-blocks.png" alt="B의 KV 7개는 P3와 P0에 있습니다. 입력 위치 7을 처리하면 P0의 마지막 칸이 채워집니다. 다음 입력 위치 8을 처리할 때 새 P5를 배정하고 L2를 연결합니다. 기존 B와 C의 블록은 이동하지 않습니다." /></a>
-  <figcaption>그림 3. 마지막 블록을 채운 뒤 새 블록을 연결하며, 기존 KV는 제자리에 유지합니다.</figcaption>
 </figure>
 
 그림 3에서 바뀌는 것은 마지막 빈칸과 새 블록 하나입니다. B의 과거 KV를 더 큰 연속 공간으로 복사할 필요가 없고, C가 쓰는 P1과 P4도 그대로 유지합니다. **저장 공간을 늘리는 단위가 요청 전체가 아니라 블록이 되는 것입니다.**
@@ -88,7 +85,6 @@ B의 입력 위치 8을 처리하는 장면을 이어서 보겠습니다. 현재
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/04-paged-attention-read.png"><img src="/images/paged-kv-cache/04-paged-attention-read.png" alt="B의 블록 테이블은 L0를 P3, L1을 P0, L2를 P5에 연결합니다. 현재 입력 위치 8의 Q는 P3의 4개, P0의 4개, P5의 1개 KV로 하나의 Attention 결과를 계산합니다. C의 KV, 빈 P2, P5의 미사용 칸은 제외합니다." /></a>
-  <figcaption>그림 4. 현재 Q는 같은 요청의 유효한 KV 9개를 사용하며, 다른 요청과 미사용 칸은 제외합니다.</figcaption>
 </figure>
 
 그림 4의 연결선은 Attention에 어떤 KV가 참여하는지를 보여줍니다. 흩어진 KV를 먼저 별도의 연속 버퍼로 복사해 모으는 단계가 아닙니다. KV는 각자의 물리 블록에 둔 채 읽습니다. C의 KV가 저장된 P1과 P4는 B의 계산 대상이 아니며, P5에서도 아직 쓰지 않은 세 칸은 제외합니다.
@@ -107,7 +103,6 @@ B의 입력 위치 8을 처리하는 장면을 이어서 보겠습니다. 현재
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/05-shared-prefix.png"><img src="/images/paged-kv-cache/05-shared-prefix.png" alt="위쪽은 두 응답이 같은 프롬프트 p0부터 p5까지의 KV를 각자 복사하여 물리 블록 네 개를 쓰는 장면이다. 아래쪽은 두 개의 별도 블록 테이블이 같은 P0와 P1을 가리켜 물리 블록 두 개만 쓰는 장면이다. P0에는 p0부터 p3, P1에는 p4와 p5가 있고 마지막 두 칸은 비어 있다." /></a>
-  <figcaption>그림 5. 두 응답의 블록 테이블은 각각 유지하되, 공통 입력의 KV는 한 벌만 저장합니다.</figcaption>
 </figure>
 
 그림 5의 아래쪽에서 P0에는 p0부터 p3까지의 KV가, P1에는 p4와 p5의 KV가 있습니다. 두 응답 모두 자기 테이블의 L0를 P0에, L1을 P1에 연결합니다. 입력 KV를 보관하는 물리 블록은 4개에서 2개로 줄어듭니다.
@@ -126,7 +121,6 @@ B의 입력 위치 8을 처리하는 장면을 이어서 보겠습니다. 현재
 
 <figure class="article-figure">
   <a href="/images/paged-kv-cache/06-copy-on-write.png"><img src="/images/paged-kv-cache/06-copy-on-write.png" alt="첫 상태에서 두 응답은 p0부터 p3까지 든 P0와 p4, p5가 든 부분 블록 P1을 공유한다. 응답 1의 새 입력 a0를 처리하면서 공유 꼬리 블록에 KV를 써야 하므로 새 P2로 마지막 블록을 복사하여 p4와 p5의 KV를 보존하고, a0의 KV를 추가한다. 응답 2는 이제 혼자 참조하는 원래 P1에 b0의 KV를 추가한다. P0는 계속 공유되고 총 세 물리 블록을 쓴다." /></a>
-  <figcaption>그림 6. 새 KV를 쓸 마지막 공유 블록만 분리하고, 가득 찬 첫 블록은 계속 공유합니다.</figcaption>
 </figure>
 
 그림 6의 변화를 순서대로 보겠습니다.
