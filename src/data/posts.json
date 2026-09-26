@@ -1020,7 +1020,21 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "expert-parallelism/ep-01-step-0",
+      "expert-parallelism/ep-02-step-0",
+      "expert-parallelism/ep-02-step-1",
+      "expert-parallelism/ep-02-step-2",
+      "expert-parallelism/ep-02-step-3",
+      "expert-parallelism/ep-02-step-4",
+      "expert-parallelism/ep-02-step-5",
+      "expert-parallelism/ep-03-step-0",
+      "expert-parallelism/ep-03-step-1",
+      "expert-parallelism/ep-03-step-2",
+      "expert-parallelism/ep-03-step-3",
+      "expert-parallelism/ep-03-step-4",
+      "expert-parallelism/ep-04-step-0"
+    ],
     "locales": {
       "ko": {
         "slug": "expert-parallelism",
@@ -1034,8 +1048,8 @@
         "description": "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "dae9ee6cb44745f1df399df9e51a83d606b1bd5b1bad14f5db3373f24889d3eb",
-        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks."
+        "sourceRevision": "d7c92f8ac3a8491a3c8c7cc59dfddd8e687ef37430e3f85e21d9a56cd50d8fa5",
+        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
