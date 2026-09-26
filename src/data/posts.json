@@ -646,7 +646,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-communication-basics/01-peers-and-buffers",
+      "gpu-communication-basics/02-send-receive-execution",
+      "gpu-communication-basics/03-communication-and-independent-work",
+      "gpu-communication-basics/04-buffer-reuse"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-communication-basics",
@@ -659,9 +664,9 @@
         "title": "Transferring Data Between GPUs",
         "description": "Prepare communication participants and buffers, connect CPU send/receive submission to GPU execution, and explain overlapping independent computation and safe buffer reuse.",
         "published": true,
-        "sourceRevision": "811b93fc0f792e7229f9ce3df11e58c2725a9aaecc273d034164b54bf98b7756",
+        "sourceRevision": "21e6321866421bd41b3ba4bcf74d945995ac9e7ba6cde4374a4660a4c0de967f",
         "translationStatus": "reviewed",
-        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
+        "reviewNote": "2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
