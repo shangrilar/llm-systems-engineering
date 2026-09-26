@@ -403,8 +403,8 @@
         "description": "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision.",
-        "sourceRevision": "adfd5802a3a76ac1784b0afe973520b0299e707f51c3d4e932c87c41d2730c2c"
+        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision. 2026-09-20 follow-up: The shared-memory bandwidth row became a structural estimate for B300, and the Korean and English revisions were compared paragraph by paragraph. The A100 SRAM and HBM example from the FlashAttention paper, the 32-bank by 4-byte structure, the 148 SM and 2,032 MHz device query, the 38.5 TB/s aggregate, the 260 GB/s per SM and the 4.8x HBM ratio agree, as do the four emphasized passages and the caveat that the value is neither an official specification nor a measurement. Figures and alt text are unchanged.",
+        "sourceRevision": "89b5a9e108f05fc353ceaee4b56596a6868e3eb6aaa2248b30fd91d7e6391d5b"
       }
     }
   },

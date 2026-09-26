@@ -33,14 +33,18 @@ The table below compares **the three memory spaces used in this article, with B3
 | Space | Capacity | Bandwidth |
 | --- | --- | --- |
 | HBM3e | 288 GB per GPU | Up to 8 TB/s |
-| Shared memory | Up to 228 KiB per SM | About 192 GB/s per SM, about 29 TB/s in total (assumptions below) |
+| Shared memory | Up to 228 KiB per SM | About 38.5 TB/s aggregate (structural estimate; conditions below) |
 | Registers | 256 KiB per SM | No comparable public B300 figure confirmed |
 
 A KiB is 1,024 bytes. Register capacity is calculated from 65,536 32-bit registers per SM, which are allocated among multiple threads. Shared memory occupies part of a 256 KiB space per SM that also serves the L1 cache and other uses; the table lists the maximum configurable shared memory capacity. Shared memory and L1 cache capacities should therefore not be added separately.
 
-The shared memory bandwidth is an illustrative calculation for comparing scale, rather than an official B300 product specification. The structure described in the [CUDA memory optimization guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory) supports 128 bytes per cycle per SM. **Assuming a 1.5 GHz clock and 150 SMs**, this gives about 192 GB/s per SM and about 29 TB/s in total. That is **about 3.6 times** B300's 8 TB/s HBM bandwidth, giving a sense of how reusing inputs in shared memory can change the capacity to supply data.
+As an example of the bandwidth scale, [Figure 1 and Section 2.1 of the FlashAttention paper](https://arxiv.org/pdf/2205.14135#page=2) give about 19 TB/s for A100 on-chip SRAM and about 1.5 TB/s for HBM. This is **a bandwidth ratio of about 13 to 1**, and the paper explicitly describes the SRAM figure as an estimate. These figures describe A100, so we do not apply the same ratio to B300.
 
-This total assumes that each SM uses its own shared memory concurrently; it does not mean that one SM can use the entire aggregate bandwidth. Actual throughput varies with clock speed and access pattern. We have not confirmed a public B300 register bandwidth figure on a comparable basis, but reusing inputs held in registers can **also reduce repeated reads of the same values from shared memory**.
+We can also estimate the scale of B300 shared-memory bandwidth from its structure. The [CUDA guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory-and-memory-banks) describes 32 shared-memory banks, each providing 4 bytes per clock cycle. A [public device-query result for B300 SXM6 AC](https://browser.geekbench.com/v6/compute/5203754) reports 148 SMs and a maximum clock of 2,032 MHz. Assuming this clock is sustained and all SMs use their 32 banks simultaneously, **32 × 4 bytes × 2.032 GHz × 148 ≈ 38.5 TB/s**. This is about 260 GB/s per SM, with an aggregate of **about 4.8 times** B300's peak HBM bandwidth of 8 TB/s.
+
+The shared-memory bandwidth in the table is an estimate calculated under these conditions, not an official manufacturer bandwidth specification or a result we measured. It sums the throughput of all SMs accessing their own shared memory concurrently; one SM cannot use 38.5 TB/s. Actual throughput depends on operating clocks, the number of participating SMs, instructions, and access patterns. **The bandwidth ratio does not directly translate into the same program speedup.**
+
+This comparison illustrates how much data a small storage space close to the compute units can supply. Keeping inputs in shared memory reduces repeated global-memory accesses, and keeping them in registers can reduce repeated shared-memory accesses as well. We have not confirmed a comparable register bandwidth figure, so it is not listed in the table.
 
 The first difference to consider is capacity. For example, a 4,096 × 4,096 matrix in FP32, with 4 bytes per value, needs 64 MiB. It fits in B300's HBM, but cannot fit entirely in one SM's shared memory. This is **why we keep large data in HBM and bring the portion needed for the current computation closer to the compute units**.
 
