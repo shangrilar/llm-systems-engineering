@@ -676,7 +676,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-communication-engines/01-call-and-transfer",
+      "gpu-communication-engines/02-sm-and-copy-engine",
+      "gpu-communication-engines/03-communication-and-compute"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-communication-engines",
@@ -690,8 +694,8 @@
         "description": "Distinguish the devices and connections used for GPU communication, and examine how resource contention with computation affects overall completion time.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b684f02bbeebed69ea6ae9a65d9348bbd721f2bdafa3e3590d141afcf8bad70c",
-        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 11 emphasized passages, API names, seven source/continuation links, three image alt texts and all three figure pairs against the approved Korean manuscript. Both languages distinguish CPU submission from transfer, SM and CE execution from NVLink/PCIe connectivity, supported CE copies from generic send/receive, independent C on GPU 0, equal communication times and conditional overall improvement. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
+        "sourceRevision": "cd6f9e7619755a9a9b619a22eb944f22797125b9fe6da8e2e011adf3e41be001",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 11 emphasized passages, API names, seven source/continuation links, three image alt texts and all three figure pairs against the approved Korean manuscript. Both languages distinguish CPU submission from transfer, SM and CE execution from NVLink/PCIe connectivity, supported CE copies from generic send/receive, independent C on GPU 0, equal communication times and conditional overall improvement. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. Figure 3 had no generator and was redrawn with the shared timeline primitive."
       }
     }
   },
