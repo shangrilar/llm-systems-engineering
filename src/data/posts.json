@@ -5,7 +5,9 @@
     "track": "shared",
     "category": null,
     "date": "2026-09-08",
-    "figureIds": [],
+    "figureIds": [
+      "llm-systems-engineering-introduction/model-hardware-workload-venn"
+    ],
     "locales": {
       "ko": {
         "slug": "llm-systems-engineering-introduction",
@@ -18,9 +20,9 @@
         "title": "LLM Systems Engineering: Connecting Models, Hardware, and Workloads",
         "description": "An introduction to understanding execution systems through models, hardware, and workloads, and the learning path for this series.",
         "published": true,
-        "sourceRevision": "b3f1b2506896514548f7496768ffed12f808c159dd49f85d45c54861fd87e5f4",
+        "sourceRevision": "f498ab209ce9b7e46baa98ca59f5bf51f512b092ba1e44a5ac01ef17aaaede78",
         "translationStatus": "reviewed",
-        "reviewNote": "Korean and English bodies compared for publication on 2026-09-08; model, hardware, workload definitions and learning roadmap match."
+        "reviewNote": "Korean and English bodies compared for publication on 2026-09-08; model, hardware, workload definitions and learning roadmap match. Figures ported to @llm-systems/viz on 2026-09-26: the Venn diagram was redrawn with the same labels in each language and a caption."
       }
     }
   },
