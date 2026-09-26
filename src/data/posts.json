@@ -307,7 +307,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-architecture/01-gpu-and-sm",
+      "gpu-architecture/02-memory-spaces",
+      "gpu-architecture/03-read-compute-write",
+      "gpu-architecture/04-capacity-bandwidth-latency"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-architecture",
@@ -321,8 +326,8 @@
         "description": "Explore SMs, CUDA Cores, Tensor Cores, and GPU memory, then connect capacity, bandwidth, and access latency to running a model.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision.",
-        "sourceRevision": "e33bc047ae6ed1f1fc1f080c2c56da928c160079484f59c2a027fad9ee7840c7"
+        "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text.",
+        "sourceRevision": "88fd0a3c78f5b308863a04f651425e35f64607d4b6a2b94540a19db9b036e6a4"
       }
     }
   },
