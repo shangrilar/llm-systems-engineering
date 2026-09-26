@@ -7,7 +7,7 @@ export default {
   title:["Attention의 연산을 하나로 연결하기","Connecting the computations inside Attention"],
   subtitle:"MHA · T = 3 · d = 8 · h = 2 · dₕ = 4",
   alt:["Projection으로 만든 Q K V를 두 head로 구분한다. 각 head의 Q와 K에만 RoPE를 적용하고, Q K 내적과 스케일링, 마스크, Softmax, PV 순서로 계산한다. 각 head의 3 곱하기 4 결과를 같은 토큰 위치끼리 이어붙여 3 곱하기 8로 만들고 출력 projection을 적용한다.","Projected Q K V are separated into two heads. RoPE rotates Q and K only. Each head computes Q K scores, scaling, masking, Softmax and PV. Its 3 by 4 output is concatenated with the other head at the same token positions, then output projection produces 3 by 8."],
-  caption:["각 head는 3 × 4 형태로 계산하며, RoPE는 Q와 K에만 적용합니다. 수치는 설명용입니다.", "Each head computes with 3 × 4 shapes, and RoPE applies only to Q and K. Values are illustrative."],
+  caption:["각 head는 3 × 4 형태로 계산합니다. RoPE는 Q와 K에만 적용하고, V는 그대로 전달합니다.","Each head computes with 3 × 4 shapes. RoPE applies only to Q and K; V passes through unchanged."],
   sources:[],
   panels(locale:Locale){
     const p=new Panel(locale,null,1601,1104,[48,205]);
