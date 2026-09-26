@@ -217,7 +217,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "moe/01-dense-and-moe",
+      "moe/02-router",
+      "moe/03-moe-flow",
+      "moe/04-shared-and-routed"
+    ],
     "locales": {
       "ko": {
         "slug": "moe",
@@ -230,9 +235,9 @@
         "title": "MoE: Choosing Which MLPs to Use for Each Token",
         "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
         "published": true,
-        "sourceRevision": "b87efab8b3c84c8d04ad189d65bb6955349ee184a13e8de802f497407f248e50",
+        "sourceRevision": "d9835a1ad30b691e26154f714044340e2dc6f3a0c175e58bca3757d9d41628c6",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately."
+        "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and captions for figures 3–4 were newly written in both languages from the article text."
       }
     }
   },
