@@ -982,7 +982,20 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "pipeline-parallelism/pp-01-step-0",
+      "pipeline-parallelism/pp-01-step-1",
+      "pipeline-parallelism/pp-01-step-2",
+      "pipeline-parallelism/pp-02-step-0",
+      "pipeline-parallelism/pp-03-step-0",
+      "pipeline-parallelism/pp-03-step-1",
+      "pipeline-parallelism/pp-03-step-2",
+      "pipeline-parallelism/pp-03-step-3",
+      "pipeline-parallelism/pp-03-step-4",
+      "pipeline-parallelism/pp-03-step-5",
+      "pipeline-parallelism/pp-03-step-6",
+      "pipeline-parallelism/pp-batch-wait"
+    ],
     "locales": {
       "ko": {
         "slug": "pipeline-parallelism",
@@ -996,8 +1009,8 @@
         "description": "Place model layers across GPUs, then split the same batch into microbatches to overlap computation for different inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a1b5fa6b4cd2bd6af09426061632f01044cc92c4c93098979b89f36ea6c25958",
-        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages."
+        "sourceRevision": "de69726b7888a262a30d58bcd264c3e3468c01398d4d09c954d3a0a408b5b27e",
+        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
