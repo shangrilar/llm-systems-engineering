@@ -1240,7 +1240,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-preemption/01-growing-pressure",
+      "inference-preemption/02-reclaim-blocks",
+      "inference-preemption/03-recompute-state",
+      "inference-preemption/04-swap-state",
+      "inference-preemption/05-output-gap"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-preemption",
@@ -1254,8 +1260,8 @@
         "description": "When KV space runs out during generation, pause some requests to reclaim blocks, then resume them from retained token history or KV. Explore how this process delays output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "ef51239e06954c8ed9a10ff182508fd1ddbcd9731ceafd856f8ff35bb9c72c84",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the follow-up metrics link is restored in both languages."
+        "sourceRevision": "89dfe4c5f6256d44c91f82defa6779f00e081f503d761c828ba6a85239a482aa",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the follow-up metrics link is restored in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages."
       }
     }
   },
