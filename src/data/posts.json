@@ -367,7 +367,15 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-11",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-execution-and-warp-scheduling/01-common-procedure",
+      "gpu-execution-and-warp-scheduling/02-indexed-executions",
+      "gpu-execution-and-warp-scheduling/03-blocks-and-indices",
+      "gpu-execution-and-warp-scheduling/04-blocks-on-sms",
+      "gpu-execution-and-warp-scheduling/05-warps-and-threads",
+      "gpu-execution-and-warp-scheduling/06-ready-warps",
+      "gpu-execution-and-warp-scheduling/07-latency-hiding"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-execution-and-warp-scheduling",
@@ -381,8 +389,8 @@
         "description": "Start with a common computation procedure and indexed executions, then explore threads, blocks, grids, SM assignment, warp scheduling, and latency hiding.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "e5ad48e8a8ec40e2d33d73dbc5a2c3863bc38040bfa6e54ecf7b123772316773",
-        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
+        "sourceRevision": "461cf90ebaa42855f417e8201003b557f60baac21e4145e6df4bd6b4cba398b3",
+        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
