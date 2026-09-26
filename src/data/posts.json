@@ -337,7 +337,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-11",
-    "figureIds": [],
+    "figureIds": [
+      "model-operation-parallelism/01-elementwise",
+      "model-operation-parallelism/02-reduction",
+      "model-operation-parallelism/03-matmul",
+      "model-operation-parallelism/04-output-elements"
+    ],
     "locales": {
       "ko": {
         "slug": "model-operation-parallelism",
@@ -351,8 +356,8 @@
         "description": "Compare element-wise operations, reductions, and matrix multiplication through independent output elements and the inputs and computation needed for each result.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "3d43cd04de5398e3cfbee0834c7ce334a907f5dad6ebc37ba38579297f49d9e5",
-        "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision."
+        "sourceRevision": "d3505f44830c6f272e4eb5f817f2bca61f5664f2b7ff198000dea872ee7727f2",
+        "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
