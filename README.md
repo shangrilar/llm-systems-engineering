@@ -32,6 +32,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [RoPE: Incorporating Token Positions into Attention](https://llm-systems-engineering.pages.dev/en/posts/rope/)
 - [MoE: Choosing Which MLPs to Use for Each Token](https://llm-systems-engineering.pages.dev/en/posts/moe/)
 - [Revisiting the Flow Through the Model](https://llm-systems-engineering.pages.dev/en/posts/model-summary/)
+- [MQA and GQA: Sharing KV Across Queries](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mqa-gqa/)
 
 #### Hardware
 

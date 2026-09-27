@@ -272,6 +272,37 @@
     }
   },
   {
+    "articleId": "model-advanced-mqa-gqa",
+    "order": 9.1,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mqa-gqa/00-attention-head-comparison",
+      "model-advanced-mqa-gqa/01-mha-per-head",
+      "model-advanced-mqa-gqa/02-mqa-different-outputs",
+      "model-advanced-mqa-gqa/03-gqa-groups",
+      "model-advanced-mqa-gqa/04-kv-storage-axis"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mqa-gqa",
+        "title": "MQA와 GQA: 여러 Query가 KV를 공유하기",
+        "description": "MHA의 계산을 기준으로 MQA와 GQA의 KV 공유 방식을 비교하고, Query별 출력은 유지하면서 저장량을 줄이는 원리와 절충을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mqa-gqa",
+        "title": "MQA and GQA: Sharing KV Across Queries",
+        "description": "Use MHA as a baseline to compare KV sharing in MQA and GQA, and examine how they reduce storage while preserving per-query outputs and what trade-offs follow.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "0e2f097b7855c9ebfb81128f4510e8a76075f205576077d64899b19f905c1558",
+        "reviewNote": "2026-09-27: Compared all six sections and five figure descriptions with the Korean source. Same token/head/component distinctions, projections, KV sharing, 64/32/16 storage counts, and qualified quality/runtime claims. Both bodies use MathML subscripts; existing localized figures retain their shared geometry and illustrative inputs."
+      }
+    }
+  },
+  {
     "articleId": "cpu-and-gpu",
     "order": 10,
     "track": "shared",

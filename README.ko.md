@@ -32,6 +32,7 @@
 - [RoPE: 토큰 위치를 Attention에 반영하기](https://llm-systems-engineering.pages.dev/posts/rope/)
 - [MoE: 토큰마다 사용할 MLP 선택하기](https://llm-systems-engineering.pages.dev/posts/moe/)
 - [모델 전체 흐름 다시 보기](https://llm-systems-engineering.pages.dev/posts/model-summary/)
+- [MQA와 GQA: 여러 Query가 KV를 공유하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mqa-gqa/)
 
 #### 하드웨어
 
