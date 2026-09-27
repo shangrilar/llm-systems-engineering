@@ -1767,5 +1767,34 @@
         "reviewNote": "Korean and English paragraphs, four figures, examples, terminology, alt text, and source scope reviewed on 2026-09-28."
       }
     }
+  },
+  {
+    "articleId": "rl-11",
+    "order": 111,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-11/01-prefix-cache-routing",
+      "rl-11/02-batching-kv-capacity",
+      "rl-11/03-draft-verify-mtp"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-rollout-inference",
+        "title": "RL 롤아웃의 추론 최적화",
+        "description": "공유 prefix의 KV 재사용, 길이가 다른 요청의 배치, speculative decoding과 MTP를 통해 RL 생성 비용을 줄이는 위치와 조건을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-rollout-inference",
+        "title": "Inference Optimization for RL Rollouts",
+        "description": "Explore where and under what conditions shared-prefix KV reuse, batching variable-length requests, speculative decoding, and MTP reduce RL generation costs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "48aa32239103ea72de4483eb27c297b83de80cba376509b615208094a3cb09ff",
+        "reviewNote": "Reviewed Korean and English prose, all three figures, numerical examples, and NeMo RL source measurements for release."
+      }
+    }
   }
 ]
