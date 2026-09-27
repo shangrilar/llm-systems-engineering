@@ -4,3 +4,4 @@ export {esc,svgText,tr,units,wrap,type Label,type Locale} from './text';
 export {Panel} from './panel';
 export {FRAME,compose,type FigureSpec,type Screen} from './frame';
 export {cells,curve,grid,timeline,type Bar,type Lane} from './primitives';
+export {matrix,port,connector,type Bounds,type Side,type Point,type MatrixValue,type MatrixOptions} from './diagram';
