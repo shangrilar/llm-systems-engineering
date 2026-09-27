@@ -1652,6 +1652,34 @@
     }
   },
   {
+    "articleId": "rl-09",
+    "order": 108,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-09/01-precision-placements",
+      "rl-09/02-quantization-conventions"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-quantized-training",
+        "title": "RL에서 양자화를 사용하는 방법",
+        "description": "생성 비용을 줄이는 양자화가 학습과 추론의 계산을 어떻게 바꾸는지, BF16 학습·FP8 추론과 공통 양자화의 두 구성으로 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-quantized-training",
+        "title": "Using Quantization in RL",
+        "description": "See how quantization reduces generation costs and changes training and inference computation, through shared quantization and BF16 training with FP8 inference.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "9dfa7b5187cc85f40094c9ec9b2ea6b747fc9cf0b27dd8a8ffbf5c270cd49d56",
+        "reviewNote": "Reviewed all four sections, two figures, rounding examples, shared-first order, and Miles v0.1 support boundaries against the Korean source."
+      }
+    }
+  },
+  {
     "articleId": "model-advanced-token-compression",
     "order": 9.6,
     "track": "shared",
