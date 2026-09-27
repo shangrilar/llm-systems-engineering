@@ -37,6 +37,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [MLA Computation: Attention Without Expanding KV](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mla-computation/)
 - [Local and Sparse Attention: Reading Fewer Token Positions](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-local-sparse/)
 - [Sparse Attention Indexers: Choosing Positions by Content](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-sparse-indexer/)
+- [Token-Axis Compression: Reading Summaries of Multiple KV Positions](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-token-compression/)
 
 #### Hardware
 

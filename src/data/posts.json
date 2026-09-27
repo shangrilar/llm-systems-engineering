@@ -1563,5 +1563,35 @@
         "reviewNote": "2026-09-27: Korean and English prose, four figures, KL formulas and numerical examples compared; footer captions removed in both languages."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-token-compression",
+    "order": 9.6,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-token-compression/01-compression-axes",
+      "model-advanced-token-compression/02-weighted-summary",
+      "model-advanced-token-compression/03-causal-summary-and-local",
+      "model-advanced-token-compression/04-compress-and-select"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-token-compression",
+        "title": "토큰 축 압축: 여러 위치의 KV를 요약해서 읽기",
+        "description": "내용 투영과 점수 투영으로 요약 벡터를 만드는 과정을 따라가고, 완성된 요약과 최근 위치별 KV를 함께 읽는 이유 및 인덱서와의 결합을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-token-compression",
+        "title": "Token-Axis Compression: Reading Summaries of Multiple KV Positions",
+        "description": "Trace how content and score projections build summary vectors, why completed summaries are read alongside recent per-token KV, and how compression combines with an indexer.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Paragraph-by-paragraph Korean/English review; four bilingual figures, projection arithmetic, causal summary timing, overlapping recent entries, and storage/read counts checked on 2026-09-27.",
+        "sourceRevision": "b3e09b69bd8932188dfc428717ee58f0e09b84ee3f83bf8393c01a3322859701"
+      }
+    }
   }
 ]

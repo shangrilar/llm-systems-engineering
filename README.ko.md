@@ -37,6 +37,7 @@
 - [MLA의 계산: KV를 펼치지 않고 Attention하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mla-computation/)
 - [Local과 Sparse Attention: 읽을 토큰 범위 줄이기](https://llm-systems-engineering.pages.dev/posts/model-advanced-local-sparse/)
 - [Sparse Attention의 Indexer: 내용에 따라 읽을 위치 고르기](https://llm-systems-engineering.pages.dev/posts/model-advanced-sparse-indexer/)
+- [토큰 축 압축: 여러 위치의 KV를 요약해서 읽기](https://llm-systems-engineering.pages.dev/posts/model-advanced-token-compression/)
 
 #### 하드웨어
 
