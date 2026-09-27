@@ -35,6 +35,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [MQA and GQA: Sharing KV Across Queries](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mqa-gqa/)
 - [MLA storage: Representing KV with a small latent vector](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mla-storage/)
 - [MLA Computation: Attention Without Expanding KV](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mla-computation/)
+- [Local and Sparse Attention: Reading Fewer Token Positions](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-local-sparse/)
 
 #### Hardware
 

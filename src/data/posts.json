@@ -1444,5 +1444,35 @@
         "reviewNote": "2026-09-27: Compared all six sections, RoPE subsection, four figures and numerical examples. Preserved row-vector notation, content/position score addition, key/value reassociation, fixed-weight absorption, normalization boundaries, and qualified runtime claims."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-local-sparse",
+    "order": 9.4,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-local-sparse/01-read-window",
+      "model-advanced-local-sparse/02-local-and-landmarks",
+      "model-advanced-local-sparse/03-depth-propagation",
+      "model-advanced-local-sparse/04-read-versus-retain"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-local-sparse",
+        "title": "Local과 Sparse Attention: 읽을 토큰 범위 줄이기",
+        "description": "Sparse Attention의 한 종류인 Sliding Window Attention부터 시작해, 고정된 연결 패턴과 층을 통한 정보 전달을 살펴보고 읽는 범위와 KV 캐시 보관량을 구별합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-local-sparse",
+        "title": "Local and Sparse Attention: Reading Fewer Token Positions",
+        "description": "Start with sliding window attention as a form of sparse attention, trace fixed connection patterns and information flow through layers, and distinguish the read range from KV cache storage.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "8de0e09e6ddc7e075b782dd679042ea53b12b504917bde5866b8529539ca07c3",
+        "reviewNote": "2026-09-27: Compared all five sections and four figures against Korean. Preserved window boundaries, read sets, 36/21 connection counts, layer-depth paths, receptive-field limits, layer-specific cache retention and qualified runtime claims."
+      }
+    }
   }
 ]
