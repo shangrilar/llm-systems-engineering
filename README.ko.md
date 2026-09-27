@@ -33,6 +33,7 @@
 - [MoE: 토큰마다 사용할 MLP 선택하기](https://llm-systems-engineering.pages.dev/posts/moe/)
 - [모델 전체 흐름 다시 보기](https://llm-systems-engineering.pages.dev/posts/model-summary/)
 - [MQA와 GQA: 여러 Query가 KV를 공유하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mqa-gqa/)
+- [MLA의 저장 구조: KV를 작은 잠재 벡터로 표현하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mla-storage/)
 
 #### 하드웨어
 
