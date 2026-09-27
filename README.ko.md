@@ -92,3 +92,4 @@
 - [LLM RL 시스템은 어떻게 연결되는가](https://llm-systems-engineering.pages.dev/posts/rl-system-architecture/)
 - [생성 기록을 학습으로 이어가기: TITO와 R3](https://llm-systems-engineering.pages.dev/posts/rl-token-context/)
 - [RL에서 양자화를 사용하는 방법](https://llm-systems-engineering.pages.dev/posts/rl-quantized-training/)
+- [생성 확률과 학습 확률이 달라지는 이유](https://llm-systems-engineering.pages.dev/posts/rl-probability-mismatch/)
