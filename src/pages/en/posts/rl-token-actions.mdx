@@ -1,0 +1,71 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rl-01
+title: "How Token Generation Becomes an Action in Reinforcement Learning"
+description: "Compare choosing a move in a maze with an LLM choosing its next token, then follow how a response made of many tokens receives a reward."
+date: 2026-09-25
+---
+
+import RLFigure from '../../../components/RLFigure.astro';
+
+When you think of reinforcement learning, an AI playing a game or a robot moving around may come to mind first. They observe the current situation, choose an action, and learn from the outcome to make better choices next time. What, then, counts as an action for an LLM that produces sentences, and what outcome do we evaluate?
+
+In this series, we will treat **choosing the next token from the context** as an action. Tokens are the units a model uses to handle text; they can be words, parts of words, punctuation, and more. We will first map movement in a maze to token selection, then follow how many choices form a response and how that response is evaluated. Understanding this flow will help us connect rewards, learning algorithms, and inference and training systems to the parts they play in the same process.
+
+## A Policy Chooses Actions from the Current Situation
+
+Consider the problem of moving from a starting point to a goal in a small maze. Given the current position and a map of the maze, we choose one direction: up, down, left, or right. After moving one cell, we observe the new position and choose a direction again. Here, we will count reaching the goal within a fixed number of moves as success.
+
+We call the current situation the **state**, and the chosen move an **action**. The rule that determines which action to choose from a state is the **policy**. A policy can be as simple as “always move right,” or it can be a neural network that takes the map and position as input and computes the probability of choosing each direction.
+
+The policy and evaluation have different jobs. The policy chooses the next move. Evaluation expresses, as a score, whether those choices helped reach the goal. We call this score a **reward**. Learning uses the actions actually taken and the rewards received to change the policy so that it can achieve better outcomes in the future.
+
+We can map the same roles to an LLM. The figure below arranges movement in a maze and token generation in the same sequence. It is our own reconstruction, drawing on the perspective presented in Nathan Lambert’s RLHF Book.
+
+<RLFigure id="rl-01/01-role-mapping" alt="In a maze, the policy observes the current position and map, chooses a move, and changes position. An LLM observes the question and generated tokens, chooses the next token, and extends the context. Both examples evaluate the completed outcome and use experience and reward to train the policy afterward." />
+
+Both examples in the figure have a loop in which the policy chooses another action from the changed situation. Choosing an action changes what it will see next, and the policy makes another choice in that new situation. The dashed line from evaluation after completion back to the policy means that the experience is used for subsequent learning. It does not mean that the weights must be updated immediately after every action. [RLHF Book — Training Overview](https://rlhfbook.com/c/03-training-overview)
+
+## An LLM Chooses the Next Token
+
+Suppose we ask an LLM, “What is 2+3?” The model processes the input context and computes scores for candidate next tokens in its vocabulary. It converts those scores to probabilities and selects one token according to the generation rules. For now, think of generation as sampling a candidate according to its probability.
+
+From the reinforcement learning perspective, the model we explored in [From the Embedding Layer to the LM Head](/en/posts/embedding-to-lm-head/) is **a policy that determines which token to choose in a given context**. The existing LLM takes on this role.
+
+After selecting the first token, the input is no longer just the original question. It is the context that also includes the token just selected. After selecting the second token, that token is added to the context as well. The same LLM reads the growing context and repeats this selection process.
+
+In this single-turn example, the state is the context containing the question and the tokens generated so far. The action is the choice of the next token, and appending that token to the context is the transition to the next state. In the maze, the position changed; here, the token history that becomes the input for the next choice changes.
+
+Some papers and explanatory diagrams group the entire response into a single action. This summarizes the outer process of receiving a question, producing a response, and having it evaluated. Because this series will later explain token-level probabilities and learning signals, we will also unfold the internal choices that produce that response.
+
+## Rewarding a Response Made of Many Tokens
+
+Let us now follow the same process in time order. In the figure, x₁ and x₂ are symbols for the first and second tokens selected. They do not indicate how a particular tokenizer splits the string “2+3=5.”
+
+<RLFigure id="rl-01/02-token-actions-response-reward" alt="The same LLM selects x1 from the question, then selects x2 from the context containing the question and x1. Repeated choices complete the response 2+3=5. The response receives a reward of +1 once after its answer is verified." />
+
+First, the model reads the question and selects x₁. Next, it reads the question together with x₁ and selects x₂. This process repeats until the response ends, at which point the completed content is passed to an evaluation function. Here, we use a simple rule: check whether the final answer is 5, and give +1 if it is correct.
+
+**+1 is the score assigned to the completed response.** It does not mean that every token independently received +1, or that we have determined how much each token contributed to the correct answer. There may be many ways to express the same correct answer, and a long generated response can contain both useful and unnecessary choices.
+
+Obtaining an evaluation result for the response and deciding how to use that result to learn from each generation choice are therefore separate steps. This distinction is the starting point for the advantages and losses we will discuss in the next article.
+
+## How to Judge a Good Response
+
+For a question whose answer can be checked, such as “What is 2+3?”, we can use a rule that compares the response with the correct answer. For a coding task, we can run the code and check whether it passes a specified set of tests. Using such verifiable outcomes as rewards is called **RLVR (Reinforcement Learning with Verifiable Rewards)**. As a concrete example, DeepSeek-R1-Zero used rule-based rewards that checked the correctness of mathematical answers and the results of code execution, among other things. [DeepSeek-R1 §2.2.2](https://arxiv.org/html/2501.12948v1#S2.SS2.SSS2)
+
+Other criteria, such as whether an explanation is more helpful or follows a request better, are difficult to judge against a single correct answer. In such cases, we can train a **reward model** to predict preferences from data in which people compare responses, then use that model’s scores. InstructGPT used such a reward model to evaluate responses generated by a language model and train the policy. [InstructGPT](https://arxiv.org/abs/2203.02155)
+
+Both methods occupy the position in the figure where a completed response is evaluated. A reward model and an answer verifier do not have to run together. We choose an evaluation method according to the behavior we want the model to learn to produce more often. The figure also distinguishes the process of appending tokens to change the context from the process of scoring a completed response.
+
+## Changing Future Choices with Generated Experience
+
+While producing a response, the model selects tokens in sequence. During training, we gather the resulting experience and scores and adjust the model’s weights to change how likely those choices will be in the future. In this article’s example, we use the same weights throughout response generation and update the policy after generation and evaluation.
+
+In practice, LLM RL usually starts from a pretrained model that can already generate language, or from a model that has undergone supervised fine-tuning (SFT). It adjusts the choices made with that existing generation capability to better match the task’s evaluation criteria.
+
+This article has used the case of evaluating a single-turn response once it is complete. Other reinforcement learning tasks can also give rewards only at the end, and LLMs can use intermediate rewards, tool calls, and multi-turn interactions. In each case, the first connection to look for is how actions are selected in the current situation and how that experience is used for learning.
+
+In the next article, we will unfold the learning side of this connection. We will go step by step through computing advantages from response scores, combining them with the current probabilities of the selected tokens, and updating the weights.
+
+<small>Terminology: SFT is also part of post-training in the broad sense. This site covers supervised learning and RL in separate training and RL series to explain their principles step by step.</small>

@@ -1356,5 +1356,63 @@
         "sourceRevision": "716f63c87d0d7effc12ac0b56d4d2c35894174046c50f87cb8984c7888303db4"
       }
     }
+  },
+  {
+    "articleId": "rl-01",
+    "order": 101,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-01/01-role-mapping",
+      "rl-01/02-token-actions-response-reward"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-token-actions",
+        "title": "토큰 생성은 어떻게 강화학습의 행동이 되는가",
+        "description": "미로에서 이동을 고르는 일과 LLM이 다음 토큰을 고르는 일을 비교하고, 여러 토큰으로 만든 응답에 보상이 붙는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-token-actions",
+        "title": "How Token Generation Becomes an Action in Reinforcement Learning",
+        "description": "Compare choosing a move in a maze with an LLM choosing its next token, then follow how a response made of many tokens receives a reward.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a16b8efe6fd78d9559e97d88d4762715b8e639b303499fe718abd9d17929c427",
+        "reviewNote": "Korean and English text, examples and both figures reviewed. Rechecked unchanged English after fixing five Korean emphasis delimiters; the meaning is unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "rl-02",
+    "order": 102,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-02/00-token-probabilities",
+      "rl-02/01-advantage-meets-logprob",
+      "rl-02/02-ratio-clipping",
+      "rl-02/03-old-current-reference"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-reward-to-update",
+        "title": "보상은 어떻게 토큰의 생성 확률을 바꾸는가",
+        "description": "보상에서 구한 어드밴티지와 토큰의 로그확률을 연결한 뒤, 이전 데이터의 재사용을 위한 확률비와 clipping, 기준 정책을 유지하는 KL을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-reward-to-update",
+        "title": "How Rewards Change Token Generation Probabilities",
+        "description": "Connect advantages computed from rewards with token log-probabilities, then explore probability ratios and clipping for reusing data, and KL regularization for staying close to a reference policy.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "f2bbf64a1d70e8ca03c158b296dee2568a3fcdf73eb430633e66e135b917abe5",
+        "reviewNote": "Release preparation: Korean and English paragraphs, four figure examples and labels, log-probability derivative, clipped-objective branches, and model comparison roles reviewed together."
+      }
+    }
   }
 ]

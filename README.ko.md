@@ -77,3 +77,8 @@
 - [KV 캐시 관리와 PagedAttention](https://llm-systems-engineering.pages.dev/posts/paged-kv-cache/)
 - [KV 캐시가 부족할 때: 요청 중단과 재개](https://llm-systems-engineering.pages.dev/posts/inference-preemption/)
 - [추론 성능 지표: 대기 시간과 처리량](https://llm-systems-engineering.pages.dev/posts/inference-metrics/)
+
+### RL
+
+- [토큰 생성은 어떻게 강화학습의 행동이 되는가](https://llm-systems-engineering.pages.dev/posts/rl-token-actions/)
+- [보상은 어떻게 토큰의 생성 확률을 바꾸는가](https://llm-systems-engineering.pages.dev/posts/rl-reward-to-update/)

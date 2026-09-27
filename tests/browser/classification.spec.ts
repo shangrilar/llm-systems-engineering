@@ -8,13 +8,13 @@ for (const locale of ['ko', 'en'] as const) {
   test(`${locale}: grouped catalog and article classification`, async ({ page }) => {
     const prefix = locale === 'en' ? '/en' : '';
     await page.goto(`${prefix}/`);
-    await expect(page.locator('.article-track > h3')).toHaveText(locale === 'ko' ? ['공통', '추론'] : ['Shared Concepts', 'Inference']);
-    for (const track of ['shared', 'inference']) {
+    await expect(page.locator('.article-track > h3')).toHaveText(locale === 'ko' ? ['공통', '추론', 'RL'] : ['Shared Concepts', 'Inference', 'RL']);
+    for (const track of ['shared', 'inference', 'rl']) {
       const group = page.locator(`[data-track="${track}"]`);
-      const categories = track === 'shared' ? [null, 'model', 'hardware', 'workload'] : ['workload'];
+      const categories = track === 'shared' ? [null, 'model', 'hardware', 'workload'] : track === 'inference' ? ['workload'] : [null];
       const labels = track === 'shared'
         ? (locale === 'ko' ? ['모델', '하드웨어', '워크로드'] : ['Models', 'Hardware', 'Workloads'])
-        : [locale === 'ko' ? '워크로드' : 'Workloads'];
+        : track === 'inference' ? [locale === 'ko' ? '워크로드' : 'Workloads'] : [];
       await expect(group.locator('.article-category > h4')).toHaveText(labels);
       for (const category of categories) {
         const expected = catalog.filter(p => p.track === track && p.category === category && p.locales[locale]?.published)
