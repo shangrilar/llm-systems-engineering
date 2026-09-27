@@ -93,3 +93,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Carrying Generation Records into Training: TITO and R3](https://llm-systems-engineering.pages.dev/en/posts/rl-token-context/)
 - [Using Quantization in RL](https://llm-systems-engineering.pages.dev/en/posts/rl-quantized-training/)
 - [Why Generation and Training Probabilities Differ](https://llm-systems-engineering.pages.dev/en/posts/rl-probability-mismatch/)
+- [Asynchronous RL and Stale Data](https://llm-systems-engineering.pages.dev/en/posts/rl-async-staleness/)
