@@ -1708,5 +1708,34 @@
         "sourceRevision": "b3e09b69bd8932188dfc428717ee58f0e09b84ee3f83bf8393c01a3322859701"
       }
     }
+  },
+  {
+    "articleId": "rl-08",
+    "order": 109,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-08/01-sampling-distribution",
+      "rl-08/02-policy-engine-differences",
+      "rl-08/03-correction-and-alignment"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-probability-mismatch",
+        "title": "생성 확률과 학습 확률이 달라지는 이유",
+        "description": "계산 순서에 따른 차이를 줄이는 방법을 살펴보고, 남은 엔진 차이와 모델 버전 차이를 확률비로 다루는 원리를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-probability-mismatch",
+        "title": "Why Generation and Training Probabilities Differ",
+        "description": "Explore how to reduce differences caused by computation order, then use probability ratios to account for remaining engine and model-version differences.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "14bc8a25a67bb94686d7cf295008cbead39939ca14f7455463e8d894c23ff894",
+        "reviewNote": "Reviewed four sections and three bilingual figures against the Korean source, including rounding, alignment scope, engine/version differences, TIS and PPO clipping. Score Centering excluded."
+      }
+    }
   }
 ]

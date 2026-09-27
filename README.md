@@ -92,3 +92,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [How an LLM RL System Fits Together](https://llm-systems-engineering.pages.dev/en/posts/rl-system-architecture/)
 - [Carrying Generation Records into Training: TITO and R3](https://llm-systems-engineering.pages.dev/en/posts/rl-token-context/)
 - [Using Quantization in RL](https://llm-systems-engineering.pages.dev/en/posts/rl-quantized-training/)
+- [Why Generation and Training Probabilities Differ](https://llm-systems-engineering.pages.dev/en/posts/rl-probability-mismatch/)
