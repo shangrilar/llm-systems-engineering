@@ -77,3 +77,8 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [KV Cache Management and PagedAttention](https://llm-systems-engineering.pages.dev/en/posts/paged-kv-cache/)
 - [When KV Capacity Runs Out: Pausing and Resuming Requests](https://llm-systems-engineering.pages.dev/en/posts/inference-preemption/)
 - [Inference Metrics: Latency and Throughput](https://llm-systems-engineering.pages.dev/en/posts/inference-metrics/)
+
+### RL
+
+- [How Token Generation Becomes an Action in Reinforcement Learning](https://llm-systems-engineering.pages.dev/en/posts/rl-token-actions/)
+- [How Rewards Change Token Generation Probabilities](https://llm-systems-engineering.pages.dev/en/posts/rl-reward-to-update/)
