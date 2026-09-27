@@ -56,7 +56,7 @@ L1의 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>은 L0의 <m
 
 주황색 화살표는 그중 가장 먼 위치에서 오는 경로 하나를 보여 줍니다. **입력 <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math> → 첫 번째 층의 <math aria-label="p3"><msub><mi>p</mi><mn>3</mn></msub></math> → 두 번째 층의 <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math> → 세 번째 층의 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>**입니다. 한 층마다 최대 두 위치 앞으로 전달될 수 있으므로, 세 층을 거치면 최대 여섯 위치 떨어진 입력까지 연결됩니다. <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>은 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>과 일곱 위치 떨어져 있어 이 예시의 세 층으로는 아직 도달하지 못합니다.
 
-이렇게 연결된 범위를 흔히 **수용 영역(receptive field)**이라고 합니다. 하지만 경로가 존재한다는 사실이 그 안의 모든 정보가 온전히 보존된다는 뜻은 아닙니다. 여러 위치의 정보가 중간 벡터에 섞이고 변환되므로, 현재 Query가 먼 위치의 원래 KV를 직접 읽는 것과는 다릅니다. 층을 쌓아 영향 범위가 넓어지더라도 Full Attention과 같은 출력을 보장하지는 않습니다.
+이렇게 연결된 범위를 흔히 <strong>수용 영역(receptive field)</strong>이라고 합니다. 하지만 경로가 존재한다는 사실이 그 안의 모든 정보가 온전히 보존된다는 뜻은 아닙니다. 여러 위치의 정보가 중간 벡터에 섞이고 변환되므로, 현재 Query가 먼 위치의 원래 KV를 직접 읽는 것과는 다릅니다. 층을 쌓아 영향 범위가 넓어지더라도 Full Attention과 같은 출력을 보장하지는 않습니다.
 
 ## 읽는 범위와 캐시 보관량
 

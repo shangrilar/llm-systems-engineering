@@ -1470,7 +1470,7 @@
         "description": "Start with sliding window attention as a form of sparse attention, trace fixed connection patterns and information flow through layers, and distinguish the read range from KV cache storage.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "8de0e09e6ddc7e075b782dd679042ea53b12b504917bde5866b8529539ca07c3",
+        "sourceRevision": "718e89f22f02f9fb945ec02726855d3c306e7dec9921d93157d42df900c6c462",
         "reviewNote": "2026-09-27: Compared all five sections and four figures against Korean. Preserved window boundaries, read sets, 36/21 connection counts, layer-depth paths, receptive-field limits, layer-specific cache retention and qualified runtime claims."
       }
     }
