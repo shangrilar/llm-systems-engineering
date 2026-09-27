@@ -106,4 +106,4 @@ Before adopting a framework, check whether the required model and training setup
 
 This map zooms in on the part of the overall post-training process where experience is generated and the policy is updated. Depending on the training setup, preceding and subsequent stages can connect to it, such as starting RL from an SFT checkpoint or using the trained model as a teacher for another student. This does not mean that one process must perform all stages consecutively.
 
-In the next article, we will examine tokens and contexts, the first items in the experience envelope, in more detail. We will look at what must be preserved for the learner to receive exactly the input seen by the generator, and what records are needed when multiple turns, branches, and context compaction are involved.
+In the next article, we will examine how TITO preserves actual token IDs and how R3 reproduces generation-time MoE expert choices during training.

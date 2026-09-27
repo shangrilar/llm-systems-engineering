@@ -1618,8 +1618,36 @@
         "description": "Follow generated experience to the learner and updated weights back to the inference engine to understand the roles, data, and GPU placement in an LLM RL system.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "fba5466de8f1073228e157a0c34f90b847571644fbbdbd7bad755fc257b6128a",
-        "reviewNote": "Aligned Figure 2 trajectory fields and removed stale readiness-panel references in both languages; removed figure footer captions."
+        "sourceRevision": "5670efdc286643ed374691407fd46e2b4cdd6f7e4372c9135f29ab2660c26876",
+        "reviewNote": "Aligned closing paragraph with the combined TITO/R3 next article."
+      }
+    }
+  },
+  {
+    "articleId": "rl-06",
+    "order": 107,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-06/01-token-identity",
+      "rl-06/02-routing-replay"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-token-context",
+        "title": "생성 기록을 학습으로 이어가기: TITO와 R3",
+        "description": "TITO로 실제 토큰 ID를 보존하고, R3로 생성 당시 선택한 MoE 전문가를 학습에서도 사용하는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-token-context",
+        "title": "Carrying Generation Records into Training: TITO and R3",
+        "description": "Preserve actual token IDs with TITO and reuse the MoE experts selected during generation with R3.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "beedfa804a1d5519c4d97593451d1f3b4104cf80827ca7afb3c32396bb9ef7c6",
+        "reviewNote": "Aligned bilingual TITO/R3 consolidation and series references for the 16-article sequence."
       }
     }
   },
