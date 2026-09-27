@@ -1,0 +1,55 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rl-09
+title: "Using Quantization in RL"
+description: "See how quantization reduces generation costs and changes training and inference computation, through shared quantization and BF16 training with FP8 inference."
+date: 2026-09-25
+---
+
+import RLFigure from '../../../components/RLFigure.astro';
+
+[The previous article](/en/posts/rl-token-context/) examined how to preserve generation-time tokens and MoE expert choices in training. This time, we will look at differences in numerical representation, even when the inputs and expert paths match.
+
+Quantization can reduce generation costs. But if the generator produces responses using quantized values while the trainer computes their probabilities using the original values, the two engines may see different probabilities. We will first examine why, then compare <strong>applying the same quantization rules to training forward and inference</strong> with <strong>keeping training in BF16 while using FP8 for inference</strong>.
+
+## Reducing Generation Costs with Quantization
+
+In RL, responses must be generated before the model can be updated. For tasks requiring long responses or multiple tool calls, generation can occupy a large share of total training time. Reducing inference memory and compute costs therefore matters for RL systems too.
+
+Quantization maps numbers into a more limited representation using fewer bits. BF16 is a 16-bit floating-point format, and FP8 uses 8 bits. Smaller representations such as FP8 can reduce the memory needed to store and move those values, and can speed up computation on hardware and implementations that support them. Overall execution speed, however, is not exactly proportional to bit width.
+
+In exchange, values that were previously distinguishable may map to the same value or be replaced by nearby values. In RL, we also need to consider what differences this creates between generation and training.
+
+## Probabilities Can Differ Even with the Same Weights
+
+Suppose we fix prompt P and the preceding tokens and run the same model version in both engines. The inference engine computes probabilities to generate the next token; the training engine recomputes probabilities to learn from the generated tokens. A <strong>forward pass</strong> is the computation that takes an input through the model to its output probabilities.
+
+Figure 1 uses 0.26 as an example weight and illustrates inference approximating it as 0.30. These numbers are a teaching example based on simple rounding. They do not show exactly how BF16 or FP8 represents these decimal values.
+
+<RLFigure id="rl-09/01-precision-placements" alt="With the same prompt P, preceding tokens, and weight version, training computes with original values and inference with quantized approximations. The illustrative change from 0.26 to 0.30 shows conceptually why probabilities for tokens A, B, and C may differ." />
+
+Training computes with the original values, while inference computes with approximations. As these differences pass through the model's operations, the final token probabilities may differ too. The probability bars illustrate that possibility; they are not actual results computed from 0.26 and 0.30.
+
+Those token probabilities are what we used in policy updates earlier. Quantization therefore affects both generation speed and <strong>the relationship between the probabilities used to generate a response and those computed during training</strong>. Here, we are focusing on differences that can arise even before training changes the weights.
+
+## Two Ways to Configure Training and Inference
+
+The first approach is to <strong>apply the same quantization rules to training forward and inference</strong>. Training then uses the quantized values that the generator uses.
+
+The second is <strong>BF16 training with FP8 inference</strong>. The trainer retains its BF16 computation path and converts updated weights to FP8 when sending them to inference. This can reduce generation costs while preserving an existing training configuration. Since the computations may differ as in Figure 1, training stability must be checked for this combination. Miles v0.1 supports it and describes it as an easier option to set up when a new model architecture first becomes available. [Miles v0.1 §3.1](https://arxiv.org/abs/2609.08368v1)
+
+<RLFigure id="rl-09/02-quantization-conventions" alt="The left configuration applies shared quantization rules so training forward and inference use the same quantized values. The right configuration uses BF16 values in training forward and quantizes only inference to FP8." />
+
+The shared rules on the left of Figure 2 mean more than giving both sides the same format name. They also mean <strong>matching the quantized values and the scales used to interpret them</strong>. A scale is the multiplier used to interpret a stored small number as a computation value. For example, code 3 multiplied by scale 0.1 gives 0.3, while the same code with scale 0.2 gives 0.6. Identical codes with different scales represent different values.
+
+Miles maintains these rules across checkpoint conversion, training forward, updated-weight transfer, and inference execution. The common block in the figure means that both engines follow the same rules; it does not mean that quantization happens only once in one place. After weights are updated, the new values must also be quantized consistently. [Miles v0.1 §3.1](https://arxiv.org/abs/2609.08368v1)
+
+The computations being aligned here are training forward and inference. This does not mean that every optimizer state or backward operation must use the same bit width.
+
+## Miles Aligns Both Sides for FP4
+
+Miles v0.1 describes joint training and inference configurations for FP8, MXFP8, and NVFP4. NVFP4 is a quantization format based on 4-bit floating point. The important distinction in the paper is <strong>not that FP4 is unused, but that BF16 training with NVFP4 inference is unsupported</strong>.
+
+In the NVFP4 path, stages that handle weights, including training forward, must participate in the same quantization agreement. A training forward pass that uses only BF16 values without quantization does not meet this condition. Miles does provide a configuration with matching NVFP4 rules on both sides. At the time of the paper, the MXFP8 and NVFP4 paths were in Beta, with specified supported hardware and tested models. [Miles v0.1 §3.1 and Table 5](https://arxiv.org/abs/2609.08368v1)
+
+When choosing quantization for RL, we therefore need to examine <strong>which values training forward uses</strong> alongside inference bit width. We can retain BF16 training or configure both sides to use the same quantized values. The next article will examine how learning updates handle probability differences that remain between the two engines.
