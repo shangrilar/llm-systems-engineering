@@ -84,3 +84,4 @@
 
 - [토큰 생성은 어떻게 강화학습의 행동이 되는가](https://llm-systems-engineering.pages.dev/posts/rl-token-actions/)
 - [보상은 어떻게 토큰의 생성 확률을 바꾸는가](https://llm-systems-engineering.pages.dev/posts/rl-reward-to-update/)
+- [그룹 비교와 Critic으로 어드밴티지 구하기](https://llm-systems-engineering.pages.dev/posts/rl-critic-and-groups/)
