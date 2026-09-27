@@ -1,0 +1,102 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-mla-storage
+title: "MLA storage: Representing KV with a small latent vector"
+description: "Explore how a joint latent vector represents head-specific keys and values, why a positional key is stored separately, what is shared across heads, and how KV cache storage grows."
+date: 2026-09-27
+---
+
+[The previous article](/en/posts/model-advanced-mqa-gqa/) examined MQA and GQA, which reduce cache storage by sharing KV across query heads. Now we will change the representation being stored. Instead of keeping every head's keys and values, could we store a small vector from which they can be formed?
+
+**MLA** (Multi-head Latent Attention) is a structure trained to form the keys and values of multiple heads from one small **latent vector**. A latent vector is an intermediate representation of the input with fewer components. This compact representation is stored, and each head uses different projections to obtain the representations it needs.
+
+We will first see how one latent vector produces head-specific K and V. Next, we will explain why a positional key for RoPE is formed and stored through a separate path. Combining the two paths will show what differs between heads and what is shared, before we calculate cache storage as the token count grows. This article focuses on **key/value representations and storage**. Forming queries and computing attention scores are covered in the next article.
+
+## Forming head-specific K and V from a small vector
+
+Suppose one layer is processing the input at the current position <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>. Each block from <math aria-label="p0"><mrow><msub><mi>p</mi><mi mathvariant="normal">0</mi></msub></mrow></math> through <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math> represents the **entire input vector** at that position. We will use an input dimension of 8, a latent dimension of 3, and two heads. Each head's content key and value have two components. Unlike the four-head example in the previous article, we use two heads here to examine the relationship between the latent vector and its projections. All dimensions and values are illustrative.
+
+<a href="/images/model-advanced-mla-storage/en/01-latent-projections.png?v=40358b9a7ae7" id="figure-1"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/en/01-latent-projections-mobile.png?v=6e4c61cc54c9" /><img src="/images/model-advanced-mla-storage/en/01-latent-projections.png?v=40358b9a7ae7" alt="Each p0–p3 block is one input vector. Suppose projecting the current p3 vector (1×8) through W_D (8×3) gives c3=[1,2,3]. Both heads use this latent. Each head has distinct 3×2 key and value projection slices, yielding [1,2] and [4,2] for Head 1, and [2,3] and [1,5] for Head 2." loading="lazy" /></picture></a>
+
+Let <math aria-label="x3"><mrow><msub><mi>x</mi><mi mathvariant="normal">3</mi></msub></mrow></math> be the input vector at the current position, with shape 1×8. Multiplying it by the 8×3 weight matrix <math aria-label="wd"><mrow><msup><mi>W</mi><mi mathvariant="normal">D</mi></msup></mrow></math> produces a 1×3 latent vector <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math>. The figure assumes the result is [1, 2, 3]. The weights are learned, and D identifies the down-projection that reduces the dimension.
+
+<math display="block" aria-label="c_3 = x_3 W^D"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub><mo>=</mo><msub><mi>x</mi><mi mathvariant="normal">3</mi></msub><msup><mi>W</mi><mi mathvariant="normal">D</mi></msup></mrow></math>
+
+The subscript 3 in <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> denotes the **token position**, not the latent vector's third component or Head 3. By contrast, the subscript 1 in <math aria-label="uk1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math> and <math aria-label="uv1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">V</mi></msubsup></mrow></math> below denotes the **head number**, while the superscripts K and V distinguish the representations each projection produces. Since the current position is fixed in the figure, its subscript is omitted from the head-specific outputs.
+
+Both heads use the same <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> but project it with different weights. For example, Head 1's key projection <math aria-label="uk1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math> is the 3×2 matrix shown in the figure. Multiplying [1, 2, 3] by this matrix gives 1×1 + 2×0 + 3×0 = 1 for the first output and 1×0 + 2×1 + 3×0 = 2 for the second, yielding [1, 2].
+
+Head 1's value projection <math aria-label="uv1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">V</mi></msubsup></mrow></math> combines the first and third latent components in its first output. The result is therefore [1 + 3, 2] = [4, 2]. Head 2 uses different projections to obtain the key [2, 3] and value [1, 5]. **Sharing a latent vector does not make the heads' K and V identical.**
+
+In the figure, <math aria-label="uk1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math> and <math aria-label="uk2"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">2</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math> are the output slices for each head within the full key up-projection. The value projection can be divided in the same way. U denotes the up-projection from the latent representation to the representations of multiple heads. Separating the heads in the diagram does not require separate matrix multiplications in an implementation. This is a small row-vector example of [joint KV compression in the DeepSeek-V2 paper](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS2). The weight matrices are oriented in the opposite direction from the paper's column-vector notation.
+
+The key point is that **the model is trained to pass through a small joint representation**. This does not mean that any existing model's K and V can later be converted into three numbers and always recovered exactly. The weights that map inputs to latent vectors and those that map latent vectors to K and V are learned together. A small latent dimension reduces storage while constraining the K and V that multiple heads can represent.
+
+## Storing a positional key separately
+
+The keys in the previous section carry a superscript C. This denotes the **content part**, distinguishing it from the separate RoPE path. Attention using [RoPE](/en/posts/rope/) applies position-dependent rotations to queries and keys so that their positional relationship affects the score. MLA needs this capability too.
+
+MLA forms a **positional key** through a path separate from the content-key path. Figure 2 sends the input at the same <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math> position through both paths and stores their outputs in a new cache row.
+
+<a href="/images/model-advanced-mla-storage/en/02-cache-contents.png?v=36d8ab876fa4" id="figure-2"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/en/02-cache-contents-mobile.png?v=f55d55eee69a" /><img src="/images/model-advanced-mla-storage/en/02-cache-contents.png?v=36d8ab876fa4" alt="The p3 input (1×8) splits into two paths. W_D (8×3) produces c3; W_KR (8×2) followed by RoPE(3) produces k3R. The three latent and two positional-key components enter the new p3 cache row. Existing p0–p2 rows remain." loading="lazy" /></picture></a>
+
+The left path uses the <math aria-label="wd"><mrow><msup><mi>W</mi><mi mathvariant="normal">D</mi></msup></mrow></math> projection introduced earlier to produce <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> = [1, 2, 3]. The right path applies a separate 8×2 projection <math aria-label="wk"><mrow><msup><mi>W</mi><mi mathvariant="normal">KR</mi></msup></mrow></math> to the input, followed by RoPE for the current position, 3. This produces the two-component positional key <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>. The superscript R identifies the RoPE path. The symbols <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math> and <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math> in the figure denote the two components of this vector, not two token positions.
+
+**One positional key is formed per token position and shared by all heads in the same layer.** We do not store two separate copies of <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math> for Heads 1 and 2. A different position, such as <math aria-label="p2"><mrow><msub><mi>p</mi><mi mathvariant="normal">2</mi></msub></mrow></math>, needs its own positional key formed from its input and rotation. Sharing is across heads; it does not merge different token positions. [DeepSeek-V2 paper, Section 2.1.3](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3)
+
+At the current position, we therefore store three latent components and two positional-key components, for a total of five. The existing rows from <math aria-label="p0"><mrow><msub><mi>p</mi><mi mathvariant="normal">0</mi></msub></mrow></math> through <math aria-label="p2"><mrow><msub><mi>p</mi><mi mathvariant="normal">2</mi></msub></mrow></math> remain, and [1, 2, 3, <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>, <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>] is appended as a new row for <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>. The five cells group the two stored representations into one illustrated row; they do not require a single contiguous array in actual memory.
+
+The positional path is separated to enable efficient computation with the compact stored representation. Inserting position-dependent RoPE rotations directly into content keys makes it difficult to combine the key projection with query-side operations in advance. The rotation, which varies by position, intervenes between fixed, position-independent projections. A separate positional path preserves the rearrangement of content-path computation while retaining positional relationships. The equations and order of computation are covered in the next article.
+
+This does not mean that a latent vector cannot contain any position-related information. A layer's input may carry contextual information from earlier computations. What is separated here is **the path that explicitly applies RoPE rotations**. The positional key is also formed by projecting the input and then rotating it, so it is not a fixed vector determined only by the position index.
+
+## Two paths for forming keys and values
+
+Let us combine the head-specific projections in Figure 1 with the positional path in Figure 2. Figure 3 shows **how keys and values are composed**. It does not show queries or the full attention computation.
+
+<a href="/images/model-advanced-mla-storage/en/03-content-and-position.png?v=ab7347ec8680" id="figure-3"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/en/03-content-and-position-mobile.png?v=73649e0245b9" /><img src="/images/model-advanced-mla-storage/en/03-content-and-position.png?v=ab7347ec8680" alt="From p3, W_D produces c3=[1,2,3], while W_KR and RoPE(3) produce [r0,r1]. These two vectors are cached. Each head projects c3 through its U_K and U_V. Head 1 has key [1,2,r0,r1] and value [4,2]; Head 2 has key [2,3,r0,r1] and value [1,5]. Both keys share the positional part; values do not concatenate it." loading="lazy" /></picture></a>
+
+Head 1's content key is [1, 2], and Head 2's is [2, 3]. Concatenating the same positional key [<math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>, <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>] to each produces the following four-component keys.
+
+| Head | Full key | Value |
+| --- | --- | --- |
+| Head 1 | [1, 2, <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>, <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>] | [4, 2] |
+| Head 2 | [2, 3, <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>, <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>] | [1, 5] |
+
+The two parts are **concatenated**, not added component by component. The key dimension is therefore 4: two content components plus two positional components. The value keeps its two components projected from the latent vector. The positional key is not appended to the value.
+
+Even with the same positional part, the full keys can differ between heads because different projections form their content parts. Also, **sharing a positional key does not make the positional attention scores identical across all heads**. Queries also contribute to the scores, and MLA forms positional queries separately for each head. The next article will connect the content and positional query parts to the corresponding key parts.
+
+We must also distinguish what is cached from the expanded representations in the diagram. The cache stores <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> and <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math> at the top. The head-specific K and V below are expanded to illustrate the keys and values that this compact representation can express. This does not prescribe an execution procedure that reconstructs and stores all past K and V in this form for every subsequent token.
+
+The distinction becomes clear when compared with MQA. In MQA, multiple queries share the completed K and V. MLA forms head-specific content K and V from a joint latent representation and separately shares the key part used for RoPE. What is shared determines the relationship between the heads' representations.
+
+## Cache growth with token count
+
+A smaller per-token representation still needs to be retained for each past token position. In this MLA example, each position stores three latent components and two positional-key components. Four stored tokens require 4×5 = 20 components. Processing the fifth token adds one row, bringing the total to 25.
+
+Let <math aria-label="dc"><mrow><msub><mi>d</mi><mi mathvariant="normal">c</mi></msub></mrow></math> be the latent dimension, <math aria-label="dr"><mrow><msup><mi>d</mi><mi mathvariant="normal">R</mi></msup></mrow></math> the positional-key dimension, and <math aria-label="T"><mrow><mi>T</mi></mrow></math> the number of stored token positions. In this configuration, which stores two small vectors instead of expanded per-head K and V, the number of values needed for one request in one layer is:
+
+<math display="block" aria-label="Stored components = T (d_c + d^R)"><mrow><mtext>Stored components</mtext><mo>=</mo><mi>T</mi><mo>×</mo><mo>(</mo><msub><mi>d</mi><mi mathvariant="normal">c</mi></msub><mo>+</mo><msup><mi>d</mi><mi mathvariant="normal">R</mi></msup><mo>)</mo></mrow></math>
+
+Substituting our dimensions gives <math aria-label="T"><mrow><mi>T</mi></mrow></math>×(3+2) = 5<math aria-label="T"><mrow><mi>T</mi></mrow></math>. **The positional key is shared across heads, so its dimension is not multiplied by the head count again.** There is also one joint latent vector per position. The absence of an explicit head-count factor does not mean that a real model's latent dimension can be reduced arbitrarily without regard to its heads. The latent dimension is tied to the capacity of the learned representation.
+
+MHA and GQA from the previous article also append a new cache row for each additional token. Figure 4 **reuses the MHA and GQA settings from Article 1** alongside this MLA example. In all three configurations, the upper snapshot stores four tokens and the lower snapshot stores five.
+
+<a href="/images/model-advanced-mla-storage/en/04-cache-growth.png?v=af7c91a7abab" id="figure-4"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/en/04-cache-growth-mobile.png?v=93af09599dc6" /><img src="/images/model-advanced-mla-storage/en/04-cache-growth.png?v=af7c91a7abab" alt="MHA, GQA and MLA appear in columns, each progressing vertically from T=4 to T=5. MHA has four KV heads with two K and two V components, growing from 64 to 80; GQA has two KV heads, growing from 32 to 40; MLA stores three latent and two shared positional-key components, growing from 20 to 25. Equal-size cells represent components; only the new p4 row has an orange outline. Increments are 16,8,5. Mobile stacks the three comparisons." loading="lazy" /></picture></a>
+
+Every cell has the same size and represents one stored component. The orange outline marks the newly appended <math aria-label="p4"><mrow><msub><mi>p</mi><mi mathvariant="normal">4</mi></msub></mrow></math> row. The head labels in MHA and GQA denote KV heads.
+
+- **MHA** stores two K and two V components for each of four KV heads. Each token adds 4×(2+2) = 16 components, increasing total storage from **64 to 80 components**.
+- **GQA** uses two shared KV heads. Each token adds 2×(2+2) = 8 components, increasing storage from **32 to 40 components**.
+- **MLA** stores a joint latent vector and a shared positional key. Each token adds 3+2 = 5 components, increasing storage from **20 to 25 components**.
+
+With these settings, both total storage and the per-token increment decrease from MHA to GQA to MLA. GQA reduces the number of KV heads stored; MLA stores a joint representation from which head-specific K and V are formed. The figure compares the stored representations and their sizes in the two articles' teaching configurations. Actual savings depend on head counts and dimensions; this is not a performance comparison between models of equal quality.
+
+The expression and figure count values stored in the cache. To obtain memory size, account for the bytes stored per component and sum across layers and requests. Weights, temporary computation space, and memory-alignment overhead are not included.
+
+## Compact storage and the remaining computation
+
+MLA stores a compact joint representation for the K and V of multiple heads. This requires projections connecting the latent and head-specific representations, as well as a separate key for RoPE. The amount of storage saved depends on the chosen latent and positional dimensions.
+
+The cache reduction ratio is also not the reduction ratio for total execution time. Runtime depends on how attention is computed from the compact representation, the kernels, context length, and execution environment. The remaining question is **how the current query reads** the stored latent vectors and positional keys. The next article will first connect the two parts of Q, then examine how rearranging the computation avoids fully expanding head-specific KV each time.

@@ -1326,5 +1326,35 @@
         "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-mla-storage",
+    "order": 9.2,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mla-storage/01-latent-projections",
+      "model-advanced-mla-storage/02-cache-contents",
+      "model-advanced-mla-storage/03-content-and-position",
+      "model-advanced-mla-storage/04-cache-growth"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mla-storage",
+        "title": "MLA의 저장 구조: KV를 작은 잠재 벡터로 표현하기",
+        "description": "공동 잠재 벡터로 헤드별 Key·Value를 표현하는 원리와 별도로 저장하는 위치용 Key를 살펴보고, 헤드 간 공유 범위와 KV 캐시 저장량을 계산합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mla-storage",
+        "title": "MLA storage: Representing KV with a small latent vector",
+        "description": "Explore how a joint latent vector represents head-specific keys and values, why a positional key is stored separately, what is shared across heads, and how KV cache storage grows.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-09-27: Compared all five sections, paragraph flow, two equations, head-output table, four figure alt texts, numerical examples and source links with the approved Korean article. Shared positional keys, head-specific projections, row-vector notation, RoPE separation and teaching-only storage comparisons agree. All four bilingual figures reviewed independently of the source revision.",
+        "sourceRevision": "716f63c87d0d7effc12ac0b56d4d2c35894174046c50f87cb8984c7888303db4"
+      }
+    }
   }
 ]
