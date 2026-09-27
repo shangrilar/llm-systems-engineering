@@ -93,3 +93,4 @@
 - [생성 기록을 학습으로 이어가기: TITO와 R3](https://llm-systems-engineering.pages.dev/posts/rl-token-context/)
 - [RL에서 양자화를 사용하는 방법](https://llm-systems-engineering.pages.dev/posts/rl-quantized-training/)
 - [생성 확률과 학습 확률이 달라지는 이유](https://llm-systems-engineering.pages.dev/posts/rl-probability-mismatch/)
+- [비동기 RL과 오래된 데이터](https://llm-systems-engineering.pages.dev/posts/rl-async-staleness/)

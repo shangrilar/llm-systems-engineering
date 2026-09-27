@@ -1737,5 +1737,35 @@
         "reviewNote": "Reviewed four sections and three bilingual figures against the Korean source, including rounding, alignment scope, engine/version differences, TIS and PPO clipping. Score Centering excluded."
       }
     }
+  },
+  {
+    "articleId": "rl-10",
+    "order": 110,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-10/01-sync-async-timeline",
+      "rl-10/02-training-and-deployment",
+      "rl-10/03-staleness-lifecycle",
+      "rl-10/04-buffer-fifo-filters"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-async-staleness",
+        "title": "비동기 RL과 오래된 데이터",
+        "description": "생성과 학습을 겹치는 비동기 RL에서 배포 버전이 어떻게 바뀌고, 생성 중이거나 버퍼에 쌓인 경험을 언제 제외하는지 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-async-staleness",
+        "title": "Asynchronous RL and Stale Data",
+        "description": "See how published rollout versions advance in asynchronous RL, and when to exclude experience that ages during generation or while waiting in a buffer.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3c802ea700500486c78316c5ac03efe2ef5f968c732f952de4df553d7453cb67",
+        "reviewNote": "Korean and English paragraphs, four figures, examples, terminology, alt text, and source scope reviewed on 2026-09-28."
+      }
+    }
   }
 ]
