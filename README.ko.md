@@ -38,6 +38,7 @@
 - [Local과 Sparse Attention: 읽을 토큰 범위 줄이기](https://llm-systems-engineering.pages.dev/posts/model-advanced-local-sparse/)
 - [Sparse Attention의 Indexer: 내용에 따라 읽을 위치 고르기](https://llm-systems-engineering.pages.dev/posts/model-advanced-sparse-indexer/)
 - [토큰 축 압축: 여러 위치의 KV를 요약해서 읽기](https://llm-systems-engineering.pages.dev/posts/model-advanced-token-compression/)
+- [델타 규칙: 새 Value에 맞춰 상태의 연결 수정하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-delta-rule/)
 
 #### 하드웨어
 

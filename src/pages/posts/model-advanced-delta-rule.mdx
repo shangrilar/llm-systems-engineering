@@ -1,0 +1,122 @@
+---
+layout: ../../layouts/Post.astro
+articleId: model-advanced-delta-rule
+title: "델타 규칙: 새 Value에 맞춰 상태의 연결 수정하기"
+description: "KV를 기록하는 목적에서 출발해 단순 누적과 델타 규칙을 비교하고, Key로 기존 값을 확인하는 과정과 Query로 출력을 읽는 과정의 차이를 설명합니다."
+date: 2026-09-28
+---
+
+[앞선 글](/posts/model-advanced-linear-attention/)에서는 Key와 Value의 외적을 고정 크기 상태에 더하고, Query로 그 상태를 읽었습니다. 이번에는 <strong>새로운 KV가 들어왔을 때 상태를 어떻게 바꿀 것인가</strong>에 초점을 맞추겠습니다. 새 내용을 계속 더하는 대신, 현재 상태에서 읽히는 값과 비교해 필요한 변화량을 반영하는 방법이 델타 규칙(Delta Rule)입니다.
+
+차이를 구하는 계산보다 먼저 이해할 것은 그 목적입니다. 왜 새 Value를 기준으로 상태를 고치는지, 그리고 왜 Query가 아니라 Key로 기존 상태를 읽는지 알아야 계산의 의미가 드러납니다. 먼저 KV를 기록하는 과정과 Query로 출력을 만드는 과정을 구분한 뒤, 델타 규칙이 어떤 기록 방식을 선택하는지 살펴보겠습니다.
+
+## KV로 기록하고 Query로 읽기
+
+현재 토큰에서 만든 Key와 Value를 하나의 쌍으로 생각해 보겠습니다. Value는 이번에 기록할 내용이고, Key는 나중에 그 내용이 읽히도록 연결하는 벡터입니다. 앞선 글에서 외적을 더했던 것도 <strong>앞으로 이 Key와 잘 맞는 Query가 들어오면 이번 Value가 출력에 반영되도록</strong> 하기 위해서였습니다.
+
+상태를 읽는 Query의 역할은 다릅니다. Query는 현재 출력에 필요한 정보를 상태에서 읽습니다. 같은 토큰에서 Key·Value·Query를 만들더라도 각 투영이 다르므로, Key와 Query가 같은 벡터일 필요는 없습니다. 이번에 무엇을 기록할지와 지금 무엇을 읽을지는 서로 다른 역할입니다.
+
+그림 1은 이 두 과정을 나누어 보여 줍니다. 현재 토큰 <math aria-label="p2"><msub><mi>p</mi><mn>2</mn></msub></math>의 Key·Value로 기존 상태 <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math>를 갱신해 <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>를 만든 다음, 현재 Query <math aria-label="q2"><msub><mi>q</mi><mn>2</mn></msub></math>로 <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>를 읽습니다. 이 글에서 상태의 아래첨자는 처리한 토큰 수입니다. 따라서 <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math>에는 앞선 두 토큰의 정보가 반영되어 있고, <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>에는 현재 <math aria-label="p2"><msub><mi>p</mi><mn>2</mn></msub></math>까지 반영됩니다.
+
+<strong>현재 토큰의 정보를 먼저 기록하고 그 상태를 읽으므로, 출력에는 현재 위치까지의 정보가 들어갈 수 있습니다.</strong> 일반적인 causal attention이 현재 위치를 포함해 읽는 것과 같은 범위입니다. 그림의 상태 블록 하나는 행렬 전체를 뜻하며, 특정 토큰 전용 저장 칸이 아닙니다.
+
+<a href="/images/model-advanced-delta-rule/00-write-and-read.png?v=f73be7956bbe" id="figure-1"><picture><source width="720" height="2360" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/00-write-and-read-mobile.png?v=c77e5cc1ed17" /><img width="2400" height="2076" src="/images/model-advanced-delta-rule/00-write-and-read.png?v=f73be7956bbe" alt="왼쪽 현재 토큰 p₂에서 Key와 Value를 만들고 기존 상태 S₂를 S₃로 갱신한다. Key는 연결할 단서, Value는 기록할 내용이다. 오른쪽 같은 토큰의 Query로 갱신된 상태 S₃를 읽어 출력을 계산한다. 출력은 기록하려는 Value와 구별한다." loading="lazy" /></picture></a>
+
+## 새 내용을 더할까, 기존 연결을 수정할까?
+
+같은 Key에 새로운 Value를 기록하려 할 때 두 가지 목적을 생각할 수 있습니다. 하나는 기존 상태에 새 기여를 더하는 것입니다. 다른 하나는 <strong>이번 Key로 상태에서 읽히는 값이 새 Value에 가까워지도록 상태를 고치는 것</strong>입니다. 델타 규칙은 두 번째 목적을 따릅니다.
+
+왜 새 Value가 목표가 될까요? 이번 KV가 나타내는 것은 이 Key를 통해 읽을 수 있도록 이 Value를 기록하려는 관계이기 때문입니다. 델타 규칙은 이 관계를 기록할 때 기존에 읽히는 값과 새 내용의 차이를 반영하도록 설계되어 있습니다. 새 Value가 외부에서 주어진 정답이거나, 이전 내용보다 무조건 옳다는 뜻은 아닙니다. <strong>이번에 기록하려는 내용이므로 상태 갱신의 목표로 삼는 것</strong>입니다.
+
+예를 들어 이번 Key로 기존 상태를 읽었더니 [2, 0]이 나오고, 새로 기록할 Value가 [1, 1]이라고 하겠습니다. 단순 누적은 새 기여를 더합니다. 델타 규칙은 이미 읽히는 [2, 0]을 고려해 [1, 1] 쪽으로 고칩니다. 이때 목표와 현재 값의 차이를 구해 반영하는 것이 델타 규칙의 기본 아이디어입니다. [DeltaNet 논문 §2.2](https://arxiv.org/html/2406.06484v1#S2.SS2)도 현재 Key에 대한 기존 읽기 결과와 새 Value의 차이로 상태를 갱신합니다.
+
+이미 새 Value와 같은 값이 읽힌다면 차이는 0입니다. 델타 규칙에서는 그 관계를 더 고칠 필요가 없습니다. 반면 단순 누적은 같은 내용이 다시 들어와도 새 기여를 더합니다. 어느 쪽이 항상 옳은 것이 아니라, <strong>새 정보를 상태에 반영하는 규칙이 다릅니다.</strong> 여기서 바뀌는 것은 문맥을 담는 상태이며, 추론 중 모델의 투영 가중치를 다시 학습하는 것이 아닙니다.
+
+## Key로 읽는 이유와 Query로 읽는 이유
+
+앞선 글에서는 Query로 상태를 읽었는데, 왜 여기서는 Key로 읽을까요? 이번에 고칠 관계를 확인해야 하기 때문입니다. 갱신하기 전에 묻는 것은 <strong>“이번 Key로 현재 상태를 읽으면 어떤 값이 나오나?”</strong>입니다. 그 값을 알아야 새로 기록할 Value와 얼마나 다른지 계산할 수 있습니다.
+
+여기서 과거에 저장한 동일한 Key를 검색해 항목 하나를 찾아내는 것은 아닙니다. 상태에는 여러 토큰의 기여가 합쳐져 있습니다. 이번 Key도 Query처럼 상태의 행들을 가중합해 하나의 벡터를 읽습니다. 그래서 같은 Key가 이전에 등장한 적이 없어도 읽은 값이 0이 아닐 수 있습니다. “기존에 연결된 값”은 이렇게 <strong>현재 상태에서 이번 Key로 읽히는 값</strong>을 뜻합니다.
+
+Key로 읽든 Query로 읽든 상태에 벡터를 곱하는 계산 형태는 같습니다. 달라지는 것은 사용하는 벡터, 읽는 시점, 그리고 결과를 쓰는 목적입니다.
+
+| 구분 | 현재 Key로 읽기 | 현재 Query로 읽기 |
+|---|---|---|
+| 어느 상태를 읽나 | 갱신 전 상태 | 갱신된 상태 |
+| 무엇을 확인하나 | 이번 Key에서 이미 읽히는 값 | 현재 출력에 필요한 정보 |
+| 읽은 값을 어디에 쓰나 | 새 Value와 비교해 보정량 계산 | 출력 계산 |
+
+순서는 <strong>Key로 기존 값 읽기 → 새 Value와 비교해 상태 갱신 → Query로 출력 계산</strong>입니다. 새 Value를 먼저 더해 놓고 잘못된 부분을 고치는 것이 아닙니다. 기록 전에 현재 값을 확인해서, 상태에 반영할 변화량을 정합니다.
+
+또한 <strong>실제 출력이 새 Value와 같아야 하는 것은 아닙니다.</strong> 예를 들어 갱신된 상태의 첫 행이 [1, 1], 둘째 행이 [0, 3]이라면, 기록에 사용한 Key [1, 0]으로는 첫 행인 [1, 1]을 읽습니다. 그러나 현재 Query가 [0, 1]이라면 출력에는 둘째 행인 [0, 3]이 나옵니다. 기록할 관계를 확인하는 벡터와 출력에 사용할 정보를 읽는 벡터가 다르기 때문입니다. 이 편에서는 상태의 직접 읽기 값을 다루며, 앞선 글 마지막의 점수 합 정규화를 그대로 적용하지 않습니다.
+
+이 구분을 바탕으로 그림 2를 보겠습니다. 양쪽 모두 같은 기존 상태에서 출발하고 Key는 [1, 0], 새 Value는 [1, 1]입니다. 기존 상태를 이 Key로 읽으면 [2, 0]입니다. 왼쪽은 새 기여를 더해 갱신 후 [3, 1]이 읽힙니다. 오른쪽은 연결을 수정해 [1, 1]이 읽히도록 합니다. 오른쪽이 정확히 새 Value와 일치하는 것은 이 예시가 길이 1인 Key와 보정 강도 β=1을 사용하기 때문입니다.
+
+그림 아래의 <strong>“같은 Key로 기록 결과 확인”은 두 저장 규칙의 차이를 보여 주기 위한 확인 과정</strong>입니다. 실제 실행에서 갱신 후 같은 Key로 다시 읽는 검산이 필수인 것은 아닙니다. 갱신에 필요한 것은 갱신 전의 Key 읽기이고, 갱신 후 실제 출력은 Query로 읽습니다.
+
+<a href="/images/model-advanced-delta-rule/01-add-versus-revise.png?v=bda9bbc4a674" id="figure-2"><picture><source width="720" height="2460" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/01-add-versus-revise-mobile.png?v=18fb876a2d8b" /><img width="2400" height="2118" src="/images/model-advanced-delta-rule/01-add-versus-revise.png?v=bda9bbc4a674" alt="두 패널 모두 기존 S₂에서 같은 Key로 [2,0]을 읽고 새 Value [1,1]을 받는다. 왼쪽은 새 기여를 더해 같은 Key로 [3,1]을 읽는다. 오른쪽은 새 내용 쪽으로 연결을 수정해 같은 Key로 [1,1]을 읽는다." loading="lazy" /></picture></a>
+
+## 읽은 값과 새 Value의 차이 기록하기
+
+이제 그림 2 오른쪽의 결과를 어떻게 만드는지 보겠습니다. 기존 상태 <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math>의 첫 행은 [2, 0], 둘째 행은 [0, 3]입니다. 이번 Key <math aria-label="k2"><msub><mi>k</mi><mn>2</mn></msub></math> = [1, 0]으로 읽으면 첫 행의 1배와 둘째 행의 0배를 더하므로 [2, 0]이 나옵니다.
+
+새 Value는 [1, 1]입니다. 이 값을 그대로 더하면 [3, 1]이 읽히겠지만, 지금의 목적은 이번 Key로 읽히는 값을 [1, 1]로 고치는 것입니다. 따라서 필요한 변화는 <strong>새 Value − 현재 읽은 값 = [1, 1] − [2, 0] = [−1, 1]</strong>입니다. 첫 번째 성분은 1만큼 줄이고 두 번째 성분은 1만큼 늘려야 합니다.
+
+그림 3은 이 차이를 상태에 반영하고 같은 Key로 결과를 확인하는 과정입니다. 여기서는 보정량을 전부 반영하며, 반영 비율은 다음 절에서 조절하겠습니다.
+
+<a href="/images/model-advanced-delta-rule/02-read-correct-write.png?v=63a2d92f950e" id="figure-3"><picture><source width="720" height="3356" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/02-read-correct-write-mobile.png?v=40b5dc756e79" /><img width="2400" height="2884" src="/images/model-advanced-delta-rule/02-read-correct-write.png?v=63a2d92f950e" alt="S₂에서 k₂로 [2,0]을 읽고 v₂=[1,1]에서 빼면 e=[−1,1]이다. 같은 Key와 e의 외적으로 ΔS=[[-1,1],[0,0]]을 만들고 S₂에 더해 S₃=[[1,1],[0,3]]으로 갱신한다." loading="lazy" /></picture></a>
+
+차이는 두 성분짜리 벡터인데 상태는 2×2 행렬입니다. 이 벡터를 어느 행에 얼마나 더할까요? 앞선 글에서 Key와 Value를 외적했던 것처럼, 이번에는 <strong>같은 Key와 차이 벡터를 외적</strong>합니다. Key가 [1, 0]이므로 첫 행에는 차이의 1배인 [−1, 1], 둘째 행에는 0배인 [0, 0]을 더합니다.
+
+| 상태의 행 | 기존 값 | 더할 보정량 | 갱신 후 |
+|---|---|---|---|
+| 첫 번째 행 | [2, 0] | [−1, 1] | [1, 1] |
+| 두 번째 행 | [0, 3] | [0, 0] | [0, 3] |
+
+갱신된 <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>를 같은 Key [1, 0]으로 읽으면 첫 행인 [1, 1]이 나옵니다. 마지막에 Key를 곱해서 출력값을 억지로 새 Value에 맞추는 것이 아닙니다. <strong>그 Key로 읽히는 값이 새 Value가 되도록 상태 자체를 바꾼 것</strong>입니다.
+
+Key가 [1, 0]이라 이번에는 첫 행만 바뀌었습니다. 일반적인 Key는 여러 성분이 0이 아니므로, 차이 벡터도 여러 행에 서로 다른 비율로 더해집니다. 특정 토큰 전용 칸을 교체하는 것과는 다릅니다.
+
+이 과정을 기호로 정리하면, 현재 Key로 읽은 행벡터를 rᵀ, 새 Value와의 차이를 eᵀ라고 둘 수 있습니다. 이 글은 상태의 행을 Key 성분, 열을 Value 성분으로 두므로 읽기는 kᵀS, 기록은 keᵀ입니다.
+
+<math display="block"><mrow><msup><mi>r</mi><mi>T</mi></msup><mo>=</mo><msup><msub><mi>k</mi><mi>t</mi></msub><mi>T</mi></msup><msub><mi>S</mi><mi>t</mi></msub></mrow></math>
+
+<math display="block"><mrow><msup><mi>e</mi><mi>T</mi></msup><mo>=</mo><msup><msub><mi>v</mi><mi>t</mi></msub><mi>T</mi></msup><mo>−</mo><msup><mi>r</mi><mi>T</mi></msup></mrow></math>
+
+여기서 <math aria-label="St"><msub><mi>S</mi><mi>t</mi></msub></math>는 현재 토큰을 기록하기 전 상태입니다. <math aria-label="kt"><msub><mi>k</mi><mi>t</mi></msub></math>와 <math aria-label="vt"><msub><mi>v</mi><mi>t</mi></msub></math>는 현재 토큰의 Key와 Value입니다. r은 별도로 저장된 과거 Value를 찾아온 것이 아니라, 이번 Key로 현재 상태를 읽어 계산한 값입니다.
+
+## β로 수정 강도 조절하기
+
+새 Value에 맞춰 한 번에 전부 고칠 수도 있지만, 기존에 읽히던 값을 일부 남기고 새 내용을 조금만 반영할 수도 있습니다. 이를 위해 보정량에 <strong>반영 비율 β</strong>를 곱합니다. 이 절에서는 β가 0부터 1 사이인 경우를 비교하겠습니다.
+
+<math display="block"><mrow><msub><mi>S</mi><mi>t+1</mi></msub><mo>=</mo><msub><mi>S</mi><mi>t</mi></msub><mo>+</mo><mi>β</mi><msub><mi>k</mi><mi>t</mi></msub><msup><mi>e</mi><mi>T</mi></msup></mrow></math>
+
+새 Value 전체에 β를 곱해 더하는 것이 아니라, <strong>새 Value와 현재 읽은 값의 차이</strong>에 β를 곱합니다. 그림 4의 세 경우는 모두 같은 <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math>에서 출발합니다. 위에서 아래로 연속해서 세 번 갱신하는 그림이 아닙니다.
+
+<a href="/images/model-advanced-delta-rule/03-strength-and-interference.png?v=6525beec02c4" id="figure-4"><picture><source width="720" height="1330" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/03-strength-and-interference-mobile.png?v=aaaea8dec98f" /><img width="2400" height="3678" src="/images/model-advanced-delta-rule/03-strength-and-interference.png?v=6525beec02c4" alt="같은 이전 상태 [[2,0],[0,3]]에 보정량 [[−1,1],[0,0]]을 β=0,0.5,1만큼 반영한다. 현재 Key로 읽은 값은 각각 [2,0],[1.5,0.5],[1,1]이다." loading="lazy" /></picture></a>
+
+β=0이면 보정량은 [0, 0]이어서 첫 행 [2, 0]을 그대로 유지합니다. β=0.5이면 차이 [−1, 1]의 절반인 [−0.5, 0.5]를 더해 [1.5, 0.5]가 됩니다. β=1이면 차이를 전부 반영해 [1, 1]이 됩니다. 같은 Key로 읽은 결과도 각각 이 값들과 같습니다.
+
+이 예시에서 읽은 값은 기존 값과 새 Value 사이를 움직입니다. 다만 이 설명에는 <strong>Key의 길이가 1</strong>이라는 조건이 있습니다. 같은 Key로 보정량을 다시 읽으면 차이 벡터에 β와 kᵀk가 곱해집니다. 길이가 1인 Key에서는 kᵀk=1이므로 β가 차이의 반영 비율이 됩니다. 따라서 β=1일 때 정확히 새 Value와 일치합니다. Key의 크기를 아무렇게나 두어도 항상 같은 결과가 된다는 뜻은 아닙니다.
+
+실제 모델의 β는 매번 사람이 고르는 상수가 아니라 입력에 따라 모델이 계산하도록 만들 수 있습니다. 그림의 0·0.5·1은 역할을 분명히 보여 주기 위한 비교값입니다. [DeltaNet 논문 §2.2](https://arxiv.org/html/2406.06484v1#S2.SS2)는 입력에 따른 갱신 강도를 사용하며, Key의 정규화도 다룹니다.
+
+β를 줄이면 이번 보정의 크기가 작아져 기존 상태를 덜 바꿉니다. 그러나 이것이 <strong>과거 정보 전체를 일정 비율로 보존한다</strong>는 보장은 아닙니다. 상태의 여러 행에는 여러 토큰의 기여가 섞여 있고, 다른 Query도 바뀐 부분을 읽을 수 있기 때문입니다.
+
+## 상태 수정이 다른 조회에 미치는 영향
+
+<strong>델타 규칙으로 이번 Key의 읽기 결과를 고쳐도, 그 수정이 이번 Key에만 독립적으로 적용되는 것은 아닙니다. 다른 Query로 읽는 결과도 달라질 수 있습니다.</strong> 상태에는 Key마다 따로 분리된 저장 칸이 없고, 여러 토큰의 기여가 같은 행렬에 겹쳐 기록되기 때문입니다. 이번 Key에 맞춰 바꾼 부분을 다른 Query도 읽으면 그 Query의 결과에 변화가 반영됩니다.
+
+앞서 Key [1, 0]에 맞춰 상태를 고치면서 첫 행은 [2, 0]에서 [1, 1]로 바뀌었고, 둘째 행 [0, 3]은 그대로 남았습니다. 따라서 둘째 행만 읽는 Query는 영향을 받지 않지만, 첫 행도 함께 읽는 Query는 결과가 달라집니다. 그림 5에서 두 경우의 보정 전후 결과를 확인해 보겠습니다.
+
+<a href="/images/model-advanced-delta-rule/04-other-queries.png?v=a071e8529eb2" id="figure-5"><picture><source width="720" height="1980" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/04-other-queries-mobile.png?v=bd0d502b97cf" /><img width="2400" height="1732" src="/images/model-advanced-delta-rule/04-other-queries.png?v=a071e8529eb2" alt="보정 전후 상태의 첫 행은 [2,0]에서[1,1]로 바뀌고 둘째 행[0,3]은 같다. q=[0,1]은 둘째 행만 읽어 결과[0,3]이 같고 q=[1,1]은 두 행을 더해[2,3]에서[1,4]로 바뀐다." loading="lazy" /></picture></a>
+
+왼쪽 Query [0, 1]은 첫 행에 0, 둘째 행에 1을 곱해 더합니다. 바뀐 첫 행이 결과에 기여하지 않으므로, 보정 전후 모두 [0, 3]을 읽습니다.
+
+오른쪽 Query [1, 1]은 두 행을 함께 읽습니다. 보정 전에는 [2, 0] + [0, 3] = [2, 3], 보정 후에는 [1, 1] + [0, 3] = [1, 4]가 됩니다. 이번 Key와 다른 Query여도 바뀐 행을 읽으므로 결과가 달라집니다. 여기서 [1, 1]은 행의 가중합을 쉽게 보여 주기 위한 Query이며, 길이를 1로 맞춘 벡터는 아닙니다.
+
+두 경우의 차이는 Query가 수정된 부분을 얼마나 읽느냐에 있습니다. 델타 규칙이 새 Value에 맞춰 기록을 고친다는 사실과, 다른 조회 결과를 그대로 보존한다는 것은 별개의 문제입니다. 다른 조회의 변화가 항상 잘못된 것은 아니지만, <strong>한 연결을 고치면서 나머지 모든 읽기는 유지한다고 보장할 수는 없습니다.</strong>
+
+계산으로도 같은 관계를 확인할 수 있습니다. 상태에 더한 보정량이 βkeᵀ이면 Query q가 읽는 값의 변화는 β(qᵀk)eᵀ입니다. Query와 이번 Key의 내적이 0이면 이 보정의 영향이 없고, 0이 아니면 그만큼 차이가 반영됩니다. 그림 왼쪽의 내적은 0, 오른쪽의 내적은 1입니다.
+
+델타 규칙은 고정 크기 상태라는 구조를 유지하면서, 새 내용을 단순히 더하는 대신 기존 읽기 결과와 비교해 기록을 수정합니다. 다음 글에서는 이 보정에 앞서 <strong>기존 상태를 얼마나 남길지</strong> 조절하는 과정까지 더해 보겠습니다.
