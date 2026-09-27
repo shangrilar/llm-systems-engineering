@@ -1,0 +1,83 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rl-12
+title: "Scheduling the Whole Agent Program"
+description: "Track the state of programs that connect model calls and tool execution, and examine how execution, pausing, and reassignment balance KV retention against recomputation."
+date: 2026-09-25
+---
+
+import RLFigure from '../../../components/RLFigure.astro';
+
+In the [previous article](/en/posts/rl-rollout-inference/), we examined which engine should receive a request and how requests can generate together. But when a coding agent calls a test tool, model generation may finish for a while without the task being complete. After receiving the test result, the model must generate again using the same files and conversation history.
+
+In this article, we will think in terms of <strong>a program that outlives a model call</strong>. First, we will separate the lifetimes of computation, KV, and the tool environment, then examine which programs to pause when memory is short. Finally, we will broaden the view to how environment preparation and waits for tool execution can delay the next inference turn. ThunderAgent’s program-aware scheduling is the central example. From the user’s perspective, this is scheduling that considers the entire agent task.
+
+## The Task Continues After the Call Ends
+
+Suppose program P writes code, tests it, edits it, and tests it again in sequence. The model produces code and requests a test run. When the tool returns a result, the model reads the cause of failure and makes an edit. Each model call is separate, but they form one task that continues using the same files and history.
+
+Here, <strong>Reasoning</strong> is the phase in which the model generates the next response or tool call, while <strong>Acting</strong> is the phase in which a tool actually runs. Reasoning need not be interpreted as limited to a particular reasoning-token format.
+
+<RLFigure id="rl-12/01-program-resource-lifetimes" alt="Program P proceeds through code writing and editing as Reasoning, and testing and retesting as Acting. GPU computation and tool execution occur in different intervals; in this example, KV, files, and the execution environment persist between calls. Resources are reclaimed when the task ends." />
+
+The GPU computation row shows model computation for P during writing and editing. The blank intervals during testing mean that <strong>P is not running model computation</strong>. That GPU can generate for another program, so they do not mean that the entire GPU is idle.
+
+The KV retention row continues longer. In this example, P’s KV is retained while it waits for tests. This reduces the cost of recomputing the preceding context when results return. Memory remains occupied in the meantime, however. This is one possible choice, not a rule requiring KV to remain on the GPU during every wait for a tool.
+
+Files and execution environments must also be considered separately. If edited files disappear before the next test, the same task cannot continue. Rather than recreating the environment after every model call, its lifetime needs to match the task. Conversely, retaining an environment after its program has ended can accumulate resource use, such as disk space or ports.
+
+Managing these relationships requires more than the request contents. ThunderAgent associates a program ID with context length, the tool environment, the assigned inference engine (backend), the execution phase, and the scheduling state. <strong>The execution phases Reasoning/Acting and the scheduling states Active/Paused/Terminated are different axes</strong>. An Acting program that is running a tool can also be Active and placed on its current backend. [ThunderAgent §4.1](https://arxiv.org/html/2602.13692v1#S4.SS1)
+
+## Retention Costs and Recomputation Costs
+
+Retaining KV helps when the program returns. But if many programs wait for tools simultaneously, those caches occupy space needed by programs currently generating. Keeping everything is not always the fastest policy.
+
+Conversely, evicting KV at every tool call can lead to repeatedly reading long contexts. Suppose one task has a context of 2,000 tokens and another has 50,000. Even if both return after their caches have been removed, the lengths of the inputs to recompute are very different. The exact times depend on the model and engine, but there is no reason to treat both simply as “one waiting request.”
+
+The necessary judgment is <strong>which memory will be occupied for how long, and what will need to be recomputed later if it is reclaimed</strong>. Maximizing cache hit rate alone can overload one engine while another sits empty. Increasing only the number of concurrent programs can cause frequent KV eviction and rebuilding. This repeated eviction and recomputation is called KV cache thrashing.
+
+While routing in article 11 concerned where to send requests, here we also decide when to keep an ongoing program running and when to pause it. In a real system, placement and execution order are not completely separate.
+
+## Using State to Pause and Restore
+
+Suppose P is generating on inference engine A while Q is running a tool. While Q’s KV remains, P and other jobs accumulate more KV, putting A under memory pressure.
+
+<RLFigure id="rl-12/02-program-pause-restore" alt="After detecting memory pressure on backend A, Q, which is running a tool, is paused while the generating P is protected. Q’s program record and tool-state tracking remain in the global queue. Q is restored to A or B when space is available, and its reclaimed KV is recomputed before subsequent generation." />
+
+The sequence in the figure is as follows.
+
+1. Check the state of programs currently generating and waiting for tools on A.
+2. Pause Q to release its inference-engine assignment and allow its KV to be reclaimed. Retain Q’s record and tool-state tracking.
+3. Restore Q to a backend with available space. If the KV needed for subsequent generation is gone, recompute it from the retained context.
+
+Pausing Q should not be read as necessarily stopping an external test process that is already running. Pause in this figure concerns placement on an inference backend and KV management. Receiving a tool result and obtaining a slot for the next model call are separate events.
+
+The ThunderAgent paper describes periodically checking capacity, prioritizing Acting programs for Pause, and also using context length. Its Restore policy prioritizes Reasoning programs that are ready to generate. The global queue lets work move to another available backend instead of tying it only to its original backend. This differs from a rule that unconditionally evicts every waiting program. [ThunderAgent §4.3](https://arxiv.org/html/2602.13692v1#S4.SS3)
+
+Here, Restore assigns the program to an inference backend with available capacity and makes it Active again. It does not mean moving KV to CPU RAM and copying it back to the GPU. This analysis in ThunderAgent assumes that a paused program’s KV has already been evicted, so resuming requires prefilling the retained context again to rebuild KV. [ThunderAgent §4.3.1–4.3.2](https://arxiv.org/html/2602.13692v1#S4.SS3)
+
+The following are general conditions to consider for implementations with different cache-retention behavior. Moving to another backend can distribute the load but may lose the benefit of an existing cache. Even when returning to the same backend, recomputation is needed if the cache has been reclaimed in the meantime. Conversely, a valid prefix KV cache that remains may be reused. The name Restore alone does not imply that KV is copied directly between GPUs.
+
+## Connecting Tool-Environment Preparation and Shutdown
+
+If preparing a coding environment takes time, preparation can overlap with the model’s initial generation. For example, the required execution environment can be prepared while the model reads the problem and generates its first tool call. If preparation finishes before the first tool runs, waiting is reduced. If preparation takes longer, or environment results are needed from the first generation onward, that dependency must be awaited.
+
+Shutdown is also tied to the program’s lifetime. Resource management must be told that a task has ended so that unused environments can be reclaimed. If several programs share a resource, we also need to check whether its last user has finished. ThunderAgent connects asynchronous environment preparation and resource-reclamation hooks at termination to this program information. [ThunderAgent §4.4](https://arxiv.org/html/2602.13692v1#S4.SS4)
+
+## Include the CPU Tool Environment
+
+After an agent requests a test, it needs the test result before it can produce the next revision. During this interval, GPU generation speed is only part of the picture. <strong>Environment preparation time, time waiting for an execution slot, and actual tool execution time</strong> also matter. Sending a tool request does not mean execution starts immediately.
+
+Consider a deployment where a GPU cluster handles inference and separate CPU servers execute code and tests. The ThunderAgent paper's experiments also separate the GPU cluster for LLM inference from the CPU cluster for Docker environments. The figure below shows the broad structure of this deployment. Tools can also call external APIs or other models, so this does not mean every tool runs on CPUs. [ThunderAgent §5.1](https://arxiv.org/html/2602.13692v1#S5.SS1)
+
+<RLFigure id="rl-12/03-inference-tool-resources" alt="One agent program uses GPU inference and a separate CPU tool environment. GPUs execute the model and manage KV. The CPU side prepares environments, queues and executes tools, retains files and environments, and reclaims resources at termination. Tool calls and results connect the two sides; the next inference turn waits for tool results." />
+
+On the GPU side, request batching and KV management speed up generation. On the CPU side, environments can be prepared ahead of time, placed so that many environments use CPU and memory efficiently, and reclaimed when tasks end. Even a ready environment may have to wait for an execution slot. And after one test finishes, the edited files and execution environment may still be needed by the next tool call. <strong>The end of tool execution and the end of an environment's lifetime are separate events.</strong>
+
+DeepSeek's <strong>DSec (DeepSeek Elastic Compute)</strong> is an example of optimizing this CPU tool environment. It loads environment images on demand, shares memory across sandboxes or reclaims unused memory, and schedules CPU execution to support many environments on the same servers. ThunderAgent uses program progress to connect inference placement with environment lifetimes; DSec focuses on reducing preparation costs and resource use in the infrastructure where those tools run. These are examples of optimizing agent execution at different layers, not a claim that the two systems are integrated. [DSec paper](https://arxiv.org/html/2609.22978v1)
+
+For example, faster inference may produce more test requests, but if CPU execution slots are already full, those requests accumulate in a queue. Conversely, even if tool results return quickly, the next generation waits when inference capacity is unavailable. <strong>Optimizing the whole agent therefore requires examining which stage is waiting for what.</strong> While one program waits for a tool, a GPU can process other programs, so this wait does not imply that the entire GPU is idle.
+
+The effects of this optimization can first be assessed through the number of programs completed and the time taken with the same resources. KV recomputation volume, waiting for tool preparation, and resource use by retained environments also help explain the causes. Applied to RL, this must be connected to whether completed work was actually used for training. Higher rollout throughput cannot be read as a reduction in total training time by the same proportion.
+
+In the next article, we will examine what experience to create with the generation resources made available by these methods. We will turn to curricula that select problems, allocate attempts per problem, and decide which generated groups to use for training.
