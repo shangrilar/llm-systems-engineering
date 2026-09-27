@@ -80,4 +80,4 @@ For example, faster inference may produce more test requests, but if CPU executi
 
 The effects of this optimization can first be assessed through the number of programs completed and the time taken with the same resources. KV recomputation volume, waiting for tool preparation, and resource use by retained environments also help explain the causes. Applied to RL, this must be connected to whether completed work was actually used for training. Higher rollout throughput cannot be read as a reduction in total training time by the same proportion.
 
-In the next article, we will examine what experience to create with the generation resources made available by these methods. We will turn to curricula that select problems, allocate attempts per problem, and decide which generated groups to use for training.
+In the next article, we will examine weight sync: delivering newly trained weights to the inference engine. We will follow how weight partitions are reconciled between the learner and inference engine, and how generation resumes with the new policy after transfer.

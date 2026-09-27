@@ -97,3 +97,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Asynchronous RL and Stale Data](https://llm-systems-engineering.pages.dev/en/posts/rl-async-staleness/)
 - [Inference Optimization for RL Rollouts](https://llm-systems-engineering.pages.dev/en/posts/rl-rollout-inference/)
 - [Scheduling the Whole Agent Program](https://llm-systems-engineering.pages.dev/en/posts/rl-program-scheduling/)
+- [Delivering New Weights to the Inference Engine](https://llm-systems-engineering.pages.dev/en/posts/rl-weight-sync/)
