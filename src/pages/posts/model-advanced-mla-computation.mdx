@@ -1,0 +1,134 @@
+---
+layout: ../../layouts/Post.astro
+articleId: model-advanced-mla-computation
+title: "MLA의 계산: KV를 펼치지 않고 Attention하기"
+description: "현재 Query로 잠재 KV 캐시를 읽는 과정을 살펴보고, Key 투영을 Query 쪽으로, Value 투영을 가중합 뒤로 옮겨 같은 결과를 얻는 원리를 설명합니다."
+date: 2026-09-27
+---
+
+[앞선 글](/posts/model-advanced-mla-storage/)에서는 MLA가 헤드별 Key와 Value를 모두 저장하는 대신, 공동 잠재 벡터와 위치용 Key를 캐시에 보관한다는 것을 배웠습니다. 그런데 작은 벡터를 저장해 두더라도 새 토큰을 생성할 때마다 과거의 모든 K·V를 다시 펼쳐야 한다면, 그만큼 복원하는 계산이 필요합니다.
+
+MLA는 **같은 결과를 얻으면서 K·V를 펼치는 계산의 위치를 바꿀 수 있습니다.** Key를 만드는 투영은 현재 Query 쪽으로 옮기고, Value를 만드는 투영은 여러 위치의 정보를 모은 뒤에 적용합니다. 그러면 캐시의 각 위치에서 반복하던 투영을 줄이고 작은 잠재 표현을 직접 읽을 수 있습니다.
+
+먼저 현재 토큰에서 Query가 어떻게 만들어지는지 살펴보고, content와 위치 정보로 Attention 점수를 계산하겠습니다. 이어 Key와 Value의 계산 순서를 각각 바꾸면서 어떤 연산이 사라지고 어떤 연산이 남는지 살펴보겠습니다. 이번 글에서는 토큰을 하나씩 생성할 때, 한 층에서 현재 토큰을 처리하는 과정을 살펴봅니다.
+
+## 현재 토큰의 Query 만들기
+
+앞선 예시처럼 현재 위치를 <math aria-label="p3"><mrow><msub><mi>p</mi><mrow><mn>3</mn></mrow></msub></mrow></math>, 입력 벡터의 차원을 8로 두겠습니다. 캐시에는 <math aria-label="p0"><mrow><msub><mi>p</mi><mrow><mn>0</mn></mrow></msub></mrow></math>부터 현재 <math aria-label="p3"><mrow><msub><mi>p</mi><mrow><mn>3</mn></mrow></msub></mrow></math>까지 네 위치의 잠재 벡터와 위치용 Key가 들어 있습니다. KV 잠재 차원은 3, 헤드별 content Key와 Value 차원은 각각 2, 위치 부분의 차원도 2입니다. 모두 구조를 설명하기 위한 작은 교육용 차원입니다.
+
+이제 현재 입력에서 캐시를 읽을 Query를 만듭니다. 그림 1의 위쪽 블록은 각 위치의 입력 벡터 전체이고, 아래쪽은 그중 <math aria-label="p3"><mrow><msub><mi>p</mi><mrow><mn>3</mn></mrow></msub></mrow></math>에서 나온 두 쿼리 헤드를 보여 줍니다.
+
+<a href="/images/model-advanced-mla-computation/00-query-path.png?v=bac984e68167" id="figure-1"><picture><source width="720" height="2264" media="(max-width: 600px)" srcSet="/images/model-advanced-mla-computation/00-query-path-mobile.png?v=064478a93a05" /><img width="2400" height="2366" src="/images/model-advanced-mla-computation/00-query-path.png?v=bac984e68167" alt="현재 위치 p3의 입력 벡터 1×8을 Wᴰ^Q 8×3으로 곱해 Query 잠재 벡터 c^Q 1×3을 만든다. 이를 각 헤드의 U^Q 3×2와 W^Qᴿ 3×2로 투영한다. 전자는 content Query, 후자는 RoPE(p3)를 거친 위치 Query가 된다. 두 Query 부분은 각각 1×2이며 모두 헤드별이다. 위치 Key는 2편처럼 헤드 간 공유한다." loading="lazy" /></picture></a>
+
+현재 입력 <math aria-label="x3"><mrow><msub><mi>x</mi><mrow><mn>3</mn></mrow></msub></mrow></math>에 8×3 투영 <math aria-label="W^DQ"><mrow><msup><mi>W</mi><mi mathvariant="normal">DQ</mi></msup></mrow></math>를 적용하면 Query용 잠재 벡터 <math aria-label="c_3^Q"><mrow><msubsup><mi>c</mi><mrow><mn>3</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math>를 얻습니다. 이 벡터는 앞선 글에서 캐시에 저장한 KV 잠재 벡터 <math aria-label="c3"><mrow><msub><mi>c</mi><mrow><mn>3</mn></mrow></msub></mrow></math>와 **서로 다른 가중치로 만든 표현**입니다. 예시에서는 둘 다 세 성분이지만 두 잠재 차원을 실제 모델에서도 같게 정해야 하는 것은 아닙니다.
+
+각 헤드는 <math aria-label="c_3^Q"><mrow><msubsup><mi>c</mi><mrow><mn>3</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math>에서 두 종류의 Query를 만듭니다. 헤드 1의 <math aria-label="U_1^Q"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math>는 3×2 투영으로 두 성분의 **content Query**를 만듭니다. <math aria-label="W_1^QR"><mrow><msubsup><mi>W</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">QR</mi></msubsup></mrow></math>도 3×2 투영이지만, 그 결과에 현재 위치의 RoPE 회전을 적용해 **위치 Query**를 만듭니다. 헤드 2도 자기 가중치를 사용하므로 두 Query 부분 모두 헤드마다 달라집니다. 이 경로는 [DeepSeek-V2의 Query 저차원 투영과 분리된 RoPE 구성](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3)을 따른 것입니다.
+
+이후에는 위치와 헤드를 함께 표시하겠습니다. <math aria-label="q_(3,1)^C"><mrow><msubsup><mi>q</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">C</mi></msubsup></mrow></math>는 **현재 위치 3, 헤드 1의 content Query**, <math aria-label="q_(3,1)^R"><mrow><msubsup><mi>q</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">R</mi></msubsup></mrow></math>는 같은 위치와 헤드의 위치 Query입니다. 위첨자 C와 R은 각각 content와 RoPE 경로를 구별합니다. 그림 1에서는 현재 위치가 정해져 있어 위치 하첨자를 생략했지만, 그림 2부터는 두 인덱스를 함께 씁니다.
+
+위치 Query는 헤드별인 반면, 캐시의 위치용 Key는 같은 위치에서 모든 헤드가 공유합니다. 따라서 **같은 위치 Key를 읽어도 서로 다른 Query를 사용하면 위치 점수가 달라질 수 있습니다.** Query는 지금 점수를 계산하는 데 쓰며 과거 위치의 Query를 KV 캐시에 누적할 필요는 없습니다.
+
+그림은 투영과 위치 회전의 관계에 집중했습니다. 잠재 벡터를 정규화하는 과정 등은 그림에서 생략했습니다. [DeepSeek-V2의 모델 설정](https://arxiv.org/html/2405.04434v5#S3.SS1.SSS2)에는 잠재 벡터 뒤 RMSNorm도 포함됩니다. 아래에서 연산을 합칠 때는 **정규화를 통과한 이후의 연속된 선형 투영**을 대상으로 합니다.
+
+## Content 점수와 위치 점수 합치기
+
+캐시에서 읽는 위치를 <math aria-label="j"><mrow><mi>j</mi></mrow></math>라고 하겠습니다. 현재 위치가 3이므로 <math aria-label="j"><mrow><mi>j</mi></mrow></math>는 0, 1, 2, 3 중 하나입니다. 헤드 1이 위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>를 읽을 때 필요한 것은 그 위치의 content Key, 위치용 Key, Value입니다.
+
+그림 2의 왼쪽은 앞선 글에서 배운 K·V의 구성이고, 오른쪽은 현재 Query로 점수를 얻는 과정입니다. 우선 K·V를 먼저 펼친 뒤 Attention을 계산하는 방식부터 보겠습니다.
+
+<a href="/images/model-advanced-mla-computation/01-expanded-reference.png?v=bbb3f61fe5ef" id="figure-2"><picture><source width="720" height="2678" media="(max-width: 600px)" srcSet="/images/model-advanced-mla-computation/01-expanded-reference-mobile.png?v=6db2c23d534a" /><img width="2400" height="2240" src="/images/model-advanced-mla-computation/01-expanded-reference.png?v=bbb3f61fe5ef" alt="왼쪽에서 위치 j의 잠재 벡터 cⱼ 1×3을 헤드 1의 Uᴷ₁과 Uⱽ₁ 3×2로 투영해 content Key와 Value 1×2를 만든다. 별도 위치 Key kⱼᴿ 1×2는 헤드 간 공유된다. 오른쪽은 현재 content Query와 content Key의 내적, 현재 위치 Query와 위치 Key의 내적을 더한다. 전체 위치의 점수에 scale과 softmax를 적용해 aⱼ를 얻고 Value를 가중합한다." loading="lazy" /></picture></a>
+
+위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>의 잠재 벡터 <math aria-label="c_j"><mrow><msub><mi>c</mi><mrow><mi>j</mi></mrow></msub></mrow></math>는 1×3입니다. 여기에 헤드 1의 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>를 곱하면 content Key <math aria-label="k_(j,1)^C"><mrow><msubsup><mi>k</mi><mrow><mi>j</mi><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">C</mi></msubsup></mrow></math>, <math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>를 곱하면 Value <math aria-label="v_(j,1)"><mrow><msub><mi>v</mi><mrow><mi>j</mi><mo>,</mo><mn>1</mn></mrow></msub></mrow></math>가 됩니다. 두 투영은 모두 3×2이고 결과는 각각 1×2입니다. 별도로 저장한 위치용 Key <math aria-label="k_j^R"><mrow><msubsup><mi>k</mi><mrow><mi>j</mi></mrow><mi mathvariant="normal">R</mi></msubsup></mrow></math>도 1×2이지만, 헤드 간 공유하므로 헤드 번호가 붙지 않습니다.
+
+현재 Query와 캐시의 Key는 **대응하는 부분끼리 내적**합니다. content Query는 content Key와, 위치 Query는 위치용 Key와 계산합니다. 각 내적의 결과는 숫자 하나이며, 둘을 더하면 위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>의 점수 <math aria-label="s_j"><mrow><msub><mi>s</mi><mrow><mi>j</mi></mrow></msub></mrow></math>가 됩니다.
+
+<math display="block" aria-label="s_j = q^C_(3,1) dot k^C_(j,1) + q^R_(3,1) dot k^R_j"><mrow><msub><mi>s</mi><mrow><mi>j</mi></mrow></msub><mo>=</mo><msubsup><mi>q</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">C</mi></msubsup><mo>·</mo><msubsup><mi>k</mi><mrow><mi>j</mi><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">C</mi></msubsup><mo>+</mo><msubsup><mi>q</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">R</mi></msubsup><mo>·</mo><msubsup><mi>k</mi><mrow><mi>j</mi></mrow><mi mathvariant="normal">R</mi></msubsup></mrow></math>
+
+여기서 점 표시는 벡터의 내적입니다. 앞선 글처럼 content와 위치 부분을 이어 붙인 뒤 한 번에 내적해도 같은 결과입니다. 예를 들어 content Query [2, 1], content Key [1, 2]의 점수는 4이고, 회전이 적용된 위치 Query [1, 0], 위치 Key [0.6, 0.8]의 점수는 0.6입니다. 두 점수를 합하면 4.6입니다. 위치 부분과 content 부분을 서로 교차해서 곱하지는 않습니다.
+
+이 계산을 네 위치에 대해 수행한 뒤 [스케일링과 softmax](/posts/core-attention/)를 적용합니다. 이 예시의 원래 Query·Key 차원은 content 2와 위치 2를 더한 4이므로, 기본 스케일은 √(2+2) = 2입니다. 각 점수를 2로 나누고 **네 위치 전체에 걸쳐** softmax를 계산하면 위치별 Attention 가중치 <math aria-label="a_j"><mrow><msub><mi>a</mi><mrow><mi>j</mi></mrow></msub></mrow></math>를 얻습니다. 위치마다 점수 하나에 따로 softmax를 적용하는 것은 아닙니다.
+
+이 가중치로 <math aria-label="v_(j,1)"><mrow><msub><mi>v</mi><mrow><mi>j</mi><mo>,</mo><mn>1</mn></mrow></msub></mrow></math>를 모으면 헤드 1의 출력 <math aria-label="o_(3,1)"><mrow><msub><mi>o</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow></msub></mrow></math>가 됩니다. 위치 정보는 어떤 위치에 얼마만큼의 가중치를 줄지에 관여하지만, **위치용 Key를 Value 뒤에 붙여 가중합하지는 않습니다.** 현재 토큰은 자기 위치까지 읽을 수 있고, 여러 토큰을 함께 계산할 때는 미래 위치를 읽지 않도록 causal mask를 적용해야 합니다.
+
+여기까지는 MLA가 나타내는 Attention의 기본 계산입니다. 다음 두 절에서는 이 결과를 유지하면서 헤드별 K·V를 모두 펼치는 단계를 없애겠습니다.
+
+## Key 투영을 Query 쪽으로 옮기기
+
+그림 3의 A에서는 네 위치 각각의 잠재 벡터를 content Key로 바꿉니다. 위치가 달라져도 헤드 1이 사용하는 투영 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>는 같습니다. 이 **같은 선형 변환이 반복된다**는 점을 이용할 수 있습니다.
+
+<a href="/images/model-advanced-mla-computation/02-key-absorption.png?v=6b0f8bbe1154" id="figure-3"><picture><source width="720" height="3056" media="(max-width: 600px)" srcSet="/images/model-advanced-mla-computation/02-key-absorption-mobile.png?v=6e6fa8098180" /><img width="2400" height="2544" src="/images/model-advanced-mla-computation/02-key-absorption.png?v=6b0f8bbe1154" alt="헤드 1의 같은 Query와 네 위치 p0에서 p3까지를 비교한다. 왼쪽은 각 cⱼ 1×3을 같은 Uᴷ₁ 3×2로 투영해 네 content Key 1×2를 만들고 Query와 내적한다. 오른쪽은 Query 1×2를 (Uᴷ₁)ᵀ 2×3으로 한 번 변환해 q̃ 1×3을 얻고 네 캐시 행과 직접 내적한다. 네 content 점수는 같다." loading="lazy" /></picture></a>
+
+현재 content Query <math aria-label="q_(3,1)^C"><mrow><msubsup><mi>q</mi><mrow><mn>3</mn><mo>,</mo><mn>1</mn></mrow><mi mathvariant="normal">C</mi></msubsup></mrow></math>를 짧게 <math aria-label="q"><mrow><mi>q</mi></mrow></math>라고 쓰겠습니다. 위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>에서 계산하는 content 점수는 <math aria-label="q"><mrow><mi>q</mi></mrow></math>와 <math aria-label="c_j"><mrow><msub><mi>c</mi><mrow><mi>j</mi></mrow></msub></mrow></math><math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>의 내적입니다. 모든 벡터를 행벡터로 쓰면, 내적을 위해 Key 쪽을 전치해야 합니다. 전치 기호 T는 행과 열을 바꾼다는 뜻입니다.
+
+<math display="block" aria-label="q (c_j U^K_1)^T = (q (U^K_1)^T) c_j^T"><mrow><mi>q</mi><msup><mrow><mo>(</mo><msub><mi>c</mi><mrow><mi>j</mi></mrow></msub><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup><mo>)</mo></mrow><mi mathvariant="normal">T</mi></msup><mo>=</mo><mrow><mo>(</mo><mi>q</mi><msup><mrow><mo>(</mo><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup><mo>)</mo></mrow><mi mathvariant="normal">T</mi></msup><mo>)</mo></mrow><msup><msub><mi>c</mi><mrow><mi>j</mi></mrow></msub><mi mathvariant="normal">T</mi></msup></mrow></math>
+
+양쪽 식에서 무엇을 먼저 계산하는지 비교해 보겠습니다. 왼쪽은 잠재 벡터에 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>를 먼저 곱해 Key를 만듭니다. 오른쪽은 **현재 Query에 전치한 투영을 먼저 곱합니다.** 그 결과를 <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math>라고 부르면 크기는 (1×2)×(2×3) = 1×3입니다. 이제 <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math>와 1×3 잠재 벡터 <math aria-label="c_j"><mrow><msub><mi>c</mi><mrow><mi>j</mi></mrow></msub></mrow></math>를 바로 내적할 수 있습니다. 곱하는 대상의 순서를 마음대로 교환한 것이 아니라, 전치의 성질과 행렬 곱의 결합법칙으로 계산을 묶는 위치를 바꾼 것입니다.
+
+작은 숫자로 확인해 보겠습니다. 앞선 글의 <math aria-label="c3"><mrow><msub><mi>c</mi><mrow><mn>3</mn></mrow></msub></mrow></math> = [1, 2, 3]에서 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>가 첫 두 성분을 뽑는 투영이라면 content Key는 [1, 2]입니다. <math aria-label="q"><mrow><mi>q</mi></mrow></math> = [2, 1]과 내적한 점수는 2×1 + 1×2 = 4입니다. 반대로 <math aria-label="q"><mrow><mi>q</mi></mrow></math>에 전치한 같은 투영을 적용하면 <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math> = [2, 1, 0]을 얻습니다. 이를 <math aria-label="c3"><mrow><msub><mi>c</mi><mrow><mn>3</mn></mrow></msub></mrow></math>와 내적하면 2×1 + 1×2 + 0×3 = 4로 같습니다.
+
+이 관계는 다른 위치에도 그대로 적용됩니다. 네 잠재 벡터를 행으로 모은 행렬을 <math aria-label="C"><mrow><mi>C</mi></mrow></math>라고 하면 크기는 4×3입니다. 그림의 A는 <math aria-label="C"><mrow><mi>C</mi></mrow></math><math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>로 네 Key를 만든 뒤 점수를 계산하지만, B는 <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math>를 **현재 헤드에서 한 번 만든 뒤** <math aria-label="C"><mrow><mi>C</mi></mrow></math>의 네 행과 직접 계산합니다.
+
+<math display="block" aria-label="q (C U^K_1)^T = q tilde C^T"><mrow><mi>q</mi><msup><mrow><mo>(</mo><mi>C</mi><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup><mo>)</mo></mrow><mi mathvariant="normal">T</mi></msup><mo>=</mo><mover><mi>q</mi><mo>˜</mo></mover><msup><mi>C</mi><mi mathvariant="normal">T</mi></msup></mrow></math>
+
+양쪽 결과는 네 위치의 content 점수 1×4입니다. 캐시가 길어져도 현재 Query의 변환은 위치마다 다시 하지 않습니다. 다만 변환한 Query로 각 위치를 읽고 점수를 계산하는 일은 남습니다. 그림의 네 투영 블록은 벡터별 계산을 풀어 보인 것이며, GPU 커널을 반드시 네 번 실행한다는 뜻은 아닙니다.
+
+### RoPE 경로를 분리한 이유
+
+이제 앞선 글에서 위치용 Key를 따로 저장한 이유를 설명할 수 있습니다. 만약 펼친 content Key마다 위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>의 RoPE 회전을 적용했다면, Key 투영 뒤에 **위치마다 달라지는 회전**이 붙습니다. 이를 Query 쪽으로 옮겨도 읽을 위치 <math aria-label="j"><mrow><mi>j</mi></mrow></math>에 따라 Query 변환이 달라져, 지금처럼 변환한 Query 하나를 모든 위치에 공통으로 쓰기 어려워집니다.
+
+MLA는 별도의 Query·Key 부분에 RoPE를 적용하므로 content 경로에서는 그림 3의 재배치를 유지할 수 있습니다. 위치 점수는 그림 2처럼 별도로 계산해 그대로 더합니다. [DeepSeek-V2의 분리된 RoPE 설명](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3)
+
+이는 잠재 벡터에 위치와 관련된 정보가 절대로 들어갈 수 없다는 뜻이 아닙니다. 핵심은 **명시적인 위치별 회전을 어느 경로에 적용하는가**입니다. 또한 content 내적이 3차원 잠재 공간으로 옮겨졌다고 스케일을 √(3+2)로 바꾸면 안 됩니다. 원래와 같은 점수를 계산하므로 앞서 사용한 √(2+2)를 유지합니다.
+
+## Value 투영을 가중합 뒤로 옮기기
+
+점수에 위치 부분을 더하고 softmax까지 적용했다면, 이제 각 위치를 얼마나 반영할지 정해졌습니다. 이때의 Attention 가중치를 행벡터 <math aria-label="a"><mrow><mi>a</mi></mrow></math>로 모으면 크기는 1×4입니다. 여기서 가중치는 입력에 따라 계산된 비율이며, 학습 파라미터인 투영 행렬과 다릅니다.
+
+그림 4의 두 경로는 **동일한 캐시와 동일한 Attention 가중치**에서 출발합니다. A는 위치마다 Value를 만든 뒤 가중합하고, B는 잠재 벡터를 먼저 가중합합니다.
+
+<a href="/images/model-advanced-mla-computation/03-value-absorption.png?v=51973e8b4f6c" id="figure-4"><picture><source width="720" height="3106" media="(max-width: 600px)" srcSet="/images/model-advanced-mla-computation/03-value-absorption-mobile.png?v=531f7fb86948" /><img width="2400" height="2584" src="/images/model-advanced-mla-computation/03-value-absorption.png?v=51973e8b4f6c" alt="왼쪽은 네 위치 p0에서 p3의 cⱼ 1×3에 같은 Uⱽ₁ 3×2를 적용해 네 Value 1×2를 만든 뒤 가중합한다. 오른쪽은 동일한 가중치로 네 잠재 벡터를 먼저 모아 z 1×3을 만든 뒤 Uⱽ₁을 한 번 적용한다. 양쪽 출력 o₃,₁ 1×2는 같다." loading="lazy" /></picture></a>
+
+A에서는 4×3 캐시 <math aria-label="C"><mrow><mi>C</mi></mrow></math>에 3×2 투영 <math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>를 적용해 4×2 Value 행렬을 만듭니다. 여기에 <math aria-label="a"><mrow><mi>a</mi></mrow></math>를 곱하면 네 위치의 Value를 섞은 1×2 출력이 됩니다. B에서는 <math aria-label="a"><mrow><mi>a</mi></mrow></math>와 <math aria-label="C"><mrow><mi>C</mi></mrow></math>를 먼저 곱해 1×3 벡터 <math aria-label="z"><mrow><mi>z</mi></mrow></math>를 만듭니다. <math aria-label="z"><mrow><mi>z</mi></mrow></math>의 각 성분은 해당 성분을 네 위치에서 같은 Attention 가중치로 모은 값입니다.
+
+<math display="block" aria-label="a (C U^V_1) = (a C) U^V_1 = z U^V_1"><mrow><mi>a</mi><mrow><mo>(</mo><mi>C</mi><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mi>a</mi><mi>C</mi><mo>)</mo></mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup><mo>=</mo><mi>z</mi><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>
+
+따라서 <math aria-label="z"><mrow><mi>z</mi></mrow></math>에 <math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>를 한 번 적용하면 같은 1×2 출력을 얻습니다. 위치마다 같은 투영을 적용한 뒤 모으는 것과, **먼저 모은 뒤 그 투영을 적용하는 것**이 선형 연산에서는 같기 때문입니다.
+
+네 위치의 잠재 벡터와 Attention 가중치를 다음처럼 가정해 보겠습니다. 앞선 예시의 <math aria-label="c3"><mrow><msub><mi>c</mi><mrow><mn>3</mn></mrow></msub></mrow></math> = [1, 2, 3]을 유지하고, 나머지 위치와 가중치는 계산 확인을 위해 정한 값입니다.
+
+| 토큰 위치 | 잠재 벡터 | 가중치 |
+| --- | --- | --- |
+| <math aria-label="p0"><mrow><msub><mi>p</mi><mrow><mn>0</mn></mrow></msub></mrow></math> | [1, 0, 1] | 0.1 |
+| <math aria-label="p1"><mrow><msub><mi>p</mi><mrow><mn>1</mn></mrow></msub></mrow></math> | [0, 1, 1] | 0.2 |
+| <math aria-label="p2"><mrow><msub><mi>p</mi><mrow><mn>2</mn></mrow></msub></mrow></math> | [1, 1, 0] | 0.3 |
+| <math aria-label="p3"><mrow><msub><mi>p</mi><mrow><mn>3</mn></mrow></msub></mrow></math> | [1, 2, 3] | 0.4 |
+
+<math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>는 앞선 글의 헤드 1처럼 [첫 성분 + 세 번째 성분, 두 번째 성분]을 만든다고 하겠습니다. A에서 각 Value는 [2, 0], [1, 1], [1, 1], [4, 2]입니다. 이를 표의 비율로 가중합하면 [2.3, 1.3]입니다.
+
+B에서는 잠재 벡터를 먼저 모읍니다. 첫 성분은 0.1×1 + 0.2×0 + 0.3×1 + 0.4×1 = 0.8이고, 같은 방식으로 나머지 성분을 구하면 <math aria-label="z"><mrow><mi>z</mi></mrow></math> = [0.8, 1.3, 1.5]입니다. 여기에 <math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>를 적용하면 [0.8 + 1.5, 1.3] = [2.3, 1.3]으로 같은 결과가 나옵니다.
+
+잠재 벡터는 헤드 간 공유하지만, 이를 모으는 Attention 가중치와 마지막 Value 투영은 헤드마다 다릅니다. 그래서 <math aria-label="z"><mrow><mi>z</mi></mrow></math>와 최종 출력도 헤드별로 계산합니다. 또한 **softmax를 투영 앞뒤로 옮긴 것은 아닙니다.** 점수와 softmax로 가중치를 구하는 과정은 그대로 두고, 정해진 가중치로 모으는 단계와 선형 투영의 순서만 바꿨습니다.
+
+## Query·출력 투영과 합치기
+
+그림 3에서는 Key 투영을 Query 쪽으로, 그림 4에서는 Value 투영을 가중합 뒤로 옮겼습니다. 옮긴 투영을 기존 Query 투영이나 출력 투영과 미리 합치는 것을 **투영 흡수**라고 합니다. 그림에서는 이해를 돕기 위해 나눠 보여 준 두 투영을, 실제 추론에서는 한 번의 행렬 곱으로 계산할 수 있습니다.
+
+지금까지 보인 결합법칙은 가중치가 학습 중이더라도 해당 계산 시점에는 성립합니다. 추론에서는 학습이 끝난 가중치가 고정되어 있으므로, 서로 이어지는 투영 행렬을 미리 곱해 두고 여러 토큰에서 재사용할 수도 있습니다.
+
+Query 쪽에서 <math aria-label="c_3^Q"><mrow><msubsup><mi>c</mi><mrow><mn>3</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math> → <math aria-label="U_1^Q"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math> → <math aria-label="q"><mrow><mi>q</mi></mrow></math> → 전치한 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math> → <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math>를 생각해 보겠습니다. <math aria-label="U_1^Q"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math>는 3×2, 전치한 <math aria-label="U_1^K"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">K</mi></msubsup></mrow></math>는 2×3이므로 둘을 미리 곱하면 3×3 행렬입니다. 이 합성 행렬을 <math aria-label="c_3^Q"><mrow><msubsup><mi>c</mi><mrow><mn>3</mn></mrow><mi mathvariant="normal">Q</mi></msubsup></mrow></math>에 적용하면 content Query를 별도로 만든 뒤 다시 변환하지 않고 <math aria-label="q tilde"><mrow><mover><mi>q</mi><mo>˜</mo></mover></mrow></math>를 직접 얻습니다. 위치 Query 경로는 별도로 유지합니다.
+
+Value 쪽도 같은 방식으로 확장할 수 있습니다. [여러 헤드의 출력을 합치는 출력 투영](/posts/attention-projections/)에서 헤드 1에 대응하는 부분을 <math aria-label="W_1^O"><mrow><msubsup><mi>W</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">O</mi></msubsup></mrow></math>라고 쓰겠습니다. 이 예시에서는 헤드 출력 2성분을 모델 차원 8에 반영하므로 <math aria-label="W_1^O"><mrow><msubsup><mi>W</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">O</mi></msubsup></mrow></math>의 크기는 2×8입니다. <math aria-label="U_1^V"><mrow><msubsup><mi>U</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">V</mi></msubsup></mrow></math>와 <math aria-label="W_1^O"><mrow><msubsup><mi>W</mi><mrow><mn>1</mn></mrow><mi mathvariant="normal">O</mi></msubsup></mrow></math>를 미리 곱한 3×8 행렬을 <math aria-label="z"><mrow><mi>z</mi></mrow></math>에 적용하면, 헤드 1이 모델 차원의 출력에 기여하는 1×8 벡터를 직접 얻습니다. 모든 헤드의 기여를 더하면 전체 출력 투영 결과가 됩니다.
+
+이런 투영 흡수는 [DeepSeek-V2 논문 §2.1.2](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS2)에서 설명하는 계산 방식입니다. 가중치가 갱신되면 합성한 행렬도 다시 계산해야 하고, 사이에 정규화나 비선형 연산이 있다면 그 연산을 건너뛰어 합칠 수 없습니다. 실제 부동소수점 계산에서는 연산 순서 변경에 따른 작은 반올림 차이도 생길 수 있습니다.
+
+## 계산 재배치의 효과와 한계
+
+현재 <math aria-label="p3"><mrow><msub><mi>p</mi><mrow><mn>3</mn></mrow></msub></mrow></math>에서 수행한 일을 다시 연결해 보겠습니다. 현재 입력으로 Query를 만들고, KV 잠재 벡터와 위치용 Key를 캐시에 추가합니다. 각 헤드는 변환한 Query로 잠재 캐시의 네 행을 읽어 content 점수를 구하고 위치 점수를 더합니다. softmax로 얻은 가중치로 잠재 벡터를 모은 뒤, Value와 출력 쪽 투영을 적용합니다.
+
+이 계산에서는 헤드별로 펼친 과거 K·V를 모두 중간 결과로 만들 필요가 없습니다. 하지만 **과거 위치를 읽는 일과 Attention 점수·가중합 계산 자체가 없어지는 것은 아닙니다.** 문맥이 길어지면 캐시의 행 수는 여전히 늘어납니다.
+
+또한 작은 저장 표현이 모든 계산의 차원까지 작게 만든다는 뜻은 아닙니다. 이번 예시에서 펼친 content Key와 Value는 2차원이지만 잠재 벡터는 3차원입니다. 계산 순서를 바꾸면 content 내적과 가중합은 2차원 대신 3차원 벡터를 대상으로 합니다. 따라서 KV를 복원하는 계산과 메모리 사용량이 줄어드는 효과뿐 아니라, 내적과 가중합의 계산량 변화도 함께 살펴봐야 합니다.
+
+실제 실행 시간은 문맥 길이, 처리하는 요청 수, 각 차원, 커널과 하드웨어에 따라 달라집니다. 여러 Query를 한꺼번에 처리하는 prefill과 현재 Query 하나를 처리하는 decode가 반드시 같은 계산 경로를 택할 필요도 없습니다. 따라서 계산 순서를 바꿨을 때 실제로 얼마나 빨라지는지는, 사용할 모델과 실행 환경에서 측정해야 합니다.
+
+앞선 글에서는 무엇을 캐시에 저장하는지, 이번 글에서는 그 캐시로 어떻게 Attention을 계산하는지 살펴봤습니다. 공동 잠재 표현으로 캐시를 줄이고, 그 표현을 직접 읽도록 연산을 재배치합니다. 다음에는 위치별 표현을 모두 읽는 이 방식에서 한 걸음 더 나아가, Attention이 읽을 토큰의 범위와 대상을 줄이는 구조를 살펴보겠습니다.

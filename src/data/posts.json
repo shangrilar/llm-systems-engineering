@@ -1414,5 +1414,35 @@
         "reviewNote": "Release preparation: Korean and English paragraphs, four figure examples and labels, log-probability derivative, clipped-objective branches, and model comparison roles reviewed together."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-mla-computation",
+    "order": 9.3,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mla-computation/00-query-path",
+      "model-advanced-mla-computation/01-expanded-reference",
+      "model-advanced-mla-computation/02-key-absorption",
+      "model-advanced-mla-computation/03-value-absorption"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mla-computation",
+        "title": "MLA의 계산: KV를 펼치지 않고 Attention하기",
+        "description": "현재 Query로 잠재 KV 캐시를 읽는 과정을 살펴보고, Key 투영을 Query 쪽으로, Value 투영을 가중합 뒤로 옮겨 같은 결과를 얻는 원리를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mla-computation",
+        "title": "MLA Computation: Attention Without Expanding KV",
+        "description": "Follow how the current query reads a latent KV cache, and see why moving the key projection to the query and the value projection after the weighted sum preserves the result.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3c77011035cd1162fd6544913d0c3bebe4e329c849d4fb529e41ae69e7416e1d",
+        "reviewNote": "2026-09-27: Compared all six sections, RoPE subsection, four figures and numerical examples. Preserved row-vector notation, content/position score addition, key/value reassociation, fixed-weight absorption, normalization boundaries, and qualified runtime claims."
+      }
+    }
   }
 ]
