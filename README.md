@@ -87,3 +87,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [How Rewards Change Token Generation Probabilities](https://llm-systems-engineering.pages.dev/en/posts/rl-reward-to-update/)
 - [Computing Advantages with Groups and Critics](https://llm-systems-engineering.pages.dev/en/posts/rl-critic-and-groups/)
 - [Learning from a Teacher’s Probabilities: OPD](https://llm-systems-engineering.pages.dev/en/posts/rl-on-policy-distillation/)
+- [Combining RL and OPD in a Training Strategy](https://llm-systems-engineering.pages.dev/en/posts/rl-training-strategy/)
