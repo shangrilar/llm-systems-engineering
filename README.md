@@ -90,3 +90,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Learning from a Teacher’s Probabilities: OPD](https://llm-systems-engineering.pages.dev/en/posts/rl-on-policy-distillation/)
 - [Combining RL and OPD in a Training Strategy](https://llm-systems-engineering.pages.dev/en/posts/rl-training-strategy/)
 - [How an LLM RL System Fits Together](https://llm-systems-engineering.pages.dev/en/posts/rl-system-architecture/)
+- [Carrying Generation Records into Training: TITO and R3](https://llm-systems-engineering.pages.dev/en/posts/rl-token-context/)

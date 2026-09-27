@@ -90,3 +90,4 @@
 - [교사의 확률에서 학습 신호 얻기: OPD](https://llm-systems-engineering.pages.dev/posts/rl-on-policy-distillation/)
 - [RL과 OPD를 조합하는 학습 전략](https://llm-systems-engineering.pages.dev/posts/rl-training-strategy/)
 - [LLM RL 시스템은 어떻게 연결되는가](https://llm-systems-engineering.pages.dev/posts/rl-system-architecture/)
+- [생성 기록을 학습으로 이어가기: TITO와 R3](https://llm-systems-engineering.pages.dev/posts/rl-token-context/)
