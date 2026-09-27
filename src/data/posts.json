@@ -1565,6 +1565,36 @@
     }
   },
   {
+    "articleId": "rl-18",
+    "order": 105,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-27",
+    "figureIds": [
+      "rl-18/01-specialists-to-student",
+      "rl-18/02-starting-policy-and-feedback",
+      "rl-18/03-opd-before-after-rl",
+      "rl-18/04-multiple-teachers-and-prefixes"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-training-strategy",
+        "title": "RL과 OPD를 조합하는 학습 전략",
+        "description": "DeepSeek V4의 전문 모델 학습과 OPD 통합에서 출발해, RL의 출발 정책을 준비하는 역할과 MiMo MOPD²의 교사·문맥 선택을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-training-strategy",
+        "title": "Combining RL and OPD in a Training Strategy",
+        "description": "Starting with DeepSeek V4’s specialist training and OPD integration, we examine how to prepare a starting policy for RL and how MiMo MOPD² chooses teachers and contexts.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "043fd33898f8785138a66c7857854e908fe6e1bce363e16932c4a7888244350a",
+        "reviewNote": "2026-09-27: Compared five bilingual sections, four figures and source claims; synchronized turn examples and removed obsolete evaluation-box reference. Checked desktop/mobile figure outputs."
+      }
+    }
+  },
+  {
     "articleId": "model-advanced-token-compression",
     "order": 9.6,
     "track": "shared",
