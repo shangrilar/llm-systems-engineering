@@ -1533,5 +1533,35 @@
         "reviewNote": "2026-09-27: Compared all four sections and three figures with Korean. Preserved index/main QKV separation, dot-product scores, p6-to-p7 candidate sets, cache retention, window overlap rules, and qualified cost and quality trade-offs. Removed the final compression section in both languages as requested."
       }
     }
+  },
+  {
+    "articleId": "rl-04",
+    "order": 104,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-04/01-student-visited-contexts",
+      "rl-04/02-teacher-token-signal",
+      "rl-04/04-forward-reverse-kl",
+      "rl-04/03-additive-task-teacher-signals"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-on-policy-distillation",
+        "title": "교사의 확률에서 학습 신호 얻기: OPD",
+        "description": "학생이 생성한 문맥에서 교사의 토큰 확률을 읽고, 그 차이를 토큰별 학습 신호로 바꾸는 on-policy distillation과 Miles의 결합 방식을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-on-policy-distillation",
+        "title": "Learning from a Teacher’s Probabilities: OPD",
+        "description": "Explore on-policy distillation, which reads a teacher’s token probabilities in student-generated contexts and turns the differences into token-level learning signals, and how Miles combines those signals.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "19dbda544091cf263b112c151617285c37c9807d0e1203fd216a85a6770d07ea",
+        "reviewNote": "2026-09-27: Korean and English prose, four figures, KL formulas and numerical examples compared; footer captions removed in both languages."
+      }
+    }
   }
 ]
