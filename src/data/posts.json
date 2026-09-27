@@ -1506,6 +1506,35 @@
     }
   },
   {
+    "articleId": "model-advanced-sparse-indexer",
+    "order": 9.5,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-sparse-indexer/01-index-selection",
+      "model-advanced-sparse-indexer/02-generation-selection",
+      "model-advanced-sparse-indexer/03-indexer-window"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-sparse-indexer",
+        "title": "Sparse Attention의 Indexer: 내용에 따라 읽을 위치 고르기",
+        "description": "선택용 Query와 Key로 읽을 KV 위치를 고르는 원리를 살펴보고, 생성에 따른 선택 변화와 sliding window의 결합, 읽는 비용과 캐시 보관량을 구별합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-sparse-indexer",
+        "title": "Sparse Attention Indexers: Choosing Positions by Content",
+        "description": "Trace how an index query and keys select KV positions, how selection changes during generation, and how a sliding window combines with selection, while distinguishing reading cost from cache storage.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5f76ff555f0fba10e1e814a218ab16e13e3106c3f0c0e79011315cd985a280b8",
+        "reviewNote": "2026-09-27: Compared all four sections and three figures with Korean. Preserved index/main QKV separation, dot-product scores, p6-to-p7 candidate sets, cache retention, window overlap rules, and qualified cost and quality trade-offs. Removed the final compression section in both languages as requested."
+      }
+    }
+  },
+  {
     "articleId": "rl-04",
     "order": 104,
     "track": "rl",
