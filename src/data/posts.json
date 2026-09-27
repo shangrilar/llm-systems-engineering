@@ -1710,6 +1710,37 @@
     }
   },
   {
+    "articleId": "model-advanced-delta-rule",
+    "order": 9.8,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-delta-rule/00-write-and-read",
+      "model-advanced-delta-rule/01-add-versus-revise",
+      "model-advanced-delta-rule/02-read-correct-write",
+      "model-advanced-delta-rule/03-strength-and-interference",
+      "model-advanced-delta-rule/04-other-queries"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-delta-rule",
+        "title": "델타 규칙: 새 Value에 맞춰 상태의 연결 수정하기",
+        "description": "KV를 기록하는 목적에서 출발해 단순 누적과 델타 규칙을 비교하고, Key로 기존 값을 확인하는 과정과 Query로 출력을 읽는 과정의 차이를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-delta-rule",
+        "title": "The Delta Rule: Revising State Associations Toward a New Value",
+        "description": "Start from the purpose of writing KV associations, compare additive accumulation with the delta rule, and distinguish checking the old value with a Key from reading an output with a Query.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all six sections, three equations, numerical examples, and five bilingual figures on 2026-09-28. Key-before-update and Query-after-update roles, unit-key condition, and effects on other reads match the Korean source.",
+        "sourceRevision": "7fc7c08a2d2a80ff684f434acc0460bbe5ecb274bbc78128d9a17020a405ce8a"
+      }
+    }
+  },
+  {
     "articleId": "rl-08",
     "order": 109,
     "track": "rl",

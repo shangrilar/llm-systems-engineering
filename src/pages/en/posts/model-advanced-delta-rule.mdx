@@ -1,0 +1,122 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-delta-rule
+title: "The Delta Rule: Revising State Associations Toward a New Value"
+description: "Start from the purpose of writing KV associations, compare additive accumulation with the delta rule, and distinguish checking the old value with a Key from reading an output with a Query."
+date: 2026-09-28
+---
+
+[The previous article](/en/posts/model-advanced-linear-attention/) added outer products of Keys and Values to a fixed-size state and read that state with a Query. This article focuses on <strong>how to change the state when a new KV pair arrives</strong>. Instead of continually adding new content, the delta rule compares it with what the state currently returns and applies the required change.
+
+Before learning how to calculate the difference, we need to understand its purpose. Why does the new Value serve as the target for the update, and why do we read the old state with a Key rather than a Query? We will first distinguish writing KV associations from computing an output with a Query, then examine the write rule chosen by the delta rule.
+
+## Write with KV, read with a Query
+
+Consider the Key and Value produced from the current token as a pair. The Value is the content to write, and the Key is the vector that associates that content with future reads. Adding their outer product in the previous article served the same purpose: <strong>when a future Query matches this Key, this Value should contribute to the output</strong>.
+
+The Query that reads the state has a different role. It retrieves information for the current output. Even when a token supplies the Key, Value, and Query, they use different projections, so its Key and Query need not be the same vector. Deciding what to write and what to read now are different roles.
+
+Figure 1 separates these two processes. The Key and Value of the current token <math aria-label="p2"><msub><mi>p</mi><mn>2</mn></msub></math> update the old state <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math> into <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>. The current Query <math aria-label="q2"><msub><mi>q</mi><mn>2</mn></msub></math> then reads <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math>. In this article, the state subscript counts the tokens processed: <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math> includes the two preceding tokens, and <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math> includes the current token <math aria-label="p2"><msub><mi>p</mi><mn>2</mn></msub></math> as well.
+
+<strong>Writing the current token before reading the state allows the output to incorporate information through the current position.</strong> This is the same visibility range as ordinary causal attention, which includes the current position. Each state block in the figure represents an entire matrix, not a storage slot reserved for a particular token.
+
+<a href="/images/model-advanced-delta-rule/en/00-write-and-read.png?v=b951592d2241" id="figure-1"><picture><source width="720" height="2476" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/en/00-write-and-read-mobile.png?v=3253b7e36a92" /><img width="2400" height="2076" src="/images/model-advanced-delta-rule/en/00-write-and-read.png?v=b951592d2241" alt="Left: the Key and Value from p₂ update S₂ into S₃. The Key is a retrieval cue and the Value is the content to write. Right: the Query from the same token reads S₃ to compute the output, distinct from the Value being written." loading="lazy" /></picture></a>
+
+## Add new content or revise an association?
+
+When writing a new Value for the same Key, we can choose between two objectives. One is to add a new contribution to the old state. The other is to <strong>change the state so that reading it with this Key returns a value closer to the new Value</strong>. The delta rule follows the second objective.
+
+Why is the new Value the target? The current KV pair represents the association we want to write: this Value should be readable through this Key. The delta rule writes that association by applying the difference between the current readout and the new content. The new Value is not an externally supplied correct answer, nor is it necessarily more correct than the old content. <strong>It is the target of the state update because it is the content we are currently trying to write.</strong>
+
+Suppose reading the old state with this Key returns [2, 0], and the new Value is [1, 1]. Additive accumulation adds the new contribution. The delta rule instead takes the existing readout [2, 0] into account and moves it toward [1, 1]. Computing and applying this difference between the target and the current value is the basic idea of the delta rule. [Section 2.2 of the DeltaNet paper](https://arxiv.org/html/2406.06484v1#S2.SS2) likewise updates the state using the difference between the new Value and the old readout for the current Key.
+
+If the readout already equals the new Value, the difference is zero. The delta rule has no further correction to make to that association. Additive accumulation, in contrast, adds another contribution even when the same content arrives again. Neither is universally correct; <strong>they use different rules for incorporating new information into the state</strong>. What changes here is the state holding the context, not the model's projection weights being retrained during inference.
+
+## Why read with a Key, and why read with a Query?
+
+The previous article read the state with a Query. Why use a Key here? We need to inspect the association we are about to change. Before updating, the question is <strong>“What does the current state return when read with this Key?”</strong> We need that value to calculate how far it is from the Value we want to write.
+
+This does not mean searching for an identical Key stored in the past and retrieving one entry. The state contains combined contributions from many tokens. Like a Query, the current Key takes a weighted sum of the state's rows to produce a vector. The readout can therefore be nonzero even if this exact Key has never appeared before. An “existing associated value” means <strong>the value that the current state returns for this Key</strong>.
+
+Reading with a Key and reading with a Query have the same computational form: multiply a vector by the state. What differs is the vector used, when the read occurs, and what the result is for.
+
+| Aspect | Read with the current Key | Read with the current Query |
+|---|---|---|
+| Which state is read? | State before the update | Updated state |
+| What is retrieved? | What is already readable through this Key | Information for the current output |
+| How is the readout used? | Compare with the new Value to compute a correction | Compute the output |
+
+The order is <strong>read the old value with the Key → compare with the new Value and update the state → compute the output with the Query</strong>. We do not first add the new Value and then repair a mistake. We inspect the current value before writing to determine the change to apply.
+
+Also, <strong>the actual output does not have to equal the new Value</strong>. Suppose the updated state's first row is [1, 1] and its second row is [0, 3]. The writing Key [1, 0] reads the first row, [1, 1]. But a current Query of [0, 1] produces the second row, [0, 3]. The vector used to check the association and the vector used to retrieve information for the output are different. This article considers direct state readouts; it does not carry over the score-sum normalization from the end of the previous article.
+
+With that distinction in mind, consider Figure 2. Both sides start from the same old state, with Key [1, 0] and new Value [1, 1]. Reading the old state with this Key returns [2, 0]. The left side adds the new contribution and then reads [3, 1]. The right side revises the association to read [1, 1]. The right-hand result exactly matches the new Value because this example uses a unit-length Key and correction strength β=1.
+
+The label <strong>“Check the write with the same Key” at the bottom is a check used to illustrate the difference between the two write rules</strong>. An actual execution does not have to read with the same Key again after the update as a verification step. The Key read needed for the update happens before it; the actual output after the update is read with the Query.
+
+<a href="/images/model-advanced-delta-rule/en/01-add-versus-revise.png?v=5733ee4aae54" id="figure-2"><picture><source width="720" height="2526" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/en/01-add-versus-revise-mobile.png?v=afa58b07f929" /><img width="2400" height="2118" src="/images/model-advanced-delta-rule/en/01-add-versus-revise.png?v=5733ee4aae54" alt="Both panels start with readout [2,0] from S₂ under the same Key and receive new Value [1,1]. Accumulation adds the contribution and reads [3,1]. Delta revises the association toward the new content and reads [1,1]." loading="lazy" /></picture></a>
+
+## Write the difference between the readout and the new Value
+
+We can now work out how to obtain the right-hand result in Figure 2. The first row of the old state <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math> is [2, 0], and its second row is [0, 3]. Reading with the current Key <math aria-label="k2"><msub><mi>k</mi><mn>2</mn></msub></math> = [1, 0] weights the first row by 1 and the second by 0, returning [2, 0].
+
+The new Value is [1, 1]. Adding it directly would give a readout of [3, 1], but our objective is to change the readout for this Key to [1, 1]. The required change is therefore <strong>new Value − current readout = [1, 1] − [2, 0] = [−1, 1]</strong>. The first component must decrease by 1, and the second must increase by 1.
+
+Figure 3 applies this difference to the state and checks the result with the same Key. For now, we apply the full correction; the next section adjusts the fraction applied.
+
+<a href="/images/model-advanced-delta-rule/en/02-read-correct-write.png?v=730bff667381" id="figure-3"><picture><source width="720" height="3470" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/en/02-read-correct-write-mobile.png?v=7760a7c038d2" /><img width="2400" height="2884" src="/images/model-advanced-delta-rule/en/02-read-correct-write.png?v=730bff667381" alt="Read [2,0] from S₂ with k₂, subtract from v₂=[1,1] to get e=[−1,1], form ΔS=[[-1,1],[0,0]] with the same Key, then add to S₂ to obtain S₃=[[1,1],[0,3]]." loading="lazy" /></picture></a>
+
+The difference is a two-component vector, while the state is a 2×2 matrix. How much should we add to each row? Just as we took the outer product of the Key and Value in the previous article, we now take <strong>the outer product of the same Key and the difference vector</strong>. With Key [1, 0], we add one times the difference, [−1, 1], to the first row and zero times it, [0, 0], to the second.
+
+| State row | Old value | Correction to add | After update |
+|---|---|---|---|
+| First row | [2, 0] | [−1, 1] | [1, 1] |
+| Second row | [0, 3] | [0, 0] | [0, 3] |
+
+Reading the updated <math aria-label="S3"><msub><mi>S</mi><mn>3</mn></msub></math> with the same Key [1, 0] returns the first row, [1, 1]. The final multiplication by the Key does not force an output to match the new Value. <strong>We have changed the state itself so that reading with that Key returns the new Value.</strong>
+
+Only the first row changes here because the Key is [1, 0]. A general Key has several nonzero components, so the difference is added to multiple rows with different weights. This is not equivalent to replacing a slot reserved for a specific token.
+
+In notation, let rᵀ be the row vector read with the current Key, and eᵀ the difference from the new Value. This article uses state rows for Key components and columns for Value components, so reading is kᵀS and writing is keᵀ.
+
+<math display="block"><mrow><msup><mi>r</mi><mi>T</mi></msup><mo>=</mo><msup><msub><mi>k</mi><mi>t</mi></msub><mi>T</mi></msup><msub><mi>S</mi><mi>t</mi></msub></mrow></math>
+
+<math display="block"><mrow><msup><mi>e</mi><mi>T</mi></msup><mo>=</mo><msup><msub><mi>v</mi><mi>t</mi></msub><mi>T</mi></msup><mo>−</mo><msup><mi>r</mi><mi>T</mi></msup></mrow></math>
+
+Here, <math aria-label="St"><msub><mi>S</mi><mi>t</mi></msub></math> is the state before writing the current token, and <math aria-label="kt"><msub><mi>k</mi><mi>t</mi></msub></math> and <math aria-label="vt"><msub><mi>v</mi><mi>t</mi></msub></math> are its Key and Value. The vector r is computed by reading the current state with this Key, not by looking up a separately stored past Value.
+
+## Adjust the correction strength with β
+
+We can apply the full change toward the new Value at once, or retain some of the old readout and incorporate only part of the new content. To do this, multiply the correction by <strong>the update fraction β</strong>. This section compares values of β between 0 and 1.
+
+<math display="block"><mrow><msub><mi>S</mi><mi>t+1</mi></msub><mo>=</mo><msub><mi>S</mi><mi>t</mi></msub><mo>+</mo><mi>β</mi><msub><mi>k</mi><mi>t</mi></msub><msup><mi>e</mi><mi>T</mi></msup></mrow></math>
+
+We do not multiply the entire new Value by β and add it. We multiply <strong>the difference between the new Value and the current readout</strong> by β. All three cases in Figure 4 start from the same <math aria-label="S2"><msub><mi>S</mi><mn>2</mn></msub></math>; they are not three successive updates from top to bottom.
+
+<a href="/images/model-advanced-delta-rule/en/03-strength-and-interference.png?v=743df00bdfa4" id="figure-4"><picture><source width="720" height="1398" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/en/03-strength-and-interference-mobile.png?v=8d3a674ea4ef" /><img width="2400" height="3678" src="/images/model-advanced-delta-rule/en/03-strength-and-interference.png?v=743df00bdfa4" alt="From the same old state, scale correction [[−1,1],[0,0]] by β=0,0.5,1. Readouts with the current Key are [2,0],[1.5,0.5],[1,1]." loading="lazy" /></picture></a>
+
+With β=0, the correction is [0, 0], leaving the first row [2, 0] unchanged. With β=0.5, we add half of the difference [−1, 1], or [−0.5, 0.5], to obtain [1.5, 0.5]. With β=1, we apply the full difference to obtain [1, 1]. Reading with the same Key returns these respective values.
+
+In this example, the readout moves between the old value and the new Value. This interpretation assumes that <strong>the Key has unit length</strong>. Reading the correction with the same Key multiplies the difference vector by β and kᵀk. A unit-length Key has kᵀk=1, so β is the fraction of the difference applied. This is why β=1 exactly matches the new Value. Arbitrarily scaled Keys do not always produce the same result.
+
+In an actual model, β can be computed from the input rather than chosen manually each time. The values 0, 0.5, and 1 in the figure illustrate its role. [Section 2.2 of the DeltaNet paper](https://arxiv.org/html/2406.06484v1#S2.SS2) uses an input-dependent update strength and also discusses Key normalization.
+
+Reducing β makes this correction smaller and changes the old state less. It does not guarantee that <strong>a fixed proportion of all past information is preserved</strong>. Contributions from multiple tokens share the state's rows, and other Queries can read the parts that changed.
+
+## How a state update affects other reads
+
+<strong>Even when the delta rule corrects the readout for the current Key, the correction does not apply independently to that Key alone. Readouts for other Queries can change too.</strong> The state has no separate storage slot for every Key: contributions from multiple tokens overlap in the same matrix. If another Query reads a part changed for the current Key, its result reflects that change.
+
+The earlier correction for Key [1, 0] changed the first row from [2, 0] to [1, 1] and left the second row [0, 3] unchanged. A Query reading only the second row is therefore unaffected, while a Query that also reads the first row produces a different result. Figure 5 shows the before-and-after readouts in these two cases.
+
+<a href="/images/model-advanced-delta-rule/en/04-other-queries.png?v=edb754e40fe6" id="figure-5"><picture><source width="720" height="1980" media="(max-width: 600px)" srcSet="/images/model-advanced-delta-rule/en/04-other-queries-mobile.png?v=2ab233166eec" /><img width="2400" height="1732" src="/images/model-advanced-delta-rule/en/04-other-queries.png?v=edb754e40fe6" alt="The correction changes the first row from [2,0] to [1,1], leaving [0,3] unchanged. Query [0,1] still reads [0,3]; Query [1,1] sums both rows and changes from [2,3] to [1,4]." loading="lazy" /></picture></a>
+
+The left Query [0, 1] weights the first row by 0 and the second by 1. The changed first row contributes nothing, so the readout remains [0, 3].
+
+The right Query [1, 1] reads both rows. Before the correction, it returns [2, 0] + [0, 3] = [2, 3]; afterward, it returns [1, 1] + [0, 3] = [1, 4]. Although this Query differs from the writing Key, it reads the changed row and therefore returns a different value. The Query [1, 1] illustrates a weighted sum of rows; it is not a unit-length vector.
+
+The difference between the cases is how much the Query reads the modified part. Revising an association toward a new Value and preserving other readouts are separate matters. A change in another readout is not always wrong, but <strong>we cannot guarantee that revising one association leaves every other read unchanged</strong>.
+
+The same relationship follows from the computation. If the state correction is βkeᵀ, the change in the readout for Query q is β(qᵀk)eᵀ. If the Query's dot product with the current Key is zero, this correction has no effect on its readout. Otherwise, the difference contributes in proportion to that dot product. The dot products are 0 on the left and 1 on the right.
+
+The delta rule keeps the fixed-size state structure while revising writes relative to the existing readout instead of simply adding new content. The next article will add a step that controls <strong>how much of the old state to retain</strong> before applying this correction.
