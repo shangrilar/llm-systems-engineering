@@ -1500,7 +1500,7 @@
         "description": "Start with GRPO comparisons within a prompt, examine critic predictions and advantages, then connect them to single-rollout learning in SAO and FlashREINFORCE.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "bc12ad12dd1885b9651ba2339837a1ce13985c856834a020b247f0a047fc2733",
+        "sourceRevision": "37046c6d186101c83cdcc2ccacdfa426220cbda61298524486b8410b6a7aef9f",
         "reviewNote": "2026-09-27: P 표기 통일, critic return 예시 단순화, 그룹 의존성 도식 및 SAO/FlashREINFORCE 비교 그림과 한영 본문 대조. Critic V=0.2,0.6,0.4와 A/TD/GAE 계산 한영 동기화."
       }
     }
@@ -1821,8 +1821,37 @@
         "description": "Track the state of programs that connect model calls and tool execution, and examine how execution, pausing, and reassignment balance KV retention against recomputation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "77c6c2eb2a5875f5a3a52138e7516efe8336ddd371b79c73b813e71b39d47233",
+        "sourceRevision": "6ad32aae3f3b2c1b6a912d688245dcaad138b43c3e8215d3aeea7290e1c47b03",
         "reviewNote": "Reviewed five bilingual sections and three figures against ThunderAgent and DSec, including Pause/Restore versus KV offloading and independent tool-resource lifetimes."
+      }
+    }
+  },
+  {
+    "articleId": "rl-15",
+    "order": 113,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-15/01-reshard-and-buckets",
+      "rl-15/02-weight-transfer-paths",
+      "rl-15/03-policy-version-transition"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-weight-sync",
+        "title": "새 가중치를 추론 엔진으로 전달하기",
+        "description": "학습기와 추론기의 가중치 분할을 맞추고, 전송 경로를 선택하고, 일관된 새 정책으로 생성을 재개하는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-weight-sync",
+        "title": "Delivering New Weights to the Inference Engine",
+        "description": "We examine how to reconcile the learner's and inference engine's weight partitions, choose a transfer path, and resume generation with a consistent new policy.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5293d2bc407ae9a6a27e4e0a0fd25c1d9c9b1986a341eb052cf6bbe9e6479697",
+        "reviewNote": "Refined the three-stage weight-sync explanation, transfer selection conditions, and requantization example in both languages. Reviewed all figure variants."
       }
     }
   }

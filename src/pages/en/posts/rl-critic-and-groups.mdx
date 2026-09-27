@@ -26,7 +26,7 @@ Using the same A for all generated tokens is not a claim that every token contri
 
 Responses to other questions are not mixed into this group mean. Rather than directly comparing absolute scores across easy and difficult problems, we examine which responses were relatively better for the same question. Standard deviation calculations and normalization methods can vary by implementation, so the exact +1 and −1 above are examples under the stated calculation convention.
 
-What if all four responses succeeded or all four failed? Subtracting the mean from each reward gives 0 in every case, so there is no relative reward difference. The standard deviation is also 0, so we cannot perform the simple division as written. With numerical handling such as adding a small ε to the denominator, this relative reward signal becomes 0, and some setups exclude such groups from training. This does not mean that separately added KL or teacher signals are also all 0. We will return to group selection and generation budgets in article 14.
+What if all four responses succeeded or all four failed? Subtracting the mean from each reward gives 0 in every case, so there is no relative reward difference. The standard deviation is also 0, so we cannot perform the simple division as written. With numerical handling such as adding a small ε to the denominator, this relative reward signal becomes 0, and some setups exclude such groups from training. This does not mean that separately added KL or teacher signals are also all 0.
 
 ## A Critic Predicts Future Outcomes
 
