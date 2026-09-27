@@ -1444,5 +1444,35 @@
         "reviewNote": "2026-09-27: Compared all six sections, RoPE subsection, four figures and numerical examples. Preserved row-vector notation, content/position score addition, key/value reassociation, fixed-weight absorption, normalization boundaries, and qualified runtime claims."
       }
     }
+  },
+  {
+    "articleId": "rl-03",
+    "order": 103,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-03/02-group-relative-advantage",
+      "rl-03/01-critic-return",
+      "rl-03/03-compute-and-group-readiness",
+      "rl-03/04-single-rollout-baselines"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-critic-and-groups",
+        "title": "그룹 비교와 Critic으로 어드밴티지 구하기",
+        "description": "같은 질문의 응답을 비교하는 GRPO에서 시작해 critic의 예측과 어드밴티지 계산을 살펴보고, SAO와 FlashREINFORCE의 개별 rollout 학습으로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-critic-and-groups",
+        "title": "Computing Advantages with Groups and Critics",
+        "description": "Start with GRPO comparisons within a prompt, examine critic predictions and advantages, then connect them to single-rollout learning in SAO and FlashREINFORCE.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "bc12ad12dd1885b9651ba2339837a1ce13985c856834a020b247f0a047fc2733",
+        "reviewNote": "2026-09-27: P 표기 통일, critic return 예시 단순화, 그룹 의존성 도식 및 SAO/FlashREINFORCE 비교 그림과 한영 본문 대조. Critic V=0.2,0.6,0.4와 A/TD/GAE 계산 한영 동기화."
+      }
+    }
   }
 ]
