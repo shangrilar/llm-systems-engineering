@@ -35,6 +35,7 @@
 - [MQA와 GQA: 여러 Query가 KV를 공유하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mqa-gqa/)
 - [MLA의 저장 구조: KV를 작은 잠재 벡터로 표현하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mla-storage/)
 - [MLA의 계산: KV를 펼치지 않고 Attention하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mla-computation/)
+- [Local과 Sparse Attention: 읽을 토큰 범위 줄이기](https://llm-systems-engineering.pages.dev/posts/model-advanced-local-sparse/)
 
 #### 하드웨어
 
