@@ -85,3 +85,4 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [How Token Generation Becomes an Action in Reinforcement Learning](https://llm-systems-engineering.pages.dev/en/posts/rl-token-actions/)
 - [How Rewards Change Token Generation Probabilities](https://llm-systems-engineering.pages.dev/en/posts/rl-reward-to-update/)
 - [Computing Advantages with Groups and Critics](https://llm-systems-engineering.pages.dev/en/posts/rl-critic-and-groups/)
+- [Learning from a Teacher’s Probabilities: OPD](https://llm-systems-engineering.pages.dev/en/posts/rl-on-policy-distillation/)
