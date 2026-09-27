@@ -1595,6 +1595,35 @@
     }
   },
   {
+    "articleId": "rl-05",
+    "order": 106,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-05/01-system-data-weight-loop",
+      "rl-05/02-trajectory-contract-readiness",
+      "rl-05/03-gpu-placement"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-system-architecture",
+        "title": "LLM RL 시스템은 어떻게 연결되는가",
+        "description": "경험을 생성해 학습기로 보내고, 새 가중치를 추론기로 돌려보내는 두 흐름을 따라 LLM RL 시스템의 역할과 데이터, GPU 배치를 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-system-architecture",
+        "title": "How an LLM RL System Fits Together",
+        "description": "Follow generated experience to the learner and updated weights back to the inference engine to understand the roles, data, and GPU placement in an LLM RL system.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "fba5466de8f1073228e157a0c34f90b847571644fbbdbd7bad755fc257b6128a",
+        "reviewNote": "Aligned Figure 2 trajectory fields and removed stale readiness-panel references in both languages; removed figure footer captions."
+      }
+    }
+  },
+  {
     "articleId": "model-advanced-token-compression",
     "order": 9.6,
     "track": "shared",

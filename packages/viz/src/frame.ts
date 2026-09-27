@@ -6,6 +6,7 @@ export interface FigureSpec {
   articleId:string;figureId:string;number:string;
   title:Label;subtitle:Label;alt:Label;caption:Label;
   sources:{label:string;url:string}[];
+  kind?:'original educational diagram'|'quoted source figure';
   layout?:'wide';
   // Short label above the title, e.g. "그림 2".
   eyebrow?:Label;
@@ -52,5 +53,5 @@ export function compose(spec:FigureSpec,locale:Locale,mobile=false){
     y+=(wrap(cap,inner,t.cap).length-1)*t.cap*1.4;
   }
   y+=mobile?24:40;
-  return {width,height:Math.ceil(y),svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${Math.ceil(y)}" viewBox="0 0 ${width} ${Math.ceil(y)}" role="img" aria-labelledby="title desc"><title id="title">${esc(title)}</title><desc id="desc">${esc(tr(spec.alt,locale))}</desc><metadata>${esc(JSON.stringify({id:spec.number,locale,kind:'original educational diagram',sources:spec.sources}))}</metadata><defs>${markerDefs()}${spec.defs??''}</defs><style>text{font-family:${FONT_FAMILY}}text[font-family]{font-family:${MONO_FAMILY}}path{stroke-linecap:round;stroke-linejoin:round}</style><rect width="100%" height="100%" fill="white"/>${body}</svg>`};
+  return {width,height:Math.ceil(y),svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${Math.ceil(y)}" viewBox="0 0 ${width} ${Math.ceil(y)}" role="img" aria-labelledby="title desc"><title id="title">${esc(title)}</title><desc id="desc">${esc(tr(spec.alt,locale))}</desc><metadata>${esc(JSON.stringify({id:spec.number,locale,kind:spec.kind??'original educational diagram',sources:spec.sources}))}</metadata><defs>${markerDefs()}${spec.defs??''}</defs><style>text{font-family:${FONT_FAMILY}}text[font-family]{font-family:${MONO_FAMILY}}path{stroke-linecap:round;stroke-linejoin:round}</style><rect width="100%" height="100%" fill="white"/>${body}</svg>`};
 }

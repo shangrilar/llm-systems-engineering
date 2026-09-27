@@ -1,0 +1,109 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rl-05
+title: "How an LLM RL System Fits Together"
+description: "Follow generated experience to the learner and updated weights back to the inference engine to understand the roles, data, and GPU placement in an LLM RL system."
+date: 2026-09-25
+---
+
+import RLFigure from '../../../components/RLFigure.astro';
+
+The preceding articles explained how rewards and teacher probabilities provide learning signals, and how losses and backpropagation change a model. The [last article](/en/posts/rl-training-strategy/) connected RL and OPD into an overall training strategy. Now we will trace where the required generation, scoring, and updates run in an actual system.
+
+**An LLM RL system has two directions of movement. Generated experience moves to the learner, and trained weights return to the inference engine.** We will first look at the overall map, then follow a single question through this path. Next, we will examine the information and readiness conditions needed to send data to the learner, and finally distinguish ways to place the two engines on GPUs.
+
+## Experience and Weights Move in Two Directions
+
+The inference engine runs the model to generate the next token. The training engine takes recorded tokens as input, computes the loss, and changes the weights through backpropagation and the optimizer. The policy model being used for generation and training is called the **actor**. Here, the actor is the model whose generation behavior we want to change, rather than a critic or teacher.
+
+Inference and training handle the same policy in different execution states. The inference side uses batching and caching suited to fast generation, while the training side manages gradients, optimizer states, and more in addition to the weights. Figure 1 shows how generation and training connect in the Miles v0.1 paper. We need to distinguish the fact that one policy is being trained from a claim that the two engines always have the same weight version or computation results.
+
+<RLFigure id="rl-05/01-system-data-weight-loop" alt="The RL loop from the Miles paper. Trajectories move from the SGLang inference engines on the left through a data buffer to training on the right. The lower weight-update path returns new weights to rollout." />
+
+Source: RadixArk, [Miles v0.1: Production-Level Post-Training](https://arxiv.org/abs/2609.08368v1), Figure 1 (PDF page 2). The original diagram and English labels are reproduced unchanged. Click the figure to view the larger image.
+
+Start with four elements. **SGLang engines** on the left are the inference engines, and **Training backend** on the right is the training engine. The central **trajectories → data buffer → Training** path carries experience, while the lower dashed **weight update** path returns trained weights to inference. Later articles cover TITO, buffer data selection, and weight-transfer methods in more detail.
+
+This setup is not a required form for every implementation. For example, NeMo RL’s Megatron generation path is integrated inside the policy worker. In this article, we will first separate the roles and data flows, without immediately interpreting them as a count of processes. [NeMo RL generation design](https://github.com/NVIDIA-NeMo/RL/blob/main/docs/design-docs/generation.md#megatron-backend)
+
+The agent within “Agents & environments” in the figure is **code that connects model calls and tool calls to solve a task**. For a single-response task, it may simply send a question and receive an answer. For a code-editing task, it connects the steps so that the model reads files, edits them, checks test results, and generates again. The agent controlling this loop and the inference engine computing tokens have different roles.
+
+Evaluation and verification attach task scores to the experience. This may be code that checks the result or a reward model that evaluates the response. Using OPD also adds a path for obtaining teacher probabilities. The critic and reference likewise provide computations as required by the training setup. None of these models is added to every run merely because it is discussed here.
+
+The framework coordinates the execution order and resource placement of these tasks. It manages which experience is ready, which training data batch it enters, and when updated weights are applied to the inference engine. The [Miles v0.1.0 architecture documentation](https://github.com/radixark/miles/blob/v0.1.0/docs/developer/architecture.md) shows one execution path between inference servers, training processes, and data sources.
+
+## From One Question to a New Policy
+
+Consider a simple synchronous run. Suppose the inference engine uses policy version 10 to generate four responses to a math question, followed by one GRPO update. The numbers and version names are examples to explain the execution flow.
+
+1. The execution management code assigns the question and a group ID, then asks the inference engine to generate four responses.
+2. The inference engine records the actual input, generated tokens, and log-probability of each choice. For a task that uses tools, generation control continues this process while adding tool results to the context.
+3. Evaluation code scores the responses. The training side can then gather the information needed to compute group advantages.
+4. The training engine feeds the recorded tokens into the current actor and computes the policy loss. It changes the weights through backpropagation and an optimizer update.
+5. The new weights are applied to the inference engine. If we call the newly applied policy version 11, subsequent generation can use version 11.
+
+In step 4, **the learner usually does not sample the response again.** It processes the recorded tokens again to obtain the probabilities that the current model assigns to those choices. While the tokens in the data remain unchanged, the weights are updated in directions that raise or lower their probabilities.
+
+Step 5 is **weight sync**, or weight synchronization. What we want to send to the inference engine is the model weights for the next round of generation. The inference engine does not need to receive the entire optimizer state required to continue training. If the parallel partitioning or memory format differs, the weights may also need to be converted to match the inference engine’s partitioning and storage format.
+
+This example uses synchronous execution to show the order of generation and training simply. In a setup that trains while generation continues, the relationship between versions and consumption times becomes more complex. In either case, we need to track which policy produced the experience and when the result of this update will be applied to subsequent generation.
+
+## Information to Send Beyond the Response Text
+
+Would it be enough to send the learner only the string “The answer is 42”? This string is enough to read the result, but it does not faithfully reconstruct which tokens were selected in which contexts. The policy loss needs the inputs and probabilities of those choices, along with the learning signals.
+
+The record of experience accumulated while performing a task is called a **trajectory**. If the task involves dialogue or tools, it may include multiple model calls and observations. Figure 2 expands the path from the inference engine to the data buffer in Figure 1 and shows the information linked to an experience record. These are conceptual field names, not a shared framework API. The inference engine does not produce every field: environment records, evaluation, and execution management also supply information. Where it is assembled and when it is stored in the buffer depend on the implementation.
+
+<RLFigure id="rl-05/02-trajectory-contract-readiness" alt="A trajectory moves from inference to the data buffer, linking six fields: input and generated token IDs, generation log probabilities, loss masks, rewards, policy versions, and task/group IDs. Sources include inference, environment records, evaluation, and execution management." />
+
+**Token IDs preserve the inputs the model actually saw and the actions it selected.** Even what looks like the same sentence becomes a different input if its tokenization or template changes. In particular, when combining tool results or conversation history, we should not assume that text alone can reproduce the original computation.
+
+**The loss mask marks the positions where the policy loss is applied.** User questions and results returned by tools are not actions selected by the actor. The basic setup in this article distinguishes these positions from the actor’s generated tokens. Even when tool results are not loss targets, they remain part of the input context that determines subsequent actions.
+
+**Generation log-probabilities record the probabilities of the choices made when the experience was produced.** They provide the information needed for comparison with the current policy, as discussed in article 2. Which probabilities are actually used as the denominator and whether additional corrections are applied can vary by training setup, so recorded generation probabilities and probabilities recomputed by the learner need to be kept distinct.
+
+**Rewards and identifiers connect experience to the correct comparisons and updates.** Rewards are evaluation results, and policy versions tell us which weights were used for generation. A task ID identifies the task, while a group ID identifies which responses should be compared. If a trajectory was generated across multiple versions, a single final version number may not be enough to represent its history.
+
+Depending on the implementation, additional information such as teacher probabilities, critic values, lengths, and termination reasons may be needed. Some of this is produced before the data is sent, and some is computed on the training side. The important criterion is not whether one process produced every value, but **whether values matching the relevant tokens and contexts are ready when the loss is computed**.
+
+## Generation Completion and Training Readiness
+
+Generation, evaluation, and record assembly do not have to run as serial stages. For some responses, the necessary records are already available during generation, and scoring can begin immediately after generation finishes. The generation of another response may overlap with the scoring of this one.
+
+Consider GRPO’s group comparison. Even when one response finishes generation and frees its execution slot in the inference engine, the scores of other responses may still be unavailable. Generation of that response is complete, but the information needed for comparison within the chosen group is not yet ready. **Releasing generation resources and preparing training data are separate events.**
+
+The buffer accommodates this difference in pace. An implementation may store records before they are ready and update their status, or it may insert a group only after everything required is ready. We therefore should not conclude that data is ready for training merely because it is “in the buffer.” We need to check what the implementation actually stores and under what conditions it consumes the data.
+
+The data source in Miles’ architecture documentation is a Python object owned by the training side. The fully asynchronous path, in contrast, includes continuously running generation jobs and queues. Drawing all of these as one fixed central buffer server can lead to misunderstanding the implementation. Read the data buffer in Figure 1 as a storage, waiting, and selection role, rather than as proof of a separate server. [Miles v0.1.0 execution architecture](https://github.com/radixark/miles/blob/v0.1.0/docs/developer/architecture.md#a-requests-life)
+
+Not all ready experience enters training immediately. Some may wait for the next batch depending on batch size, length, data selection rules, and other conditions. Whether selected experience is used once or reused across multiple updates is a separate setting as well.
+
+## Sharing GPUs or Splitting Them
+
+So far, we have looked at execution roles. Now let us examine how to place those roles within the same total GPU resources.
+
+<RLFigure id="rl-05/03-gpu-placement" alt="With shared placement, generation and training take turns using four GPUs. With separate placement, the same four GPUs are split into two for inference and two for training. Shared placement requires considering switching and memory adjustments, while separate placement requires considering the resource split and weight transfer." />
+
+In the shared-placement example, generation and training take turns using the same four GPUs. Each phase can use all the resources, but switching requires making memory available for the next phase. Depending on the execution setup, this can incur costs such as clearing inference caches or moving training state.
+
+In the separate-placement example, inference and training are assigned two GPUs each. Running on different resources creates an opportunity to overlap the two jobs. However, the resources must be divided to match the generation and training workloads. If inference is slow and too many resources are assigned to the learner, the learner may wait for data. A path for transferring new weights to the other set of GPUs is also needed.
+
+**Separating GPUs does not by itself make RL asynchronous.** The inference GPUs can finish generation, the training GPUs can then perform an update, and the next generation round can wait until synchronization finishes. Where resources are placed and when work overlaps are separate design choices. The considerations in the figure are also not mutually exclusive lists. Shared placement may still require a procedure for updating the weights used for generation. [Miles v0.1.0 GPU layout explanation](https://github.com/radixark/miles/blob/v0.1.0/docs/user-guide/training-backend.md#3-choosing-the-gpu-layout)
+
+The number of model roles also does not map one-to-one to the number of GPUs. A single large actor can span multiple GPUs, and several evaluation roles may use resources at different times. We cannot decide the placement by counting model names, as in “actor, critic, reference, and teacher mean four GPUs.”
+
+## Reading Frameworks Through This Map
+
+When looking at Slime, Miles, or NeMo RL, their structure becomes easier to read if we first locate generation, training, experience transfer, and weight application. The table below provides starting points for connecting each project to this common map. It is not a ranking of supported features or performance.
+
+| Project | Connections to look for in the common map |
+|---|---|
+| Slime | SGLang-based generation, training backends, and data management between them |
+| Miles v0.1.0 | Inference servers and the Router, training processes, data sources, and weight synchronization |
+| NeMo RL | Generation and environment interaction, policy training, execution resources, and weight synchronization |
+
+Before adopting a framework, check whether the required model and training setup are supported in the relevant version. [Official Slime repository](https://github.com/THUDM/slime), [Miles v0.1.0](https://github.com/radixark/miles/tree/v0.1.0), [Official NeMo RL repository](https://github.com/NVIDIA-NeMo/RL)
+
+This map zooms in on the part of the overall post-training process where experience is generated and the policy is updated. Depending on the training setup, preceding and subsequent stages can connect to it, such as starting RL from an SFT checkpoint or using the trained model as a teacher for another student. This does not mean that one process must perform all stages consecutively.
+
+In the next article, we will examine tokens and contexts, the first items in the experience envelope, in more detail. We will look at what must be preserved for the learner to receive exactly the input seen by the generator, and what records are needed when multiple turns, branches, and context compaction are involved.
