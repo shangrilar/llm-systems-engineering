@@ -44,6 +44,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [SSMs: Carrying Context Through State and New Inputs](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-ssm-basics/)
 - [Mamba: Choosing What to Remember Based on the Input](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mamba-selective/)
 - [Hybrid Models: Using State and Attention Together](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-hybrid/)
+- [HC and mHC: Widening and Connecting Residual Streams](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-hc-mhc/)
+- [Gated Residual: Reading Components and Writing to Originals](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gated-residual/)
+- [Attention Residuals: Selecting Outputs from Earlier Layers](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-attention-residuals/)
 
 #### Hardware
 

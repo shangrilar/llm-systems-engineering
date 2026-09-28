@@ -2089,5 +2089,96 @@
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-hc-mhc",
+    "order": 9.94,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-hc-mhc/00-one-or-many-streams",
+      "model-advanced-hc-mhc/01-widen-residual-stream",
+      "model-advanced-hc-mhc/02-read-mix-write",
+      "model-advanced-hc-mhc/03-repeated-residual-mixing",
+      "model-advanced-hc-mhc/04-constrained-residual-mixing"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-hc-mhc",
+        "title": "HC와 mHC: Residual 경로를 넓히고 연결하기",
+        "description": "여러 residual stream의 읽기·우회 혼합·쓰기를 같은 입력으로 추적하고, mHC가 반복 혼합에 제약을 두는 이유와 실행 비용을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-hc-mhc",
+        "title": "HC and mHC: Widening and Connecting Residual Streams",
+        "description": "Trace reading, bypass mixing, and writing from the same input, then examine why mHC constrains repeated mixing and what the wider residual path costs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "b765dae85b075e5f359aacf8693f9113346e9e4e68018d31abab1312cd13d8cd",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-gated-residual",
+    "order": 9.95,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-gated-residual/00-mhc-to-gr",
+      "model-advanced-gated-residual/01-normalize-and-read",
+      "model-advanced-gated-residual/02-scalar-write"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-gated-residual",
+        "title": "Gated Residual: 성분별로 읽고 원본에 나누어 쓰기",
+        "description": "여러 branch를 유지하는 Gated Residual에서 정규화와 성분별 읽기 gate, branch별 scalar 쓰기를 구분하고 하나의 수치 예시로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-gated-residual",
+        "title": "Gated Residual: Reading Components and Writing to Originals",
+        "description": "Follow one numerical example through branch normalization, componentwise read gates, and branchwise scalar writes in Gated Residual.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "54900acfda8c0001d9ee84baa540e05515e003ddac26648df3cc02a6ab6b2ef2",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-attention-residuals",
+    "order": 9.96,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-attention-residuals/01-position-versus-depth",
+      "model-advanced-attention-residuals/01b-weighted-read",
+      "model-advanced-attention-residuals/02-learned-depth-query",
+      "model-advanced-attention-residuals/03-block-sources",
+      "model-advanced-attention-residuals/04-residual-designs"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-attention-residuals",
+        "title": "Attention Residuals: 지나온 층의 출력을 선택해서 읽기",
+        "description": "과거 층의 새 출력을 보관하고 깊이별 비중으로 읽는 과정을 계산해 보고, 학습 Query와 Block 방식의 저장량·선택 단위 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-attention-residuals",
+        "title": "Attention Residuals: Selecting Outputs from Earlier Layers",
+        "description": "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "9effde5fdfd74345a1c40e718ab7f3aebb004e779f083835d02a1efc59e860fa",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
   }
 ]

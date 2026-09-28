@@ -44,6 +44,9 @@
 - [SSM: 이전 상태와 새 입력으로 문맥을 이어가기](https://llm-systems-engineering.pages.dev/posts/model-advanced-ssm-basics/)
 - [Mamba: 입력에 따라 무엇을 기억할지 조절하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mamba-selective/)
 - [하이브리드 모델: 상태와 Attention을 함께 쓰기](https://llm-systems-engineering.pages.dev/posts/model-advanced-hybrid/)
+- [HC와 mHC: Residual 경로를 넓히고 연결하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-hc-mhc/)
+- [Gated Residual: 성분별로 읽고 원본에 나누어 쓰기](https://llm-systems-engineering.pages.dev/posts/model-advanced-gated-residual/)
+- [Attention Residuals: 지나온 층의 출력을 선택해서 읽기](https://llm-systems-engineering.pages.dev/posts/model-advanced-attention-residuals/)
 
 #### 하드웨어
 

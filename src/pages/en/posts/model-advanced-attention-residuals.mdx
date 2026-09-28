@@ -1,0 +1,118 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-attention-residuals
+title: "Attention Residuals: Selecting Outputs from Earlier Layers"
+description: "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals."
+date: 2026-09-28
+---
+
+[HC/mHC](/en/posts/model-advanced-hc-mhc/) and [Gated Residual](/en/posts/model-advanced-gated-residual/) maintained representations of the same token in multiple streams. Each layer read those representations, computed a result, and wrote it back to the streams. They did not retain a separate output from every earlier layer.
+
+Attention Residuals (AttnRes) starts with a different question: <strong>can we keep earlier layers' results separate and let the next layer choose what to read?</strong> It applies the idea of attention, which selects information across tokens, to connections along depth.
+
+We first examine the Full form, which stores individual outputs, and its weighted read. We then connect that read to the computation of its weights. Finally, we consider the trade-off in the Block form, which groups outputs for storage, and compare it with the previous two families. The specific scoring and block definitions follow [Section 2.2 of the Kimi K3 report](https://arxiv.org/html/2607.24653v1#S2.SS2).
+
+## Accumulated representations and individual outputs
+
+Let e be the embedding, and <math><msub><mi>f</mi><mn>1</mn></msub></math> and <math><msub><mi>f</mi><mn>2</mn></msub></math> the fresh outputs of successive sublayers. A sublayer here is a computation with a residual connection, such as attention or an MLP. Subscripts in the figures identify computation depth, not token position.
+
+A standard residual connection passes the combined representation of e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> into the next F. Full AttnRes stores those three vectors as separate sources: candidates for the read. The important difference in Figure 1 is not the number of arrows but <strong>what can be read separately when forming the next input</strong>.
+
+<a href="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=8a8572724041" id="figure-1"><picture><source width="720" height="2590" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01-position-versus-depth-mobile.png?v=5194cf5c42f0" /><img width="2400" height="2168" src="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=8a8572724041" alt="Left: F3 reads the cumulative e+f1+f2. Right: F3 reads a separately weighted sum of e,f1,f2. f3 is produced only after F3 executes." loading="lazy" /></picture></a>
+
+The right side weights e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> separately to form input <math><msub><mi>h</mi><mn>3</mn></msub></math>. Processing that input with <math><msub><mi>F</mi><mn>3</mn></msub></math> produces a fresh output <math><msub><mi>f</mi><mn>3</mn></msub></math>. Only subsequent computations can use <math><msub><mi>f</mi><mn>3</mn></msub></math> as a source. There is no cycle that reads an output before it has been computed.
+
+Here, <math><msub><mi>f</mi><mn>2</mn></msub></math> is the fresh output of the second F, not an accumulated representation such as e + <math><msub><mi>f</mi><mn>1</mn></msub></math> + <math><msub><mi>f</mi><mn>2</mn></msub></math>. Incorrectly using accumulated representations as sources would repeat earlier contributions in multiple terms and produce a different operation from the diagram. Each fresh output can be computed from earlier results while still being stored as a fresh output.
+
+[The original AttnRes paper](https://arxiv.org/abs/2603.15031) also motivates the design with the dilution of individual layers' contributions as accumulated representations grow with depth in PreNorm architectures. Reading earlier results separately and assigning weights again gives control over which results contribute strongly to the current input. This describes the design objective, not a guarantee of the same benefit in every model.
+
+The selection axis also differs from ordinary self-attention. Self-attention reads information from multiple token positions. This diagram reads <strong>already computed outputs at multiple depths for the same token position</strong>. AttnRes does not replace token mixing inside an attention sublayer. It changes the residual connection that forms the input to attention or an MLP.
+
+## Different weights produce different inputs
+
+Suppose one token has stored e = [2, 0, 0], <math><msub><mi>f</mi><mn>1</mn></msub></math> = [0, 4, 0], and <math><msub><mi>f</mi><mn>2</mn></msub></math> = [0, 0, 6]. Each source is a three-dimensional vector. We give each a different nonzero component to make the arithmetic easy to distinguish. This is an educational example, not a required form for actual outputs.
+
+Let the next layer read e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> with weights 0.25, 0.5, and 0.25. We will derive those weights in the next section. First, consider the input they produce.
+
+<a href="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=256bd3765dac" id="figure-2"><picture><source width="720" height="2514" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01b-weighted-read-mobile.png?v=2d537a0b3ef6" /><img width="2400" height="2178" src="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=256bd3765dac" alt="Weighted contributions [.5,0,0],[0,2,0],[0,0,1.5] sum to [.5,2,1.5]. Changing weights to [.5,.25,.25] changes the result to [1,1,1.5]." loading="lazy" /></picture></a>
+
+Each weight multiplies an entire source vector.
+
+| Source | Weight | Contribution to the current input |
+|---|---|---|
+| e = [2, 0, 0] | 0.25 | [0.5, 0, 0] |
+| <math><msub><mi>f</mi><mn>1</mn></msub></math> = [0, 4, 0] | 0.5 | [0, 2, 0] |
+| <math><msub><mi>f</mi><mn>2</mn></msub></math> = [0, 0, 6] | 0.25 | [0, 0, 1.5] |
+
+Adding these three vectors componentwise gives <math><msub><mi>h</mi><mn>3</mn></msub></math> = [0.5, 2, 1.5]. The weight list [0.25, 0.5, 0.25] and result vector [0.5, 2, 1.5] are different objects. The former indexes three sources; the latter indexes three feature components. The source count and vector dimension are both three only by choice in this example.
+
+Changing the weights to [0.5, 0.25, 0.25] produces [1, 1, 1.5]. The stored vectors stay the same, but the input received by the next F changes. Selection is therefore not limited to choosing a single source. It is a continuous weighted combination that can adjust the contributions of several results differently.
+
+A simple sum in a standard residual connection would give [2, 4, 6] in this example. Even equal AttnRes weights produce an average because softmax weights sum to one. <strong>Making the weights uniform is not the same operation as returning to the standard residual sum.</strong>
+
+## Computing weights with a learned query
+
+We can now construct the earlier weights [0.25, 0.5, 0.25]. Each destination sublayer has a learned d-dimensional vector w, called a pseudo-query in the paper. Here, w is <strong>a learned parameter of the destination layer</strong>, not a vector obtained by projecting the current hidden state into a query.
+
+Figure 3 separates the path that computes scores from the path that mixes originals using the resulting weights. Sources are normalized with RMSNorm for scoring. The weighted sum uses their original values before normalization.
+
+<a href="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=7a1a584975cc" id="figure-3"><picture><source width="720" height="2502" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/02-learned-depth-query-mobile.png?v=7980a3e5623d" /><img width="2400" height="2098" src="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=7a1a584975cc" alt="RMSNorm maps the nonzero component of e=[2,0,0], f1=[0,4,0], f2=[0,0,6] to √3. With w=[0,ln2/√3,0], scores [0,ln2,0] yield softmax weights [.25,.5,.25]. Mixing the original sources gives h3=[.5,2,1.5]." loading="lazy" /></picture></a>
+
+With gain one and ε omitted, the RMS of e = [2, 0, 0] is 2/√3. Dividing gives [√3, 0, 0]. The same calculation maps <math><msub><mi>f</mi><mn>1</mn></msub></math> and <math><msub><mi>f</mi><mn>2</mn></msub></math> to [0, √3, 0] and [0, 0, √3]. Normalization reduces the direct effect of the original magnitudes 2, 4, and 6 on the scores.
+
+Choose w = [0, ln2/√3, 0]. Dotting w with each normalized source gives a score of zero for e, ln2 for <math><msub><mi>f</mi><mn>1</mn></msub></math>, and zero for <math><msub><mi>f</mi><mn>2</mn></msub></math>. Here, ln denotes the natural logarithm.
+
+Softmax exponentiates each score and divides by the sum of those exponentials. Since exp(0) = 1 and exp(ln2) = 2, the arithmetic is simple:
+
+<math display="block"><mrow><mo>[</mo><mn>0</mn><mo>,</mo><mi>ln</mi><mn>2</mn><mo>,</mo><mn>0</mn><mo>]</mo><mo>→</mo><mo>[</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>1</mn><mo>]</mo><mo>→</mo><mo>[</mo><mfrac><mn>1</mn><mn>4</mn></mfrac><mo>,</mo><mfrac><mn>2</mn><mn>4</mn></mfrac><mo>,</mo><mfrac><mn>1</mn><mn>4</mn></mfrac><mo>]</mo></mrow></math>
+
+The resulting weights are the previous section's [0.25, 0.5, 0.25]. Applying them to the originals [2, 0, 0], [0, 4, 0], and [0, 0, 6] gives the same input [0.5, 2, 1.5]. The √3 used in scoring is not multiplied into the originals again.
+
+If w is a layer parameter, does every input receive the same weights? No: the sources dotted with w can change with the token and input. Even when tokens share the same destination layer's w, different source directions can produce different scores and softmax weights. Normalization does mean that a change only in original magnitude is not passed directly into the scores.
+
+This is a direct calculation of [the report's Full AttnRes definition in Equations (8)–(9)](https://arxiv.org/html/2607.24653v1#S2.SS2) using the numbers above. The values of w and the sources were constructed for teaching, not extracted from a trained model.
+
+## Grouping outputs into blocks
+
+Reading earlier outputs separately requires keeping them alive until they are needed. Retaining only the current sum, as with a standard residual connection, does not allow <math><msub><mi>f</mi><mn>1</mn></msub></math> and <math><msub><mi>f</mi><mn>2</mn></msub></math> to be selected separately later. Full AttnRes pays for its selection flexibility with source storage and repeated reads.
+
+Block AttnRes sums the outputs of several sublayers along depth and stores the sum as one source. Figure 4 compares the two forms at the same instant, after <math><msub><mi>f</mi><mn>3</mn></msub></math> has been computed. A block here groups <strong>sublayers along depth</strong>, not token positions in the context.
+
+<a href="/images/model-advanced-attention-residuals/en/03-block-sources.png?v=d83ef7895d42" id="figure-4"><picture><source width="720" height="2936" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/03-block-sources-mobile.png?v=d2d68ba5398c" /><img width="2400" height="2762" src="/images/model-advanced-attention-residuals/en/03-block-sources.png?v=d83ef7895d42" alt="Full selects four sources separately. Block reduces the count to three but f1 and f2 share a weight. After f4 is produced, only the current sum changes to f3+f4." loading="lazy" /></picture></a>
+
+Full stores four sources: e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, <math><msub><mi>f</mi><mn>2</mn></msub></math>, and <math><msub><mi>f</mi><mn>3</mn></msub></math>. The example Block form stores three: e, <math><msub><mi>f</mi><mn>1</mn></msub></math> + <math><msub><mi>f</mi><mn>2</mn></msub></math>, and <math><msub><mi>f</mi><mn>3</mn></msub></math>. The first block is complete, while the second currently contains only <math><msub><mi>f</mi><mn>3</mn></msub></math>. Every source has width d.
+
+The number of stored vectors drops from four to three, but the selection unit changes too. Full can give <math><msub><mi>f</mi><mn>1</mn></msub></math> and <math><msub><mi>f</mi><mn>2</mn></msub></math> different weights. Block has already added them together, so it multiplies their sum by a single weight <math><msub><mi>β</mi><mn>1</mn></msub></math>.
+
+<math display="block"><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>(</mo><msub><mi>f</mi><mn>1</mn></msub><mo>+</mo><msub><mi>f</mi><mn>2</mn></msub><mo>)</mo><mo>=</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>f</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>f</mi><mn>2</mn></msub></mrow></math>
+
+Both share that weight. Moreover, the score is computed from the combined source rather than individual outputs, so it is not equivalent to simply adding the weights from Full. Block is not an identity transformation that produces Full's exact result with less storage. It <strong>reduces storage by making selection coarser, at the group level</strong>.
+
+The three current sources are read to form <math><msub><mi>h</mi><mn>4</mn></msub></math>, then <math><msub><mi>F</mi><mn>4</mn></msub></math> computes <math><msub><mi>f</mi><mn>4</mn></msub></math>. Only afterward is the current block sum updated to <math><msub><mi>f</mi><mn>3</mn></msub></math> + <math><msub><mi>f</mi><mn>4</mn></msub></math>. The embedding e and completed sum <math><msub><mi>f</mi><mn>1</mn></msub></math> + <math><msub><mi>f</mi><mn>2</mn></msub></math> remain unchanged. <math><msub><mi>f</mi><mn>4</mn></msub></math> is not part of the read that produces itself. Under this definition, a block's first sublayer also excludes the current sum while it is still empty.
+
+## The storage cost of depth selection
+
+Keeping L fresh outputs separately for one token requires source storage roughly proportional to Ld. Grouping them into N block sums changes that to storage proportional to Nd. We omit small additional terms associated with the embedding and current partial sum. This comparison concerns residual source storage, not an equal proportional reduction in total training memory.
+
+If every layer in Full reads all earlier sources, the read work also accumulates across depth. The source count grows as 1, 2, 3, …, so a straightforward calculation gives a total proportional to the square of L. Actual cost also depends on d, token count, memory access, and parallelization. [The original AttnRes paper](https://arxiv.org/abs/2603.15031) likewise distinguishes the Full structure from the Block structure intended to reduce its cost.
+
+This source list should not be confused with a token KV cache. The separately retained values here are outputs at different depths for the same token. They serve a different role from storing keys and values at earlier positions for attention across tokens. When pipeline parallelism splits depth across devices, the cost of passing required sources to the next stage must also be considered.
+
+The four-versus-three comparison in the diagram concerns one small example at one instant. It does not establish a 25% runtime reduction or preserved quality for a particular model. Larger blocks reduce the source count, but they also group more outputs that can no longer be selected individually.
+
+## Connecting the three residual designs
+
+The shared question across these three articles was how information is stored between layers and supplied to the next computation. Figure 5 compares the designs using the same three criteria: storage, reading, and updating.
+
+<a href="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" id="figure-5"><picture><source width="720" height="2986" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/04-residual-designs-mobile.png?v=a77cef70b709" /><img width="2400" height="3174" src="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" alt="Compare mHC, GR and AttnRes by storage, read and update. mHC writes into mixed bypasses; GR writes into original bypasses. AttnRes reads depth sources and appends fresh output." loading="lazy" /></picture></a>
+
+| Design | Stored unit | Read for the next computation | How fresh results are incorporated |
+|---|---|---|---|
+| HC/mHC | Multiple concurrent streams | Combine with streamwise scalars | Add streamwise write contributions to mixed bypasses |
+| This GR | Multiple concurrent branches | Branch norm and component gates, then average | Add a scalar multiple of the fresh output to each original |
+| Full AttnRes | Individual fresh sublayer outputs | Depth scores and a softmax weighted sum | Append the fresh output to the source list |
+| Block AttnRes | Depth block sums and a current partial sum | Weighted sum of block sources | Add the fresh output to the current block sum |
+
+The streams in HC/mHC and GR are not dedicated slots that preserve one specific earlier layer's output unchanged. They are representations that are repeatedly read and updated. Full AttnRes, by contrast, distinguishes sources by the depth that produced each fresh output. Grouping both approaches together as merely “storing several vectors” misses the difference in what the next layer can select.
+
+These variants are not mandatory replacements prompted by a failure of standard residual connections in every model. They explore richer connections, controlled reads and writes, or more direct selection of earlier results. Along with representational flexibility, they change storage and read costs, numerical stability, and implementation demands. When reading an architecture, first ask <strong>what is stored, what the next computation reads, and which values are updated</strong>. Those questions distinguish the three families more clearly than their names alone.
