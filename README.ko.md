@@ -41,6 +41,9 @@
 - [Linear Attention: KV를 고정 크기 상태에 누적하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-linear-attention/)
 - [델타 규칙: 새 Value에 맞춰 상태의 연결 수정하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-delta-rule/)
 - [GDN과 KDA: 기존 상태의 유지와 델타 보정](https://llm-systems-engineering.pages.dev/posts/model-advanced-gdn-kda/)
+- [SSM: 이전 상태와 새 입력으로 문맥을 이어가기](https://llm-systems-engineering.pages.dev/posts/model-advanced-ssm-basics/)
+- [Mamba: 입력에 따라 무엇을 기억할지 조절하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-mamba-selective/)
+- [하이브리드 모델: 상태와 Attention을 함께 쓰기](https://llm-systems-engineering.pages.dev/posts/model-advanced-hybrid/)
 
 #### 하드웨어
 
