@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-01',figureId:'02-token-actions-response-reward',number:'1-2',
   eyebrow:['그림 2','Figure 2'],
   title:['토큰을 여러 번 선택하고 응답을 평가한다','Choose tokens repeatedly, then evaluate the response'],

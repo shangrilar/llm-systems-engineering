@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
  articleId:'rl-03',figureId:'04-single-rollout-baselines',number:'3-4',eyebrow:['그림 4','Figure 4'],
  title:['그룹 없이도 비교 기준은 다를 수 있다','Single-rollout learning can use different baselines'],
  subtitle:['같은 완료 경험에서 SAO는 문맥별 가치 예측을, FlashREINFORCE는 배치 보상 평균을 사용합니다.','From the same completed experience, SAO uses context values; FlashREINFORCE uses the batch reward mean.'],

@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
  articleId:'rl-03',figureId:'01-critic-return',number:'3-2',eyebrow:['그림 2','Figure 2'],
  title:['실제 결과에서 Critic의 예상을 뺀다','Subtract the critic’s prediction from the outcome'],
  subtitle:['같은 결과를 얻어도 문맥별 예상이 다르면, 각 토큰에 전달할 어드밴티지 A도 달라집니다.','The same outcome can give different advantages A when predictions differ across contexts.'],

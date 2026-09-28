@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
  articleId:'rl-03',figureId:'03-compute-and-group-readiness',number:'3-3',eyebrow:['그림 3','Figure 3'],
  title:['어떤 응답의 완료를 기다려야 할까?','Which responses must finish first?'],
  subtitle:['같은 시점의 완료 상태를 놓고, 그룹 비교에 필요한 결과와 개별 rollout 수집을 비교합니다.','A snapshot compares the outcomes needed for a prompt group with individual rollout collection.'],

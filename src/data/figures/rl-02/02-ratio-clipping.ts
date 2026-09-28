@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-02',figureId:'02-ratio-clipping',number:'2-3',
   eyebrow:['그림 3','Figure 3'],
   title:['확률비가 커져도 계속 밀어붙이지 않도록','Avoid pushing indefinitely as the ratio changes'],

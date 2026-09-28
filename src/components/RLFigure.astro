@@ -11,10 +11,8 @@ const base=`/images/${articleId}/${locale==='en'?'en/':''}${figureId}`;
   <a href={`${base}.png`} aria-label={locale==='en'?'Open full-size figure':'그림 원본 열기'}>
     <picture><source media="(max-width: 640px)" srcset={`${base}-mobile.png`} /><img src={`${base}.png`} alt={alt} loading="lazy" decoding="async" /></picture>
   </a>
-  <figcaption><a href={`${base}.svg`}>{locale==='en'?'Original SVG':'SVG 원본'}</a></figcaption>
 </figure>
 <style>
   .rl-figure { margin: 32px 0; }
   .rl-figure img { display: block; width: 100%; height: auto; }
-  .rl-figure figcaption { margin-top: 8px; font-size: 14px; line-height: 1.7; color: var(--muted, #526577); }
 </style>
