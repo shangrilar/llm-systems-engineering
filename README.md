@@ -41,6 +41,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Linear Attention: Accumulating KV in a Fixed-Size State](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-linear-attention/)
 - [The Delta Rule: Revising State Associations Toward a New Value](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-delta-rule/)
 - [GDN and KDA: Retaining State and Applying Delta Corrections](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gdn-kda/)
+- [HC and mHC: Widening and Connecting Residual Streams](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-hc-mhc/)
+- [Gated Residual: Reading Components and Writing to Originals](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gated-residual/)
+- [Attention Residuals: Selecting Outputs from Earlier Layers](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-attention-residuals/)
 
 #### Hardware
 

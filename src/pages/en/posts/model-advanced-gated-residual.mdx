@@ -1,0 +1,101 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-gated-residual
+title: "Gated Residual: Reading Components and Writing to Originals"
+description: "Follow one numerical example through branch normalization, componentwise read gates, and branchwise scalar writes in Gated Residual."
+date: 2026-09-28
+---
+
+[HC and mHC](/en/posts/model-advanced-hc-mhc/) stored several representations of the same token in multiple streams. Each computation reads those representations to form one input and writes its fresh output back to the streams. mHC separately constrained the bypass path that mixes existing streams.
+
+Gated Residual (GR) also maintains multiple representations. What changes is <strong>how it controls the read for each vector component and adds fresh results to the original representations</strong>. Interpreting a gate as removing a fraction of the previous representation can easily confuse the read and write paths. We will separate those paths, then follow one numerical example through to the end.
+
+Here, GR means the design in [Section 2.2 of the Qwen3.8-Flash-Next report](https://arxiv.org/html/2608.30320v1#S2.SS2). We will not treat every similarly named gated residual variant as the same rule. The report uses four branches; the figures reduce this to two to make the calculation easier to follow. A branch here is the path that carries a representation of the same token, called a stream in the previous article.
+
+## Bypass and read paths
+
+In Figure 1, both mHC and GR combine multiple representations into one input to F, then send F's output back to the paths. F is attention or an MLP. Start by following <strong>the bypass that carries an original representation into the next one</strong>.
+
+<a href="/images/model-advanced-gated-residual/en/00-mhc-to-gr.png?v=1691a13577b8" id="figure-1"><picture><source width="720" height="3056" media="(max-width: 600px)" srcSet="/images/model-advanced-gated-residual/en/00-mhc-to-gr-mobile.png?v=682d01d4002a" /><img width="2400" height="2544" src="/images/model-advanced-gated-residual/en/00-mhc-to-gr.png?v=1691a13577b8" alt="Both read two streams into one F input and add its output to both. mHC mixes bypass streams through H_res. GR preserves each original bypass and gates the read componentwise." loading="lazy" /></picture></a>
+
+In mHC, <math><msub><mi>H</mi><mtext>res</mtext></msub></math> on the bypass mixes the existing streams. GR's bypass passes each original branch through unchanged. The newly computed value is added to that original. This GR therefore has no direct branch mixing corresponding to mHC's bypass mixing matrix.
+
+That does not make the branches independent models. The read uses information from multiple branches together, and several branches receive the result of a shared F. <strong>Directly mixing bypass paths is different from interaction through reading and computation.</strong>
+
+The read also differs. In the previous article, mHC multiplied each stream by one scalar. GR normalizes each branch and multiplies individual components by different gates. It can read some components of the same branch more strongly than others.
+
+## Normalizing and reading each branch
+
+Let the originals be <math><msub><mi>R</mi><mn>1</mn></msub></math> = [2, 2] and <math><msub><mi>R</mi><mn>2</mn></msub></math> = [4, −4]. Figure 2 shows two uses for their normalized values: one path supplies the values to read, while the other feeds the controller that computes the read gates.
+
+<a href="/images/model-advanced-gated-residual/en/01-normalize-and-read.png?v=1d99f2786c0a" id="figure-2"><picture><source width="720" height="2594" media="(max-width: 600px)" srcSet="/images/model-advanced-gated-residual/en/01-normalize-and-read-mobile.png?v=4d4a85588dd7" /><img width="2400" height="2118" src="/images/model-advanced-gated-residual/en/01-normalize-and-read.png?v=1d99f2786c0a" alt="Two branches [2,2] and [4,−4] normalize separately to [1,1] and [1,−1]. Both normalized vectors enter the read controller. Example gates [.8,.2] and [.4,.6] multiply componentwise; averaging the two gated vectors yields [.6,−.2]." loading="lazy" /></picture></a>
+
+First, apply RMSNorm separately to each branch. To simplify the calculation, set the learned gain to one and omit the small stabilizing constant ε. The RMS of [2, 2] is √((4 + 4) / 2) = 2, so dividing gives [1, 1]. The RMS of [4, −4] is 4, giving [1, −1]. Normalization does not merge the two branches into one.
+
+A hat over R in the figure denotes a normalized value. Subsequent reads use these values, but the originals [2, 2] and [4, −4] continue along the bypass in the preceding figure. The originals are also where the fresh output will be added later.
+
+The controller sees all normalized branches together and produces a gate for each branch and component. It is a learned transformation that computes coefficients for each input, not a process that retrains controller weights during inference. The internal projections in Equation (31) of the report are folded into the controller box.
+
+Suppose the gates for this input are <math><msub><mi>G</mi><mn>1</mn></msub></math> = [0.8, 0.2] and <math><msub><mi>G</mi><mn>2</mn></msub></math> = [0.4, 0.6]. These are illustrative controller outputs. They cannot be calculated from the two originals alone without the controller's weights.
+
+| Branch | Normalized value | Componentwise gate | Componentwise product |
+|---|---|---|---|
+| First | [1, 1] | [0.8, 0.2] | [0.8, 0.2] |
+| Second | [1, −1] | [0.4, 0.6] | [0.4, −0.6] |
+
+The figure uses ⊙ for componentwise multiplication. The first component of the first branch is scaled by 0.8 and its second component by 0.2. This controls the read more finely than multiplying the entire vector by one scalar.
+
+Next, add the two results and divide by the branch count, two.
+
+<math display="block"><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>[</mo><mn>0.8</mn><mo>,</mo><mn>0.2</mn><mo>]</mo><mo>+</mo><mo>[</mo><mn>0.4</mn><mo>,</mo><mo>−</mo><mn>0.6</mn><mo>]</mo></mrow><mn>2</mn></mfrac><mo>=</mo><mo>[</mo><mn>0.6</mn><mo>,</mo><mo>−</mo><mn>0.2</mn><mo>]</mo></mrow></math>
+
+This x goes into F. For n branches, the same procedure sums their gated values and divides by n. <strong>The divisor is not the sum of the gates.</strong> In this example, the gates sum to 1.2 for the first component and 0.8 for the second, but both components are divided by the branch count of two.
+
+The read gates come from a sigmoid, without a softmax that makes them sum to one across branches. It is therefore more accurate to interpret them as scales for normalized components than as probabilities of selecting the two branches. A small gate means that a component contributes less to F's input, not that the component has been deleted from the original.
+
+## Writing fresh output to the originals
+
+Suppose F receives the read result x = [0.6, −0.2] and produces a fresh output y = [0.5, −0.25]. This example does not expand F's internal computation. We now decide how much of y to add to each original.
+
+In Figure 3, a write controller separate from the read gates produces one scalar per branch. This controller also receives all normalized branches as input.
+
+<a href="/images/model-advanced-gated-residual/en/02-scalar-write.png?v=7c8c1a882dbe" id="figure-3"><picture><source width="720" height="2650" media="(max-width: 600px)" srcSet="/images/model-advanced-gated-residual/en/02-scalar-write-mobile.png?v=dd9e430131c8" /><img width="2400" height="2178" src="/images/model-advanced-gated-residual/en/02-scalar-write.png?v=7c8c1a882dbe" alt="F maps read result x to assumed output y=[.5,-.25]. A separate controller reads both normalized branches and outputs s1=1.2,s2=.4. Branch 1 adds [.6,-.3] to original [2,2], yielding [2.6,1.7]. Branch 2 adds [.2,-.1] to original [4,-4], yielding [4.2,-4.1]." loading="lazy" /></picture></a>
+
+In [Equations (33)–(34) of the report](https://arxiv.org/html/2608.30320v1#S2.SS2), the write coefficients are twice a sigmoid output and therefore lie between zero and two. Let <math><msub><mi>s</mi><mn>1</mn></msub></math> = 1.2 and <math><msub><mi>s</mi><mn>2</mn></msub></math> = 0.4 for this example. The read used different gates for different components, but the write multiplies every component of y sent to one branch by the same scalar.
+
+The first branch receives 1.2×[0.5, −0.25] = [0.6, −0.3]. The second receives 0.4×[0.5, −0.25] = [0.2, −0.1]. Adding these contributions to the originals gives:
+
+| Branch | Preserved original | Scaled fresh output | Next branch |
+|---|---|---|---|
+| First | [2, 2] | [0.6, −0.3] | [2.6, 1.7] |
+| Second | [4, −4] | [0.2, −0.1] | [4.2, −4.1] |
+
+Let <math><msub><mi>R</mi><mi>i</mi></msub></math> be the original value of branch i and <math><msub><mi>s</mi><mi>i</mi></msub></math> its write scale. The update fits in one line:
+
+<math display="block"><mrow><msubsup><mi>R</mi><mi>i</mi><mo>′</mo></msubsup><mo>=</mo><msub><mi>R</mi><mi>i</mi></msub><mo>+</mo><msub><mi>s</mi><mi>i</mi></msub><mi>y</mi></mrow></math>
+
+The scale multiplies the fresh output y. It does not multiply the original <math><msub><mi>R</mi><mi>i</mi></msub></math>. A small <math><msub><mi>s</mi><mi>i</mi></msub></math> therefore means <strong>a smaller fresh contribution added to the original</strong>, rather than retaining only a small portion of that original. In the limiting case as the scale approaches zero, the branch passes onward a value close to its original.
+
+A positive scale does not mean that every component increases. In the example, the second component of the first branch decreases from 2 to 1.7 because the added contribution is −0.3. The signs of both the coefficient and the vector components matter.
+
+## Distinguishing gates from retention
+
+In [GDN and KDA](/en/posts/model-advanced-gdn-kda/), a retention factor multiplied the existing state when a token arrived. That operation determined how much of the previous state itself remained. GR's bypass here has no such decay.
+
+| Control | Where the scale is applied | What changes directly |
+|---|---|---|
+| State retention | Previous state | Existing state retained at the next step |
+| GR read gate | Each normalized branch component | Input to the current F |
+| GR write scalar | F's fresh output | New contribution added to the original branch |
+
+The earlier state updates also followed the token sequence, while this residual propagation follows model depth. The word “gate” can refer to different quantities and axes.
+
+## The cost and purpose of finer reads
+
+GR combines the capacity of multiple representations with flexibility in deciding what to read from them. It can scale individual components within one branch differently while carrying the original unchanged on the bypass. Rather than summarizing it only as “how much information passes from the previous layer,” it helps to separate <strong>what is read for the current computation from how much of its result is written</strong>.
+
+Storage and memory traffic remain because multiple branches are maintained. Branchwise normalization and the gate controller also require computation. Removing the bypass mixing matrix alone does not establish that GR is faster than mHC in every setting. Cost must be checked for the branch count, dimension, kernel organization, and phase of training or inference.
+
+The report's stability discussion relies on [separate comparison experiments in Section 3.3](https://arxiv.org/html/2608.30320v1#S3.SS3). Reducing a value with a gate in this numerical example does not prove stability for the entire model. A calculation that explains the structure and an actual training result are different kinds of evidence.
+
+[The next article on Attention Residuals](/en/posts/model-advanced-attention-residuals/) changes the storage scheme. Instead of repeatedly updating a few branches, it retains fresh outputs from earlier layers and computes how much of each the next layer should read.
