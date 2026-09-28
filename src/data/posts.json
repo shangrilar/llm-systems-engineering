@@ -1735,8 +1735,8 @@
         "description": "Start from the purpose of writing KV associations, compare additive accumulation with the delta rule, and distinguish checking the old value with a Key from reading an output with a Query.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all six sections, three equations, numerical examples, and five bilingual figures on 2026-09-28. Key-before-update and Query-after-update roles, unit-key condition, and effects on other reads match the Korean source.",
-        "sourceRevision": "7fc7c08a2d2a80ff684f434acc0460bbe5ecb274bbc78128d9a17020a405ce8a"
+        "reviewNote": "Compared revised introduction and Key/Query write-read explanation with Korean; retained the reviewed numerical examples, equations, and five bilingual figures.",
+        "sourceRevision": "ecb2398131fab2dacedc4858dbce82122dc6c1f081724c4a2a91b7caceb86073"
       }
     }
   },
@@ -1962,6 +1962,38 @@
         "translationStatus": "reviewed",
         "sourceRevision": "1ed8e5c9f41df3e41e4f9a01ac8e4b15af3209ded1d01f13a827fafbb5fc642e",
         "reviewNote": "Compared all eleven sections, twenty-three reused figures and alt text against Korean. Reviewed policy-gradient, critic, OPD, MOPD2 and systems explanations; original figure numbering retained."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-linear-attention",
+    "order": 9.7,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-linear-attention/00-state-overview",
+      "model-advanced-linear-attention/00b-associative-computation",
+      "model-advanced-linear-attention/01-outer-product",
+      "model-advanced-linear-attention/02-state-accumulation",
+      "model-advanced-linear-attention/03-read-state",
+      "model-advanced-linear-attention/04-normalization-and-memory"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-linear-attention",
+        "title": "Linear Attention: KV를 고정 크기 상태에 누적하기",
+        "description": "Softmax 대신 독립적인 특징 변환을 사용하는 이유부터, 외적으로 상태에 쓰고 Query로 읽는 과정과 점수 합을 이용한 정규화까지 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-linear-attention",
+        "title": "Linear Attention: Accumulating KV in a Fixed-Size State",
+        "description": "Understand why softmax is replaced with independent feature maps, then follow outer-product writes, Query reads, and normalization by the sum of scores.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "62a10565ec3f7ba764401578d73a54969f0965f4c51f99c0092c15d5e512cd7f",
+        "reviewNote": "Reviewed all nine sections, six equations, examples and six bilingual figures; clarified outer-product write/read scales, exact accumulation, and the transition to delta updates."
       }
     }
   }

@@ -6,13 +6,15 @@ description: "Start from the purpose of writing KV associations, compare additiv
 date: 2026-09-28
 ---
 
-[The previous article](/en/posts/model-advanced-linear-attention/) added outer products of Keys and Values to a fixed-size state and read that state with a Query. This article focuses on <strong>how to change the state when a new KV pair arrives</strong>. Instead of continually adding new content, the delta rule compares it with what the state currently returns and applies the required change.
+[The previous article](/en/posts/model-advanced-linear-attention/) added outer products of Keys and Values to a fixed-size state and read that state with a Query. Even after accumulation, the Value weighted sum using Query–Key dot-product scores is exactly the same as when computing with individual KV pairs.
 
-Before learning how to calculate the difference, we need to understand its purpose. Why does the new Value serve as the target for the update, and why do we read the old state with a Key rather than a Query? We will first distinguish writing KV associations from computing an output with a Query, then examine the write rule chosen by the delta rule.
+This article focuses on <strong>how to change the state when a new KV pair arrives</strong>, rather than on the result of that computation. Instead of continually adding new content, the delta rule compares it with what the state currently returns and applies the required change.
+
+The delta rule does not repair a weighted sum that went wrong during accumulation. It chooses a write rule: <strong>keep adding new contributions, or revise the existing readout toward the new Value</strong>. Before learning how to calculate the difference, we need to understand its purpose. Why does the new Value serve as the target for the update, and why do we read the old state with a Key rather than a Query? We will first distinguish writing KV associations from computing an output with a Query, then examine the write rule chosen by the delta rule.
 
 ## Write with KV, read with a Query
 
-Consider the Key and Value produced from the current token as a pair. The Value is the content to write, and the Key is the vector that associates that content with future reads. Adding their outer product in the previous article served the same purpose: <strong>when a future Query matches this Key, this Value should contribute to the output</strong>.
+Consider the Key and Value produced from the current token as a pair. The Value is the content to write, and the Key determines the scale at which it contributes to each state row. A Query applies a read scale to each row. Summing the products of write scales and read scales gives the Query–Key dot product. Adding their outer product in the previous article served the same purpose: <strong>when a future Query matches this Key, this Value should contribute to the output</strong>.
 
 The Query that reads the state has a different role. It retrieves information for the current output. Even when a token supplies the Key, Value, and Query, they use different projections, so its Key and Query need not be the same vector. Deciding what to write and what to read now are different roles.
 
