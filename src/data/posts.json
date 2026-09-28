@@ -1741,6 +1741,36 @@
     }
   },
   {
+    "articleId": "model-advanced-gdn-kda",
+    "order": 9.9,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-gdn-kda/00-why-retention",
+      "model-advanced-gdn-kda/01-decay-then-correct",
+      "model-advanced-gdn-kda/02-component-retention",
+      "model-advanced-gdn-kda/03-state-versus-output-gates"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-gdn-kda",
+        "title": "GDN과 KDA: 기존 상태의 유지와 델타 보정",
+        "description": "기존 상태를 남기는 유지율과 새 Value에 맞추는 보정 강도를 구분하고, GDN의 상태 갱신에서 KDA의 성분별 유지율과 입력에 따른 조절값 계산까지 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-gdn-kda",
+        "title": "GDN and KDA: Retaining State and Applying Delta Corrections",
+        "description": "Distinguish retention of the old state from correction toward a new Value, then follow GDN updates through KDA’s component-wise retention and input-dependent control values.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared all four sections, three equations, examples, and four bilingual figures on 2026-09-28. Retention-before-correction order, scalar versus component-wise retention, and learned weights versus input-dependent gate values match.",
+        "sourceRevision": "d9202b8ea06bb574d9087e09035fce26894fcfbe43d574ff5428600d1120880c"
+      }
+    }
+  },
+  {
     "articleId": "rl-08",
     "order": 109,
     "track": "rl",
