@@ -1998,6 +1998,99 @@
     }
   },
   {
+    "articleId": "model-advanced-ssm-basics",
+    "order": 9.91,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-ssm-basics/01-state-through-time",
+      "model-advanced-ssm-basics/02-one-update",
+      "model-advanced-ssm-basics/03-retention-through-time",
+      "model-advanced-ssm-basics/04-fixed-coefficients"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ssm-basics",
+        "title": "SSM: 이전 상태와 새 입력으로 문맥을 이어가기",
+        "description": "Linear Attention과 상태 갱신 구조를 비교하고, SSM의 유지·기록·읽기 연산과 과거 입력의 영향이 남는 과정을 작은 수치 예시로 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ssm-basics",
+        "title": "SSMs: Carrying Context Through State and New Inputs",
+        "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "101568dff8e7f48410be41596239025b9efa6f0fcae0f69b0aee5b40c2bbe629",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-mamba-selective",
+    "order": 9.92,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-mamba-selective/01-why-selection",
+      "model-advanced-mamba-selective/02-input-coefficients",
+      "model-advanced-mamba-selective/03-selective-update",
+      "model-advanced-mamba-selective/04-mamba-block",
+      "model-advanced-mamba-selective/05-delta-versus-input"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mamba-selective",
+        "title": "Mamba: 입력에 따라 무엇을 기억할지 조절하기",
+        "description": "입력에서 유지·기록·읽기 계수를 만드는 선택적 SSM의 계산과 Mamba 블록을 살펴보고, GDN·KDA의 델타 보정과 비교합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mamba-selective",
+        "title": "Mamba: Choosing What to Remember Based on the Input",
+        "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "b7bf1be5ae9c1a8c5b58dd0c93b4b69ac5fa04cdbb56de9e64ba1d5c41dda0c9",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-hybrid",
+    "order": 9.93,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-hybrid/00-two-memory-forms",
+      "model-advanced-hybrid/01-layerwise-memory",
+      "model-advanced-hybrid/02-quality-comparison",
+      "model-advanced-hybrid/03-fixed-state-growing-kv",
+      "model-advanced-hybrid/04-two-kinds-of-hybrid",
+      "model-advanced-hybrid/02-one-token-two-memories"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-hybrid",
+        "title": "하이브리드 모델: 상태와 Attention을 함께 쓰기",
+        "description": "고정 크기 상태와 위치별 KV를 함께 사용하는 이유, 품질과 저장량의 절충을 살펴보고 한 토큰이 두 종류의 층을 지나는 과정을 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-hybrid",
+        "title": "Hybrid Models: Using State and Attention Together",
+        "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "1dbeffa531dc6ef0064aa97f23dfabb49e0f3d9ed5fc5daaba44fe1e45e1caff",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+      }
+    }
+  },
+  {
     "articleId": "model-advanced-hc-mhc",
     "order": 9.94,
     "track": "shared",

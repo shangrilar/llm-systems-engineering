@@ -1,0 +1,107 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-mamba-selective
+title: "Mamba: Choosing What to Remember Based on the Input"
+description: "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA."
+date: 2026-09-28
+---
+
+[The SSM article](/en/posts/model-advanced-ssm-basics/) transformed the previous state, added the current input’s contribution, and read an output from the new state. Even with the same coefficients applied repeatedly, the result changed with the input. But there was no path that adjusted how information was written based on the input’s content.
+
+Mamba <strong>also computes the coefficients for retention, writing, and reading from the current input</strong>. It adds input-dependent selection while retaining the basic state-carrying structure. We will examine this process using Mamba-1’s selective SSM, then compare it with GDN and KDA to distinguish their shared input dependence from their different update rules.
+
+## Computing update coefficients from the input
+
+An SSM with fixed coefficients uses the same Ā, B̄, and C even when the input changes. For example, if we want to write very little of the current input and retain much of the existing state, the SSM’s coefficients do not adjust to that input’s content.
+
+In Mamba’s selective SSM, the input has two roles. It supplies content to write into the state and <strong>produces coefficients that determine how the current input is incorporated</strong>. Figure 1 adds this connection from the input to the coefficient computation on the right.
+
+<a href="/images/model-advanced-mamba-selective/en/01-why-selection.png?v=c05bc323aaed" id="figure-1"><picture><source width="720" height="2846" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/en/01-why-selection-mobile.png?v=f28e7ac93f5b" /><img width="2400" height="2320" src="/images/model-advanced-mamba-selective/en/01-why-selection.png?v=c05bc323aaed" alt="A fixed SSM updates and reads state with coefficients fixed independently of the current input. Mamba also routes the input through learned weights to generate coefficients. Both share the input path and state-processing order; the input-to-coefficient connection differs." loading="lazy" /></picture></a>
+
+Input-dependent coefficients do not mean the weights are trained anew for each token. This is like learning the weights that produce a Query and then computing the actual Query from the current input. Mamba learns the transformations that produce the coefficients; inference applies those learned transformations to the current input.
+
+This is not a human-written rule that labels tokens important or unnecessary and decides whether to remember them. A learned transformation responds to input features. [Mamba paper §3.1–3.2](https://arxiv.org/html/2312.00752v2#S3.SS2) introduces input-dependent selection into the state update this way.
+
+This is also related to [GDN and KDA](/en/posts/model-advanced-gdn-kda/), which computed retention and correction strength from the current input. Input dependence alone does not make their update rules the same. We will examine Mamba’s write process first, then compare the difference.
+
+## Values that control retention, writing, and reading
+
+In the previous article, Ā, B̄, and C were the coefficients used directly in discrete state updates and output reads. Mamba introduces Δ, B, and C to construct these coefficients. We use the subscript t when indicating that a value is computed from the current input.
+
+In Figure 2, <math><msub><mi>x</mi><mi>t</mi></msub></math> is the feature vector at the current position entering the SSM. It is not a token ID or position number. The scalar input u in the previous article is one channel of this vector. The coefficients are computed from the full features; each channel updates its state using those coefficients and its own input value.
+
+<a href="/images/model-advanced-mamba-selective/en/02-input-coefficients.png?v=56d7ec38923b" id="figure-2"><picture><source width="720" height="2492" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/en/02-input-coefficients-mobile.png?v=6875ce202b75" /><img width="2400" height="2036" src="/images/model-advanced-mamba-selective/en/02-input-coefficients.png?v=56d7ec38923b" alt="Project input features with learned weights to B,C,and a Delta path with further projection and softplus. Fixed A and Delta produce retention; Delta and B produce writing; C is used for reading." loading="lazy" /></picture></a>
+
+B helps determine which state components receive the current input and at what scales. C determines how much to read from each component of the updated state. With state size N, B and C each have N components. In Mamba-1, these values are computed from the current input and shared across channels at the same position. Each channel uses its own input value and state.
+
+Δ controls how the previous state and new input contribute at this step. It is a positive value for each channel, obtained by applying softplus to a projection with learned weights. A is a learned parameter, but it is not computed anew from the current input. A and Δ together determine Ā, which acts on the previous state.
+
+<strong>Δ affects both retention of the previous state and writing of the new input.</strong> Mamba-1’s A components are negative, so increasing Δ while holding other values fixed reduces exp(ΔA), retaining less of the previous state. Δ also affects B̄=ΔB. Treating Δ as an independent retention factor like GDN’s α would therefore miss one of its roles. Nor is Δ a measurement of the actual time between token arrivals.
+
+## Two updates with different coefficients
+
+Let us see how changing the coefficients changes the calculation. Both sides of Figure 3 start from [2, 1]. We assume different full input features produce different coefficients, while keeping the one channel’s scalar input u at 2 in both cases. The full feature vectors are not assumed to be identical.
+
+The learned A is also the same on both sides. Set its components to ln(0.5) and ln(0.8). Exponentiating them gives 0.5 and 0.8, so Δ=1 yields the same retention coefficients as in the SSM article. These are illustrative coefficients and inputs chosen to make the arithmetic easy to follow.
+
+<a href="/images/model-advanced-mamba-selective/en/03-selective-update.png?v=de01a3685ab6" id="figure-3"><picture><source width="720" height="3274" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/en/03-selective-update-mobile.png?v=31a6a8020257" /><img width="2400" height="2666" src="/images/model-advanced-mamba-selective/en/03-selective-update.png?v=de01a3685ab6" alt="CaseA uses Delta1,B=[1,0.5],C=[1,1]: retained [1,0.8] plus write [2,1] gives [3,1.8], readout4.8. CaseB uses Delta2,B=[0.25,0.5],C=[1,0]: retained [0.5,0.64] plus write [1,2] gives [1.5,2.64], readout1.5." loading="lazy" /></picture></a>
+
+On the left, Δ=1, B=[1, 0.5], and C=[1, 1]. Ā has components [0.5, 0.8], so the previous state [2, 1] leaves [1, 0.8]. B̄=ΔB is [1, 0.5], and multiplying by input 2 gives the write contribution [2, 1]. Adding the contributions produces [3, 1.8], which C reads as 4.8.
+
+On the right, Δ=2, B=[0.25, 0.5], and C=[1, 0]. Ā becomes [0.5², 0.8²]=[0.25, 0.64]. The retained state is [0.5, 0.64]. B̄ is 2×[0.25, 0.5]=[0.5, 1], so multiplying by input 2 writes [1, 2]. The new state is [1.5, 2.64].
+
+The final read changes too. C=[1, 0] on the right reads only the first component, producing 1.5. The second component, 2.64, has not disappeared. It does not contribute to this output, but remains in the state for the next input.
+
+<strong>The update still has the form “previous-state contribution + current-input contribution.”</strong> What changes is that the coefficients producing these contributions and reading the state are computed from the input. The figure changes Δ, B, and C together to show changes in retention, writing, and reading. It should not be read as an experiment isolating the effect of Δ alone.
+
+## Expressing the update and read as equations
+
+Both examples retain part of the previous state, add the current input’s contribution, and read an output. Using the same notation as the SSM article gives the following equations. Here hₜ is the state before processing the current input, hₜ₊₁ is the state afterward, and uₜ and yₜ are one channel’s input and output at the current position.
+
+<math display="block"><mrow><msub><mi>h</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mover><mi>A</mi><mo>¯</mo></mover><mi>t</mi></msub><msub><mi>h</mi><mrow><mi>t</mi></mrow></msub><mo>+</mo><msub><mover><mi>B</mi><mo>¯</mo></mover><mi>t</mi></msub><msub><mi>u</mi><mrow><mi>t</mi></mrow></msub></mrow></math>
+
+<math display="block"><mrow><msub><mi>y</mi><mrow><mi>t</mi></mrow></msub><mo>=</mo><msub><mi>C</mi><mrow><mi>t</mi></mrow></msub><msub><mi>h</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow></math>
+
+The change from the previous SSM equations is the t attached to Ā, B̄, and C. Previously we repeatedly used the same coefficients; now the current input determines the coefficients used to update and read the state. The underlying state-transition parameter A itself is not retrained for each token.
+
+The first term is the past contribution retained with the current coefficients; the second is the input contribution written now. On the right of Figure 3, they are [0.5, 0.64] and [1, 2]. Reading their sum [1.5, 2.64] with Cₜ=[1, 0] gives 1.5. These equations show only the state-mediated output. They do not yet include the direct input-to-output path or the output gate covered in the next section.
+
+To make the connection more concrete, the [official Mamba-1 single-step implementation](https://github.com/state-spaces/mamba/blob/v2.2.2/mamba_ssm/modules/mamba_simple.py#L215-L229) constructs the coefficients as follows. A contains the diagonal state-transition components for each channel, and exp acts elementwise.
+
+<math display="block"><mrow><msub><mover><mi>A</mi><mo>¯</mo></mover><mi>t</mi></msub><mo>=</mo><mi mathvariant="normal">exp</mi><mo>(</mo><msub><mi>Δ</mi><mi>t</mi></msub><mi>A</mi><mo>)</mo></mrow></math>
+
+<math display="block"><mrow><msub><mover><mi>B</mi><mo>¯</mo></mover><mi>t</mi></msub><mo>=</mo><msub><mi>Δ</mi><mi>t</mi></msub><msub><mi>B</mi><mi>t</mi></msub></mrow></math>
+
+Constructing discrete-step coefficients this way is called discretization. The paper explains discretization starting from a continuous-time SSM; the equations above describe the official implementation path followed by our numerical examples. In particular, how B̄ is constructed depends on the discretization choice, so these two equations are not universal definitions for every SSM.
+
+In Figure 3, Δ=1 gives retention coefficients [0.5, 0.8], and Δ=2 gives [0.25, 0.64]. That is exp(ΔₜA) in the first equation. The second multiplies Δₜ and Bₜ to obtain the write coefficients B̄ₜ. The time-indexed coefficients therefore represent input-dependent selection, while hₜ₊₁ is the state updated using that selection.
+
+## Where the state computation sits in a Mamba block
+
+The selective SSM we have examined is the core computation in a Mamba block. The full block also creates the features entering the SSM and processes its readout into an output. Figure 4 locates these operations in a representative Mamba-1 block.
+
+<a href="/images/model-advanced-mamba-selective/en/04-mamba-block.png?v=32d343c731ef" id="figure-4"><picture><source width="720" height="3358" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/en/04-mamba-block-mobile.png?v=0b2f7352f7f6" /><img width="2400" height="2788" src="/images/model-advanced-mamba-selective/en/04-mamba-block.png?v=32d343c731ef" alt="After norm and projections,input splits into main and output-gate branches. The main branch has short convolution,SiLU,and selective SSM. Multiply by the output gate,project,and add residual. Carry convolution input history and N-component-per-channel SSM state to the next step." loading="lazy" /></picture></a>
+
+The input vector passes through normalization and projection and splits into two branches. The main branch uses a short causal convolution, which processes the current position together with nearby past inputs. A SiLU activation follows, and the resulting features enter the selective SSM. These are the input features we called x above.
+
+The selective SSM updates and reads the state. The actual computation also includes D⊙u, a term adding the current input directly to the output. D is a learned per-channel weight. The numerical examples omitted this term to focus on the path through the state.
+
+The other branch applies SiLU and multiplies the main branch’s result elementwise. This output gate adjusts an already computed output. <strong>It acts at a different point from Δ, which controls the state update.</strong> Because it uses SiLU, it cannot be interpreted as a retention rate always between 0 and 1. An output projection follows, and the result is added to the block’s residual input before reaching the next layer. [Mamba paper §3.4](https://arxiv.org/html/2312.00752v2#S3.SS4)
+
+Two kinds of state remain for the next token. The convolution needs recent input history. With width 4, it needs three past values alongside the next input. The official implementation allocates a width-4 buffer including the current value, so the figure’s “past history needed for the next computation” differs from the allocated buffer size.
+
+The SSM retains N state components per channel. If a layer has <math><msub><mi>d</mi><mtext>inner</mtext></msub></math> internal channels, its SSM state for one request contains <math><mrow><msub><mi>d</mi><mtext>inner</mtext></msub><mo>×</mo><mi>N</mi></mrow></math> components. Convolution history is separate. With model size and convolution width fixed, neither state grows continually with the number of generated tokens. This differs from attention’s addition of KV for each past token. [State allocation in the official implementation](https://github.com/state-spaces/mamba/blob/v2.2.2/mamba_ssm/modules/mamba_simple.py#L236-L247)
+
+## Comparing Mamba with delta corrections in GDN and KDA
+
+Mamba, GDN, and KDA all carry a fixed-size state and compute values from the current input to control it. Saying that they “adjust memory based on the input” is therefore insufficient to distinguish them. We need to compare <strong>how they construct the contribution added to the retained state</strong>.
+
+GDN and KDA read the retained state with the current Key, then subtract that readout from the current Value. To revise what is associated with this Key, they first check what is already associated with it. Mamba computes a contribution from the current input and adds it to the state without this Key lookup and difference calculation.
+
+<a href="/images/model-advanced-mamba-selective/en/05-delta-versus-input.png?v=ccd004617876" id="figure-5"><picture><source width="720" height="3686" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/en/05-delta-versus-input-mobile.png?v=19c59f096044" /><img width="2400" height="3052" src="/images/model-advanced-mamba-selective/en/05-delta-versus-input.png?v=ccd004617876" alt="Left: read the retained state with the key,subtract that readout from the value,form a correction with beta and the key,and add it to the retained state. Right: transform input u with Bbar and add its contribution to the retained state. Both then read an output from the new state." loading="lazy" /></picture></a>
+
+On the left, the correction depends on both the new Value and the existing state’s readout. Even with the same Key and Value, the needed correction varies with what is already remembered. If the readout already equals the new Value, the difference is zero, leaving no delta correction to add. When retention has been applied first, this check must use the retained state.
+
+On the right, Mamba computes its write contribution from the current SSM input and the input-derived B̄. Identical SSM input features give the same write contribution; a different previous state changes the past contribution produced by Ā. Mamba does not write a difference between the current input and a prediction read from the current state. Both approaches subsequently read an output from the updated state.
+
+This comparison does not mean one is always the better memory. The key point is that <strong>within state-based computation, we can distinguish a rule that adds an input contribution from one that corrects an existing association</strong>. Architectures such as Mamba-2 expose a more direct mathematical connection between Linear Attention and SSMs, so the two families need not be treated as unrelated categories. This article focused on understanding Mamba-1’s update and distinguishing it from the delta rule. [Gated DeltaNet paper §2–3](https://arxiv.org/html/2412.06464v1#S2), [Kimi Linear paper §3](https://arxiv.org/html/2510.26692v1#S3)

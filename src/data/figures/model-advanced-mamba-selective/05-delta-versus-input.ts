@@ -1,0 +1,15 @@
+import {Panel,C,connector,type FigureSpec,type Locale} from '@llm-systems/viz';
+export default {
+ articleId:'model-advanced-mamba-selective',figureId:'05-delta-versus-input',number:'mamba-05',eyebrow:['그림 5','Figure 5'],
+ title:['차이를 보정할까, 입력의 기여를 더할까?','Correct a mismatch or add the input contribution?'],
+ subtitle:['GDN·KDA ↔ Mamba · 상태 갱신 규칙 비교','GDN · KDA ↔ Mamba · Comparing state-update rules'],captionIn:'article',
+ caption:['GDN과 KDA는 감쇠한 상태를 현재 Key로 읽고 새 Value와의 차이를 보정한다. Mamba는 감쇠한 상태에 현재 입력의 기여를 더하며 Key로 읽은 예측과의 잔차를 계산하지 않는다. 양쪽의 상태가 같거나 성능 우열이 있다는 뜻이 아니다. Mamba의 직접항과 출력gate는 생략했다.','GDN and KDA read the retained state with the current key and correct the mismatch with the new value. Mamba adds the current input contribution without such a key-read residual. This does not equate the states or rank performance. Mamba direct terms and output gates are omitted.'],
+ alt:['왼쪽은 유지한 상태를 Key로 읽어 Value에서 뺀 차이에 beta와Key를 적용한 보정량을 원래 유지한 상태에 더한다. 오른쪽은 입력u를Bbar로 변환한 기여를 유지한 상태에 더한다. 두 경우 모두 새 상태에서 출력을 읽는다.','Left: read the retained state with the key,subtract that readout from the value,form a correction with beta and the key,and add it to the retained state. Right: transform input u with Bbar and add its contribution to the retained state. Both then read an output from the new state.'],
+ sources:[{label:'Gated DeltaNet §3.1',url:'https://arxiv.org/html/2412.06464v1#S3.SS1'},{label:'Kimi Linear §3',url:'https://arxiv.org/html/2510.26692v1#S3'},{label:'Mamba §2–3',url:'https://arxiv.org/html/2312.00752v2#S3'}],
+ panels(locale:Locale){return [true,false].map(delta=>{const p=new Panel(locale,delta?'GDN · KDA':'Mamba',1260);
+ p.token(90,100,['이전 상태','Old state'],340,'teal',60);p.arrow(260,170,260,205,C.purple);p.box(60,220,400,100,delta?['입력에 따른 유지율 적용','Apply input-dependent retention']:['입력에 따른 Āₜ 적용','Apply input-dependent Āₜ'],'','purple');p.arrow(260,330,260,365,C.teal);p.token(60,380,['유지한 상태','Retained state'],400,'teal',65);
+ connector(p,[50,412],[230,970],{via:[[20,412],[20,970]],tone:'teal'});
+ if(delta){p.arrow(260,455,260,490,C.purple);p.box(60,505,400,95,['현재 Key로 읽기','Read with the current Key'],'','purple');p.arrow(260,610,260,640,C.purple);p.box(60,655,400,105,['차이 = Value − 읽은 값','Mismatch = Value − readout'],'','orange');p.arrow(260,770,260,800,C.orange);p.box(60,815,400,100,['차이를 보정량으로','Form the correction'],['β × Key와 차이의 외적','β × outer(Key, mismatch)'],'orange');}
+ else{p.box(60,505,400,95,['현재 입력 uₜ','Current input uₜ'],'','blue');p.arrow(260,610,260,640,C.orange);p.box(60,655,400,105,['B̄ₜ로 입력 변환','Transform input with B̄ₜ'],'','orange');p.arrow(260,770,260,800,C.orange);p.box(60,815,400,100,['현재 입력의 기여','Current input contribution'],'B̄ₜ uₜ','orange');}
+ p.arrow(260,925,260,940,C.orange);p.circle(260,970,23,C.paper,C.teal);p.text(260,979,'+',{size:30,anchor:'middle',width:45});p.arrow(260,1005,260,1040,C.teal);p.token(90,1055,['새 상태','New state'],340,'teal',60);p.arrow(260,1125,260,1160,C.purple);p.box(60,1175,400,75,delta?['Query로 출력 읽기','Read output with Query']:['Cₜ로 출력 읽기','Read output with Cₜ'],'','blue');return p;});}
+} satisfies FigureSpec;
