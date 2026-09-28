@@ -1,0 +1,165 @@
+---
+layout: ../../layouts/Post.astro
+articleId: model-advanced-linear-attention
+title: "Linear Attention: KV를 고정 크기 상태에 누적하기"
+description: "Softmax 대신 독립적인 특징 변환을 사용하는 이유부터, 외적으로 상태에 쓰고 Query로 읽는 과정과 점수 합을 이용한 정규화까지 설명합니다."
+date: 2026-09-27
+---
+
+[앞선 글](/posts/model-advanced-token-compression/)에서는 여러 위치의 KV를 요약해서 읽었습니다. 요약을 사용해도 과거 항목은 문맥이 길어질수록 늘어납니다. 이번에는 <strong>토큰별 KV 목록 대신 고정된 크기의 상태에 정보를 누적하는 리니어 어텐션(Linear Attention)</strong>을 살펴보겠습니다.
+
+핵심은 무엇을 먼저 계산하느냐입니다. Query와 각 Key의 점수를 먼저 구하는 대신, Key와 Value의 관계를 미리 모아 두고 현재 Query로 읽습니다. 다만 일반적인 softmax 어텐션의 계산 순서를 그대로 바꿀 수는 없습니다. 먼저 점수를 만드는 방식을 어떻게 바꾸는지 설명한 뒤, 작은 행렬에 정보를 쓰고 읽는 과정과 최종 출력을 만드는 정규화까지 따라가겠습니다.
+
+## KV 목록에서 고정 크기 상태로
+
+일반적인 전역 어텐션은 새로운 토큰을 처리할 때 그 위치의 Key와 Value를 캐시에 추가합니다. 다음 Query가 각 위치를 구별해서 읽을 수 있도록 과거 KV를 보관하므로, 토큰 수가 늘면 저장량도 늘어납니다.
+
+그림 1의 오른쪽은 다른 방식입니다. 새 토큰이 들어올 때마다 일정한 크기의 행렬을 갱신합니다. 이 행렬을 <strong>상태 S</strong>라고 부르겠습니다. 그림은 한 층의 한 헤드를 보여 주며, 아래로 이어지는 행렬들은 서로 다른 시점에 같은 상태가 어떻게 바뀌는지를 나타냅니다. 모두 보관한다는 뜻이 아닙니다.
+
+<a href="/images/model-advanced-linear-attention/00-state-overview.png?v=96adce68ea17" id="figure-1"><picture><source width="720" height="2386" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00-state-overview-mobile.png?v=b9dd7716b872" /><img width="2400" height="2098" src="/images/model-advanced-linear-attention/00-state-overview.png?v=96adce68ea17" alt="왼쪽은 p₀,p₁,p₂를 처리할 때 토큰별 KV가 1,2,3행으로 증가한다. 오른쪽은 같은 입력마다 2×2 상태가 바뀌며 이전 상태가 다음 상태로 연결된다. 상태의 행은 Key 성분이고 열은 Value 성분이다." loading="lazy" /></picture></a>
+
+왼쪽 KV 목록의 행은 토큰 위치입니다. 반면 오른쪽 상태의 행과 열은 벡터 성분에 대응합니다. <strong>상태의 한 행이 토큰 하나를 뜻하지 않습니다.</strong> 여러 토큰의 정보가 같은 칸에 더해지므로, 토큰이 늘어도 행렬의 크기는 바뀌지 않습니다.
+
+이 편의 예시는 Key와 Value가 각각 두 성분이어서 상태가 2×2입니다. 최종 정규화를 위해 Key의 합을 담는 작은 벡터도 함께 유지합니다. 먼저 행렬 상태를 이해한 뒤 마지막 그림에서 이 벡터를 설명하겠습니다. 여기서 저장량이 일정하다는 말은 추론 중 과거 문맥을 유지하는 상태에 관한 것이며, 학습에 필요한 모든 중간값이나 전체 모델 메모리가 일정하다는 뜻은 아닙니다.
+
+## Softmax를 바꾸는 이유
+
+어텐션에서 Value는 전달할 내용이고, Query와 Key는 어떤 내용을 얼마나 반영할지 정합니다. 일반적인 softmax 어텐션은 Query와 Key의 내적을 구하고, 차원에 따른 스케일을 적용한 뒤 softmax를 거쳐 Value를 합칩니다.
+
+행렬 곱만 있다면 결합법칙에 따라 <strong>(QKᵀ)V = Q(KᵀV)</strong>입니다. 그러나 실제 어텐션에는 두 곱 사이에 softmax가 있습니다. QKᵀ의 결과를 softmax에 넣어야 하므로, 결합법칙만으로 KV부터 계산하도록 바꿀 수 없습니다.
+
+그렇다면 softmax만 빼면 될까요? 곱셈 순서를 바꾸는 것 자체는 가능합니다. 문제는 점수의 성질입니다. softmax는 내적 점수에 지수 함수를 적용해 양수로 만들고, 그 합으로 나누어 합이 1인 가중치를 만듭니다. 내적을 그대로 사용하면 점수가 1과 −1처럼 나올 수 있습니다. 이때 Value 하나는 더하고 다른 하나는 빼게 되며, 점수 합으로 나누려 하면 분모가 0이 됩니다.
+
+그림 2는 이 역할을 나누어 처리하는 방법입니다. <strong>Query와 Key를 각각 양수 성분으로 변환하고, 변환된 두 벡터의 내적을 점수로 사용합니다.</strong> 그리고 점수의 합으로 나누는 정규화는 따로 계산합니다.
+
+<a href="/images/model-advanced-linear-attention/00b-associative-computation.png?v=de9296af4f7c" id="figure-2"><picture><source width="720" height="3344" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00b-associative-computation-mobile.png?v=319a786a2af2" /><img width="2400" height="2782" src="/images/model-advanced-linear-attention/00b-associative-computation.png?v=de9296af4f7c" alt="위에서는 softmax의 지수 점수를 특징 벡터 내적으로 바꾼다. 아래에서는 같은 변환된 Q,K,V로 토큰 점수 행렬 3×3을 먼저 만드는 순서와 Key 성분×Value 성분 상태2×2를 먼저 만드는 순서를 비교한다. 상태값은 3,1;0,3이며 두 계산의 정규화 전 결과는 같다." loading="lazy" /></picture></a>
+
+그림의 변환을 특징 변환(feature map)이라고 부르며, 함수 φ로 표시합니다. 변환된 Query는 q̃ = φ(q), 변환된 Key는 k̃ = φ(k)입니다. 두 벡터를 합쳐서 한 번 변환하는 것이 아니라 <strong>각각 독립적으로 변환</strong>합니다. 입력에서 Q·K를 만드는 학습된 투영 이후에 적용하는 별도 단계입니다.
+
+[초기 Linear Attention 논문 §3.2](https://arxiv.org/html/2006.16236v3#S3.SS2)는 φ(x) = ELU(x) + 1을 사용합니다. 이 함수는 각 성분을 양수로 바꿉니다. 그러면 변환된 Query와 Key의 내적도 양수가 되어 가중평균의 점수로 사용할 수 있습니다.
+
+특징 변환 자체가 결합법칙을 가능하게 하는 것은 아닙니다. φ(x) = x로 두어 변환을 생략해도 행렬 곱의 순서는 바꿀 수 있습니다. <strong>계산 순서 변경에 필요한 것은 점수가 독립적으로 만든 두 벡터의 내적이라는 구조이고, 양수 변환은 점수의 성질을 정하는 선택입니다.</strong> 이 편은 그중 양수 점수를 정규화하는 형태를 설명합니다. 모든 리니어 어텐션 계열이 같은 특징 변환이나 정규화를 쓰는 것은 아닙니다.
+
+또한 이 방식은 softmax와 같은 결과를 더 빠르게 구하는 단순한 계산 최적화가 아닙니다. 점수 함수를 바꾸었으므로 어떤 Value를 얼마나 반영할지도 달라집니다. 두 방식의 출력이 일반적으로 같지는 않습니다.
+
+## KV부터 계산하면 줄어드는 것
+
+점수를 바꾸고 나면 정규화 전 계산은 그림 2 아래의 두 순서로 표현할 수 있습니다. Q̃와 K̃는 변환된 Query와 Key를 토큰 순서대로 행에 쌓은 행렬이고, V는 Value를 행에 쌓은 행렬입니다.
+
+<math display="block"><mrow><mo>(</mo><mi>Q̃</mi><msup><mi>K̃</mi><mi>T</mi></msup><mo>)</mo><mi>V</mi><mo>=</mo><mi>Q̃</mi><mo>(</mo><msup><mi>K̃</mi><mi>T</mi></msup><mi>V</mi><mo>)</mo></mrow></math>
+
+왼쪽은 토큰 사이의 점수를 먼저 구합니다. 토큰이 T개라면 Q̃K̃ᵀ는 T×T 행렬입니다. 각 행은 Query의 토큰 위치, 각 열은 Key의 토큰 위치이므로, 토큰 수가 두 배가 되면 비교할 쌍은 네 배가 됩니다.
+
+오른쪽은 K̃ᵀV를 먼저 계산합니다. 변환된 Key의 성분 수를 <math aria-label="d_k"><msub><mi>d</mi><mi>k</mi></msub></math>, Value의 성분 수를 <math aria-label="d_v"><msub><mi>d</mi><mi>v</mi></msub></math>라고 하면 결과는 <math aria-label="d_k"><msub><mi>d</mi><mi>k</mi></msub></math>×<math aria-label="d_v"><msub><mi>d</mi><mi>v</mi></msub></math>입니다. 이 행렬이 앞에서 소개한 상태 S입니다. <strong>토큰 위치 축이 곱셈에서 합쳐지고, Key 성분과 Value 성분 사이의 관계가 남습니다.</strong> 이후 각 Query를 이 상태와 곱합니다.
+
+차원을 고정하면 왼쪽의 두 곱은 O(T²<math aria-label="d_k"><msub><mi>d</mi><mi>k</mi></msub></math> + T²<math aria-label="d_v"><msub><mi>d</mi><mi>v</mi></msub></math>), 오른쪽은 O(T<math aria-label="d_k"><msub><mi>d</mi><mi>k</mi></msub></math><math aria-label="d_v"><msub><mi>d</mi><mi>v</mi></msub></math>)의 연산을 요구합니다. 오른쪽에서는 토큰 하나마다 일정한 크기의 행렬에 기여를 더하고 읽기 때문에, 전체 계산량이 토큰 수에 선형으로 늘어납니다. Linear라는 이름은 이 성질을 가리킵니다. 특징 변환 함수가 반드시 선형 함수라는 뜻은 아닙니다.
+
+그림 2의 아래 비교는 계산 순서만 보기 위해 모든 위치를 읽는 경우입니다. 그림의 작은 수치는 변환된 Query와 Key의 행이 각각 [1, 0], [0, 1], [1, 0]이고 Value의 행이 [2, 0], [0, 3], [1, 1]인 예입니다. 생성 모델에서 이 전체 상태를 모든 위치에 사용하면 미래 정보까지 읽게 됩니다. 따라서 실제 생성에서는 <strong>현재 위치까지의 기여만 누적한 상태</strong>를 읽습니다. 이제 이 과정을 토큰 하나씩 살펴보겠습니다.
+
+## Key 성분에 따라 Value 저장하기
+
+이후 그림과 수식에서는 표기를 간단히 하기 위해 <strong>특징 변환을 마친 벡터를 q와 k로 부릅니다.</strong> 예시의 0과 1은 계산을 쉽게 따라가기 위한 교육용 값이며, ELU+1의 실제 출력값을 그대로 보여 주는 것은 아닙니다. 예시에서는 음수가 아닌 점수와 양수인 분모를 사용합니다.
+
+다음 세 토큰을 같은 순서로 처리하겠습니다. 벡터는 표에서 가로로 적었지만, 수식의 k와 v는 열벡터로 두고 전치 기호 ᵀ로 방향을 바꿉니다.
+
+| 토큰 위치 | 변환된 Key | Value |
+|---|---|---|
+| <math aria-label="p_0"><msub><mi>p</mi><mn>0</mn></msub></math> | [1, 0] | [2, 0] |
+| <math aria-label="p_1"><msub><mi>p</mi><mn>1</mn></msub></math> | [0, 1] | [0, 3] |
+| <math aria-label="p_2"><msub><mi>p</mi><mn>2</mn></msub></math> | [1, 0] | [1, 1] |
+
+토큰 하나가 출력에 기여하는 과정을 먼저 생각해 보겠습니다. 현재 Query와 그 토큰의 Key를 내적해 점수를 구하고, 그 점수를 Value 전체에 곱합니다. 익숙한 ‘점수 × Value’ 계산입니다. 그런데 Query가 오기 전에 Key와 Value 쪽을 먼저 계산해 둘 수는 없을까요? 행렬 곱의 결합법칙을 적용하면 가능합니다. 이때 먼저 묶이는 값이 <strong>Key와 Value의 외적 kvᵀ</strong>입니다. 외적은 같은 가중합을 계산하기 위해 KV부터 묶으면서 등장하는 연산입니다.
+
+Key와 Value끼리 내적해 유사도 하나를 구하는 것이 아닙니다. Key가 2×1 열벡터이고 Value의 전치가 1×2 행벡터라면, 둘을 곱한 결과는 2×2 행렬입니다. Key와 Value의 성분 수가 달라도 이 곱은 가능합니다. 내적이 대응하는 성분을 곱해 하나의 점수로 더한다면, 외적은 모든 성분 쌍을 곱해 행렬을 만듭니다. 그림 3은 <math aria-label="p_2"><msub><mi>p</mi><mn>2</mn></msub></math>의 외적입니다.
+
+<a href="/images/model-advanced-linear-attention/01-outer-product.png?v=56db7ed088f8" id="figure-3"><picture><source width="720" height="1262" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/01-outer-product-mobile.png?v=c7994bbea263" /><img width="2400" height="3380" src="/images/model-advanced-linear-attention/01-outer-product.png?v=56db7ed088f8" alt="p₂에서 나온 Key [1,0]과 Value [1,1]의 외적으로 [[1,1],[0,0]]을 만든다. 행은 Key 성분, 열은 Value 성분이다." loading="lazy" /></picture></a>
+
+Key의 첫 번째 성분은 1이므로 첫 번째 행에는 Value 전체의 1배인 [1, 1]을 씁니다. Key의 두 번째 성분은 0이므로 두 번째 행에는 Value 전체의 0배인 [0, 0]을 씁니다. <strong>각 행에는 Value 전체를 해당 Key 성분만큼 곱한 값이 들어갑니다.</strong> 이 외적 하나의 행들은 서로 다른 내용을 담은 것이 아니라, 같은 Value를 서로 다른 배율로 기록한 것입니다.
+
+이것이 “행은 Key 성분, 열은 Value 성분”이라는 말의 의미입니다. 행은 Value를 어느 비율로 기록할지 정하는 Key 성분에 대응하고, 각 행의 열은 Value의 각 성분을 담습니다. 행 번호는 헤드 번호나 토큰 위치가 아닙니다.
+
+Key가 [0.3, 0.7]이고 Value가 [1, 1]이라면 첫 행은 [0.3, 0.3], 둘째 행은 [0.7, 0.7]입니다. 한 행만 고르는 것이 아니라, 일반적으로 여러 행에 같은 Value가 서로 다른 비율로 기록됩니다.
+
+## 같은 상태에 차례로 더하기
+
+처음에는 상태의 모든 칸이 0입니다. 새 토큰이 들어오면 외적을 기존 상태에 더합니다. 이 글에서는 그림과 맞추어 <math aria-label="S_0"><msub><mi>S</mi><mn>0</mn></msub></math>를 빈 상태, <math aria-label="S_1"><msub><mi>S</mi><mn>1</mn></msub></math>을 토큰 한 개를 처리한 상태로 씁니다. 따라서 위치 <math aria-label="p_t"><msub><mi>p</mi><mi>t</mi></msub></math>를 처리한 뒤의 상태는 <math aria-label="S_t+1"><msub><mi>S</mi><mi>t+1</mi></msub></math>입니다.
+
+그림 4에서 주황색 행렬은 이번 토큰이 더하는 값이고, 초록색 행렬은 그때까지의 누적 상태입니다.
+
+<a href="/images/model-advanced-linear-attention/02-state-accumulation.png?v=07f44d7853e1" id="figure-4"><picture><source width="720" height="1750" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/02-state-accumulation-mobile.png?v=42f9082fabb1" /><img width="2400" height="5248" src="/images/model-advanced-linear-attention/02-state-accumulation.png?v=07f44d7853e1" alt="영 상태 S₀에 p₀의 외적 [[2,0],[0,0]], p₁의 외적 [[0,0],[0,3]], p₂의 외적 [[1,1],[0,0]]을 차례로 더한다. 최종 S₃는 [[3,1],[0,3]]이며 같은 2×2 상태가 시간에 따라 이어진다." loading="lazy" /></picture></a>
+
+<math aria-label="p_0"><msub><mi>p</mi><mn>0</mn></msub></math>는 첫 행에 [2, 0]을 더합니다. <math aria-label="p_1"><msub><mi>p</mi><mn>1</mn></msub></math>는 둘째 행에 [0, 3]을 더합니다. 마지막 <math aria-label="p_2"><msub><mi>p</mi><mn>2</mn></msub></math>는 첫 행에 [1, 1]을 더하므로, <math aria-label="S_3"><msub><mi>S</mi><mn>3</mn></msub></math>의 첫 행은 [3, 1], 둘째 행은 [0, 3]입니다.
+
+이 누적은 모든 토큰을 행렬로 쌓아 KᵀV를 계산한 것과 같습니다. 행렬 곱에서 토큰 위치를 따라 더하던 항들을, 토큰이 도착할 때마다 하나씩 더한 것입니다. 따라서 현재 위치까지 처리한 상태만 유지하면 미래 토큰을 읽지 않으면서 같은 계산을 수행할 수 있습니다.
+
+새 토큰이 추가되어도 상태는 계속 2×2입니다. 대신 여러 토큰의 기여가 같은 칸에 합쳐집니다. 예를 들어 첫 행 [3, 1]만 보고 원래의 [2, 0]과 [1, 1]을 각각 복원할 수는 없습니다. 고정 크기 상태는 과거 KV 목록의 무손실 저장본이 아닙니다. 하지만 <strong>개별 KV를 복원할 수 있는지와, 그 KV들로 필요한 가중합을 계산할 수 있는지는 다른 문제</strong>입니다. 이 점수 규칙의 가중합은 개별 KV를 보관했을 때와 정확히 같습니다. 다음 그림에서 두 계산을 비교하겠습니다.
+
+## Query로 상태 읽기
+
+상태를 읽는다는 것은 <strong>Query의 각 성분을 가중치로 삼아 상태의 행들을 더하는 것</strong>입니다. 현재 <math aria-label="q_2"><msub><mi>q</mi><mn>2</mn></msub></math>가 [1, 0]이라면 첫 행의 1배와 둘째 행의 0배를 더합니다.
+
+그림 5의 왼쪽에서 결과는 1 × [3, 1] + 0 × [0, 3] = [3, 1]입니다. Query가 [0, 1]이면 둘째 행인 [0, 3]을 읽고, [1, 1]이면 두 행을 더한 [3, 4]를 읽습니다. 이 값들은 아직 정규화 전의 가중합입니다.
+
+<a href="/images/model-advanced-linear-attention/03-read-state.png?v=4e007cbd6ccc" id="figure-5"><picture><source width="720" height="1980" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/03-read-state-mobile.png?v=30b605fbfd2d" /><img width="2400" height="1732" src="/images/model-advanced-linear-attention/03-read-state.png?v=4e007cbd6ccc" alt="왼쪽은 S₃의 첫 행 [3,1]에 Query 성분1, 둘째 행[0,3]에0을 곱해 [3,1]을 읽는다. 오른쪽은 p₀,p₁,p₂의 Key와 Query의 내적1,0,1을 Value에 곱해 [2,0],[0,0],[1,1]을 더하고 같은 [3,1]을 얻는다." loading="lazy" /></picture></a>
+
+기록할 때는 Key의 각 성분만큼 Value를 행별로 곱해 놓았습니다. 읽을 때는 Query의 각 성분을 그 행에 다시 곱해 더합니다. <strong>Key는 기록 배율을, Query는 읽기 배율을 정합니다.</strong> 한 토큰의 기여를 따로 보면, 각 행에서 두 배율이 곱해지고 그 결과를 모두 더한 값이 Query와 Key의 내적입니다.
+
+그래서 상태를 읽는 계산은 각 토큰의 Value를 Query–Key 점수만큼 더하는 계산이 됩니다. 그림 오른쪽처럼 토큰별 기여로 풀어 보면 알 수 있습니다. <math aria-label="q_2"><msub><mi>q</mi><mn>2</mn></msub></math> = [1, 0]과 세 Key의 내적은 차례로 1, 0, 1입니다. 이를 각 Value에 곱해 더하면 다음과 같습니다.
+
+<strong>1 × [2, 0] + 0 × [0, 3] + 1 × [1, 1] = [3, 1]</strong>
+
+왼쪽과 같은 결과입니다. <strong>외적 하나일 때뿐 아니라 여러 외적을 누적해도 이 관계가 유지됩니다.</strong> 행렬 곱이 덧셈에 분배되므로, 외적들을 먼저 더한 뒤 Query를 곱하든 각각 Query를 곱한 뒤 더하든 결과가 같습니다. 상태에 누적한 외적을 다시 풀어 쓰면 다음 관계가 성립합니다.
+
+<math display="block"><mrow><msup><msub><mi>q</mi><mi>t</mi></msub><mi>T</mi></msup><msub><mi>S</mi><mi>t+1</mi></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mi>t</mi></munderover><mo>(</mo><msup><msub><mi>q</mi><mi>t</mi></msub><mi>T</mi></msup><msub><mi>k</mi><mi>i</mi></msub><mo>)</mo><msup><msub><mi>v</mi><mi>i</mi></msub><mi>T</mi></msup></mrow></math>
+
+즉, <strong>Key 성분에 따라 Value를 기록하고, Query 성분에 따라 상태를 읽으면 각 Key와 Query의 내적만큼 Value가 반영됩니다.</strong> 현재 Query와 각 과거 Key를 다시 하나씩 비교하지 않아도 그 가중합을 계산할 수 있습니다.
+
+즉, 원래 KV들을 각각 복원하지 않고도 필요한 가중합을 계산할 수 있습니다. 이 등식은 이번 글에서 선택한 내적 점수에 대한 관계이며, softmax 어텐션과 결과가 같다는 뜻은 아닙니다.
+
+## 점수의 합으로 나누기
+
+그림 5의 [3, 1]을 바로 최종 출력으로 쓰지 않고 왜 한 번 더 나눌까요? 이번에 설명하는 어텐션은 Value의 <strong>가중평균</strong>을 출력하기 때문입니다. Softmax에서는 가중치의 합이 이미 1이지만, 내적 점수 1, 0, 1의 합은 2입니다. 따라서 가중합을 2로 나누면 가중치가 0.5, 0, 0.5인 평균이 됩니다.
+
+같은 Value [2, 0]에 점수 1을 주는 경우를 생각해 보겠습니다. 한 번 더하면 [2, 0]이지만, 같은 내용 두 개를 더하면 [4, 0]입니다. 점수 합으로 나누면 두 경우 모두 [2, 0]입니다. 같은 내용을 읽는 항목 수만 늘었다는 이유로 출력 크기가 커지는 효과를 줄이는 것입니다. 이 나눗셈이 상태의 정보 손실을 되돌리는 것은 아닙니다.
+
+그런데 토큰별 Key를 보관하지 않았다면 점수의 합은 어떻게 구할까요? Key의 합을 담는 벡터 z를 함께 누적하면 됩니다. 그림 6은 분자와 분모를 나란히 보여 줍니다.
+
+<a href="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=337bf43860f8" id="figure-6"><picture><source width="720" height="2538" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/04-normalization-and-memory-mobile.png?v=2b2b6eafd49d" /><img width="2400" height="2220" src="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=337bf43860f8" alt="왼쪽에서 p₀,p₁,p₂의 점수1,0,1을 더해 분모2를 얻고 Value 기여[2,0],[0,0],[1,1]을 더해 분자[3,1]을 얻는다. [3,1]을2로 나누면[1.5,0.5]다. 오른쪽에서 Key [1,0],[0,1],[1,0]을 더한 z₃=[2,1]을 q₂=[1,0]으로 읽어 같은 점수 합2를 계산한다." loading="lazy" /></picture></a>
+
+세 Key의 합인 <math aria-label="z_3"><msub><mi>z</mi><mn>3</mn></msub></math>는 [1, 0] + [0, 1] + [1, 0] = [2, 1]입니다. 여기에 <math aria-label="q_2"><msub><mi>q</mi><mn>2</mn></msub></math> = [1, 0]을 내적하면 1 × 2 + 0 × 1 = 2가 됩니다. Query와 각 Key의 내적을 모두 더한 값과 같습니다.
+
+최종 출력은 <strong>[3, 1] ÷ 2 = [1.5, 0.5]</strong>입니다. 분모 2는 토큰 개수 3이 아니라, 현재 Query에 대한 점수의 합입니다. Query가 바뀌면 같은 z에서도 분모가 달라질 수 있습니다.
+
+## 상태 갱신과 읽기를 식으로 정리하기
+
+외적이 등장한 이유부터 식으로 확인하겠습니다. 토큰 하나의 기여는 Query–Key 내적에 Value를 곱한 값이며, 곱셈 순서를 바꾸면 다음과 같습니다.
+
+<math display="block"><mrow><mo>(</mo><msup><mi>q</mi><mi>T</mi></msup><mi>k</mi><mo>)</mo><msup><mi>v</mi><mi>T</mi></msup><mo>=</mo><msup><mi>q</mi><mi>T</mi></msup><mo>(</mo><mi>k</mi><msup><mi>v</mi><mi>T</mi></msup><mo>)</mo></mrow></math>
+
+왼쪽은 점수를 먼저 구하고, 오른쪽은 외적을 먼저 만듭니다. 오른쪽의 행렬은 Value를 Key 성분별 배율로 기록한 것이고, qᵀ를 곱하면 Query 성분별 배율로 읽게 됩니다. 이 관계가 토큰마다 성립하므로, 외적들을 상태에 누적해 한 번에 읽을 수 있습니다.
+
+지금까지 본 과정은 ‘이번 Key–Value 관계를 상태에 더하고, 갱신한 상태를 Query로 읽는다’로 정리할 수 있습니다. 위치 pₜ의 입력을 처리하기 전 상태를 Sₜ, 처리한 뒤를 Sₜ₊₁로 씁니다. 상태의 첨자는 처리한 토큰 수이며, 출력 yₜ의 첨자는 현재 입력 위치입니다. 이후 SSM과 Mamba에서도 이 순서를 사용하겠습니다. 아래 q와 k는 앞서 설명한 특징 변환을 마친 열벡터입니다.
+
+<math display="block"><mrow><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>S</mi><mrow><mi>t</mi></mrow></msub><mo>+</mo><msub><mi>k</mi><mrow><mi>t</mi></mrow></msub><msup><msub><mi>v</mi><mrow><mi>t</mi></mrow></msub><mi>T</mi></msup></mrow></math>
+
+오른쪽의 Sₜ는 이전 토큰들의 기여이고, kₜvₜᵀ는 이번 토큰이 더할 외적입니다. 기존 상태를 그대로 둔 채 새 기여를 더합니다. 이렇게 누적하는 이유는 앞서 그림 5에서 확인한 것처럼, Query로 읽었을 때 각 Key와의 내적을 가중치로 삼아 Value를 더한 결과가 나오기 때문입니다. 상태를 임의로 정한 뒤 읽는 것이 아니라, 그 가중합을 계산할 수 있도록 상태를 구성한 것입니다.
+
+최종 출력을 가중평균으로 만들기 위해 Key 합 z도 같은 순서로 갱신합니다. S₀와 z₀는 모두 0에서 시작합니다.
+
+<math display="block"><mrow><msub><mi>z</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>z</mi><mrow><mi>t</mi></mrow></msub><mo>+</mo><msub><mi>k</mi><mrow><mi>t</mi></mrow></msub></mrow></math>
+
+<math display="block"><mrow><msup><msub><mi>y</mi><mrow><mi>t</mi></mrow></msub><mi>T</mi></msup><mo>=</mo><mfrac><mrow><msup><msub><mi>q</mi><mrow><mi>t</mi></mrow></msub><mi>T</mi></msup><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow><mrow><msup><msub><mi>q</mi><mrow><mi>t</mi></mrow></msub><mi>T</mi></msup><msub><mi>z</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow></mfrac></mrow></math>
+
+분자는 현재 Query로 상태를 읽은 가중합이고, 분모는 같은 Query에 대한 점수의 합입니다. 그림 6에서는 분자가 [3, 1], 분모가 2여서 출력 y₂는 [1.5, 0.5]입니다. y는 Value와 같은 차원의 열벡터로 두었으므로, 행벡터가 나오는 오른쪽에 맞춰 왼쪽을 yₜᵀ로 썼습니다. 전치는 벡터의 방향을 표시하며 별도의 정규화 연산이 아닙니다.
+
+분모가 양수라는 조건에서 이 식은 이번 글의 점수로 Value를 가중평균하는 계산과 정확히 같습니다. 원래 softmax 어텐션과 출력이 같다는 뜻은 아닙니다. 상태의 저장량은 한 헤드당 dₖ×dᵥ개의 행렬 성분과 dₖ개의 벡터 성분입니다. [원 논문 §3.3](https://arxiv.org/html/2006.16236v3#S3.SS3)도 인과적 어텐션을 이 두 누적량으로 표현합니다.
+
+## 고정 크기 상태의 이점과 한계
+
+차원이 고정되어 있으면 토큰 하나를 처리할 때 상태를 갱신하고 읽는 연산량은 과거 토큰 수에 따라 늘어나지 않습니다. T개 토큰을 처리하는 전체 어텐션 계산은 T에 선형으로 증가합니다. 다만 행렬의 크기 자체에 따른 비용은 남으며, 실제 속도는 차원과 구현, 병렬화 방식에 따라 달라집니다.
+
+또한 T×T 점수 행렬을 만들지 않는다는 설명을 “일반 어텐션은 반드시 그 행렬 전체를 메모리에 저장한다”는 뜻으로 받아들이면 안 됩니다. 점수를 타일 단위로 처리하는 구현도 있습니다. 이 편에서 바뀌는 것은 중간 행렬의 보관 방식만이 아니라, 점수 함수와 계산 구조입니다.
+
+고정 크기 상태에서도 이번 점수 규칙의 가중합은 정확히 계산할 수 있습니다. 이제 남는 질문은 <strong>새 내용이 들어올 때마다 계속 더하는 기록 방식이 적합한가</strong>입니다. 같은 Key에 다른 Value가 들어오면 이전 내용과 새 내용이 함께 쌓입니다. 둘을 가중합하거나 평균내려는 목적에는 맞지만, 그 Key로 읽히는 내용을 새 Value 쪽으로 고치려면 다른 갱신 규칙이 필요합니다.
+
+다음 글의 [델타 규칙](/posts/model-advanced-delta-rule/)은 기존 상태에서 읽히는 값을 확인하고 새 Value와의 차이를 반영합니다. 누적으로 가중합 계산이 틀어져서 복구하는 것이 아니라, <strong>새 기여를 추가하는 방식에서 기존 읽기 결과에 따라 수정하는 방식으로 기록 규칙을 바꾸는 것</strong>입니다.

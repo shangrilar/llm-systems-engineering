@@ -38,6 +38,7 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Local and Sparse Attention: Reading Fewer Token Positions](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-local-sparse/)
 - [Sparse Attention Indexers: Choosing Positions by Content](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-sparse-indexer/)
 - [Token-Axis Compression: Reading Summaries of Multiple KV Positions](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-token-compression/)
+- [Linear Attention: Accumulating KV in a Fixed-Size State](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-linear-attention/)
 - [The Delta Rule: Revising State Associations Toward a New Value](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-delta-rule/)
 - [GDN and KDA: Retaining State and Applying Delta Corrections](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gdn-kda/)
 
