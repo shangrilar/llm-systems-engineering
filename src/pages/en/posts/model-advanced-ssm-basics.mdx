@@ -88,16 +88,6 @@ In the first equation, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover><
 
 Here, uₜ is one channel of the input features supplied to the SSM. A neural network may create these features through projection and other operations, but the equation itself does not specify that preceding computation. <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>hₜ transforms the state holding past information; it is not a projection of the input token. The two paths meet at the addition.
 
-### Turning continuous change into a discrete update
-
-The background to this equation is a way to describe a changing system through its state. The continuous-time SSM used as the starting point in the Mamba paper expresses <strong>how quickly the state changes</strong>, rather than the state itself. We use τ for continuous time to distinguish it from token position t.
-
-<math display="block"><mrow><mfrac><mrow><mi>d</mi><mi>h</mi><mo>(</mo><mi>τ</mi><mo>)</mo></mrow><mrow><mi>d</mi><mi>τ</mi></mrow></mfrac><mo>=</mo><mi>A</mi><mi>h</mi><mo>(</mo><mi>τ</mi><mo>)</mo><mo>+</mo><mi>B</mi><mi>u</mi><mo>(</mo><mi>τ</mi><mo>)</mo></mrow></math>
-
-On the right, Ah describes how the current state affects its own change, and Bu describes the effect of an external input. In the heat example, the first term can represent cooling and the second the heater’s heat supply. Converting this continuous change into updates at discrete intervals is called discretization. Assumptions such as holding the input constant within an interval, together with the chosen discretization method, determine <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> and <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> from A, B, and the interval size. This yields the update hₜ₊₁=<math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>hₜ+<math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>uₜ used above. [Mamba paper §2](https://arxiv.org/html/2312.00752v2#S2)
-
-This update equation is therefore not obtained by rearranging products in an attention equation. It defines a system that combines state and input influences linearly, then expresses it as a computation that processes inputs one at a time. The continuous-time view explains the origin of the coefficients; tokens do not have to arrive at physical time intervals.
-
 ### Expanding the recurrence reveals past inputs
 
 Expanding a few steps shows why this update can carry context. Set the initial state h₀ to 0 and repeatedly use the same <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> and <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>:
