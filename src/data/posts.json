@@ -1765,8 +1765,8 @@
         "description": "Distinguish retention of the old state from correction toward a new Value, then follow GDN updates through KDA’s component-wise retention and input-dependent control values.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, three equations, examples, and four bilingual figures on 2026-09-28. Retention-before-correction order, scalar versus component-wise retention, and learned weights versus input-dependent gate values match.",
-        "sourceRevision": "d9202b8ea06bb574d9087e09035fce26894fcfbe43d574ff5428600d1120880c"
+        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved.",
+        "sourceRevision": "975e486770a6ef223853166bbf9cb22ccea2e100664436c869ee644187f32b23"
       }
     }
   },
@@ -2022,8 +2022,8 @@
         "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "101568dff8e7f48410be41596239025b9efa6f0fcae0f69b0aee5b40c2bbe629",
-        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+        "sourceRevision": "243508b7473382497dc4780341042f386fbd4c7dd333b128bcfd1959f6b7e1c6",
+        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved."
       }
     }
   },
@@ -2053,8 +2053,8 @@
         "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b7bf1be5ae9c1a8c5b58dd0c93b4b69ac5fa04cdbb56de9e64ba1d5c41dda0c9",
-        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+        "sourceRevision": "0454851f1ab534b33a650dcc5771d34f6e58445720397c5409f2a6fd667d4507",
+        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved."
       }
     }
   },
