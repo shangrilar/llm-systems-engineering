@@ -91,16 +91,6 @@ SSM도 이전 상태에 새 정보의 기여를 더하고, 갱신한 상태에�
 
 
 
-### 연속적인 변화를 한 단계의 갱신으로 바꾸기
-
-이 식의 배경에는 시간에 따라 변하는 시스템을 상태로 표현하는 방법이 있습니다. Mamba 논문이 출발하는 연속시간 SSM은 상태 자체가 아니라 <strong>상태가 얼마나 빠르게 변하는지</strong>를 다음처럼 표현합니다. 연속적인 시간은 토큰 위치 t와 구별해 τ로 쓰겠습니다.
-
-<math display="block"><mrow><mfrac><mrow><mi>d</mi><mi>h</mi><mo>(</mo><mi>τ</mi><mo>)</mo></mrow><mrow><mi>d</mi><mi>τ</mi></mrow></mfrac><mo>=</mo><mi>A</mi><mi>h</mi><mo>(</mo><mi>τ</mi><mo>)</mo><mo>+</mo><mi>B</mi><mi>u</mi><mo>(</mo><mi>τ</mi><mo>)</mo></mrow></math>
-
-오른쪽의 Ah는 현재 상태가 자신의 변화에 미치는 영향이고, Bu는 외부 입력이 변화에 미치는 영향입니다. 앞의 열 예시에서는 첫 항이 냉각을, 둘째 항이 히터의 열 공급을 표현할 수 있습니다. 이 연속적인 변화를 일정한 간격의 갱신으로 바꾸는 과정이 이산화입니다. 한 간격 안에서 입력을 일정하게 두는 등의 가정과 이산화 방식에 따라, A·B와 시간 간격으로부터 한 단계에 사용할 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>·<math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>를 구합니다. 그러면 앞서 본 hₜ₊₁=<math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>hₜ+<math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>uₜ 형태가 됩니다. [Mamba 논문 §2](https://arxiv.org/html/2312.00752v2#S2)
-
-따라서 이 갱신식은 어텐션 식의 곱셈 순서를 바꿔 얻은 것이 아닙니다. 상태와 입력의 영향을 선형적으로 합치는 시스템을 정의하고, 이를 입력 하나씩 처리하는 계산으로 표현한 것입니다. 연속시간 관점은 계수의 출발점을 설명하며, 토큰이 실제 물리적 시간 간격에 맞춰 도착해야 한다는 뜻은 아닙니다.
-
 ### 식을 펼치면 과거 입력이 보입니다
 
 이 갱신이 문맥을 기억하는 방법이 되는 이유는 식을 몇 단계 펼쳐 보면 드러납니다. 초기 상태 h₀를 0으로 두고 같은 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>와 <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>를 반복 사용하면 다음과 같습니다.

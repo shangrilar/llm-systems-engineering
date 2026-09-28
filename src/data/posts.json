@@ -2022,8 +2022,8 @@
         "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "243508b7473382497dc4780341042f386fbd4c7dd333b128bcfd1959f6b7e1c6",
-        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved."
+        "sourceRevision": "36c674c7d9c8147e899bc2b1c8ccff25482a5120a43270f1a7501758399dec05",
+        "reviewNote": "2026-09-29: Removed the continuous-time discretization section and its corresponding English text; reviewed the transition from the update equations to the expanded recurrence."
       }
     }
   },
