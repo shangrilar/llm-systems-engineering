@@ -1380,8 +1380,8 @@
         "description": "Compare choosing a move in a maze with an LLM choosing its next token, then follow how a response made of many tokens receives a reward.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a16b8efe6fd78d9559e97d88d4762715b8e639b303499fe718abd9d17929c427",
-        "reviewNote": "Korean and English text, examples and both figures reviewed. Rechecked unchanged English after fixing five Korean emphasis delimiters; the meaning is unchanged."
+        "sourceRevision": "afb43c8053f31ee94efcb8bb329219115e15641b3a7b469191df74022cada45b",
+        "reviewNote": "Korean and English text, examples and both figures reviewed. Rechecked unchanged English after fixing five Korean emphasis delimiters; the meaning is unchanged. Removed image footer captions in both languages; diagram content and translation unchanged."
       }
     }
   },
@@ -1410,8 +1410,8 @@
         "description": "Connect advantages computed from rewards with token log-probabilities, then explore probability ratios and clipping for reusing data, and KL regularization for staying close to a reference policy.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "f2bbf64a1d70e8ca03c158b296dee2568a3fcdf73eb430633e66e135b917abe5",
-        "reviewNote": "Release preparation: Korean and English paragraphs, four figure examples and labels, log-probability derivative, clipped-objective branches, and model comparison roles reviewed together."
+        "sourceRevision": "a99fba97e22fdde40ecc5b50bedc0148eb0503d5d308d205d247961990e51831",
+        "reviewNote": "Release preparation: Korean and English paragraphs, four figure examples and labels, log-probability derivative, clipped-objective branches, and model comparison roles reviewed together. Removed image footer captions in both languages; diagram content and translation unchanged."
       }
     }
   },
@@ -1500,8 +1500,8 @@
         "description": "Start with GRPO comparisons within a prompt, examine critic predictions and advantages, then connect them to single-rollout learning in SAO and FlashREINFORCE.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "37046c6d186101c83cdcc2ccacdfa426220cbda61298524486b8410b6a7aef9f",
-        "reviewNote": "2026-09-27: P 표기 통일, critic return 예시 단순화, 그룹 의존성 도식 및 SAO/FlashREINFORCE 비교 그림과 한영 본문 대조. Critic V=0.2,0.6,0.4와 A/TD/GAE 계산 한영 동기화."
+        "sourceRevision": "0bc6999d526bfd268ee7f6d1acaef6447470337e93db7f800d9149fa4170059a",
+        "reviewNote": "2026-09-27: P 표기 통일, critic return 예시 단순화, 그룹 의존성 도식 및 SAO/FlashREINFORCE 비교 그림과 한영 본문 대조. Critic V=0.2,0.6,0.4와 A/TD/GAE 계산 한영 동기화. Removed image footer captions in both languages; diagram content and translation unchanged."
       }
     }
   },
@@ -1883,6 +1883,55 @@
         "translationStatus": "reviewed",
         "sourceRevision": "5293d2bc407ae9a6a27e4e0a0fd25c1d9c9b1986a341eb052cf6bbe9e6479697",
         "reviewNote": "Refined the three-stage weight-sync explanation, transfer selection conditions, and requantization example in both languages. Reviewed all figure variants."
+      }
+    }
+  },
+  {
+    "articleId": "rl-19",
+    "order": 114,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-28",
+    "figureIds": [
+      "rl-01/01-role-mapping",
+      "rl-01/02-token-actions-response-reward",
+      "rl-02/00-token-probabilities",
+      "rl-02/01-advantage-meets-logprob",
+      "rl-02/03-old-current-reference",
+      "rl-03/02-group-relative-advantage",
+      "rl-03/01-critic-return",
+      "rl-04/01-student-visited-contexts",
+      "rl-04/02-teacher-token-signal",
+      "rl-18/02-starting-policy-and-feedback",
+      "rl-18/01-specialists-to-student",
+      "rl-18/03-opd-before-after-rl",
+      "rl-18/04-multiple-teachers-and-prefixes",
+      "rl-05/01-system-data-weight-loop",
+      "rl-06/01-token-identity",
+      "rl-06/02-routing-replay",
+      "rl-09/02-quantization-conventions",
+      "rl-08/02-policy-engine-differences",
+      "rl-10/01-sync-async-timeline",
+      "rl-10/03-staleness-lifecycle",
+      "rl-11/01-prefix-cache-routing",
+      "rl-12/01-program-resource-lifetimes",
+      "rl-15/03-policy-version-transition"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-summary",
+        "title": "LLM RL 총정리: 토큰의 선택에서 시스템의 순환까지",
+        "description": "13편의 핵심 그림을 따라, 토큰 확률을 바꾸는 학습부터 경험과 가중치가 오가는 시스템까지 30분 흐름으로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-summary",
+        "title": "LLM RL in Review: From Token Choices to the System Loop",
+        "description": "Follow the key figures from thirteen articles in a 30-minute walkthrough, from learning that changes token probabilities to the system that moves experience and weights.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "1ed8e5c9f41df3e41e4f9a01ac8e4b15af3209ded1d01f13a827fafbb5fc642e",
+        "reviewNote": "Compared all eleven sections, twenty-three reused figures and alt text against Korean. Reviewed policy-gradient, critic, OPD, MOPD2 and systems explanations; original figure numbering retained."
       }
     }
   }

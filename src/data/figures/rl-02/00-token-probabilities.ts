@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
  articleId:'rl-02',figureId:'00-token-probabilities',number:'2-1',eyebrow:['그림 1','Figure 1'],
  title:['각 토큰의 확률은 어느 문맥에서 나오는가','Which context produces each token probability?'],
  subtitle:['기록된 응답 u → b → d를 현재 모델로 다시 평가합니다. 세 열은 같은 모델의 서로 다른 예측 위치입니다.','Score the recorded response u → b → d with the current model. Each column is a prediction position in the same model.'],

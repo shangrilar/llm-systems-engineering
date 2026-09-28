@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-01',figureId:'01-role-mapping',number:'1-1',
   eyebrow:['그림 1','Figure 1'],
   title:['상황을 보고 행동을 고르는 정책','A policy chooses an action from the current state'],

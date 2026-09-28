@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-02',figureId:'01-advantage-meets-logprob',number:'2-2',
   eyebrow:['그림 2','Figure 2'],
   title:['손실의 기울기는 모델 가중치로 돌아간다','Loss gradients flow back to model weights'],

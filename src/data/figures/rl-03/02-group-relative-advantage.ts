@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-03',figureId:'02-group-relative-advantage',number:'3-1',
   eyebrow:['그림 1','Figure 1'],
   title:['같은 질문의 다른 응답이 비교 기준이 된다','Other responses to the same prompt provide the baseline'],

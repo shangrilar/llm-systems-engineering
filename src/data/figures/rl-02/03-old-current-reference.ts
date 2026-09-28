@@ -1,5 +1,6 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
+  captionIn:'article',
   articleId:'rl-02',figureId:'03-old-current-reference',number:'2-4',
   eyebrow:['그림 4','Figure 4'],
   title:['현재 모델을 누구와, 무엇으로 비교하는가','Who do we compare the current model with, and how?'],
