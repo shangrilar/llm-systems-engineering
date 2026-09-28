@@ -41,6 +41,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Linear Attention: Accumulating KV in a Fixed-Size State](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-linear-attention/)
 - [The Delta Rule: Revising State Associations Toward a New Value](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-delta-rule/)
 - [GDN and KDA: Retaining State and Applying Delta Corrections](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gdn-kda/)
+- [SSMs: Carrying Context Through State and New Inputs](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-ssm-basics/)
+- [Mamba: Choosing What to Remember Based on the Input](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-mamba-selective/)
+- [Hybrid Models: Using State and Attention Together](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-hybrid/)
 
 #### Hardware
 
