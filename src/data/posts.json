@@ -2182,5 +2182,98 @@
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-cross-layer-kv",
+    "order": 9.97,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-cross-layer-kv/01-six-layers-three-banks",
+      "model-advanced-cross-layer-kv/02-producer-then-consumer",
+      "model-advanced-cross-layer-kv/03-what-is-shared",
+      "model-advanced-cross-layer-kv/04-sharing-factor"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-cross-layer-kv",
+        "title": "층간 KV 공유: 앞선 층의 Key와 Value 재사용하기",
+        "description": "여섯 층의 KV 저장량을 비교하고, 새 토큰의 Key와 Value를 다음 층에서 재사용하는 순서와 저장·계산의 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-cross-layer-kv",
+        "title": "Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers",
+        "description": "Compare KV storage across six layers, follow a new token as its Keys and Values are reused by the next layer, and examine the trade-off between storage and computation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "6c0fb2d13b367b5eb76be6b8a3e77dcd6279e7817b2d1484705a8edbd3cb79ea",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-yoco",
+    "order": 9.971,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-yoco/01-producers-and-readers",
+      "model-advanced-yoco/02-cross-attention-sources",
+      "model-advanced-yoco/03-new-token-through-both-halves",
+      "model-advanced-yoco/04-prefill-dependencies",
+      "model-advanced-yoco/05-cache-growth"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-yoco",
+        "title": "YOCO: 공통 KV를 만드는 층과 읽는 층 나누기",
+        "description": "앞부분의 공통 KV를 뒷부분이 읽는 구조와 새 토큰의 처리 순서를 따라가며, 첫 출력에 불필요한 prefill 계산을 생략하는 이유를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-yoco",
+        "title": "YOCO: Separating Layers That Produce and Read Shared KV",
+        "description": "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "45c2509545311056cfac18ed63284c2c62e77f68ad0558ceb5bc2b75b853e19a",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-ced",
+    "order": 9.972,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-ced/01-ed-and-ced-paths",
+      "model-advanced-ced/02-sequences-and-causality",
+      "model-advanced-ced/03-global-and-local-kv",
+      "model-advanced-ced/05-select-and-attend",
+      "model-advanced-ced/06-csa2-modes",
+      "model-advanced-ced/04-prefill-replay"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ced",
+        "title": "CED: 인과적 Encoder와 Decoder로 문맥 이어가기",
+        "description": "생성 경로와 global·local KV의 출처를 비교하고, sparse 선택과 세 재사용 모드, 시퀀스 압축률, prefill 재계산의 관계를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ced",
+        "title": "CED: Continuing Context with a Causal Encoder and Decoder",
+        "description": "Compare generation paths and the sources of global and local KV, then connect sparse selection, three reuse modes, sequence compression, and prefill replay.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a925c740dcd2cf63a20ec5ba2622f776c766965177a2c1f6c9f2cee17aab3352",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
   }
 ]

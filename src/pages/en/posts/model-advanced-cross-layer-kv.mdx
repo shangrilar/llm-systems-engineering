@@ -1,0 +1,71 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-cross-layer-kv
+title: "Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers"
+description: "Compare KV storage across six layers, follow a new token as its Keys and Values are reused by the next layer, and examine the trade-off between storage and computation."
+date: 2026-09-29
+---
+
+[MQA and GQA](/en/posts/model-advanced-mqa-gqa/) let multiple Query heads within a layer read the same Keys and Values. This reduces the KV stored per token, but each layer still produces its own KV.
+
+Now we will extend sharing across layers. <strong>If the next layer also reads the Keys and Values produced by an earlier layer, the model no longer needs a separate KV bank for every layer.</strong> Cross-Layer Attention (CLA) incorporates this sharing into the model architecture. Each layer forms its own Query, while only some layers produce Keys and Values.
+
+We will first count how storage changes across six layers, then follow one new token through two layers. Next, we will examine the computations that remain and the trade-off in extending sharing from two layers to three.
+
+## Sharing KV previously stored per layer
+
+Each layer’s attention compares the current Query with Keys at past and current positions, then uses the resulting weights to read Values. In the basic architecture, each layer produces Keys and Values from its own input, so the same token position has different KV at different layers.
+
+Figure 1 compares six layers after processing four tokens. Both architectures have one KV head, with two components in each Key and Value vector. On the right, adjacent layers form pairs. L₁ and L₂ read the KV produced by L₁; L₃ and L₄ read L₃’s KV; L₅ and L₆ read L₅’s KV.
+
+<a href="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks.png?v=ac21a64c3fcd" id="figure-1"><picture><source width="720" height="4334" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks-mobile.png?v=b69055ef352b" /><img width="2400" height="3518" src="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks.png?v=ac21a64c3fcd" alt="Six separate KV banks hold 96 components; sharing across adjacent pairs uses 48. Both architectures retain six Queries and sequential layer computation." loading="lazy" /></picture></a>
+
+Each bank holds K[4×2] and V[4×2]. Eight Key components plus eight Value components give 16 components. Separate storage for all six layers requires 6 × 16 = 96 components, while sharing across pairs requires 3 × 16 = 48. With the same data type and tightly packed storage, this example halves the KV data size.
+
+What decreases on the right is <strong>the number of layers producing and storing distinct KV</strong>. All six layers still perform their computations. Representations change sequentially along the blue path, and L₂ forms its Query from the representation that has passed through L₁. Even with the same KV, different Queries can produce different attention weights and outputs.
+
+The shared objects are already computed Key and Value values. This differs from giving two layers the same KV projection weights and running each projection separately. Even identical weights can produce different KV when their inputs differ. The architecture in [CLA §2.2](https://arxiv.org/html/2405.12981v1#S2.SS2) directly reuses KV produced by selected layers in other layers.
+
+MQA/GQA and CLA share along different axes. MQA/GQA reduce the number of KV heads read by Query heads within a layer, while CLA reduces the number of layers producing separate KV across depth. The two approaches can be combined. We keep one KV head throughout this article to separate the effect of head count from that of cross-layer sharing.
+
+## Producing and reusing the current token’s KV
+
+Consider only the first pair in Figure 1. KV for positions p0 through p3 is already stored, and we are processing position p4. From this position’s input <math><msub><mi>h</mi><mn>1</mn></msub></math>, L₁ produces Query <math><msub><mi>q</mi><mn>1</mn></msub></math>, Key <math><msub><mi>k</mi><mn>4</mn></msub></math>, and Value <math><msub><mi>v</mi><mn>4</mn></msub></math>. In this figure, the subscripts on q and h identify the <strong>layer</strong>; the numerals on k and v identify the <strong>token position</strong>.
+
+In Figure 2, the orange write happens first, then the two layers read the same KV in sequence. The T=4 and T=5 boxes on the right show one KV-L1 bank before and after an update, rather than two separate stores.
+
+<a href="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer.png?v=f17d0001e82e" id="figure-2"><picture><source width="720" height="3218" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer-mobile.png?v=5fb1acef23c6" /><img width="2400" height="4252" src="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer.png?v=f17d0001e82e" alt="L1 appends KV for p4, then both layers read it with their own Queries. Each attention output passes through output projection, residual, and FFN operations to form the next layer input." loading="lazy" /></picture></a>
+
+First, <math><msub><mi>k</mi><mn>4</mn></msub></math> and <math><msub><mi>v</mi><mn>4</mn></msub></math> are appended as row p4. KV-L1 now contains five rows, p0 through p4. Labels such as k0 and v0 name vectors at those positions, rather than their component values. Each Key and Value is two-dimensional, as in the previous section.
+
+L₁’s <math><msub><mi>q</mi><mn>1</mn></msub></math> is compared with these five Keys to obtain attention weights, which form a weighted sum of the corresponding Values. Output projection, residual connections, FFN, and related operations then produce <math><msub><mi>h</mi><mn>2</mn></msub></math>, the input to L₂. In the figure, o₁ is the attention weighted sum, and the gray box groups the operations that produce the next layer’s input. Normalization is included in the relevant stages; normalization before Q/K/V formation is folded into the projection box.
+
+L₂ forms its own <math><msub><mi>q</mi><mn>2</mn></msub></math> from <math><msub><mi>h</mi><mn>2</mn></msub></math>, then reads the five rows of KV-L1 updated by L₁. <strong>L₂ does not produce new Keys and Values from its own input or write a second p4 row into this bank.</strong> For the next token, L₁ again appends a row and L₂ reuses it.
+
+Both layers read through the current position p4.
+
+## Reduced storage and remaining computation
+
+Sharing KV reduces storage, but does not combine the computations through which each layer reads information. In Figure 3, count the teal stores separately from the blue computation boxes.
+
+<a href="/images/model-advanced-cross-layer-kv/en/03-what-is-shared.png?v=a60b502bfe23" id="figure-3"><picture><source width="720" height="2652" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/03-what-is-shared-mobile.png?v=8f559eb63b3e" /><img width="2400" height="2220" src="/images/model-advanced-cross-layer-kv/en/03-what-is-shared.png?v=a60b502bfe23" alt="Sharing reduces two KV banks to one, while both layers retain Query, attention, and FFN computations." loading="lazy" /></picture></a>
+
+Both sides perform attention twice. The two Queries on the right score the same Key list, but the Queries differ, so each needs its own scores and weighted sum. FFN computation and sequential processing between layers also remain.
+
+A consuming layer that does not produce its own KV can omit its K/V projections and cache writes. Those projection weights are also unnecessary. However, attention still reads the shared KV again in each layer. [CLA §2.3](https://arxiv.org/html/2405.12981v1#S2.SS3) also distinguishes reduced KV storage from reductions in total computation and latency.
+
+## From sharing across two layers to three
+
+The two-layer sharing used so far is CLA2. [Figure 2 of the paper](https://arxiv.org/html/2405.12981v1#S2.F2) also compares CLA3, which groups three layers. Figure 4 keeps the same six layers and four tokens, changing only the sharing range.
+
+<a href="/images/model-advanced-cross-layer-kv/en/04-sharing-factor.png?v=c8a88343d799" id="figure-4"><picture><source width="720" height="3838" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/04-sharing-factor-mobile.png?v=667785f80691" /><img width="2400" height="3174" src="/images/model-advanced-cross-layer-kv/en/04-sharing-factor.png?v=c8a88343d799" alt="Across six layers, CLA2 stores three KV banks with 48 components, while CLA3 stores two with 32. Each bank retains KV for four positions." loading="lazy" /></picture></a>
+
+In CLA2, L₁, L₃, and L₅ produce KV, storing 3 × 16 = 48 components. In CLA3, only L₁ and L₄ are producers, so storage is 2 × 16 = 32 components. For example, L₃ produces its own KV in CLA2, but reads L₁’s KV with its own Q₃ in CLA3. Both architectures retain Query and attention computation in all six layers.
+
+Here, 2 and 3 count <strong>the layers that read the same KV</strong>. They are not sequence compression ratios that merge three tokens into one. Every bank still stores Keys and Values for four positions, p0 through p3.
+
+Changing the architecture has a cost. With per-layer KV, L₂ can form separate Keys and Values from its own, deeper input representation. A sharing L₂ gives up this choice and uses its own Query to read representations produced by L₁. Having different Queries does not guarantee that the two architectures produce the same output. As sharing expands, model quality must be considered alongside storage.
+
+Cross-layer sharing is <strong>a model design that requires training for this architecture</strong>.
+
+We can now distinguish which layers produce KV, which layers read it, and when a new token is appended. The next article examines YOCO, which separates these roles so that several later layers read KV produced by the earlier part of the model.
