@@ -1,6 +1,6 @@
 import {Panel,C,matrix,connector,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
- articleId:'model-advanced-mamba-selective',figureId:'04-mamba-block',number:'mamba-04',eyebrow:['그림 4','Figure 4'],
+ articleId:'model-advanced-mamba-selective',figureId:'04-mamba-block',number:'mamba-04',eyebrow:['그림 6','Figure 6'],
  title:['선택적 SSM을 Mamba 블록 안에 놓아 봅니다','Place the selective SSM inside a Mamba block'],
  subtitle:['대표 Mamba-1 구조 · 같은 요청 · 같은 층','Representative Mamba-1 block · Same request and layer'],captionIn:'article',
  caption:['주 분기는 projection,causal convolution,SiLU,selective SSM을 통과한다. 상태 읽기에 직접항 D⊙u를 더하고 보조 분기의 SiLU출력과 곱한 뒤 output projection과 residual을 적용한다. 합성곱 기록과 SSM 상태를 구분한다. 과거w−1개가 필요하며 공식구현의버퍼할당은현재값을포함해w칸이다.','The main path applies projection,causal convolution,SiLU,and selective SSM. Add direct D⊙u to the readout, multiply by the auxiliary SiLU output, project, and add the residual. Convolution history differs from SSM state. Past w−1 values are needed; the reference buffer allocates w slots including current input.'],

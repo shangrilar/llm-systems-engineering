@@ -2035,6 +2035,8 @@
     "date": "2026-09-28",
     "figureIds": [
       "model-advanced-mamba-selective/01-why-selection",
+      "model-advanced-mamba-selective/06-delta-retention",
+      "model-advanced-mamba-selective/07-write-components",
       "model-advanced-mamba-selective/02-input-coefficients",
       "model-advanced-mamba-selective/03-selective-update",
       "model-advanced-mamba-selective/04-mamba-block",
@@ -2053,8 +2055,8 @@
         "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "0454851f1ab534b33a650dcc5771d34f6e58445720397c5409f2a6fd667d4507",
-        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved."
+        "sourceRevision": "b43a46b3eac72b1ca7acd516fecb33652977197c392dd91b62aa8145ca0f5633",
+        "reviewNote": "2026-09-29: Reviewed matching purpose-first explanations of Delta, negative A, input-dependent B/C, two new visual examples, figure order and preserved discretization discussion."
       }
     }
   },

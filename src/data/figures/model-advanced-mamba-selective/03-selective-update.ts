@@ -1,6 +1,6 @@
 import {Panel,C,matrix,connector,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
- articleId:'model-advanced-mamba-selective',figureId:'03-selective-update',number:'mamba-03',eyebrow:['그림 3','Figure 3'],
+ articleId:'model-advanced-mamba-selective',figureId:'03-selective-update',number:'mamba-03',eyebrow:['그림 5','Figure 5'],
  title:['계수가 바뀌면 남는 상태와 읽는 값도 달라집니다','Different coefficients change the state and its readout'],
  subtitle:['같은 이전 상태 [2, 1] · 한 채널의 입력 u = 2 · 교육용 비교','Same old state [2, 1] · Channel input u = 2 · Illustrative comparison'],captionIn:'article',
  caption:['서로 다른 전체 특징 벡터가 한 채널에서는 같은 입력2를 가지되 다른 계수를 생성한 예시다. A=diag(ln0.5,ln0.8)는 양쪽에서 같다. 공식 Mamba-1 step의 Abar=exp(Delta A),Bbar=Delta B를 사용했다. 직접항 D u와출력gate는 생략한다.','Different full feature vectors share scalar2 in the illustrated channel but generate different coefficients. Both use A=diag(ln0.5,ln0.8). Abar=exp(Delta A),Bbar=Delta B follow official Mamba-1 step. Direct D u and output gate are omitted.'],
