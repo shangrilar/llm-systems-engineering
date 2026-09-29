@@ -1,6 +1,6 @@
 import {Panel,C,connector,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
- articleId:'model-advanced-mamba-selective',figureId:'05-delta-versus-input',number:'mamba-05',eyebrow:['그림 5','Figure 5'],
+ articleId:'model-advanced-mamba-selective',figureId:'05-delta-versus-input',number:'mamba-05',eyebrow:['그림 7','Figure 7'],
  title:['차이를 보정할까, 입력의 기여를 더할까?','Correct a mismatch or add the input contribution?'],
  subtitle:['GDN·KDA ↔ Mamba · 상태 갱신 규칙 비교','GDN · KDA ↔ Mamba · Comparing state-update rules'],captionIn:'article',
  caption:['GDN과 KDA는 감쇠한 상태를 현재 Key로 읽고 새 Value와의 차이를 보정한다. Mamba는 감쇠한 상태에 현재 입력의 기여를 더하며 Key로 읽은 예측과의 잔차를 계산하지 않는다. 양쪽의 상태가 같거나 성능 우열이 있다는 뜻이 아니다. Mamba의 직접항과 출력gate는 생략했다.','GDN and KDA read the retained state with the current key and correct the mismatch with the new value. Mamba adds the current input contribution without such a key-read residual. This does not equate the states or rank performance. Mamba direct terms and output gates are omitted.'],
