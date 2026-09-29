@@ -2087,8 +2087,8 @@
         "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "1dbeffa531dc6ef0064aa97f23dfabb49e0f3d9ed5fc5daaba44fe1e45e1caff",
-        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, numerical examples, state indexing, equations, sources, and all figure variants for articles 10–12."
+        "sourceRevision": "10dd968bf15268e3063097a138d7303465b66ff42d910f9fc1772670106ed7dd",
+        "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
       }
     }
   },

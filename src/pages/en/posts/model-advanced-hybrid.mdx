@@ -22,9 +22,7 @@ The left side updates a state of the same size whenever an input arrives. The fi
 
 The right side retains the Key and Value produced at each position. After p₃, it stores four positions’ KV. The next position’s Query can score these positions separately and read their Values with the resulting weights. KV here is not the original text tokens themselves, but representations computed in that layer.
 
-<strong>The difference is when and in what form past contributions are collected.</strong> A state-based layer changes a fixed-size state as inputs arrive. KV Attention preserves representations by position, then determines each position’s contribution when the current Query arrives.
-
-Accumulating information in a state does not make past contributions entirely indistinguishable. As we saw in Linear Attention, its state readout can be expanded as a sum of past Values weighted by Query–Key dot products. However, storage does not retain a separate row for every past position. As writes continue into a fixed-size state, different records can affect the same components, and the update rule may reduce or revise past contributions.
+In a state-based layer, multiple records affect the same components, and updates can change earlier records. KV Attention retains representations by position, allowing the current Query to compare those positions again.
 
 ## Placing the two computations in different layers
 
@@ -36,9 +34,7 @@ KV Attention provides a path that directly compares representations at past posi
 
 The middle configuration uses state in every layer. The hybrid on the right processes R₁ → R₂ → A₃ → R₄ → R₅ → A₆. R denotes a state-based layer, A a KV Attention layer, and each subscript is a layer number. Each R layer has its own state, and A₃ and A₆ each store their own KV.
 
-This does not divide tokens into two types and send them to different destinations. <strong>The same token’s representation passes through every layer in sequence.</strong> A state-based layer’s output becomes the next Attention layer’s input; the result of consulting past positions in Attention then passes to later state-based layers. The two computations are connected through depth.
-
-There is no need to interpret this as a rigid division in which “state layers only summarize and Attention layers only retrieve.” What each layer learns depends on the model and training. The design provides a path for updating state and a path for referring to position-indexed representations, and the model learns to use them together.
+<strong>The same token’s representation passes through every layer in sequence.</strong> A state-based layer’s output becomes the next Attention layer’s input; the result of consulting past positions in Attention then passes to later state-based layers. The two computations are connected through depth.
 
 ## Can combining them also improve quality?
 
@@ -50,9 +46,7 @@ Figure 3 shows a comparison from the Mamba-2 paper. Models with approximately 35
 
 Transformer++ scores 8.68 and Mamba-2 scores 8.60, while a hybrid with Attention in 6 of Mamba-2’s 48 layers scores 8.26. In this experiment, the hybrid achieves lower perplexity than either the Attention-only or state-only configuration. [Mamba-2 paper §9.2.3, Table 2](https://arxiv.org/html/2405.21060v1#S9.SS2.SSS3)
 
-This supports the possibility that <strong>combining different computations can also benefit quality</strong>. It does not prove that state-based layers can process information that Attention cannot, or isolate which kinds of information produced the gain. Nor can the experiment’s layer ratio be assumed to transfer directly to other scales and training data.
-
-The lesson is that unifying every layer around one approach is not always advantageous. Both storage and computation change, so combining the two paths is a design choice that can adjust quality and cost together.
+This result shows that <strong>combining the two computations can improve prediction quality</strong>. The appropriate layer ratio depends on model scale and training conditions.
 
 ## Reduced storage and remaining costs
 
@@ -66,9 +60,9 @@ If all layers use Attention, each layer needs four times the token count in comp
 
 In the hybrid, the four state layers remain at 16 components in total. The two Attention layers store 8T components. Total storage is therefore 16+8T: 48 at T=4 and 80 at T=8. <strong>Fewer KV layers reduce the rate of growth, but total storage is not fixed.</strong>
 
-These counts compare only the components used as memory. They exclude weights, intermediate activations, recent-input convolution buffers, and temporary workspace. Real models also differ in head counts, state dimensions, and KV compression. The example’s one-half ratio cannot be applied directly to a real model’s total memory or execution time. A fixed state also has a size of its own, so its cost may be relatively prominent at short context lengths.
+This calculation compares only state and KV storage, excluding weights, intermediate activations, and other memory use. Fixed-size states also require storage, so the benefit may be smaller at short context lengths.
 
-Quality and execution bring further considerations. Reducing Attention layers also reduces the number of stages that directly refer to position-indexed KV. Training and evaluation must establish whether the remaining stages preserve the needed quality. Building a hybrid does not mean arbitrarily replacing layers in an already trained Attention model.
+Quality and execution bring further considerations. Reducing Attention layers also reduces the number of stages that directly refer to position-indexed KV. Training and evaluation must establish whether the remaining stages preserve the needed quality.
 
 The runtime must also manage two forms of memory. KV appends a row for each new position, whereas state updates existing contents. For example, after processing a candidate continuation, returning to an earlier position can discard appended KV rows. Recovering an overwritten state requires a saved earlier value or a way to recompute it. This is an execution difference to consider separately from layer ratios. How much reduced KV access improves actual speed also depends on state-update kernels, context length, and batch size.
 
@@ -80,11 +74,9 @@ The name Hybrid Attention does not always refer to the state-and-KV combination 
 
 The first type, central to this article, combines state-based layers with KV Attention layers. [Kimi K3](https://huggingface.co/moonshotai/Kimi-K3) uses KDA and MLA; [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) uses GDN and full-context Attention. The KV side need not be conventional Full Attention. [GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash/blob/main/config.json) combines KDA and Sparse Attention, while [Qwen3.8-Flash-Next](https://huggingface.co/Qwen/Qwen3.8-Flash-Next) combines GDN and QSA.
 
-The second type combines KV read ranges. Models such as [MiMo-V2.6-Pro-RL](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL) place recent-window SWA alongside full-context Attention. Keeping only a fixed-length window of recent KV does not make SWA the same as GDN or Mamba state updates. SWA still holds position-indexed KV, with its range restricted.
+The second type combines KV read ranges. Models such as [MiMo-V2.6-Pro-RL](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL) place recent-window SWA alongside full-context Attention. SWA stores and reads position-indexed KV within a recent window.
 
 The third type combines compression and selection methods. [DeepSeek-V4](https://arxiv.org/html/2606.19348v1#S2.SS3) uses CSA, which compresses multiple tokens’ KV and selects some entries, alongside more heavily compressed HCA. Both also include a path that reads uncompressed recent-window KV. Compressed entries are KV added as the number of token groups increases; this differs from repeatedly updating a single state of fixed size.
-
-Rather than relying on the word hybrid, examine <strong>what each layer stores and how it reads it</strong>. The figure’s combinations refer to the named model variants, not blanket classifications for every model in each family.
 
 ## Following one token through both types of layers
 
@@ -92,14 +84,14 @@ Finally, follow p₃ through the hybrid configuration in Figure 2. Let layer 2 u
 
 <a href="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=0c1ac36a7ca0" id="figure-6"><picture><source width="720" height="3304" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/02-one-token-two-memories-mobile.png?v=fbdd9b031535" /><img width="2400" height="2794" src="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=0c1ac36a7ca0" alt="Layer2GDN derives q,k,v,alpha,beta for p3,updates S3 toS4,and reads with q. Its output becomes layer3input. Layer3creates its own QKV,appends thep3KVrow,and reads thecache. Each store persists into its own layer’sp4step." loading="lazy" /></picture></a>
 
-Layer 2 first uses learned weights to derive a Query, Key, Value, retention factor α₃, and correction strength β₃ from its input representation. α₃ and β₃ are computed from the current input; they do not result from retraining weights during inference.
+Layer 2 first uses learned weights to derive a Query, Key, Value, retention factor α₃, and correction strength β₃ from its input representation.
 
-It then applies retention to the existing state S₃ and reads the retained state with k₃. The difference between the Value to write, v₃, and this readout is combined with β₃ and k₃ to form a correction and update the state. This is the [GDN computation](/en/posts/model-advanced-gdn-kda/) covered earlier. The figure groups these operations into the orange “Update” path.
+It then applies retention to the existing state S₃ and reads the retained state with k₃. The difference between the Value to write, v₃, and this readout is combined with β₃ and k₃ to form a correction and update the state. This is the [GDN computation](/en/posts/model-advanced-gdn-kda/) covered earlier.
 
-The updated state is S₄. As in the earlier articles, the state subscript counts processed tokens, so S₃ precedes processing p₃ and S₄ follows it. The current q₃ reads this new state to produce an output for the current position. The representation passes through the remaining block operations, such as output projection, residual connections, and FFN, and becomes the next layer’s input. The figure folds these operations into the output stage to focus on memory flow.
+The updated state is S₄. As in the earlier articles, the state subscript counts processed tokens, so S₃ precedes processing p₃ and S₄ follows it. The current q₃ reads this new state to produce an output for the current position. The representation passes through the remaining block operations, such as output projection, residual connections, and FFN, and becomes the next layer’s input.
 
 Layer 3 <strong>uses its own weights to compute a new Query, Key, and Value</strong> from the received representation. Both panels use the symbols q₃, k₃, and v₃, but these are different vectors because they belong to different layers. Subscript 3 denotes the current token position; the panel title identifies the layer.
 
 Layer 3’s cache holds KV for p₀ through p₂. It appends its own k₃ and v₃, then uses q₃ to read KV from p₀ through p₃. The resulting output becomes the next layer’s input representation. Layer 2’s state is neither converted into KV nor copied into layer 3’s cache.
 
-When p₄ arrives, layer 2 continues by updating its own S₄, while layer 3 keeps its own four positions’ KV and appends a new row. <strong>The current token’s representation flows to the next layer; each layer’s memory carries forward to the next token in that same layer.</strong> Connecting these two flows lets a hybrid model use state updates and position-indexed KV access together.
+When p₄ arrives, layer 2 continues by updating its own S₄, while layer 3 keeps its own four positions’ KV and appends a new row. <strong>The current token’s representation flows to the next layer; each layer’s memory carries forward to the next token in that same layer.</strong>
