@@ -47,6 +47,9 @@
 - [HC와 mHC: Residual 경로를 넓히고 연결하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-hc-mhc/)
 - [Gated Residual: 성분별로 읽고 원본에 나누어 쓰기](https://llm-systems-engineering.pages.dev/posts/model-advanced-gated-residual/)
 - [Attention Residuals: 지나온 층의 출력을 선택해서 읽기](https://llm-systems-engineering.pages.dev/posts/model-advanced-attention-residuals/)
+- [층간 KV 공유: 앞선 층의 Key와 Value 재사용하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-cross-layer-kv/)
+- [YOCO: 공통 KV를 만드는 층과 읽는 층 나누기](https://llm-systems-engineering.pages.dev/posts/model-advanced-yoco/)
+- [CED: 인과적 Encoder와 Decoder로 문맥 이어가기](https://llm-systems-engineering.pages.dev/posts/model-advanced-ced/)
 
 #### 하드웨어
 

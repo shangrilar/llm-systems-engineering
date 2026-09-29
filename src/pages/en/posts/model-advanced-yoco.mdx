@@ -1,0 +1,83 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-yoco
+title: "YOCO: Separating Layers That Produce and Read Shared KV"
+description: "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output."
+date: 2026-09-29
+---
+
+In [cross-layer KV sharing](/en/posts/model-advanced-cross-layer-kv/), a later layer also reads Keys and Values produced by an earlier layer. YOCO (You Only Cache Once) divides these roles between the early and late parts of the model. The early part prepares shared KV containing context, and multiple later layers read it.
+
+This division changes computation dependencies as well as storage. <strong>If the early part alone can prepare past KV, must the later part compute every past position to produce the first answer token?</strong> We will examine the architecture and attention operation, then answer this by separating new-token processing from the initial processing of a prompt. Finally, we will compare how early-layer state and shared KV storage change as context grows.
+
+## Early layers produce shared KV; later layers read it
+
+[YOCO §2](https://arxiv.org/html/2405.05254v1#S2) calls the early part the self-decoder and the later part the cross-decoder. Both process the same token sequence causally. Figure 1 reduces each part to two layers for illustration.
+
+<a href="/images/model-advanced-yoco/en/01-producers-and-readers.png?v=fb235d2fc229" id="figure-1"><picture><source width="720" height="2896" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/en/01-producers-and-readers-mobile.png?v=9371ad347505" /><img width="2400" height="3372" src="/images/model-advanced-yoco/en/01-producers-and-readers.png?v=fb235d2fc229" alt="Each self-decoder layer reads and updates its own recurrent or local state. The final representation M produces global KV, which both cross-decoder layers read with their own Queries." loading="lazy" /></picture></a>
+
+The final representation M from the first two layers contains contextual information at each position. Projecting M into Keys and Values produces global KV. Here, global means that the later part can read the long history. It does not permit reading future positions.
+
+Both later layers read the same global KV. But hidden representations change through the layers, and Query projection weights differ by layer. Each layer therefore determines again how much to use each position, even when reading the same data. The blue hidden-state path and teal KV-read paths show this relationship.
+
+State 1 and State 2 on the right belong separately to the two early layers. Teal arrows indicate reads, and orange arrows indicate updates. With a recurrent self-decoder, each layer retains an accumulated state; with sliding-window attention, each retains KV for a recent window.
+
+The paper’s “cache once” refers to the <strong>global KV</strong> shared by the later part. It does not mean that all model state becomes one physical store. At fixed model size and window size, early-layer state has a bound independent of context length, while global KV grows with every new position.
+
+Separating the roles does not skip model depth. A position’s representation passes through the early part into the later part, and every layer includes normalization, residual, and FFN computation as well as attention. These operations are folded into the layer boxes.
+
+## Q and KV come from different representations
+
+Cross-attention uses the familiar attention computation. The difference is where the Query, Keys, and Values originate. In Figure 2, a later-layer representation at the current position p3 reads values prepared by the early part for p0 through p3. Matrices use row-vector notation, with one row per position.
+
+<a href="/images/model-advanced-yoco/en/02-cross-attention-sources.png?v=7008f1133879" id="figure-2"><picture><source width="720" height="2594" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/en/02-cross-attention-sources-mobile.png?v=9c286bf88ea4" /><img width="2400" height="2118" src="/images/model-advanced-yoco/en/02-cross-attention-sources.png?v=7008f1133879" alt="The current later-layer representation produces q, while the early four-position representation M produces K and V. Softmax turns four scores into weights for the Value sum." loading="lazy" /></picture></a>
+
+The later layer’s current representation h has shape [1×4]. Multiplying by this layer’s Query projection <math><msub><mi>W</mi><mtext>Q</mtext></msub></math> [4×2] gives q [1×2]. The early part’s four-position representation M has shape [4×4]; applying the Key and Value projections gives K and V, each [4×2]. The figure omits normalization in the actual block.
+
+Multiplying q by the transpose of K gives [1×2] × [2×4] = [1×4]. These four components are <strong>scores for four token positions</strong>, rather than four features. Dividing by √2 for the head dimension of 2 and applying softmax gives the position weights α.
+
+Those weights mix the four rows of V. The result o of [1×4] × [4×2] has shape [1×2], and output projection <math><msub><mi>W</mi><mtext>O</mtext></msub></math> maps it back to the model width, [1×4]. Changing the source of KV retains attention’s roles: computing scores, assigning position weights, and forming a weighted sum of Values.
+
+M and the later-layer h are representations of the same token sequence at different depths. Cross-attention does not require a different language or a separate input sequence. The M → K/V path in the figure creates the values initially. Generation reads previously created K/V from the cache, rather than reprojecting all past M on every step.
+
+## A new token passes through both parts
+
+Suppose p0 through p3 have already been processed, and the current input <math><msub><mi>x</mi><mtext>4</mtext></msub></math> arrives at p4. Figure 3 uses a recurrent self-decoder. <math><msub><mi>S</mi><mtext>1</mtext></msub></math> and <math><msub><mi>S</mi><mtext>2</mtext></msub></math> are separate states of the two early layers; their displayed 2×2 size is illustrative.
+
+<a href="/images/model-advanced-yoco/en/03-new-token-through-both-halves.png?v=f93460dcf169" id="figure-3"><picture><source width="720" height="3392" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/en/03-new-token-through-both-halves-mobile.png?v=fc5f345979a7" /><img width="2400" height="4514" src="/images/model-advanced-yoco/en/03-new-token-through-both-halves.png?v=f93460dcf169" alt="Input x4 updates both early-layer states and appends p4 to global KV. Both later layers read the same KV, then select x5 as the next input." loading="lazy" /></picture></a>
+
+The current token first passes through self-decoder 1, reading and updating that layer’s past state. The result enters self-decoder 2, which updates the second layer’s state.
+
+The early part’s final representation <math><msub><mi>m</mi><mtext>4</mtext></msub></math> produces the current Key and Value, appended as row p4 in global KV. The later layers can now read five positions, p0 through p4. Cross-decoder 3 reads with its own Query and passes the result to the next layer. Cross-decoder 4 forms a new Query from the changed representation and reads the same five positions.
+
+The LM head takes the final representation and produces scores for the next token. The selected <math><msub><mi>x</mi><mtext>5</mtext></msub></math> is <strong>the input to the next execution</strong>. Selecting it does not mean that p5’s KV already exists. On the next execution, this token also passes through both parts and updates the required states.
+
+Shared KV therefore does not allow the self-decoder to stop during generation. The early part still has to create global KV for each new position. What the next section skips is the later part at past positions unnecessary for the first output, rather than the early part for a new token.
+
+## Keeping only the computation needed for the first output
+
+Now suppose we receive prompt p0 through p3 for the first time and need only the first generated token, <math><msub><mi>x</mi><mtext>4</mtext></msub></math>. The cells in Figure 4 show <strong>which positions are computed in which layers</strong>, rather than an attention mask.
+
+<a href="/images/model-advanced-yoco/en/04-prefill-dependencies.png?v=d2a8158ecbfd" id="figure-4"><picture><source width="720" height="2552" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/en/04-prefill-dependencies-mobile.png?v=435eab24e00a" /><img width="2400" height="2678" src="/images/model-advanced-yoco/en/04-prefill-dependencies.png?v=d2a8158ecbfd" alt="The self-decoder processes all four prompt positions, while the cross-decoder computes only p3 for the first output, skipping the other three past positions." loading="lazy" /></picture></a>
+
+The early part must process all four prompt positions to prepare shared KV for p0 through p3. After that, only p3’s representation needs to pass through the two later layers to select the first generated token.
+
+Why can we omit cross-decoder outputs for p0 through p2? The past values read by a current Query in the later part are KV already produced by the self-decoder. There is no path that requires past outputs of the later part to create new KV. FFN and normalization are also position-wise here, so omitting past cross-decoder outputs does not remove p3’s next-layer input. This dependency enables the [prefill skipping in §2.3](https://arxiv.org/html/2405.05254v1#S2.SS3).
+
+Computing log probabilities or training losses at each position requires the final outputs at those positions as well.
+
+## Storage growth with longer context
+
+Figure 5 uses a self-decoder built with <strong>sliding-window attention (SWA)</strong>. Each of its two layers retains the two most recent positions, while the two cross-decoder layers share one global KV bank. A cell represents one position’s Key/Value vector pair; all KV are assumed to have the same head count, vector width, and data type. For the recurrent configuration in Figure 3, early-layer storage is counted by the state matrix size.
+
+<a href="/images/model-advanced-yoco/en/05-cache-growth.png?v=a83849f6cb1f" id="figure-5"><picture><source width="720" height="3752" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/en/05-cache-growth-mobile.png?v=de05e64e7c46" /><img width="2400" height="3012" src="/images/model-advanced-yoco/en/05-cache-growth.png?v=a83849f6cb1f" alt="With SWA window 2, increasing context from 4 to 8 keeps total local KV at 4 pairs and grows global KV from 4 to 8 pairs. YOCO totals grow from 8 to 12 pairs; four full-attention layers grow from 16 to 32." loading="lazy" /></picture></a>
+
+After four positions have been processed, each self-decoder layer retains KV for p2 and p3. Two pairs per layer give four local KV pairs in total. Global KV holds four pairs, p0 through p3. Both cross-decoder layers read these shared values, so we count them once. The total is 4 + 4 = 8 pairs.
+
+After eight positions, local KV contains p6 and p7, but still has two pairs per layer. Global KV grows to eight pairs, p0 through p7, giving 4 + 8 = 12 pairs in total. Four layers each retaining their own full-attention KV would instead grow from 4 × 4 = 16 pairs to 4 × 8 = 32.
+
+YOCO’s storage reduction thus combines two effects. The early part does not accumulate the entire history of KV separately in each layer, and the later part does not store duplicate long-context KV per layer. This example counts separately the fixed-size state and shared global KV described in [§2.1–2.3](https://arxiv.org/html/2405.05254v1#S2).
+
+Shared KV grows with context, and each later layer still performs computation to read it.
+
+The key question for YOCO was whether past outputs of the later part produce state needed by subsequent computation. The next article examines how CED changes the scope of skipping when encoder-derived global information is used alongside the decoder’s own local state.

@@ -47,6 +47,9 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [HC and mHC: Widening and Connecting Residual Streams](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-hc-mhc/)
 - [Gated Residual: Reading Components and Writing to Originals](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-gated-residual/)
 - [Attention Residuals: Selecting Outputs from Earlier Layers](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-attention-residuals/)
+- [Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-cross-layer-kv/)
+- [YOCO: Separating Layers That Produce and Read Shared KV](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-yoco/)
+- [CED: Continuing Context with a Causal Encoder and Decoder](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-ced/)
 
 #### Hardware
 

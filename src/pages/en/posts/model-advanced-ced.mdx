@@ -1,0 +1,111 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-ced
+title: "CED: Continuing Context with a Causal Encoder and Decoder"
+description: "Compare generation paths and the sources of global and local KV, then connect sparse selection, three reuse modes, sequence compression, and prefill replay."
+date: 2026-09-29
+---
+
+In [YOCO](/en/posts/model-advanced-yoco/), the early layers produced shared KV for the later layers to read. This meant the later layers did not need to compute every past position to produce the first output. With this separation of roles in mind, we can now examine the Causal Encoder–Decoder (CED).
+
+This article covers [CED in the DeepSeek-V4.1-Flash report](https://arxiv.org/html/2609.19969v1#S2.SS2). We will focus on how it <strong>uses global information produced by the encoder together with local information produced by the decoder itself</strong>. We first trace token generation and the sources of KV, then separate position selection from the attention computation and examine what layers reuse. Finally, we explain the prefill work that remains because the decoder has its own local state.
+
+## Comparing Generation Paths with a Traditional Encoder–Decoder
+
+The names encoder and decoder alone do not determine the path of a new token. The left side of Figure 1 shows a T5-style architecture with separate input and output sequences. The right side shows CED, where the prompt and generated tokens form a single sequence.
+
+<a href="/images/model-advanced-ced/en/01-ed-and-ced-paths.png?v=64130ba4fb82" id="figure-1"><picture><source width="720" height="3424" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/01-ed-and-ced-paths-mobile.png?v=e7402607ce4f" /><img width="2400" height="2748" src="/images/model-advanced-ced/en/01-ed-and-ced-paths.png?v=64130ba4fb82" alt="A T5-style model generates targets in its decoder while reading a fixed source. In CED, each new input token passes through both the causal encoder and decoder." loading="lazy" /></picture></a>
+
+The encoder in a [T5-style encoder–decoder](https://jmlr.org/papers/v21/20-074.html) processes the entire source bidirectionally. For example, the representation of the first source token can use information from the last source token. The resulting source representations remain available throughout target generation.
+
+The decoder has two reading paths. Causal self-attention reads earlier target positions, while cross-attention reads source information produced by the encoder. Once a selected target token becomes the next input, it passes through the decoder. Generating each token does not inherently require the same source to pass through the encoder again.
+
+In CED, generated tokens follow the prompt. When a new token becomes the next input, it passes through the causal encoder, whose output then enters the decoder. The context produced by the encoder therefore grows as generation proceeds. This explains why the return arrows in the figure lead to different places.
+
+In both cases, <strong>selecting a token and processing that token as the next input happen at different times.</strong> Immediately after selection, only the new token ID has been determined. Its corresponding state is created during the next execution as it passes through the required layers. The start marker and the one-position shift in the target labels illustrate this prediction order.
+
+## One Token Sequence and Causal Access
+
+Let us replace the arrows with position grids. In Figure 2, rows are Query positions and columns are Key positions available for reference. The upper grids show relationships inside the encoder; the lower grids show how the decoder reads encoder information.
+
+<a href="/images/model-advanced-ced/en/02-sequences-and-causality.png?v=c7b348a24fb7" id="figure-2"><picture><source width="720" height="3204" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/02-sequences-and-causality-mobile.png?v=02ac2dd52b0a" /><img width="2400" height="2626" src="/images/model-advanced-ced/en/02-sequences-and-causality.png?v=c7b348a24fb7" alt="ED uses separate source and target position axes. The CED grids show the causal range of current and past positions, not the actual sparse selection." loading="lazy" /></picture></a>
+
+The example on the left has three source positions and two target positions. Source and target lengths are independent, and positions with the same number need not represent corresponding words. Each target Query can read the entire source prepared by the encoder. This is different from reading target answers that have not yet been generated.
+
+On the right, the encoder and decoder process the same token sequence. Encoder information used at p2 must be produced from inputs through p2. Feeding information from p3 into p2 would leak the future into next-token prediction. This produces a triangle that allows the current and earlier positions while blocking future positions.
+
+This figure shows <strong>the original position relationships allowed by causality</strong>. It is not the list of entries actually selected by sparse attention. A position inside the triangle is safe to read causally; that does not mean every such position is read.
+
+## Shared Global KV and Per-Layer Local KV
+
+Figure 3 separates shared storage from per-layer computation in the actual decoder. The left side prepares values that multiple layers read together; the right side shows the work performed anew in each layer.
+
+<a href="/images/model-advanced-ced/en/03-global-and-local-kv.png?v=8869ca7bcf13" id="figure-3"><picture><source width="720" height="3006" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/03-global-and-local-kv-mobile.png?v=871dbe8e0072" /><img width="2400" height="2504" src="/images/model-advanced-ced/en/03-global-and-local-kv.png?v=8869ca7bcf13" alt="The first Full layer produces global KV from E, and all 20 decoder layers share it. Every layer produces its own Main Q and Local KV." loading="lazy" /></picture></a>
+
+[Global KV in CED](https://arxiv.org/html/2609.19969v1#S2.SS2) is projected from the encoder’s final hidden state E. Local KV comes from each decoder layer’s own hidden state. This lets the decoder read both the long context processed by the encoder and the recent context processed at each decoder depth.
+
+<strong>Receiving the same E as input is different from sharing the already projected KV values.</strong> Different transformations of the same input can produce different results. The general CED formulation allows per-layer projections, but in the actual arrangement shown in Figure 3, all remaining decoder layers share the global KV produced by the first decoder layer. We will examine the reuse modes later.
+
+In contrast, Main Q and Local KV on the right are produced anew in every layer. Here, h is <strong>the hidden state entering the current layer</strong>, not the original input embedding. Even the same token has a different representation after passing through earlier layers. Each layer therefore produces a different Query for reading shared KV and different Local KV to retain for recent positions.
+
+For example, producing the second decoder layer’s local KV requires representations that have passed through the first layer. Having E ready does not mean the second layer’s local KV is ready. This distinction matters when we determine the scope of prefill computation in the final section.
+
+### What Does the Sequence Compression Rate Reduce?
+
+The sequence compression rate m in Figure 3 describes <strong>how much the number of global main KV entries is reduced relative to the original number of token positions</strong>. With m=2 in CSA2, information from two positions is combined into one entry. In a teaching example containing only complete groups, 8 positions become 8 ÷ 2 = 4 entries. With m=1, 8 positions retain 8 entries. The input sentence itself is not shortened.
+
+The [actual configuration](https://arxiv.org/html/2609.19969v1#S4.SS2.SSS1) uses m=2 for CSA2 in the encoder and m=1 in the decoder. The decoder figures in this article therefore show six global entries for the six positions p0 through p5. The decoder does not simply receive the encoder’s internal compressed cache. Its starting point is E.
+
+It helps to distinguish storage reductions by the axis they act on. Sequence compression reduces <strong>the number of entries</strong>; quantization such as FP4 reduces <strong>the number of bits used to store numbers within each entry</strong>. Cross-layer sharing reduces <strong>the number of layers that store separate copies of the same set of entries</strong>.
+
+## Selecting Positions and Reading Values with Attention
+
+Figure 4 uses a small example: current position p5, Top-2 selection, and a local window of 2. The indexer selects positions to read, and main attention reads values at those positions. Let us distinguish the Queries used in these two steps.
+
+<a href="/images/model-advanced-ced/en/05-select-and-attend.png?v=369826a0e9c1" id="figure-4"><picture><source width="720" height="3326" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/05-select-and-attend-mobile.png?v=a549299b0d2e" /><img width="2400" height="2706" src="/images/model-advanced-ced/en/05-select-and-attend.png?v=369826a0e9c1" alt="The indexer selects p0 and p3. Their global KV is concatenated with local KV for p4 and p5, and attention is computed using a separate Main Q." loading="lazy" /></picture></a>
+
+On the left, Indexer Q is produced from the current layer’s h, while Indexer K is produced from global main KV. Suppose the indexer selects [p0, p3]. This list contains the indices of positions to read. It is not yet an attention output combining the Values at those two positions.
+
+Selection uses those indices to fetch the p0 and p3 entries from global main KV. On the right, these are concatenated with local KV for the recent positions p4 and p5. Main Q computes attention scores for these four entries and combines their Values using the resulting weights. <strong>Global KV contains values that are actually read; it is not merely information for selection.</strong> Indexer Q and Main Q have different roles and projections even though they originate from the same h.
+
+The figure chooses non-overlapping global and local positions. This is an illustrative example, not a rule that global KV covers only older positions. Even if the same position appears in both, its KV comes from separate paths. Global KV is produced from E, while local KV is produced from h in that decoder layer.
+
+[Figure 4 in the paper](https://arxiv.org/html/2609.19969v1#S2.F4) likewise concatenates selected main KV with SWA KV before feeding them into Core Attention. The actual model uses Top-512 selection and an SWA window of 128. Top-2 and window 2 make the computational relationships easier to follow here.
+
+## What Full, Reindex, and Reuse Share
+
+KV values and the list of positions to read are different objects. Layers can share the values while choosing positions again, or share both. Figure 5 compares these choices in a common layout.
+
+<a href="/images/model-advanced-ced/en/06-csa2-modes.png?v=bd35b931e28b" id="figure-5"><picture><source width="720" height="4956" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/06-csa2-modes-mobile.png?v=ebdea5c991b0" /><img width="2400" height="2088" src="/images/model-advanced-ced/en/06-csa2-modes.png?v=bd35b931e28b" alt="Full produces KV and a selection list. Reindex shares KV and selects again. Reuse shares KV and the latest list. Every mode computes attention with its own Main Q and Local KV." loading="lazy" /></picture></a>
+
+[CSA2 modes](https://arxiv.org/html/2609.19969v1#S2.SS3.SSS1) are assigned to layers in advance. There is no router choosing among the three modes each time a token arrives.
+
+- <strong>Full</strong> produces global main KV and indexer K, then computes a new selection list with its own Indexer Q.
+- <strong>Reindex</strong> reads KV from the preceding Full layer but selects positions again with its own Indexer Q.
+- <strong>Reuse</strong> reuses both KV and the selection list from the most recent Full or Reindex layer. It skips Indexer Q, score, and Top-K computation.
+
+In the figure, Full selects p0 and p3, while Reindex selects p1 and p3. The subsequent Reuse layer reads p1 and p3 unchanged. However, <strong>sharing the same list does not mean copying the attention output.</strong> Every mode recomputes attention with that layer’s own Main Q and Local KV.
+
+Reindex also has a restricted search range. The [Hierarchical Sparse Indexer](https://arxiv.org/html/2609.19969v1#S2.SS3.SSS2) makes later Reindex layers choose within a shared candidate pool produced by the first Full layer. <strong>The candidate pool is a broader search set than the final Top-K list.</strong> Reindex is not simply reordering the two positions ultimately chosen by the previous layer, so it can select p1 instead of p0 as shown in the figure.
+
+The actual 20-layer decoder begins with [Full + 3 Reuse layers], followed by four repetitions of [Reindex + 3 Reuse layers]. This totals 1 Full layer, 4 Reindex layers, and 15 Reuse layers. Figure 5 compares the three modes; it does not imply that the three modes repeatedly occur in consecutive order.
+
+In this design, sharing KV reduces storage, while sharing selection lists reduces indexer computation. Reindex preserves the opportunity to change which positions are read without creating another KV store. Main attention and per-layer local computation continue to run.
+
+## Why Prefill Recomputes a Recent Segment
+
+Figure 6 again uses six prompt positions, p0 through p5. The teaching example has two layers in each half and a recent replay segment W=2. Cells indicate Query positions to execute, not an attention mask.
+
+<a href="/images/model-advanced-ced/en/04-prefill-replay.png?v=5c4e28d72eb3" id="figure-6"><picture><source width="720" height="3224" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/04-prefill-replay-mobile.png?v=48817bb5548e" /><img width="2400" height="2626" src="/images/model-advanced-ced/en/04-prefill-replay.png?v=5c4e28d72eb3" alt="YOCO executes only p5 in the later layers. CED executes recent positions p4 and p5 in the later layers to prepare approximate local KV state." loading="lazy" /></picture></a>
+
+On the YOCO side, once the early layers have prepared global KV, only p5 needs to pass through the two cross-decoder layers to select the first generated token. In CED, the source of global KV is also in the early layers, but the decoder additionally needs its own local KV. The figure feeds recent positions p4 and p5 through the decoder again to prepare this state.
+
+There is an accuracy boundary here. <strong>Bounded replay of only a recent segment does not reconstruct a state mathematically identical to a full decoder execution.</strong> [Section 3.2.2 of the report](https://arxiv.org/html/2609.19969v1#S3.SS2.SSS2) constructs an approximate state by truncating SWA references outside the replay segment.
+
+Why does computing exactly one window’s worth of positions not automatically make this exact? Consider an illustrative layer that reads the two most recent positions. The representation at p4 read by the second layer at p5 may have been influenced by p3 in the first layer. If replay starts at p4 and blocks earlier local references, the representation at p4 may already differ from a full execution. Dependencies accumulate across layers.
+
+Bounded replay accepts this difference in exchange for reducing the remaining decoder computation over a long prompt.
+
+After selecting the first output, the selected token becomes a new input and passes through both the encoder and decoder. Each layer updates its local state, and decoder global KV produced from E at the new position is also appended.
+
+Together, the three articles establish clear points of comparison. CLA asks how many layers read the same KV. YOCO asks whether shared KV can be prepared without past outputs from the later layers. CED asks what state is required by its encoder-based global path and the decoder’s own local path. To decide which computation can be skipped, we must identify not only the scope of reuse but also <strong>who must produce the state needed later</strong>.
