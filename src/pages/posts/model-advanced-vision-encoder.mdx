@@ -1,0 +1,91 @@
+---
+layout: ../../layouts/Post.astro
+articleId: model-advanced-vision-encoder
+title: "이미지를 벡터로: Patch와 Vision Encoder"
+description: "작은 RGB 이미지를 패치 벡터로 바꾸고 위치 정보와 attention으로 문맥화하는 과정을 따라가며, 시각 표현의 학습 목표와 출력 형태를 설명합니다."
+date: 2026-09-29
+---
+
+텍스트 모델은 토큰을 벡터로 바꾼 뒤 attention과 FFN으로 처리했습니다. 이미지도 벡터열로 만들면 같은 종류의 계산에 연결할 수 있습니다. 다만 출발점은 정수 토큰 ID가 아니라 **공간 위치마다 색 값을 가진 픽셀 배열**입니다.
+
+이 글에서는 작은 RGB 이미지를 패치 벡터로 바꾸고, 위치 정보를 더한 뒤 Transformer가 패치 사이의 정보를 교환하는 과정을 살펴봅니다. 이어 무엇을 정답으로 학습하는지, 학습한 표현을 하나로 요약할지 여러 위치로 유지할지 구분하겠습니다. [Vision Transformer(ViT)](https://arxiv.org/html/2010.11929v2#S3.SS1)를 기본 예로 삼으며, 이미지 크기와 벡터 값은 교육용입니다.
+
+## 픽셀과 색 채널
+
+그림 1의 이미지는 높이 4, 너비 4인 RGB 배열입니다. 작은 칸 하나가 픽셀 하나이고, 각 픽셀에는 빨강 R, 초록 G, 파랑 B의 세 숫자가 들어 있습니다. 총 4 × 4 = 16픽셀, 16 × 3 = 48개 숫자입니다.
+
+<a href="/images/model-advanced-vision-encoder/01-pixels-and-channels.png?v=e0edab0cdbc7" id="figure-1"><picture><source width="720" height="3100" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/01-pixels-and-channels-mobile.png?v=95371bd618fe" /><img width="2400" height="2608" src="/images/model-advanced-vision-encoder/01-pixels-and-channels.png?v=e0edab0cdbc7" alt="4×4 이미지의 각 픽셀은 RGB 세 숫자를 갖는다. 총 16픽셀 48개 숫자가 시각 인코더의 입력이다." loading="lazy" /></picture></a>
+
+확대한 빨간 픽셀은 [1,0,0]입니다. R 성분만 1이고 G와 B는 0인 값으로 정했습니다. 그림의 0~1 값은 색을 쉽게 읽기 위한 예시이며, 실제 모델 입력은 지정된 크기 조정과 정규화 등의 전처리를 따릅니다.
+
+A, B, C, D는 네 영역을 따라가기 위한 이름입니다. 각 영역의 2×2 픽셀을 다음 절에서 한 패치로 묶겠습니다. 그림 위쪽의 연결 모듈과 언어 모델은 다음 글에서 다룹니다.
+
+## 패치에서 입력 벡터로
+
+픽셀 하나를 모두 별도 위치로 처리하는 대신, 작은 사각형 영역을 묶어 하나의 입력 벡터로 만들 수 있습니다. 그림 2에서는 같은 4×4 이미지를 겹치지 않는 2×2 패치 네 개로 나눕니다.
+
+<a href="/images/model-advanced-vision-encoder/02-patch-projection.png?v=64641ffd33fc" id="figure-2"><picture><source width="720" height="4292" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/02-patch-projection-mobile.png?v=81afc861a92b" /><img width="2400" height="3540" src="/images/model-advanced-vision-encoder/02-patch-projection.png?v=64641ffd33fc" alt="2×2 패치의 네 픽셀을 RGB 순서로 펼친 12성분 벡터에 공유 투영을 적용해 4성분 벡터를 만든다." loading="lazy" /></picture></a>
+
+패치 A에는 네 픽셀이 있습니다. 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 순서로 읽고, 각 픽셀 안에서는 R, G, B 순서로 펼치겠습니다. 4픽셀 × 3채널이므로 하나의 패치는 12성분 벡터 x가 됩니다. A는 네 픽셀이 모두 빨강이므로 [1,0,0]이 네 번 이어진 값입니다. 그림의 네 줄은 이 **하나의 벡터를 나누어 표시한 것**입니다.
+
+열벡터 x[12]에 <math><msub><mi>W</mi><mtext>patch</mtext></msub></math>[4×12]를 곱하면 출력은 4성분입니다. 네 패치 모두 같은 투영 가중치를 사용합니다. 패치 크기 2×2는 입력에서 어떤 픽셀을 한 묶음으로 다룰지 정하고, 출력 차원 4는 그 묶음을 얼마나 넓은 벡터로 표현할지 정합니다. 서로 다른 설정입니다.
+
+그림에서는 손으로 계산하기 위해 W를 특별히 정했습니다. 처음 세 출력은 R, G, B의 패치 내 평균이고, 네 번째는 전체 12개 값의 평균입니다. 예를 들어 A의 R 평균은 (1+1+1+1)/4=1, G와 B 평균은 0입니다. 전체 평균은 4/12=1/3이므로 출력은 [1,0,0,1/3]입니다. 같은 방식으로 초록 B는 [0,1,0,1/3], 파랑 C는 [0,0,1,1/3], 흰색 D는 [1,1,1,1]입니다.
+
+실제 가중치는 학습 목표에 유용한 픽셀 조합을 배웁니다. 텍스트가 정수 ID로 임베딩 표를 조회하는 것과 달리, 여기서는 픽셀 숫자를 투영해 네 개의 연속 벡터를 만듭니다.
+
+## 공간 위치를 전달하기
+
+패치 벡터만으로는 어떤 값이 어느 위치에서 왔는지 충분히 알려주기 어렵습니다. 같은 투영을 모든 패치에 적용했으므로, 같은 픽셀 내용을 가진 패치는 같은 초기 벡터를 얻을 수 있습니다. 그림 3에서는 공간상의 위치와 펼친 순번을 연결합니다.
+
+<a href="/images/model-advanced-vision-encoder/03-patches-and-position.png?v=a30380c8e1cc" id="figure-3"><picture><source width="720" height="4188" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/03-patches-and-position-mobile.png?v=f4226b5b0c37" /><img width="2400" height="3418" src="/images/model-advanced-vision-encoder/03-patches-and-position.png?v=a30380c8e1cc" alt="2×2 공간의 패치 A,B,C,D와 위치 p0,p1,p2,p3를 짝지어 벡터에 위치 임베딩을 더한다." loading="lazy" /></picture></a>
+
+2×2 패치 지도를 행 우선으로 펼치면 A, B, C, D가 됩니다. 이에 위치 index 0,1,2,3을 대응시킵니다. 원래 ViT의 방식에서는 각 index에 학습된 1D position embedding을 두고 해당 패치 벡터에 더합니다. 그림의 <math><msub><mi>p</mi><mtext>0</mtext></msub></math>부터 <math><msub><mi>p</mi><mtext>3</mtext></msub></math>까지가 그 위치 벡터입니다.
+
+위치 벡터의 폭도 패치 벡터와 같아야 성분끼리 더할 수 있습니다. 그러면 A의 입력은 A의 내용과 원래 위치 0의 정보를 함께 담게 됩니다. 그림의 (행,열) 표시는 이 위치 벡터가 대응하는 원래 공간 좌표입니다.
+
+아래쪽에서 표시 순서를 A, C, B, D로 바꾸어도 각 패치에는 원래 위치에 해당하는 <math><msub><mi>p</mi><mtext>0</mtext></msub></math>, <math><msub><mi>p</mi><mtext>2</mtext></msub></math>, <math><msub><mi>p</mi><mtext>1</mtext></msub></math>, <math><msub><mi>p</mi><mtext>3</mtext></msub></math>을 각각 붙여야 합니다. 모델 입력에서는 정해진 펼치기와 위치 규약을 함께 따릅니다.
+
+여기서는 덧셈 방식을 펼쳤지만, attention 안에서 위치를 반영하는 [시각 RoPE](https://arxiv.org/abs/2403.13298) 같은 대안도 있습니다. 또한 그림은 패치 네 개에 집중하기 위해 별도의 class token과 그 위치를 생략했습니다.
+
+## 패치 사이의 정보 교환
+
+위치 정보를 더한 네 벡터를 U[4×4]라고 하겠습니다. 그림 4의 왼쪽에서는 이 네 행이 두 Transformer block을 통과합니다. 오른쪽은 한 block에서 A 위치가 다른 패치를 읽는 부분을 확대합니다.
+
+<a href="/images/model-advanced-vision-encoder/04-vision-contextualization.png?v=19d6191e08f4" id="figure-4"><picture><source width="720" height="4722" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/04-vision-contextualization-mobile.png?v=d10934b55581" /><img width="2400" height="3884" src="/images/model-advanced-vision-encoder/04-vision-contextualization.png?v=19d6191e08f4" alt="시각 인코더가 네 패치 행을 유지하며 self-attention과 FFN으로 값을 갱신한다. 한 패치의 Query가 자신과 다른 패치들의 Key와 Value를 읽는다." loading="lazy" /></picture></a>
+
+각 block은 정규화된 입력에서 Q, K, V를 만듭니다. A의 Query가 A, B, C, D의 Key와 점수를 계산하고, softmax로 얻은 비중에 따라 네 Value를 가중합합니다. A 자신도 읽을 수 있습니다. B, C, D 역시 각자의 Query로 읽을 비중을 계산합니다.
+
+이후 출력 투영과 residual을 거치고, FFN이 각 위치의 표현을 변환합니다. 네 행은 유지되고 값이 바뀝니다. 정규화와 residual은 [앞 글](/posts/residual-and-rmsnorm/)에서 다룬 표현 갱신 경로를 따릅니다.
+
+중요한 차이는 읽을 수 있는 위치입니다. 기본 ViT의 전체 self-attention은 이미지의 모든 패치를 양방향으로 볼 수 있습니다. 이미지가 이미 입력으로 주어져 있으므로 오른쪽 아래 패치를 읽는 것이 미래 정답 토큰을 미리 보는 것과 같지는 않습니다. 생성 언어 모델의 causal mask와 구분해야 합니다. 모든 시각 모델이 전체 attention을 쓰는 것은 아니며, 일부는 window 등으로 읽는 범위를 제한합니다.
+
+전체 encoder 뒤의 최종 Z[4×<math><msub><mi>d</mi><mtext>v</mtext></msub></math>]는 네 패치 위치에 대응합니다. <math><msub><mi>z</mi><mtext>A</mtext></msub></math>에도 A의 내용과 다른 패치에서 읽은 정보가 함께 반영됩니다.
+
+## 시각 표현의 학습 목표
+
+여기까지는 구조를 보았습니다. 이 구조가 유용한 시각 표현을 배우려면 무엇을 잘해야 하는지 정하는 loss가 필요합니다. **ViT는 구조의 이름이며 하나의 고정된 학습 목표 이름이 아닙니다.** 그림 5는 서로 다른 목표의 예시입니다.
+
+<a href="/images/model-advanced-vision-encoder/05-learning-objectives.png?v=c669bd40d358" id="figure-5"><picture><source width="720" height="3636" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/05-learning-objectives-mobile.png?v=a68d21dba177" /><img width="2400" height="3012" src="/images/model-advanced-vision-encoder/05-learning-objectives.png?v=c669bd40d358" alt="이미지와 텍스트의 올바른 짝, 다음 텍스트 토큰, 클래스, 가린 픽셀 등 서로 다른 정답으로 시각 인코더를 학습할 수 있다." loading="lazy" /></picture></a>
+
+A 패널의 [CLIP식 이미지–텍스트 정렬](https://arxiv.org/abs/2103.00020)은 이미지와 설명을 각각 벡터로 만들고, 올바른 짝을 다른 조합과 구별하도록 학습합니다. 세 이미지와 세 설명을 비교하면 3×3의 짝이 생깁니다. 대각선 체크는 올바른 이미지–설명 짝을 표시합니다.
+
+텍스트 인코더는 설명을 비교용 벡터로 만들며, 답변을 한 토큰씩 생성하는 LLM과 역할이 다릅니다. 이미지 수준의 오차도 인코더를 거슬러 패치 표현을 학습시킬 수 있습니다.
+
+B 패널은 이미지와 앞선 텍스트를 바탕으로 다음 텍스트 토큰을 예측하는 목표입니다. 이미지가 질문에 필요한 정보를 제공하도록 시각 인코더와 언어 모델 사이의 연결을 학습할 수 있습니다. 인코더를 갱신 대상으로 두면 이 예측 오차도 시각 표현의 학습에 쓰입니다. 정확한 gradient 경로는 다음 글에서 살펴보겠습니다.
+
+그 밖에 이미지의 클래스 정답을 맞히는 분류, [MAE처럼 가린 패치의 픽셀을 복원하는 학습](https://arxiv.org/abs/2111.06377)도 가능합니다. 사용할 데이터와 필요한 표현에 맞춰 이러한 목표를 선택하거나 조합합니다.
+
+## 요약 벡터와 패치별 표현
+
+학습할 때 이미지 하나의 정답을 사용했다고 출력도 반드시 벡터 하나여야 할까요? 그림 6은 같은 시각 인코더의 표현을 어떤 형태로 꺼내 쓸지 비교합니다.
+
+<a href="/images/model-advanced-vision-encoder/06-output-representations.png?v=179b60e487a9" id="figure-6"><picture><source width="720" height="2980" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/06-output-representations-mobile.png?v=3a0c5618eb46" /><img width="2400" height="2484" src="/images/model-advanced-vision-encoder/06-output-representations.png?v=179b60e487a9" alt="입력부터 처리한 CLS 토큰의 출력을 선택하거나 패치 출력들을 pooling해 요약할 수 있다. VLM에는 여러 패치 위치의 hidden을 넘길 수도 있다." loading="lazy" /></picture></a>
+
+분류나 이미지–문장 비교에는 이미지 전체를 대표하는 벡터가 편리합니다. 한 방법은 **CLS 토큰의 출력을 선택하는 것**입니다. CLS는 입력부터 패치들과 함께 처리한 별도의 토큰이며, 여러 층을 거치면서 이미지 정보를 모읍니다. 인코더가 끝난 뒤 패치들을 갑자기 CLS라는 연산으로 합치는 것은 아닙니다.
+
+Pooling은 패치 출력들의 평균처럼 여러 벡터를 하나로 집계하는 방법입니다. CLS 출력을 선택하는 것과는 출발점이 다릅니다.
+
+VLM 연결에서는 여러 패치 행을 유지해 공간별 정보를 전달할 수도 있습니다. 어느 층에서 꺼낼지와 CLS를 포함할지는 모델별 선택입니다. 앞의 그림들은 패치 흐름에 집중해 CLS를 생략했습니다.
+
+이제 픽셀 배열에서 공간 정보를 가진 학습 벡터열까지 도달했습니다. 다음에는 그 벡터열의 개수와 폭을 조절하고, 텍스트 벡터와 함께 언어 모델에 넣는 과정을 살펴보겠습니다.
