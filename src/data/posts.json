@@ -2275,5 +2275,130 @@
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
+  },
+  {
+    "articleId": "model-advanced-ngram-embedding",
+    "order": 9.973,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-ngram-embedding/01-suffix-token-groups",
+      "model-advanced-ngram-embedding/04-lookup-meets-context",
+      "model-advanced-ngram-embedding/05-vocabulary-and-hashing",
+      "model-advanced-ngram-embedding/02-address-and-learned-row",
+      "model-advanced-ngram-embedding/03-two-hashes-and-collisions"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ngram-embedding",
+        "title": "N-gram 임베딩: 토큰 묶음의 표현 조회하기",
+        "description": "토큰 묶음의 끝 위치에 표현을 더하고 함께 학습하는 과정을 살펴본 뒤, 고정 크기 표의 주소 계산과 다중 해시로 충돌을 완화하는 방법을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ngram-embedding",
+        "title": "N-gram Embeddings: Looking Up Representations of Token Groups",
+        "description": "Follow how a representation is added at the final position of a token group and learned with the model, then see how fixed-size tables use addresses and multiple hashes to mitigate collisions.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "dadcd28279b337a0967bd0a388efb62761247d9ff8315db92cf8aa9692aa8769",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-engram",
+    "order": 9.974,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-engram/00-layer-map",
+      "model-advanced-engram/01-lookup-and-context",
+      "model-advanced-engram/02-context-gate-numbers",
+      "model-advanced-engram/03-convolution-and-residual",
+      "model-advanced-engram/04-input-versus-middle"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-engram",
+        "title": "Engram: 조회한 기억을 문맥에 맞게 사용하기",
+        "description": "토큰 묶음으로 조회한 벡터를 문맥 gate로 조절하고 residual에 결합하는 과정을 계산하며, 중간 층 배치와 조회·전송 중첩의 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-engram",
+        "title": "Engram: Using Retrieved Memory in Context",
+        "description": "Calculate how a context gate controls a vector retrieved from token groups and adds it to the residual stream, then examine the trade-off between middle-layer placement and overlapping retrieval with compute.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "78e4e56bc4285853b3c456ce32566b31a35d54d397ea0cd38734f7f5be8e049a",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-vision-encoder",
+    "order": 9.975,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-vision-encoder/01-pixels-and-channels",
+      "model-advanced-vision-encoder/02-patch-projection",
+      "model-advanced-vision-encoder/03-patches-and-position",
+      "model-advanced-vision-encoder/04-vision-contextualization",
+      "model-advanced-vision-encoder/05-learning-objectives",
+      "model-advanced-vision-encoder/06-output-representations"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-vision-encoder",
+        "title": "이미지를 벡터로: Patch와 Vision Encoder",
+        "description": "작은 RGB 이미지를 패치 벡터로 바꾸고 위치 정보와 attention으로 문맥화하는 과정을 따라가며, 시각 표현의 학습 목표와 출력 형태를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-vision-encoder",
+        "title": "From Images to Vectors: Patches and Vision Encoders",
+        "description": "Follow a small RGB image through patch projection, positional information, and attention, then examine vision learning objectives and output representations.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3d92884dadd708b4230237e8bd57615776023c37f86f0726ad707f894141bbb5",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-vision-language",
+    "order": 9.976,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-vision-language/05-spatial-merge",
+      "model-advanced-vision-language/01-projector-width",
+      "model-advanced-vision-language/02-mixed-input-sequence",
+      "model-advanced-vision-language/03-text-generation-path",
+      "model-advanced-vision-language/04-connector-training"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-vision-language",
+        "title": "시각 표현을 언어 모델에 연결하기",
+        "description": "시각 토큰을 묶고 projector로 변환한 뒤 텍스트와 함께 입력하는 과정을 따라가며, 텍스트 생성과 연결부·인코더의 학습 범위를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-vision-language",
+        "title": "Connecting Visual Representations to a Language Model",
+        "description": "Follow visual tokens as they are grouped, projected, and combined with text, then trace text generation and the training scope of the connector and vision encoder.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "081feb562954a0c7006b55bb0db32fc52e84c40f1559965feece6f1cf247df9c",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
   }
 ]

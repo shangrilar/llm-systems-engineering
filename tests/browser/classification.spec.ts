@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
-import type { Article } from '../../scripts/content';
+import { buildProfile, type Article } from '../../scripts/content';
 const catalog: Article[] = JSON.parse(readFileSync('src/data/posts.json', 'utf8'));
+const preview = buildProfile() === 'preview';
+const visible = (article: Article, locale: 'ko' | 'en') =>
+  Boolean(article.locales[locale] && (preview || article.locales[locale]!.published));
 
 for (const locale of ['ko', 'en'] as const) {
   test(`${locale}: grouped catalog and article classification`, async ({ page }) => {
@@ -17,13 +20,13 @@ for (const locale of ['ko', 'en'] as const) {
         : track === 'inference' ? [locale === 'ko' ? '워크로드' : 'Workloads'] : [];
       await expect(group.locator('.article-category > h4')).toHaveText(labels);
       for (const category of categories) {
-        const expected = catalog.filter(p => p.track === track && p.category === category && p.locales[locale]?.published)
+        const expected = catalog.filter(p => p.track === track && p.category === category && visible(p, locale))
           .sort((a, b) => a.order - b.order).map(p => `${prefix}/posts/${p.locales[locale]!.slug}/`);
         const links = group.locator(`[data-category="${category ?? 'overview'}"] .post-link`);
         expect(await links.evaluateAll(es => es.map(e => e.getAttribute('href')))).toEqual(expected);
       }
     }
-    await expect(page.locator('.post-link')).toHaveCount(catalog.filter(p => p.locales[locale]?.published).length);
+    await expect(page.locator('.post-link')).toHaveCount(catalog.filter(p => visible(p, locale)).length);
     await mkdir('test-results/classification', { recursive: true });
     for (const width of [360, 1280]) {
       await page.setViewportSize({ width, height: 960 });

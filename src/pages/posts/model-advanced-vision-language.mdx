@@ -1,0 +1,95 @@
+---
+layout: ../../layouts/Post.astro
+articleId: model-advanced-vision-language
+title: "시각 표현을 언어 모델에 연결하기"
+description: "시각 토큰을 묶고 projector로 변환한 뒤 텍스트와 함께 입력하는 과정을 따라가며, 텍스트 생성과 연결부·인코더의 학습 범위를 설명합니다."
+date: 2026-09-29
+---
+
+[시각 인코더](/posts/model-advanced-vision-encoder/)는 픽셀을 주변 정보가 반영된 패치 벡터로 바꾸었습니다. 하지만 그 벡터의 개수와 폭이 언어 모델에 바로 맞는 것은 아닙니다. 이미지를 세밀하게 나누면 입력 위치가 많아지고, 시각 인코더의 출력 차원도 언어 모델의 입력 차원과 다를 수 있습니다.
+
+이번에는 **시각 벡터열을 언어 모델이 읽을 입력으로 바꾸는 연결부**를 살펴봅니다. 이웃한 표현을 묶어 위치 수를 줄이고, projector로 폭과 표현을 바꾼 뒤 텍스트와 하나의 입력열을 만들겠습니다. 이어 다음 토큰을 생성하는 과정과 그 예측 오차로 연결부를 학습하는 경로까지 따라갑니다.
+
+## 시각 토큰 수 줄이기
+
+앞 글은 네 패치로 설명했지만, 이번 그림은 4×4 격자의 **16개 패치 표현**으로 확장합니다. 각 표현은 4성분이므로 시각 인코더 출력 Z는 [16,4]입니다. 여기서 격자의 한 칸은 원래 픽셀 하나가 아니라 인코더를 거친 패치 위치 하나입니다.
+
+<a href="/images/model-advanced-vision-language/05-spatial-merge.png?v=037d9b6c4a3d" id="figure-1"><picture><source width="720" height="3586" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/05-spatial-merge-mobile.png?v=fb35ca85471a" /><img width="2400" height="2726" src="/images/model-advanced-vision-language/05-spatial-merge.png?v=037d9b6c4a3d" alt="공간에서 이웃한 z1,z2,z5,z6의 네 벡터를 이어 붙인다. 16개 4성분 벡터가 4개 16성분 벡터로 재배열된다." loading="lazy" /></picture></a>
+
+첫 2×2 그룹은 공간상 이웃인 <math><msub><mi>z</mi><mtext>1</mtext></msub></math>, <math><msub><mi>z</mi><mtext>2</mtext></msub></math>, <math><msub><mi>z</mi><mtext>5</mtext></msub></math>, <math><msub><mi>z</mi><mtext>6</mtext></msub></math>입니다. 시퀀스의 연속된 네 행을 고르는 대신 4×4 격자에서 이웃을 고릅니다.
+
+네 벡터의 성분을 정해진 순서로 이어 붙이면 16성분 벡터 <math><msub><mi>G</mi><mtext>1</mtext></msub></math>이 됩니다. 그림의 1부터 16까지는 성분의 이동을 추적하는 번호입니다. 모바일에서는 같은 벡터를 두 줄로 감싸 표시했습니다.
+
+나머지 세 공간 그룹도 같은 방식으로 묶으면 [16,4]가 [4,16]이 됩니다. 벡터 수는 16에서 4로 줄고, 폭은 4에서 16으로 늘어납니다. 총 성분 수는 16×4 = 4×16 = 64개로 같습니다. 이 재배열 자체는 평균을 구하거나 값을 삭제하는 연산이 아닙니다.
+
+언어 모델에 넘길 위치 수가 4분의 1로 줄어 입력열이 짧아집니다. 이후 projector가 늘어난 폭을 줄이면 그때 정보 압축이 일어납니다.
+
+[DeepSeek-V4.1-Flash의 3×3 pixel-unshuffle](https://arxiv.org/html/2609.19969v1#S2.SS1.SSS1)는 공간 이웃을 채널 쪽으로 옮기는 실제 사례입니다. 다른 연결부는 pooling이나 학습된 Query의 resampler로 위치 수를 줄입니다.
+
+## Projector로 표현 변환하기
+
+개수를 줄인 다음에는 언어 모델이 받을 폭으로 맞춥니다. 그림 2의 G[4,16]은 앞 절에서 묶은 네 벡터이고, 언어 모델의 입력 폭은 교육용으로 8이라 정했습니다.
+
+<a href="/images/model-advanced-vision-language/01-projector-width.png?v=f8c1ac67f369" id="figure-2"><picture><source width="720" height="4116" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/01-projector-width-mobile.png?v=3309385d14d6" /><img width="2400" height="3396" src="/images/model-advanced-vision-language/01-projector-width.png?v=f8c1ac67f369" alt="같은 MLP를 G의 네 행에 적용해 폭 16을 언어 모델의 폭 8로 바꾸며 행 수는 유지한다." loading="lazy" /></picture></a>
+
+같은 MLP를 G의 각 행에 적용해 V[4,8]을 만듭니다. V는 **언어 모델에 전달할 시각 벡터열**입니다. 위 행렬의 작은 칸 하나는 네 성분 구간을 축약해 표시했습니다.
+
+이 예시의 MLP는 첫 선형 변환으로 성분을 섞고, 활성화 함수로 비선형 변환한 뒤 두 번째 선형 변환으로 출력 폭을 만듭니다. 네 행에 같은 가중치를 쓰므로 위치 수는 네 개로 유지됩니다. 앞 절은 개수와 폭 사이의 재배열이고, 여기서는 학습 가능한 변환으로 값 자체를 바꿉니다.
+
+Projector는 폭을 맞출 뿐 아니라 언어 모델이 시각 표현을 활용할 수 있도록 학습됩니다.
+
+앞 글의 patch projection과도 위치가 다릅니다. Patch projection은 원래 픽셀을 시각 인코더의 입력 벡터로 만들고, 여기의 projector는 **시각 인코더가 계산한 표현을 언어 모델의 입력으로 변환**합니다.
+
+## 하나의 입력열 만들기
+
+이제 시각 벡터 V는 네 행이고 각 행은 8성분입니다. 질문 텍스트가 세 토큰이라고 하면, 정수 ID로 임베딩 표를 조회한 질문 E는 [3,8]입니다. 그림 3에서는 두 벡터열을 하나로 이어 붙입니다.
+
+<a href="/images/model-advanced-vision-language/02-mixed-input-sequence.png?v=f34f7ad89af1" id="figure-3"><picture><source width="720" height="1940" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/02-mixed-input-sequence-mobile.png?v=4ab399f23eec" /><img width="2400" height="2972" src="/images/model-advanced-vision-language/02-mixed-input-sequence.png?v=f34f7ad89af1" alt="시각 네 행과 텍스트 질문 세 행을 시퀀스 축으로 연결해 7×8 입력을 만든다." loading="lazy" /></picture></a>
+
+시각 네 행 뒤에 질문 세 행을 놓으면 입력 <math><msub><mi>H</mi><mtext>input</mtext></msub></math>은 [7,8]입니다. **시퀀스 축으로 연결**해 행 수가 4+3=7이 되고 폭은 8로 유지됩니다.
+
+두 종류의 행은 출처도 다릅니다. 질문 행은 token ID로 표에서 읽었지만, 시각 행은 픽셀을 인코더와 projector로 변환해 얻었습니다. 시각 행을 LM head에 넣거나 argmax를 취해 단어 ID로 바꾸는 단계는 없습니다. Visual token은 언어 모델의 입력 위치를 차지하는 벡터라는 뜻으로 읽으면 됩니다.
+
+그림의 Pos 0부터 6까지는 합쳐진 입력열의 위치입니다. 앞 글의 시각 인코더 내부 공간 위치와는 구별됩니다. 실제 모델에는 이미지 경계나 대화 역할을 나타내는 별도 표식도 들어갈 수 있습니다.
+
+[LLaVA Figure 1](https://arxiv.org/html/2304.08485v2#S4.F1)도 시각 인코더 출력에 투영을 적용한 뒤 질문 임베딩과 함께 언어 모델에 넣습니다. 여기의 공간 묶기와 MLP는 그 연결을 설명하기 위한 별도 예시입니다.
+
+## 시각 입력에서 텍스트 생성까지
+
+입력열이 만들어지면 언어 모델은 이를 처리해 다음 토큰을 예측합니다. 그림 4의 주 경로는 앞 절의 embedding 삽입형 구조이며, 기본 causal decoder로 실행 순서를 보여줍니다.
+
+<a href="/images/model-advanced-vision-language/03-text-generation-path.png?v=c5d053103fff" id="figure-4"><picture><source width="720" height="4670" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/03-text-generation-path-mobile.png?v=f60ff408edc7" /><img width="2400" height="3844" src="/images/model-advanced-vision-language/03-text-generation-path.png?v=c5d053103fff" alt="일곱 입력 위치를 처리한 마지막 hidden에서 텍스트 어휘 점수를 구하고 y0를 선택한다. 다음 실행에서는 y0의 embedding을 새 위치 7에 넣는다." loading="lazy" /></picture></a>
+
+시각 네 위치와 질문 세 위치를 처리한 뒤, 마지막 Pos 6의 최종 hidden <math><msub><mi>h</mi><mtext>last</mtext></msub></math>를 사용합니다. Final norm은 이 표현 안에 포함한 것으로 접었습니다. 행벡터 [1×8]에 LM head 가중치 [8×어휘 크기]를 곱하면 [1×어휘 크기]의 logits를 얻습니다. 각 성분은 다음에 낼 수 있는 **텍스트 토큰 하나의 점수**입니다.
+
+Decoding 규칙에 따라 <math><msub><mi>y</mi><mtext>0</mtext></msub></math>의 ID를 고르면 첫 토큰이 나옵니다. 그다음 실행에서는 이 ID의 임베딩을 Pos 7에 넣어 다음 토큰을 예측합니다. 문맥이 여덟 위치로 늘어나지만, 앞의 일곱 위치를 매번 처음부터 다시 계산해야 하는 것은 아닙니다. 이미 만든 KV를 재사용할 수 있고, 같은 이미지의 시각 인코더도 매 생성 토큰마다 다시 실행할 필요는 없습니다.
+
+이 경로가 이미지를 입력받는다고 출력 공간도 이미지나 음성으로 바뀌지는 않습니다. 그림의 LM head는 텍스트 어휘 점수를 냅니다. 이미지·음성 출력을 제공하려면 그 목적에 맞는 출력 경로와 학습이 추가로 필요합니다.
+
+회색 비교 그림은 다른 연결 방식입니다. [Flamingo](https://arxiv.org/html/2204.14198v1#S3.SS1)처럼 시각 정보를 별도의 memory로 두고 언어 모델의 Query가 cross-attention으로 읽을 수도 있습니다. 그림은 resampler와 KV 투영 등의 준비 과정을 접어 둔 개념도입니다. 입력 삽입 뒤 반드시 cross-attention까지 추가해야 한다는 연속 단계가 아닙니다.
+
+언어 backbone 내부는 모델마다 달라도, 연속 시각 벡터가 다음 텍스트 토큰 예측까지 이어진다는 경로는 같습니다.
+
+## 연결부와 인코더의 공동 학습
+
+Projector가 어떻게 유용한 변환을 배우는지 보겠습니다. 그림 5에서는 이미지와 질문, 앞선 정답 토큰을 입력하고 다음 정답 토큰의 점수로 loss를 계산합니다. 예측할 현재 정답을 같은 위치의 입력으로 미리 읽지는 않습니다.
+
+<a href="/images/model-advanced-vision-language/04-connector-training.png?v=4089ade2f786" id="figure-5"><picture><source width="720" height="4090" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/04-connector-training-mobile.png?v=a70a74a7d604" /><img width="2400" height="3376" src="/images/model-advanced-vision-language/04-connector-training.png?v=4089ade2f786" alt="왼쪽은 시각 인코더와 LLM의 가중치를 고정하고 projector만 갱신한다. 오른쪽은 세 모듈을 함께 갱신한다. 두 경우 모두 다음 정답 토큰 예측 loss를 사용한다." loading="lazy" /></picture></a>
+
+왼쪽은 pretrained 시각 인코더와 LLM의 가중치를 고정하고 projector만 갱신하는 구성입니다. 답변 예측의 오차가 LLM 계산을 거슬러 입력 시각 벡터까지 전달되고, 그 벡터를 만든 projector를 학습시킵니다.
+
+여기서 **가중치 고정과 입력 gradient 차단은 다릅니다.** LLM 가중치를 바꾸지 않아도 loss가 입력 벡터에 따라 어떻게 변하는지는 계산해야 합니다. 그 경로를 끊으면 projector에 학습 신호가 도달하지 않습니다. 왼쪽에서 고정된 시각 인코더까지 gradient를 계속 전달해야 하는 것은 아니지만, projector에서 loss까지의 경로는 필요합니다.
+
+오른쪽은 시각 인코더·projector·LLM을 함께 갱신합니다. 텍스트 예측 오차가 시각 인코더까지 전달되므로, 질문과 답변에 필요한 시각 표현도 함께 조정할 수 있습니다. 패치마다 별도의 사물 이름 정답을 붙이지 않아도 이런 학습이 가능합니다.
+
+목적 함수, 가중치 초기화, 갱신 범위는 별도로 정합니다. [LLaVA의 학습 절차](https://arxiv.org/html/2304.08485v2#S4.SS2)는 먼저 시각 인코더와 LLM을 고정해 투영을 학습하고, 이후 시각 인코더는 고정한 채 투영과 LLM을 학습합니다. 그림 오른쪽의 세 모듈 공동 갱신은 또 다른 선택을 설명합니다.
+
+실제 모델마다 연결과 학습 방식도 다릅니다.
+
+| 모델 | 연결과 학습에서 확인할 선택 |
+|---|---|
+| [Kimi K3 §2.4](https://arxiv.org/html/2607.24653v1#S2.SS4) | 공간 2×2 축소 뒤 MLP로 연결합니다. MoonViT-V2는 새로 초기화해 다음 토큰 예측으로 학습합니다. |
+| [DeepSeek-V4.1 §2.1](https://arxiv.org/html/2609.19969v1#S2.SS1) | 3×3 pixel-unshuffle 뒤 MLP로 연결합니다. 언어 모델 pretraining 시작부터 이미지·텍스트 데이터를 함께 사용합니다. |
+| [Qwen3.8-Omni §2–3](https://arxiv.org/html/2609.25611v1#S2) | 모달리티별 adapter로 공통 입력열에 연결합니다. 초기 정렬에서는 LLM을 고정하고, 다음 단계에서는 전체 가중치를 갱신합니다. |
+
+두 글의 그림을 연결하면 픽셀에서 답변까지의 역할이 나뉩니다. 시각 인코더는 패치 사이 정보를 반영한 표현을 만들고, 연결부는 그 개수와 폭을 조절하며, 언어 모델은 텍스트 문맥과 함께 읽어 다음 토큰을 예측합니다. 그 예측 loss가 어디까지 전달되게 할지를 정하면, 연결부만 학습할 수도 있고 시각 표현부터 함께 학습할 수도 있습니다.

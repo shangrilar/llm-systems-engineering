@@ -1,0 +1,91 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-vision-encoder
+title: "From Images to Vectors: Patches and Vision Encoders"
+description: "Follow a small RGB image through patch projection, positional information, and attention, then examine vision learning objectives and output representations."
+date: 2026-09-29
+---
+
+Text models turn tokens into vectors and then process them with attention and FFNs. Images can also be represented as a sequence of vectors and processed with similar operations. Their starting point, however, is an **array of pixels with color values at spatial positions**, not integer token IDs.
+
+This article follows a small RGB image as it becomes patch vectors, receives positional information, and exchanges information between patches in a Transformer. We then distinguish what the model is trained to predict and whether the learned representation is summarized as one vector or kept at multiple positions. We use the [Vision Transformer (ViT)](https://arxiv.org/html/2010.11929v2#S3.SS1) as the main example; the image size and vector values are for teaching.
+
+## Pixels and color channels
+
+The image in Figure 1 is an RGB array with height 4 and width 4. Each small square is one pixel, and each pixel contains three numbers: red R, green G, and blue B. That gives 4 × 4 = 16 pixels and 16 × 3 = 48 numbers.
+
+<a href="/images/model-advanced-vision-encoder/en/01-pixels-and-channels.png?v=c1a916ee6a13" id="figure-1"><picture><source width="720" height="3168" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/01-pixels-and-channels-mobile.png?v=9fd7f0521fe8" /><img width="2400" height="2608" src="/images/model-advanced-vision-encoder/en/01-pixels-and-channels.png?v=c1a916ee6a13" alt="Each pixel in a 4×4 image has three RGB numbers. Its 16 pixels contain 48 numbers for the vision encoder input." loading="lazy" /></picture></a>
+
+The enlarged red pixel is [1,0,0]. We set R to 1 and G and B to 0. The values from 0 to 1 make the colors easy to read; actual model inputs follow specified preprocessing such as resizing and normalization.
+
+A, B, C, and D name the four regions we will follow. In the next section, we group each region's 2×2 pixels into one patch. The connector and language model at the top of the figure are covered in the next article.
+
+## From patches to input vectors
+
+Instead of processing every pixel as a separate position, we can group a small rectangular region into one input vector. Figure 2 divides the same 4×4 image into four nonoverlapping 2×2 patches.
+
+<a href="/images/model-advanced-vision-encoder/en/02-patch-projection.png?v=332a28ad8524" id="figure-2"><picture><source width="720" height="4292" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/02-patch-projection-mobile.png?v=9925adad995e" /><img width="2400" height="3540" src="/images/model-advanced-vision-encoder/en/02-patch-projection.png?v=332a28ad8524" alt="The four pixels of a 2×2 patch are flattened in RGB order into a 12-component vector, then a shared projection produces a 4-component vector." loading="lazy" /></picture></a>
+
+Patch A contains four pixels. Read them in top-left, top-right, bottom-left, bottom-right order, and read R, G, B within each pixel. Four pixels × three channels make a 12-component vector x for one patch. All four pixels in A are red, so its vector contains [1,0,0] four times. The four rows in the figure display **one vector split into groups**.
+
+Multiplying column vector x[12] by <math><msub><mi>W</mi><mtext>patch</mtext></msub></math>[4×12] produces four components. All four patches use the same projection weights. The 2×2 patch size determines which pixels form a group, while output dimension 4 determines the width of the vector representing that group. These are separate settings.
+
+We chose W specially so the calculation can be done by hand. The first three outputs are the patch means of R, G, and B; the fourth is the mean of all 12 values. For A, the R mean is (1+1+1+1)/4=1, while the G and B means are 0. The overall mean is 4/12=1/3, giving [1,0,0,1/3]. Likewise, green B gives [0,1,0,1/3], blue C gives [0,0,1,1/3], and white D gives [1,1,1,1].
+
+Actual weights learn combinations of pixel values useful for the training objective. Unlike text, which looks up an embedding-table row using an integer ID, this path projects pixel numbers into four continuous vectors.
+
+## Conveying spatial position
+
+Patch vectors alone do not sufficiently indicate where their values came from. Because every patch uses the same projection, patches with identical pixel content can obtain identical initial vectors. Figure 3 links positions in the image to their order in the flattened sequence.
+
+<a href="/images/model-advanced-vision-encoder/en/03-patches-and-position.png?v=0cafcaca7fc4" id="figure-3"><picture><source width="720" height="4188" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/03-patches-and-position-mobile.png?v=262aecd30871" /><img width="2400" height="3482" src="/images/model-advanced-vision-encoder/en/03-patches-and-position.png?v=0cafcaca7fc4" alt="Patches A, B, C, and D in a 2×2 spatial grid are paired with positions p0, p1, p2, and p3, whose embeddings are added to the patch vectors." loading="lazy" /></picture></a>
+
+Flattening the 2×2 patch grid in row-major order gives A, B, C, D. We associate these with position indices 0, 1, 2, and 3. In the original ViT, each index has a learned 1D position embedding that is added to its patch vector. The <math><msub><mi>p</mi><mtext>0</mtext></msub></math> through <math><msub><mi>p</mi><mtext>3</mtext></msub></math> in the figure are those position vectors.
+
+The position vector must have the same width as the patch vector for componentwise addition. A's input then contains both A's content and information about its original position 0. The (row, column) labels in the figure mark the original spatial coordinates corresponding to these position vectors.
+
+Even if the display order below changes to A, C, B, D, the patches must retain their original position vectors <math><msub><mi>p</mi><mtext>0</mtext></msub></math>, <math><msub><mi>p</mi><mtext>2</mtext></msub></math>, <math><msub><mi>p</mi><mtext>1</mtext></msub></math>, and <math><msub><mi>p</mi><mtext>3</mtext></msub></math>, respectively. Model inputs follow a defined flattening and positional convention together.
+
+This example shows addition, but alternatives such as [visual RoPE](https://arxiv.org/abs/2403.13298) incorporate position inside attention. The figure also omits a separate class token and its position to focus on the four patches.
+
+## Exchanging information between patches
+
+Call the four vectors with position information U[4×4]. On the left of Figure 4, these four rows pass through two Transformer blocks. The right side enlarges the part of one block in which position A reads other patches.
+
+<a href="/images/model-advanced-vision-encoder/en/04-vision-contextualization.png?v=1f2272821199" id="figure-4"><picture><source width="720" height="4788" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/04-vision-contextualization-mobile.png?v=ce63958a57f5" /><img width="2400" height="3884" src="/images/model-advanced-vision-encoder/en/04-vision-contextualization.png?v=1f2272821199" alt="The vision encoder updates four patch rows with self-attention and an FFN. One patch Query reads Keys and Values from itself and the other patches." loading="lazy" /></picture></a>
+
+Each block makes Q, K, and V from its normalized input. A's Query scores the Keys of A, B, C, and D, then takes a weighted sum of their Values using softmax weights. A can also read itself. B, C, and D each use their own Query to calculate how much to read.
+
+An output projection and residual follow, and the FFN transforms each position's representation. The four rows remain while their values change. Normalization and residual follow the representation-update path covered in [an earlier article](/en/posts/residual-and-rmsnorm/).
+
+The important difference is which positions can be read. Full self-attention in a basic ViT can see all image patches in both directions. Since the image is already available as input, reading a patch in the bottom-right is not the same as seeing a future target token. This differs from the causal mask of a generative language model. Not every vision model uses full attention; some restrict the readable range with windows, for example.
+
+The final Z[4×<math><msub><mi>d</mi><mtext>v</mtext></msub></math>] after the entire encoder corresponds to the four patch positions. <math><msub><mi>z</mi><mtext>A</mtext></msub></math> reflects both A's content and information read from other patches.
+
+## Learning objectives for visual representations
+
+So far, we have examined the structure. To learn useful visual representations, the model needs a loss that specifies what it should do well. **ViT names a structure, not one fixed learning objective.** Figure 5 gives examples of different objectives.
+
+<a href="/images/model-advanced-vision-encoder/en/05-learning-objectives.png?v=5f9987dd0140" id="figure-5"><picture><source width="720" height="3636" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/05-learning-objectives-mobile.png?v=76354f186c4c" /><img width="2400" height="3012" src="/images/model-advanced-vision-encoder/en/05-learning-objectives.png?v=5f9987dd0140" alt="A vision encoder can learn from different targets: correct image–text pairs, the next text token, an image class, or masked pixels." loading="lazy" /></picture></a>
+
+Panel A's [CLIP-style image–text alignment](https://arxiv.org/abs/2103.00020) makes a vector for each image and description and learns to distinguish correct pairs from other combinations. Comparing three images with three descriptions gives 3×3 pairs. The diagonal checks mark the correct image–description pairs.
+
+Here, the text encoder turns descriptions into comparison vectors. Its role differs from an LLM that generates an answer one token at a time. Image-level errors can also train patch representations through the encoder.
+
+Panel B predicts the next text token from an image and preceding text. The connection between the vision encoder and language model can be trained so the image provides information needed to answer a question. If the encoder is included among updated modules, this prediction error also trains visual representations. We will follow the exact gradient path in the next article.
+
+Other possibilities include classification against an image's class label and [MAE-style reconstruction of pixels in masked patches](https://arxiv.org/abs/2111.06377). These objectives can be selected or combined according to the data and representations needed.
+
+## Summary vectors and patch-level representations
+
+If training uses one target for an entire image, must the output also be one vector? Figure 6 compares ways to extract representations from the same vision encoder.
+
+<a href="/images/model-advanced-vision-encoder/en/06-output-representations.png?v=4871561848f8" id="figure-6"><picture><source width="720" height="3048" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-encoder/en/06-output-representations-mobile.png?v=26320b7b57c4" /><img width="2400" height="2484" src="/images/model-advanced-vision-encoder/en/06-output-representations.png?v=4871561848f8" alt="An image can be summarized by selecting the output of a CLS token processed from the input or by pooling patch outputs. A VLM may instead receive hidden states at multiple patch positions." loading="lazy" /></picture></a>
+
+A vector representing the whole image is useful for classification or image–text comparison. One method is **selecting the CLS token's output**. CLS is a separate token processed alongside patches from the input, gathering image information across multiple layers. It is not an operation that suddenly combines patches after the encoder has finished.
+
+Pooling instead aggregates multiple vectors, for example by averaging patch outputs. It begins from a different representation than selecting the CLS output.
+
+For a VLM connection, we can also keep multiple patch rows to convey spatial information. The chosen output layer and whether CLS is included depend on the model. The earlier figures omitted CLS to focus on the patch path.
+
+We have now reached a learned vector sequence with spatial information, starting from a pixel array. Next, we will adjust that sequence's count and width and place it alongside text vectors in a language model.

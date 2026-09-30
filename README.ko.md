@@ -50,6 +50,10 @@
 - [층간 KV 공유: 앞선 층의 Key와 Value 재사용하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-cross-layer-kv/)
 - [YOCO: 공통 KV를 만드는 층과 읽는 층 나누기](https://llm-systems-engineering.pages.dev/posts/model-advanced-yoco/)
 - [CED: 인과적 Encoder와 Decoder로 문맥 이어가기](https://llm-systems-engineering.pages.dev/posts/model-advanced-ced/)
+- [N-gram 임베딩: 토큰 묶음의 표현 조회하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-ngram-embedding/)
+- [Engram: 조회한 기억을 문맥에 맞게 사용하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-engram/)
+- [이미지를 벡터로: Patch와 Vision Encoder](https://llm-systems-engineering.pages.dev/posts/model-advanced-vision-encoder/)
+- [시각 표현을 언어 모델에 연결하기](https://llm-systems-engineering.pages.dev/posts/model-advanced-vision-language/)
 
 #### 하드웨어
 

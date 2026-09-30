@@ -1,0 +1,95 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-vision-language
+title: "Connecting Visual Representations to a Language Model"
+description: "Follow visual tokens as they are grouped, projected, and combined with text, then trace text generation and the training scope of the connector and vision encoder."
+date: 2026-09-29
+---
+
+The [vision encoder](/en/posts/model-advanced-vision-encoder/) turned pixels into patch vectors that reflect information from other patches. But their count and width may not directly fit the language model. Dividing an image finely creates many input positions, and the encoder's output dimension can differ from the language model's input dimension.
+
+This article examines **the connector that turns a sequence of visual vectors into input the language model can read**. We will group neighboring representations to reduce the position count, use a projector to change their width and representation, then join them with text in one input sequence. We will also follow next-token generation and how its prediction error trains the connector.
+
+## Reducing the number of visual tokens
+
+The previous article used four patches, but this figure expands to **16 patch representations** on a 4×4 grid. Each representation has four components, so the vision encoder output Z is [16,4]. A grid cell here is a patch position after the encoder, not an original pixel.
+
+<a href="/images/model-advanced-vision-language/en/05-spatial-merge.png?v=e56deb0fe970" id="figure-1"><picture><source width="720" height="3654" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/en/05-spatial-merge-mobile.png?v=5257858705c5" /><img width="2400" height="2726" src="/images/model-advanced-vision-language/en/05-spatial-merge.png?v=e56deb0fe970" alt="Four spatial neighbors z1, z2, z5, and z6 are concatenated. Sixteen four-component vectors are rearranged into four sixteen-component vectors." loading="lazy" /></picture></a>
+
+The first 2×2 group contains spatial neighbors <math><msub><mi>z</mi><mtext>1</mtext></msub></math>, <math><msub><mi>z</mi><mtext>2</mtext></msub></math>, <math><msub><mi>z</mi><mtext>5</mtext></msub></math>, and <math><msub><mi>z</mi><mtext>6</mtext></msub></math>. We select neighbors on the 4×4 grid rather than four consecutive rows of the sequence.
+
+Concatenating the components of these four vectors in a defined order produces a 16-component vector <math><msub><mi>G</mi><mtext>1</mtext></msub></math>. Numbers 1 through 16 in the figure track where components move. On mobile, the same vector is wrapped onto two lines.
+
+Grouping the other three spatial regions in the same way changes [16,4] into [4,16]. The vector count falls from 16 to 4 while width grows from 4 to 16. The total number of components stays 16×4 = 4×16 = 64. This rearrangement itself neither averages nor discards values.
+
+The language model receives one quarter as many positions, shortening its input sequence. Information compression happens later if the projector reduces the increased width.
+
+[DeepSeek-V4.1-Flash's 3×3 pixel-unshuffle](https://arxiv.org/html/2609.19969v1#S2.SS1.SSS1) is a real example of moving spatial neighbors into the channel dimension. Other connectors reduce the position count through pooling or a resampler with learned Queries.
+
+## Transforming representations with a projector
+
+After reducing the count, we match the width expected by the language model. G[4,16] in Figure 2 contains the four vectors grouped above, and we set the language model's input width to 8 for this example.
+
+<a href="/images/model-advanced-vision-language/en/01-projector-width.png?v=b681be8aaef4" id="figure-2"><picture><source width="720" height="4182" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/en/01-projector-width-mobile.png?v=a842b9f3f365" /><img width="2400" height="3396" src="/images/model-advanced-vision-language/en/01-projector-width.png?v=b681be8aaef4" alt="The same MLP maps each of G's four rows from width 16 to language-model width 8 while preserving the row count." loading="lazy" /></picture></a>
+
+Applying the same MLP to each row of G gives V[4,8]. V is **the sequence of visual vectors passed to the language model**. One small cell in the upper matrix abbreviates a four-component segment.
+
+In this example, the MLP's first linear transformation mixes components, an activation function transforms them nonlinearly, and a second linear transformation produces the output width. The same weights are used for all four rows, so the position count stays at four. The previous step rearranged count and width; this learned transformation changes the values themselves.
+
+The projector matches the width and is trained to make visual representations useful to the language model.
+
+It also sits at a different point than the previous article's patch projection. Patch projection turns original pixels into vision encoder input vectors, while this projector **turns representations computed by the vision encoder into language model input**.
+
+## Forming one input sequence
+
+Visual sequence V now has four rows, each with eight components. If the question has three text tokens, looking up their integer IDs in the embedding table gives question sequence E[3,8]. Figure 3 joins the two sequences.
+
+<a href="/images/model-advanced-vision-language/en/02-mixed-input-sequence.png?v=6a47a9f9a677" id="figure-3"><picture><source width="720" height="2056" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/en/02-mixed-input-sequence-mobile.png?v=ca949e07bd84" /><img width="2400" height="2972" src="/images/model-advanced-vision-language/en/02-mixed-input-sequence.png?v=6a47a9f9a677" alt="Four visual rows and three text-question rows join along the sequence axis to form a 7×8 input." loading="lazy" /></picture></a>
+
+Placing three question rows after four visual rows makes input <math><msub><mi>H</mi><mtext>input</mtext></msub></math> [7,8]. Joining them **along the sequence axis** adds the row counts to 4+3=7 while keeping width 8.
+
+The two kinds of rows also come from different sources. Question rows are retrieved from a table by token ID; visual rows come from transforming pixels with the encoder and projector. There is no stage that sends visual rows through the LM head or takes argmax to turn them into word IDs. A visual token here means a vector occupying a language-model input position.
+
+Pos 0 through 6 in the figure are positions in the combined input sequence. They differ from the spatial positions inside the vision encoder in the previous article. Actual models may also include separate markers for image boundaries or conversation roles.
+
+[LLaVA Figure 1](https://arxiv.org/html/2304.08485v2#S4.F1) likewise projects vision encoder outputs and passes them to a language model alongside question embeddings. The spatial grouping and MLP here are separate examples used to explain that connection.
+
+## From visual input to text generation
+
+Once the input sequence is formed, the language model processes it to predict the next token. The main path in Figure 4 uses the embedding-insertion structure above and a basic causal decoder to show the execution order.
+
+<a href="/images/model-advanced-vision-language/en/03-text-generation-path.png?v=6c3d5a38c686" id="figure-4"><picture><source width="720" height="4786" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/en/03-text-generation-path-mobile.png?v=67fed5946def" /><img width="2400" height="3844" src="/images/model-advanced-vision-language/en/03-text-generation-path.png?v=6c3d5a38c686" alt="The last hidden state after processing seven input positions yields text-vocabulary scores and selects y0. The next step places y0's embedding at new position 7." loading="lazy" /></picture></a>
+
+After processing four visual and three question positions, we use the final hidden state <math><msub><mi>h</mi><mtext>last</mtext></msub></math> at the last position, Pos 6. Final normalization is folded into this representation. Multiplying the row vector [1×8] by LM head weights [8×vocabulary size] gives logits [1×vocabulary size]. Each component scores **one possible next text token**.
+
+Selecting the ID for <math><msub><mi>y</mi><mtext>0</mtext></msub></math> according to a decoding rule produces the first token. On the next step, its embedding enters Pos 7 to predict the following token. The context now has eight positions, but the first seven need not be recomputed from scratch every time. Existing KV can be reused, and the vision encoder need not run again for every generated token from the same image.
+
+Accepting an image as input does not also change this path's output space to images or audio. The LM head in the figure scores text vocabulary items. Image or audio output requires an appropriate output path and training.
+
+The gray comparison inset shows another connection method. As in [Flamingo](https://arxiv.org/html/2204.14198v1#S3.SS1), visual information can be kept in separate memory and read by language-model Queries through cross-attention. The inset folds away preparation such as the resampler and KV projection. It is not a required stage following embedding insertion.
+
+Language backbones can differ internally, but the path from continuous visual vectors to next-text-token prediction remains the same.
+
+## Joint training of the connector and encoder
+
+Now consider how the projector learns a useful transformation. In Figure 5, an image, question, and preceding target tokens are inputs, and the model computes a loss from scores for the next target token. The current target being predicted is not already visible at that input position.
+
+<a href="/images/model-advanced-vision-language/en/04-connector-training.png?v=3391ff7853c7" id="figure-5"><picture><source width="720" height="4158" media="(max-width: 600px)" srcSet="/images/model-advanced-vision-language/en/04-connector-training-mobile.png?v=b9c8a38e539a" /><img width="2400" height="3376" src="/images/model-advanced-vision-language/en/04-connector-training.png?v=3391ff7853c7" alt="On the left, vision encoder and LLM weights are frozen and only the projector is updated. On the right, all three modules are updated. Both use next-target-token prediction loss." loading="lazy" /></picture></a>
+
+On the left, pretrained vision encoder and LLM weights are frozen while only the projector is updated. The answer-prediction error flows back through the LLM computation to its visual input vectors and trains the projector that produced them.
+
+Here, **freezing weights differs from blocking input gradients**. Even when the LLM's weights do not change, we must compute how the loss changes with its input vectors. Cutting that path prevents the learning signal from reaching the projector. The frozen vision encoder on the left does not have to receive gradients, but the path between the projector and loss is needed.
+
+On the right, the vision encoder, projector, and LLM are all updated. Text-prediction error reaches the vision encoder, so visual representations can be adjusted for the question and answer. This training is possible without a separate object-name target for each patch.
+
+The objective, weight initialization, and update scope are separate choices. [LLaVA's training procedure](https://arxiv.org/html/2304.08485v2#S4.SS2) first trains the projection with the vision encoder and LLM frozen, then keeps the vision encoder frozen while updating the projection and LLM. Jointly updating all three modules on the right of the figure illustrates another choice.
+
+Actual models make different choices about their connectors and training.
+
+| Model | Choices in connection and training |
+|---|---|
+| [Kimi K3 §2.4](https://arxiv.org/html/2607.24653v1#S2.SS4) | Applies spatial 2×2 reduction, then connects through an MLP. MoonViT-V2 is initialized from scratch and trained by next-token prediction. |
+| [DeepSeek-V4.1 §2.1](https://arxiv.org/html/2609.19969v1#S2.SS1) | Connects through an MLP after 3×3 pixel-unshuffle. Image and text data are included from the start of language-model pretraining. |
+| [Qwen3.8-Omni §2–3](https://arxiv.org/html/2609.25611v1#S2) | Uses modality-specific adapters to connect to a shared input sequence. The LLM is frozen during initial alignment, then all weights are updated in the next stage. |
+
+Together, the two articles' figures divide the path from pixels to an answer by role. The vision encoder produces representations informed by multiple patches; the connector adjusts their count and width; and the language model reads them with the text context to predict the next token. How far the prediction loss is allowed to flow determines whether training updates only the connector or also the visual representations.

@@ -50,6 +50,10 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-cross-layer-kv/)
 - [YOCO: Separating Layers That Produce and Read Shared KV](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-yoco/)
 - [CED: Continuing Context with a Causal Encoder and Decoder](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-ced/)
+- [N-gram Embeddings: Looking Up Representations of Token Groups](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-ngram-embedding/)
+- [Engram: Using Retrieved Memory in Context](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-engram/)
+- [From Images to Vectors: Patches and Vision Encoders](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-vision-encoder/)
+- [Connecting Visual Representations to a Language Model](https://llm-systems-engineering.pages.dev/en/posts/model-advanced-vision-language/)
 
 #### Hardware
 

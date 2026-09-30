@@ -1,0 +1,84 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: model-advanced-ngram-embedding
+title: "N-gram Embeddings: Looking Up Representations of Token Groups"
+description: "Follow how a representation is added at the final position of a token group and learned with the model, then see how fixed-size tables use addresses and multiple hashes to mitigate collisions."
+date: 2026-09-29
+---
+
+[Basic token embeddings](/en/posts/embedding-to-lm-head/) read one row of a table using a single token ID. The same ID retrieves the same initial vector, and subsequent attention and FFN layers incorporate the surrounding context. Could short token combinations that often occur together have their own representations as well?
+
+N-gram embedding is **a path that uses a contiguous group of tokens as an address to look up a learned vector**. We will start with a small example that adds a group representation to the usual token embedding. After seeing where the representation enters and how both paths learn together, we will examine how to bound the rapidly growing number of combinations and mitigate hash collisions.
+
+## Representations of token groups
+
+Suppose three tokens A, B, and C arrive in order. These letters stand for arbitrary tokens; a token does not necessarily correspond to a whole word. e(B) is B's basic embedding, and g(A,B) is the representation retrieved for the bigram (A,B).
+
+<a href="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=b45092b01e60" id="figure-1"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups-mobile.png?v=344a033b0efe" /><img width="2400" height="1996" src="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=b45092b01e60" alt="The basic embedding remains at A, B, and C. Bigram AB contributes at B; bigram BC and trigram ABC contribute at C." loading="lazy" /></picture></a>
+
+At position B, we use B's basic representation e(B) together with the bigram representation g(A,B). At position C, we can use e(C), g(B,C), and g(A,B,C). The addition in the figure is an illustrative example of combining them at the input after matching their dimensions.
+
+A group representation enters at **the position of its final token**. Putting (A,B) at position A would use information from B before B has been seen. Thus, (A,B) contributes at B, and (A,B,C) contributes at C.
+
+At a boundary such as the first input position, where there are not enough tokens to complete a group, a rule such as padding is needed. The basic embedding remains at every position, while the group representation adds information at its corresponding position.
+
+The fusion point varies by model. The [Qwen3.8-Flash-Next architecture figure](https://arxiv.org/html/2608.30320v1#S1.F1) shows a separate N-gram layer alongside the basic token embedding and merges its output at Layer 2. The input fusion diagram below is a simplification for explaining joint learning.
+
+## Learning the two embeddings together
+
+Group vectors are also trained with the model through next-token prediction error. Figure 2 separates the two paths at position B into forward computation and backpropagation.
+
+<a href="/images/model-advanced-ngram-embedding/en/04-lookup-meets-context.png?v=e927618644da" id="figure-2"><picture><source width="720" height="2502" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/04-lookup-meets-context-mobile.png?v=4867f6faf591" /><img width="2400" height="2098" src="/images/model-advanced-ngram-embedding/en/04-lookup-meets-context.png?v=e927618644da" alt="B's basic embedding and AB's additional embedding both contribute to prediction, and the loss gradient reaches the retrieved row on each path." loading="lazy" /></picture></a>
+
+In the forward pass, the vectors read from the two tables meet, then pass through attention and FFN or MoE to produce scores for the next token. Comparing those scores with the correct token gives a loss. During backpropagation, the gradient returns along both lookup paths that contributed to the prediction. Both B's basic embedding row and the row retrieved for (A,B) can receive gradients.
+
+When (A,B) recurs, the model reads and trains the same group representation again. The basic token representation is shared across many contexts, while the group representation can hold information about the short combination.
+
+What is learned is **the vector in the retrieved row**. The hash address we will see below is computed by a fixed rule; inference reads the learned table.
+
+## Number of combinations and table size
+
+How large would the table become if every possible group had its own row? Figure 3 uses a vocabulary of just four tokens: A, B, C, and D. There are four choices for the first position and four for the second, giving 4 × 4 = 16 bigrams.
+
+<a href="/images/model-advanced-ngram-embedding/en/05-vocabulary-and-hashing.png?v=0b656a3b64d8" id="figure-3"><picture><source width="720" height="2426" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/05-vocabulary-and-hashing-mobile.png?v=519bf4a4dce7" /><img width="2400" height="2036" src="/images/model-advanced-ngram-embedding/en/05-vocabulary-and-hashing.png?v=0b656a3b64d8" alt="The 16 bigrams from a four-token vocabulary are either selected by frequency or hashed into a fixed-size table. Different groups can share a row under hashing." loading="lazy" /></picture></a>
+
+With vocabulary size V and group length n, the number of possible combinations is <math><msup><mi>V</mi><mi>n</mi></msup></math>. Extending the same four tokens to trigrams gives 4 × 4 × 4 = 64 combinations. The number of possible groups is distinct from how often each actually appears, so giving every group a dedicated vector quickly becomes costly.
+
+One way to bound the table size is to select groups by frequency. Giving AB and BC dedicated rows, as on the left, lets the table distinguish those groups. Unlisted groups need a rule, such as omitting the additional path or using a shared row.
+
+The hashing approach on the right sends groups to row numbers in a fixed-size table. Rare groups can also obtain addresses, but different groups may land on the same row. In the figure, AB and DD use the same row. A smaller table comes at the cost of sharing some parameters across groups.
+
+Frequency selection determines **which groups to register**, whereas hashing determines **which row each group uses**. Under hashing, frequently occurring groups are still looked up and trained more often.
+
+## Computing an address and looking up a vector
+
+Let us separate the address from the vector using numbers. In Figure 4, token A has ID 2, B has ID 5, and the table has seven rows. The hash formula and vector values are illustrative numbers chosen for hand calculation.
+
+<a href="/images/model-advanced-ngram-embedding/en/02-address-and-learned-row.png?v=4905733e77cf" id="figure-4"><picture><source width="720" height="2568" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/02-address-and-learned-row-mobile.png?v=d7f50d8b061d" /><img width="2400" height="2594" src="/images/model-advanced-ngram-embedding/en/02-address-and-learned-row.png?v=4905733e77cf" alt="Putting IDs 2 and 5 into the illustrative hash gives 11 mod 7 = 4, then reads the learned vector [0.2, 0.8] at row 4." loading="lazy" /></picture></a>
+
+Call the two IDs u and v, and define the first hash as <math><msub><mi>h</mi><mtext>1</mtext></msub></math>(u,v) = (3u + v) mod 7. Mod means the remainder after division. For (2,5), 3 × 2 + 5 = 11, and the remainder when 11 is divided by 7 is 4. We therefore read **row 4** of the table, numbering rows from 0.
+
+If address 4 stores [0.2, 0.8], we read this two-component vector. Its value can change through learning, but the same (2,5) still points to row 4.
+
+The same rule gives 16 mod 7 = 2 for (5,1), and 7 mod 7 = 0 for (1,4). Addresses can be computed in advance from token IDs alone.
+
+## Mitigating collisions with multiple tables
+
+Does a collision in one hash table force the entire additional representation to be the same? Looking up the same group with different hashes in multiple tables can distinguish groups in one table even if they collide in another. [Engram's multi-hash lookup](https://arxiv.org/html/2601.07372v1#S2.SS2) also builds lookup vectors by group length this way.
+
+<a href="/images/model-advanced-ngram-embedding/en/03-two-hashes-and-collisions.png?v=2ab5aaa16efb" id="figure-5"><picture><source width="720" height="2248" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/03-two-hashes-and-collisions-mobile.png?v=06bcdcdc2ff0" /><img width="2400" height="1894" src="/images/model-advanced-ngram-embedding/en/03-two-hashes-and-collisions.png?v=2ab5aaa16efb" alt="AB and CC collide at row 4 in the first table but reach rows 1 and 3 in the second. The two lookup results are concatenated." loading="lazy" /></picture></a>
+
+The first hash is the same as before: <math><msub><mi>h</mi><mtext>1</mtext></msub></math>(u,v) = (3u + v) mod 7. For the second, define <math><msub><mi>h</mi><mtext>2</mtext></msub></math>(u,v) = (u + 2v) mod 11 and use a separate 11-row table. In this figure, C has ID 1.
+
+| Token group and IDs | First table address | Second table address |
+|---|---|---|
+| (A,B) = (2,5) | 11 mod 7 = 4 | 12 mod 11 = 1 |
+| (C,C) = (1,1) | 4 mod 7 = 4 | 3 mod 11 = 3 |
+
+Both groups read [0.2, 0.8] from row 4 of the first table. In the second, however, they reach rows 1 and 3. If row 1 holds [−0.5, 0.1] and row 3 holds [a, b], their final representations are [0.2, 0.8, −0.5, 0.1] and [0.2, 0.8, a, b], respectively.
+
+The two retrieved vectors are **concatenated**, preserving the colored segments in the figure. All inputs use the same tables, so a colliding row receives training influence from multiple groups.
+
+Multiple hashes mitigate collisions, but collisions across all tables remain possible. More or larger tables also increase storage and the amount of data looked up.
+
+We have seen how a short group determines a fixed address used to read a learned vector. The same group reads the same value from the same table, but we have not yet decided how much to use that value under a longer context. In the next Engram article, we will see how the retrieved result is compared with the current context to control its contribution and how it enters the middle of the model.
