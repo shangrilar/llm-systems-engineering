@@ -8,7 +8,7 @@ date: 2026-09-14
 
 import FlashAttentionSteps from "../../../components/FlashAttentionSteps.astro";
 
-[The previous article](https://llm-systems-engineering.pages.dev/en/posts/online-softmax/) introduced online softmax, which updates the maximum and exponential sum while reading scores in chunks. Computing these two values, however, does not output the probabilities at every position. Attention needs the **final output**: a weighted sum of Value vectors using those probabilities. If we can accumulate this output with each chunk of scores, we can continue computing without storing large score and probability matrices.
+[The previous article](https://ai-systems-engineering.com/en/posts/online-softmax/) introduced online softmax, which updates the maximum and exponential sum while reading scores in chunks. Computing these two values, however, does not output the probabilities at every position. Attention needs the **final output**: a weighted sum of Value vectors using those probabilities. If we can accumulate this output with each chunk of scores, we can continue computing without storing large score and probability matrices.
 
 We will first explore **why we can compute the Value weighted sum and divide by the exponential sum at the end**. Then we will see how to rescale and add to the exponential sum and weighted sum using the same reference as new scores arrive. We will apply this rule to small Q, K, and V tiles, follow the output to completion, and examine **how this reduces the storage and rereading of large intermediate matrices**. Connecting a mathematical accumulation rule to actual savings in data movement is central to FlashAttention.
 
