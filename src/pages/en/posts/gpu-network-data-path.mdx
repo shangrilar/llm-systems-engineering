@@ -6,7 +6,7 @@ description: "Explore transfer paths that reduce intermediate copies through CPU
 date: 2026-09-17
 ---
 
-In [SMs and Copy Engines in GPU Communication](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-engines/), we explored assigning data movement to suitable hardware to reduce resource contention with computation. This time, we will examine the path data takes when the GPUs are in different servers.
+In [SMs and Copy Engines in GPU Communication](https://ai-systems-engineering.com/en/posts/gpu-communication-engines/), we explored assigning data movement to suitable hardware to reduce resource contention with computation. This time, we will examine the path data takes when the GPUs are in different servers.
 
 **Reducing copies through intermediate memory** is another important direction for improving communication. We will first follow a path that copies GPU data into CPU memory before sending it over the network. We will then explain how a network device can access GPU memory directly to reduce intermediate copies. Finally, we will distinguish this from the CPU's role in requesting transfers and checking progress, which can remain even when the data does not pass through CPU memory.
 
@@ -46,7 +46,7 @@ On the sending side, the NIC reads x from GPU memory through PCIe and sends it o
 
 This direct access requires compatible GPUs and NICs, device connectivity, drivers, and communication-library support. The memory regions to be used must also be prepared for NIC access. Simply having a GPU and NIC installed in the same server does not make every buffer accessible this way.
 
-Direct transfers preserve the required order between computations. A must prepare x before its values are sent, and B must run after x is available for use on the receiving GPU. The principles connecting this order are the same as those in [Transferring Data Between GPUs](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-basics/).
+Direct transfers preserve the required order between computations. A must prepare x before its values are sent, and B must run after x is available for use on the receiving GPU. The principles connecting this order are the same as those in [Transferring Data Between GPUs](https://ai-systems-engineering.com/en/posts/gpu-communication-basics/).
 
 Even after reducing intermediate copies, **someone still has to request which data to send and when, and check whether the transfer has finished**. Being able to access GPU memory does not mean the NIC independently decides which data to send or when to send it. Someone must check that the data is ready and ask the NIC to “send this much data from this location.” Next, we will look at who handles these tasks along the same direct-transfer path.
 

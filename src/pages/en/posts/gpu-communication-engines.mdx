@@ -6,7 +6,7 @@ description: "Distinguish the devices and connections used for GPU communication
 date: 2026-09-17
 ---
 
-In [Transferring Data Between GPUs](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-basics/), we followed a value produced by one GPU and used in a computation on another. The CPU submitted work, and streams and communication completion connected the execution order. This time, we will look inside the part we previously grouped under “communication.”
+In [Transferring Data Between GPUs](https://ai-systems-engineering.com/en/posts/gpu-communication-basics/), we followed a value produced by one GPU and used in a computation on another. The CPU submitted work, and streams and communication completion connected the execution order. This time, we will look inside the part we previously grouped under “communication.”
 
 **Moving data also consumes GPU resources.** When computation and communication use the same resources, they can slow each other down. One direction for optimization is to assign suitable communication work to a separate device, leaving more resources available for computation.
 
@@ -64,4 +64,4 @@ This figure illustrates a case in which **SM resource contention slows computati
 
 In a real execution, we must examine the resources communication uses alongside where computation waits. The effective improvement depends on whether SM contention is high or memory or inter-GPU links have reached their limits. The final criterion is whether all the required work finishes earlier.
 
-This article explored assigning data movement to suitable hardware to reduce resource contention with computation. Another direction is to reduce copies through intermediate memory. In [GPU Communication Across Servers and the CPU's Role](https://llm-systems-engineering.pages.dev/en/posts/gpu-network-data-path/), we will examine the path taken by data sent to another server and the CPU's role even after intermediate copies are reduced.
+This article explored assigning data movement to suitable hardware to reduce resource contention with computation. Another direction is to reduce copies through intermediate memory. In [GPU Communication Across Servers and the CPU's Role](https://ai-systems-engineering.com/en/posts/gpu-network-data-path/), we will examine the path taken by data sent to another server and the CPU's role even after intermediate copies are reduced.

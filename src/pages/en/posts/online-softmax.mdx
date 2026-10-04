@@ -6,7 +6,7 @@ description: "Explore why stable softmax subtracts the maximum, how the maximum 
 date: 2026-09-13
 ---
 
-In the [previous article](https://llm-systems-engineering.pages.dev/en/posts/attention-memory-and-softmax/), we explored why a subset of scores cannot determine the final softmax probabilities. The denominator must also account for the remaining scores in the same row. This time, we will explore online softmax, a way to **accumulate that information while reading scores a few at a time**.
+In the [previous article](https://ai-systems-engineering.com/en/posts/attention-memory-and-softmax/), we explored why a subset of scores cannot determine the final softmax probabilities. The denominator must also account for the remaining scores in the same row. This time, we will explore online softmax, a way to **accumulate that information while reading scores a few at a time**.
 
 First, we will see why **subtracting the maximum from every score** makes computation stable even when the scores are large. Next, we will examine **the roles of the maximum and the sum of exponentials**. Finally, we will follow how each new chunk of scores either leaves the maximum unchanged or updates it, and how we rescale and add to the exponential sum using that reference. The key is to update these two values for the scores processed so far without revisiting all the earlier scores.
 

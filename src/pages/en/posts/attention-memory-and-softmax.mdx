@@ -12,7 +12,7 @@ What if we computed scores a few at a time, immediately converted them into prob
 
 ## The Attention Computation Flow
 
-Let us briefly revisit the computation from the [Core Attention article](https://llm-systems-engineering.pages.dev/en/posts/core-attention/). We consider one head processing T tokens together. If the dimension of one head is dₕ, Q, K, and V each have shape T × dₕ.
+Let us briefly revisit the computation from the [Core Attention article](https://ai-systems-engineering.com/en/posts/core-attention/). We consider one head processing T tokens together. If the dimension of one head is dₕ, Q, K, and V each have shape T × dₕ.
 
 A row of Q is the Query vector of a token gathering information, and a row of K is the Key vector of a token it can attend to. Their dot product gives one score between tokens. Computing these scores through matrix multiplication QKᵀ produces **a T × T score matrix S, with rows corresponding to Query tokens and columns to Key tokens**.
 

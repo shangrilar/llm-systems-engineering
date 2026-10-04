@@ -12,7 +12,7 @@ date: 2026-09-12
 
 ## Attention의 계산 흐름
 
-[Core Attention 글](https://llm-systems-engineering.pages.dev/posts/core-attention/)에서 살펴본 계산을 짧게 복습하겠습니다. 이번에는 토큰 T개를 함께 처리하는 한 헤드를 기준으로 합니다. 헤드 하나의 차원을 dₕ라고 하면 Q·K·V는 각각 T × dₕ 형태입니다.
+[Core Attention 글](https://ai-systems-engineering.com/posts/core-attention/)에서 살펴본 계산을 짧게 복습하겠습니다. 이번에는 토큰 T개를 함께 처리하는 한 헤드를 기준으로 합니다. 헤드 하나의 차원을 dₕ라고 하면 Q·K·V는 각각 T × dₕ 형태입니다.
 
 Q의 한 행은 정보를 모을 토큰의 Query 벡터이고, K의 한 행은 참조할 토큰의 Key 벡터입니다. 두 벡터를 내적하면 토큰 사이의 점수 하나가 나옵니다. 이를 행렬 곱 QKᵀ로 계산하면 **행은 Query 토큰, 열은 Key 토큰에 해당하는 T × T 점수 행렬 S**가 됩니다.
 
