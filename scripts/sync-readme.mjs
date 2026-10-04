@@ -24,13 +24,13 @@ for (const locale of ['ko', 'en']) {
     .filter(article => article?.published)
     .map(article => `- [${article.title}](${base}${prefix}/posts/${article.slug}/)`)
     .join('\n');
-  const text = `# LLM Systems Engineering
+  const text = `# ${config.title}
 
 ${korean ? '[English](README.md) | **한국어**' : '**English** | [한국어](README.ko.md)'}
 
 ${korean
-  ? '모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 LLM 시스템 엔지니어링 가이드입니다.'
-  : 'An illustrated guide to LLM systems engineering: model internals, GPU execution, and performance, explained step by step.'}
+  ? '모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 AI 시스템 엔지니어링 가이드입니다.'
+  : 'An illustrated guide to AI systems engineering: model internals, GPU execution, and performance, explained step by step.'}
 
 ${korean
   ? '현재 모델과 GPU의 기초를 다루는 글을 제공합니다. 학습 로드맵은 기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training으로 이어집니다.'
@@ -47,4 +47,4 @@ ${articles || (korean ? '첫 글을 준비하고 있습니다.' : 'The first art
   writeFileSync(korean ? 'README.ko.md' : 'README.md', text);
 }
 
-writeFileSync('README.en.md', '# LLM Systems Engineering\n\nThe English guide is now the [main README](README.md).\n\n[Read articles in English](' + base + '/en/) · [한국어](README.ko.md)\n');
+writeFileSync('README.en.md', '# ' + config.title + '\n\nThe English guide is now the [main README](README.md).\n\n[Read articles in English](' + base + '/en/) · [한국어](README.ko.md)\n');
