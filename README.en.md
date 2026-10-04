@@ -1,4 +1,4 @@
-# LLM Systems Engineering
+# AI Systems Engineering
 
 The English guide is now the [main README](README.md).
 

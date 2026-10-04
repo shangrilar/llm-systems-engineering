@@ -1,8 +1,8 @@
-# LLM Systems Engineering
+# AI Systems Engineering
 
 **English** | [한국어](README.ko.md)
 
-An illustrated guide to LLM systems engineering: model internals, GPU execution, and performance, explained step by step.
+An illustrated guide to AI systems engineering: model internals, GPU execution, and performance, explained step by step.
 
 Start with the available articles on model and GPU fundamentals. The learning roadmap continues into inference, training (pretraining and SFT), and RL-based post-training.
 

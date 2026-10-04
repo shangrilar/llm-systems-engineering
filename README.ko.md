@@ -1,8 +1,8 @@
-# LLM Systems Engineering
+# AI Systems Engineering
 
 [English](README.md) | **한국어**
 
-모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 LLM 시스템 엔지니어링 가이드입니다.
+모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 AI 시스템 엔지니어링 가이드입니다.
 
 현재 모델과 GPU의 기초를 다루는 글을 제공합니다. 학습 로드맵은 기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training으로 이어집니다.
 
