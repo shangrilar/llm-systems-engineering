@@ -1,0 +1,180 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: training-prep-01-repository-runpod
+title: "Training preparation 1: the repository and RunPod environment"
+description: "Separate chapter-specific training code from the shared runner, then use two API keys to run GPU experiments and collect logs, profiles, and results."
+date: 2026-10-05
+---
+
+In the training series, we apply one change to the same model and compare computation, memory, and training results. These comparisons require us to manage the execution environment, data, configuration, and observations alongside the model code. Numbers from an earlier run are difficult to use as a baseline if we no longer know which implementation produced them.
+
+This first preparation article establishes **how to define an experiment, run it on a GPU, and bring the results back**. Training runs on one H100 on RunPod, while W&B records loss and metrics. The local computer requests execution and collects logs and results. The [next preparation article](/en/posts/training-prep-02-data-preparation/) covers how documents become model inputs.
+
+## What belongs to one experiment?
+
+Running “the same training code” does not necessarily mean running the same experiment. Document selection or order, tokenizer, batch size, and computation precision can affect training results or execution cost. Even the same configuration file can run with different installed libraries and GPUs.
+
+We therefore keep the following information for each run.
+
+| Category | What we record | What it answers |
+| --- | --- | --- |
+| Code | Git commit and hashes of uploaded sources | Which implementation ran? |
+| Environment | Image digest, actual library and CUDA versions, GPU | Where did it run, and with what? |
+| Data | Source and tokenizer revisions, split policy, file hashes | Can we recreate the same inputs? |
+| Configuration | Model, batch, precision, optimizer, observation steps | What stayed fixed, and what changed? |
+| Results | Loss, metrics, trace, snapshot, W&B run | What did we observe under this configuration? |
+
+A commit identifies a version recorded in the repository. Experiments can also run with uncommitted changes, so we record **hashes of the files actually sent to the GPU**. Those execution records are the basis for describing a result. We also fix the seed, but a seed alone does not guarantee identical numerical results across different environments.
+
+## Chapter-specific training code and the shared runner
+
+Training code lives in `labs/training/` in the [public blog repository](https://github.com/shangrilar/llm-systems-engineering). `labs/runner/` handles RunPod execution and resource cleanup. The main parts of the current structure are:
+
+```text
+labs/
+  runner/
+    experiment_runner/      # Pod creation, logs, collection, termination
+  training/
+    training_lab/
+      data.py               # Document cache, chunking, packing
+      model.py              # Shared decoder trained from scratch
+      engine.py             # Current baseline training loop
+      measurement.py        # Metrics, traces, snapshots
+      runpod.py             # Connects training jobs to the shared runner
+      remote.py             # GPU training entry point
+    experiments/
+      smoke.json
+      corrected.json
+    chapters/
+      01-forward-backward/
+        train.py            # Independent example for chapter 1
+```
+
+Educational code should let readers see **the complete execution order for the current chapter**. Each chapter therefore keeps its own `train.py` and entry point, and duplication in training loops is allowed. Checkpointing and offload features, and data, model, and measurement components, are shared where needed. The chapter's own code should still show the order of computation, transfer, waiting, and release.
+
+The current `engine.py` is the pretraining baseline we built first. It does not mean every future chapter already has an independent implementation. We will apply this principle as we add features, and connect the combination of chapter code and shared modules used in each article to a commit or tag.
+
+The shared runner does not need to understand the model or loss. Training supplies the file list, installation and execution commands, and result paths; the runner handles execution and collection. Inference and quantization experiments can use the same runner while concentrating on their own experiment code.
+
+## Roles of the local computer and GPU environment
+
+A [RunPod Pod](https://docs.runpod.io/pods/overview) is an execution environment with a GPU, CPU, memory, and disk. This lab does not require a local GPU or Docker installation. The local controller uses Python 3.9 or later and the standard library; training dependencies are installed inside the Pod.
+
+New users who sign up through [my RunPod referral link](https://runpod.io?ref=6jviazkz) and spend at least $10 on the platform can receive bonus credits. I can also earn referral credits, which are a great help in continuing the GPU experiments for this series. See [RunPod's official program](https://www.runpod.io/referral-and-affiliate-program) for rewards and eligibility conditions.
+
+| Location | Work it performs | What it stores |
+| --- | --- | --- |
+| Local computer | Execution requests, status and logs, downloads | Code, both keys, controller state, collected results |
+| RunPod | Dependency installation, data preparation, training and evaluation | Uploaded sources, data cache, results during execution |
+| W&B | Per-run configuration, metrics, loss curves | Runs and selected artifacts |
+
+The RunPod API key manages Pods from the local computer. The W&B API key lets the training process in the Pod record the experiment. **The RunPod key is not forwarded to the Pod.** Sources are uploaded from an allowlist of required files rather than by copying the whole directory.
+
+Start from the repository root:
+
+```sh
+cd labs/training
+cp .env.example .env
+```
+
+Open `.env` in an editor and fill in the two values. These are format examples:
+
+```dotenv
+RUNPOD_API_KEY=your_RunPod_key
+WANDB_API_KEY=your_WandB_key
+```
+
+`.env` is excluded from Git. Set `WANDB_ENTITY` and `WANDB_PROJECT` to use another W&B team or project. The default project is `llm-training-lab`. Actual execution also requires RunPod account credits and availability of the requested GPU.
+
+## Check the connection with a small run
+
+Before starting a long training job, check the full path with a small model. `smoke` uses four layers of width 256 and six updates. Inspect the execution configuration before creating the Pod.
+
+```sh
+python3 -m training_lab runpod --config smoke --dry-run
+python3 -m training_lab runpod --config smoke
+```
+
+`--dry-run` checks configuration and the code upload without creating a Pod. Actual execution follows **create Pod → upload sources → install dependencies → prepare data → train and evaluate → collect results → delete Pod**. Keep the local controller running until collection and cleanup finish.
+
+The current `smoke` and `profile` connection checks use the initial FlexAttention and token-budget path. `corrected` is the baseline after revising batching and loss. It uses our GPT-style decoder with 12 layers, width 768, and 12 heads, containing **126,716,160 parameters**. It uses the GPT-2 tokenizer but does not load pretrained GPT-2 weights.
+
+```sh
+python3 -m training_lab runpod --config corrected
+```
+
+`corrected` uses explicit pack batches, variable-length FlashAttention, and Liger's integrated LM head and CE. Later chapters explain the computation and each optimization; here we connect a verified configuration to its results. Chapter 1's SmolLM2 example is a separate lab for observing next-token predictions from a pretrained model.
+
+Execution starts from a pinned digest of a CUDA 12.8 and PyTorch 2.8 image. Inside it, however, `corrected` installs **the PyTorch 2.14.1 CUDA 12.6 wheel and Liger 0.8.4**. Check `environment.json` rather than inferring the runtime version from the image name. Parameters, gradients, and AdamW states are FP32, with BF16 autocast for GPU computation. There is no separate master-parameter copy.
+
+## Collect results, then clean up resources
+
+Results are collected locally into `.runs/<pod-id>/`. Open `report.html` in a browser to inspect loss, metrics, and observation files.
+
+| Result file | What to read |
+| --- | --- |
+| `config.json`, `environment.json` | Requested configuration and actual environment |
+| `data-manifest.json`, `data-stats.json` | Data identity, lengths, packing statistics |
+| `metrics.jsonl`, `summary.json` | Step records and measurement summary |
+| `wandb.json` | Link to the W&B loss curves |
+| `timeline.json` | CPU work and CUDA kernel timing |
+| `memory-snapshot.pickle`, `memory-events.json` | Allocator history and observation points |
+| `checkpoint.pt` | Model, optimizer, RNG, and sampler state |
+
+The shared runner verifies SHA-256 hashes of downloaded results before deleting the Pod, then confirms deletion through the API. **Training success and resource-cleanup success are recorded separately.** Resources can be cleaned up after a failed training run if logs were collected; a successful run whose download failed still needs recovery first.
+
+On interruption, timeout, or download failure, the controller attempts to stop the Pod and preserve its disk. A stopped disk may still incur charges. If the local connection is lost, automatic stopping is not guaranteed; check the RunPod console. Controller state lives in `.runpod/`, contains access information, and must not be committed.
+
+Continue monitoring and collection with the actual state-file path. Replace `STATE.json` below with the file created for the run.
+
+```sh
+python3 -m training_lab monitor .runpod/STATE.json
+python3 -m training_lab collect .runpod/STATE.json --output .runs/recovered
+python3 -m training_lab terminate .runpod/STATE.json
+```
+
+Restart a stopped Pod in the console before collecting its results. Once a Pod is deleted, its disk cannot serve as a cache. An existing network volume can be attached to preserve caches across runs, but volume management is separate from Pod deletion.
+
+## Separate performance measurement from detailed observation
+
+W&B loss curves show how training and evaluation results change as updates proceed. Each [W&B run](https://docs.wandb.ai/guides/runs/filter-runs) connects configuration and metrics for baseline comparisons. Timelines and memory snapshots answer different questions: which computations took time, and when values were allocated and released.
+
+```sh
+python3 -m training_lab runpod --config profile
+```
+
+`corrected` collects CPU/CUDA timelines for updates 21–22 and memory history during update 100. A snapshot includes more than a single memory-usage number at the end. It records allocation and release history along with observation points around `zero_grad`, forward, backward, and optimizer operations. Open the timeline in [Perfetto](https://ui.perfetto.dev/) and the snapshot in the [PyTorch memory visualizer](https://pytorch.org/memory_viz).
+
+Instrumentation adds execution cost. Normal throughput summaries therefore exclude the first ten warmup updates and the profile and snapshot steps. Here, warmup means a region excluded from measurement, not a learning-rate schedule.
+
+| Metric | Meaning in this lab |
+| --- | --- |
+| `tokens/s/GPU` | Real target tokens divided by total update time in the normal measurement region; currently one GPU |
+| Estimated MFU | Estimated model forward/backward matrix FLOPs divided by time and the GPU's theoretical peak |
+| Peak allocated | Maximum memory allocated to PyTorch tensors in the measurement region |
+| Peak reserved | Maximum memory reserved by the PyTorch allocator in the same region |
+| Total elapsed time | Separate execution time that also includes installation, data preparation, evaluation, and saving |
+
+Update time includes packing, H2D, forward, backward, clipping, and the optimizer. Evaluation, logging, checkpointing, and profile export are outside that measurement interval. Throughput is **total tokens ÷ total time**, not a simple average of per-step rates. Tokens in the data cache and tokens processed during training are different counts: the same cache can be used repeatedly.
+
+MFU is an estimate, not a hardware kernel FLOP counter. It excludes attention pairs across documents and estimates matrix operations per independent segment. The denominator is the H100 SXM's dense BF16 peak of 989 TFLOPS, distinguished from sparse figures in the [NVIDIA H100 specifications](https://www.nvidia.com/en-us/data-center/h100/). It does not include every operation such as normalization and optimizer work; allocated and reserved memory also do not account for all GPU memory outside the allocator.
+
+## What the actual H100 run verified
+
+The following is **one connection-check run** using `corrected` on October 4, 2026. It completed 100 updates on one H100, collected logs, a timeline, a snapshot, and a checkpoint, then confirmed Pod deletion. The loss curves are linked to [that W&B run](https://wandb.ai/shangrilar/llm-training-lab/runs/eq7eer92).
+
+| Item | Recorded value |
+| --- | ---: |
+| Model parameters | 126,716,160 |
+| Target tokens processed across training | 14,276,156 |
+| Fixed validation CE, before training → after 100 updates | 10.981665 → 6.847176 |
+| Normal measurement region | 87 updates |
+| Normal throughput | 222,427 tokens/s/GPU |
+| Estimated MFU | 20.68% |
+| Normal-region peak allocated / reserved | 47.88 / 49.49 GiB |
+
+This run is evidence that the full path works. It does not establish the optimal batch or final model quality. `corrected` uses 35 logical packs per training batch, with real token counts varying by document mixture. Later technique comparisons must match initial weights, training tokens, evaluation inputs, and measurement scope.
+
+An earlier initial run encountered a log-symlink issue during collection and required recovery. The table above describes the revised engine's subsequent run. We preserve initial implementations, corrected code, and results from different batches separately rather than combining them into one experiment.
+
+With execution and result storage in place, the next preparation article follows **how FineWeb documents become the tokens and targets passed to the model**.

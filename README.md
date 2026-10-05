@@ -16,6 +16,10 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [GPU Architecture: Compute Units and Memory](https://ai-systems-engineering.com/en/posts/gpu-architecture/)
 - [Starting GPU Optimization: Arithmetic Intensity and Data Movement](https://ai-systems-engineering.com/en/posts/gpu-arithmetic-intensity-and-fusion/)
 
+## RunPod referral link and experiment support
+
+New users who sign up through [my RunPod referral link](https://runpod.io?ref=6jviazkz) and spend at least $10 on the platform can receive bonus credits. I can also earn referral credits, which help me continue the GPU experiments for this guide. See [RunPod’s official program](https://www.runpod.io/referral-and-affiliate-program) for rewards and eligibility conditions.
+
 ## All articles
 
 ### Shared Concepts
@@ -93,6 +97,12 @@ Available in English and Korean. Browse the articles and diagrams below.
 - [KV Cache Management and PagedAttention](https://ai-systems-engineering.com/en/posts/paged-kv-cache/)
 - [When KV Capacity Runs Out: Pausing and Resuming Requests](https://ai-systems-engineering.com/en/posts/inference-preemption/)
 - [Inference Metrics: Latency and Throughput](https://ai-systems-engineering.com/en/posts/inference-metrics/)
+
+### Training
+
+- [Training preparation 1: the repository and RunPod environment](https://ai-systems-engineering.com/en/posts/training-prep-01-repository-runpod/)
+- [Training preparation 2: from FineWeb to training batches](https://ai-systems-engineering.com/en/posts/training-prep-02-data-preparation/)
+- [One training step: from forward to a weight update](https://ai-systems-engineering.com/en/posts/training-01-forward-backward/)
 
 ### RL
 

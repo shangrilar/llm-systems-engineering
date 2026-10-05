@@ -1,0 +1,73 @@
+{
+  "name": "dense-gpt-127m-native-varlen-liger-lce",
+  "group": "engine-correction",
+  "mode": "train",
+  "seed": 42,
+  "data": {
+    "dataset": "HuggingFaceFW/fineweb",
+    "subset": "sample-10BT",
+    "dataset_revision": "9bb295ddab0e05d785b879661af7260fed5140fc",
+    "tokenizer": "openai-community/gpt2",
+    "tokenizer_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "split_seed": 20261003,
+    "validation_fraction": 0.05,
+    "train_tokens": 8000000,
+    "validation_tokens": 100000,
+    "max_documents": 100000,
+    "max_seq_len": 4096,
+    "parquet_prefix": "sample/10BT"
+  },
+  "model": {
+    "dim": 768,
+    "heads": 12,
+    "layers": 12
+  },
+  "train": {
+    "attention": "flash_varlen",
+    "packing_buffer": 64,
+    "accumulation": 1,
+    "steps": 100,
+    "warmup_steps": 10,
+    "eval_every": 10,
+    "eval_batches": 8,
+    "lr": 0.0003,
+    "weight_decay": 0.1,
+    "clip_grad": 1.0,
+    "checkpoint_every": 100,
+    "target_loss": null,
+    "initial_eval": true,
+    "batch_size": 35,
+    "loss_backend": "liger",
+    "eval_microbatch_tokens": 8192
+  },
+  "runpod": {
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "image": "pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel@sha256:a7103283ea7113e10ae5d014bd2342acebda0bc53164b2f7b1dd6eb7a766bdb6",
+    "max_seconds": 5400,
+    "network_volume_id": null
+  },
+  "observation": {
+    "profile_steps": [
+      21,
+      22
+    ],
+    "memory_step": 100,
+    "memory_max_entries": 100000,
+    "with_stack": false,
+    "record_shapes": false
+  },
+  "measurement": {
+    "bf16_peak_flops_per_gpu": 989000000000000,
+    "expected_gpu": "H100 80GB HBM3",
+    "source": "https://www.nvidia.com/en-us/data-center/h100/",
+    "note": "H100 SXM dense BF16 peak; sparse peak is not used."
+  },
+  "runtime": {
+    "torch_version": "2.14.1",
+    "torch_index_url": "https://download.pytorch.org/whl/cu126",
+    "liger_version": "0.8.4",
+    "gpu_preflight": true,
+    "matched_benchmark": true,
+    "attention_implementation": "torch.nn.attention.varlen.varlen_attn"
+  }
+}

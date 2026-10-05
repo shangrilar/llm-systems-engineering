@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "name": "command-smoke",
+  "source_root": ".",
+  "sources": [
+    "experiment.py"
+  ],
+  "runpod": {
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "image": "pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel@sha256:a7103283ea7113e10ae5d014bd2342acebda0bc53164b2f7b1dd6eb7a766bdb6",
+    "max_seconds": 300,
+    "network_volume_id": null
+  },
+  "config": {
+    "steps": 3
+  },
+  "stages": [
+    {
+      "name": "experiment",
+      "command": [
+        "{python}",
+        "-u",
+        "experiment.py"
+      ]
+    }
+  ],
+  "status_files": {
+    "progress": "progress.json"
+  },
+  "artifacts": {
+    "include": [
+      "*.json",
+      "*.log"
+    ]
+  }
+}

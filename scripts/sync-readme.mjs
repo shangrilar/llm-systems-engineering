@@ -40,7 +40,13 @@ ${korean
   ? '[한국어 글 읽기](' + base + '/) · [영어 글 읽기](' + base + '/en/)\n\n한국어와 영어로 제공합니다. 아래 목차에서 개별 글과 그림을 읽을 수 있습니다.'
   : '[Read in English](' + base + '/en/) · [한국어로 읽기](' + base + '/)\n\nAvailable in English and Korean. Browse the articles and diagrams below.'}
 
-${startingPoints ? `## ${korean ? '여기서 시작하세요' : 'Start here'}\n\n${startingPoints}\n\n` : ''}## ${korean ? '전체 글 목록' : 'All articles'}
+${startingPoints ? `## ${korean ? '여기서 시작하세요' : 'Start here'}\n\n${startingPoints}\n\n` : ''}## ${korean ? 'RunPod 추천 링크와 실험 지원' : 'RunPod referral link and experiment support'}
+
+${korean
+  ? '[제 RunPod 추천 링크](https://runpod.io?ref=6jviazkz)로 새로 가입하고 플랫폼에서 10달러 이상 사용하면 가입자도 추가 크레딧을 받을 수 있습니다. 저도 추천 보상으로 크레딧을 받을 수 있으며, 이 크레딧은 이 가이드의 GPU 실험을 이어 가는 데 큰 도움이 됩니다. 혜택과 적용 조건은 [RunPod 공식 안내](https://www.runpod.io/referral-and-affiliate-program)를 참고해 주세요.'
+  : 'New users who sign up through [my RunPod referral link](https://runpod.io?ref=6jviazkz) and spend at least $10 on the platform can receive bonus credits. I can also earn referral credits, which help me continue the GPU experiments for this guide. See [RunPod’s official program](https://www.runpod.io/referral-and-affiliate-program) for rewards and eligibility conditions.'}
+
+## ${korean ? '전체 글 목록' : 'All articles'}
 
 ${articles || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
 `;

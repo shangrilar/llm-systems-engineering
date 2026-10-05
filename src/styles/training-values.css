@@ -1,0 +1,12 @@
+.prose .training-value-table th,
+.prose .training-value-table td {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.prose .training-value-table th:first-child {
+  min-width: 140px;
+}
+.prose .training-value-table td:not(:first-child) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
