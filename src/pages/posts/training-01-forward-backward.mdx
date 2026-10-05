@@ -6,6 +6,8 @@ description: "다음 토큰의 확률로 loss를 계산하고, backward에서 wg
 date: 2026-10-05
 ---
 
+import "../../styles/training-values.css";
+
 [LLM의 전체 구조](/posts/embedding-to-lm-head/)에서 입력 토큰이 벡터로 바뀌고, 여러 층을 거쳐 다음 토큰의 점수인 logits가 만들어지는 과정을 살펴봤습니다. 추론에서는 이 점수로 토큰을 선택합니다. 학습에서는 **정답에 준 확률을 평가하고, 그 평가를 바탕으로 모델의 가중치를 바꿉니다.**
 
 이번 글에서는 학습 한 스텝을 따라가겠습니다. Forward로 예측을 만들고, 정답과 비교해 loss를 계산합니다. Backward는 이 loss가 각 가중치에 얼마나 민감한지 계산하며, optimizer가 그 결과를 사용해 새 가중치를 씁니다. 특히 backward에서 현재 층의 가중치를 위한 gradient와 이전 층으로 전달할 gradient가 어떻게 갈라지는지 살펴보겠습니다.
@@ -231,11 +233,15 @@ print(tokenizer.decode(generated[0]))  # I like to
 
 Backward 뒤 gradient가 0이 아닌 가중치 칸 하나를 골라 update 전후를 기록했습니다. 아래는 <strong>이 모델의 실제 저장 형태 A[507,1365]</strong>에 대한 결과입니다. 그림 6의 W[0,1]과는 다른 칸이며, 학습률도 0.0001로 다릅니다.
 
+<div class="training-value-table">
+
 | 관측 지점 | 가중치 값 | gradient |
 | --- | ---: | ---: |
 | Forward 전 | 0.484375000 | 없음 |
 | Backward 뒤 | 0.484375000 | +0.311700791 |
 | AdamW step 뒤 | 0.484274536 | +0.311700791 |
+
+</div>
 
 Backward 전후에는 관찰한 weight 행렬 전체가 정확히 같았습니다. Step 뒤 선택한 칸의 변화는 약 **−0.000100464**였습니다. `.grad`는 optimizer step만으로 자동 삭제되지 않으므로 마지막 행에도 같은 gradient가 남아 있습니다. 다음 스텝의 `zero_grad()`에서 비웁니다.
 

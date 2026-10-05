@@ -26,6 +26,11 @@ for(const locale of ['ko','en'] as const)for(const [index,id] of ids.entries()){
     expect(src.includes(`/images/${id}/en/`)).toBe(locale==='en');
    }
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+   if(id==='training-01-forward-backward'){
+    const cells=page.locator('.training-value-table td:not(:first-child)');
+    await expect(cells).toHaveCount(6);
+    for(const cell of await cells.all())await expect(cell).toHaveCSS('white-space','nowrap');
+   }
   }
   const nav=page.locator('article nav[aria-label]').last();
   if(index>0)await expect(nav.locator('a').first()).toHaveAttribute('href',`${prefix}/posts/${ids[index-1]}/`);

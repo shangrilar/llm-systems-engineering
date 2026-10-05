@@ -6,6 +6,8 @@ description: "Follow next-token probabilities into loss, separate wgrad and xgra
 date: 2026-10-05
 ---
 
+import "../../../styles/training-values.css";
+
 In [the structure of an LLM](/en/posts/embedding-to-lm-head/), we followed input tokens into vectors and through layers that produce logits, the scores for the next token. Inference uses those scores to select a token. Training **evaluates the probability assigned to the target and uses that evaluation to change the model's weights.**
 
 This article follows one training step. Forward produces predictions, which are compared with targets to calculate loss. Backward computes how sensitive that loss is to each weight; the optimizer uses those results to write new weights. We will pay particular attention to how backward separates gradients for the current layer's weights from gradients passed to the preceding layer.
@@ -231,11 +233,15 @@ The lab's hook observes this layer's forward input and output, and `retain_grad(
 
 After backward, we selected a weight cell with a nonzero gradient and recorded its update. The following values describe <strong>this model's actual stored weight A[507,1365]</strong>. This is a different cell from W[0,1] in figure 6, and its learning rate is also different, at 0.0001.
 
+<div class="training-value-table">
+
 | Observation point | Weight value | Gradient |
 | --- | ---: | ---: |
 | Before forward | 0.484375000 | None |
 | After backward | 0.484375000 | +0.311700791 |
 | After AdamW step | 0.484274536 | +0.311700791 |
+
+</div>
 
 The entire observed weight matrix was exactly unchanged before and after backward. After the step, the selected cell changed by about **−0.000100464**. Optimizer steps do not automatically clear `.grad`, so the same gradient remains in the final row. The next step's `zero_grad()` clears it.
 

@@ -2302,7 +2302,7 @@
         "title": "One training step: from forward to a weight update",
         "description": "Follow next-token probabilities into loss, separate wgrad and xgrad during backward, and see an optimizer change weights through small numerical examples and a real model.",
         "published": true,
-        "sourceRevision": "c731cd45d11c2e6c22d45354a1647da8375ca626cff84b979d87abc068364a42",
+        "sourceRevision": "638649a2d91e7b374765a972e79e900767ceea4e04f210ecad6e8d8d01aedc48",
         "translationStatus": "reviewed",
         "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
       }
