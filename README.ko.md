@@ -16,6 +16,10 @@
 - [GPU 구조: 연산 장치와 메모리](https://ai-systems-engineering.com/posts/gpu-architecture/)
 - [GPU 최적화의 출발점: 산술 강도와 데이터 이동](https://ai-systems-engineering.com/posts/gpu-arithmetic-intensity-and-fusion/)
 
+## RunPod 추천 링크와 실험 지원
+
+[제 RunPod 추천 링크](https://runpod.io?ref=6jviazkz)로 새로 가입하고 플랫폼에서 10달러 이상 사용하면 가입자도 추가 크레딧을 받을 수 있습니다. 저도 추천 보상으로 크레딧을 받을 수 있으며, 이 크레딧은 이 가이드의 GPU 실험을 이어 가는 데 큰 도움이 됩니다. 혜택과 적용 조건은 [RunPod 공식 안내](https://www.runpod.io/referral-and-affiliate-program)를 참고해 주세요.
+
 ## 전체 글 목록
 
 ### 공통
@@ -93,6 +97,12 @@
 - [KV 캐시 관리와 PagedAttention](https://ai-systems-engineering.com/posts/paged-kv-cache/)
 - [KV 캐시가 부족할 때: 요청 중단과 재개](https://ai-systems-engineering.com/posts/inference-preemption/)
 - [추론 성능 지표: 대기 시간과 처리량](https://ai-systems-engineering.com/posts/inference-metrics/)
+
+### 학습
+
+- [학습 준비 1: 저장소와 RunPod 환경](https://ai-systems-engineering.com/posts/training-prep-01-repository-runpod/)
+- [학습 준비 2: FineWeb에서 학습 배치까지](https://ai-systems-engineering.com/posts/training-prep-02-data-preparation/)
+- [학습 한 스텝: Forward에서 가중치 업데이트까지](https://ai-systems-engineering.com/posts/training-01-forward-backward/)
 
 ### RL
 

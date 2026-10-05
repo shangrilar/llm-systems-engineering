@@ -17,11 +17,11 @@ export function cells(p:Panel,x:number,y:number,labels:readonly (Label|null)[],o
 
 // A matrix of small cells. `tone(r, c)` colors active cells; inactive cells stay white with a light border.
 // `outline` then frames a block of cells, e.g. a tile or the rows an output needs.
-export function grid(p:Panel,x:number,y:number,rows:number,cols:number,o:{cell?:number;gap?:number;tone?:(r:number,c:number)=>Tone|null;hatch?:(r:number,c:number)=>boolean}={}){
+export function grid(p:Panel,x:number,y:number,rows:number,cols:number,o:{cell?:number;gap?:number;tone?:(r:number,c:number)=>Tone|null;fill?:(r:number,c:number)=>string|null;hatch?:(r:number,c:number)=>boolean}={}){
   const cell=o.cell??25,gap=o.gap??3,step=cell+gap;
   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
     const tone=o.tone?.(r,c)??null;
-    p.rect(x+c*step,y+r*step,cell,cell,tone?fillOf(tone):C.paper,tone?C[tone]:C.line,3);
+    p.rect(x+c*step,y+r*step,cell,cell,o.fill?.(r,c)??(tone?fillOf(tone):C.paper),tone?C[tone]:C.line,3);
   }
   // A separate pass keeps the original cell drawing order unchanged. Hatching adds
   // a non-color cue for e.g. future positions; its meaning belongs to the figure.

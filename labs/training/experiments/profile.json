@@ -1,0 +1,46 @@
+{
+  "name": "preparation-profile",
+  "group": "preparation",
+  "mode": "profile",
+  "seed": 42,
+  "data": {
+    "dataset": "HuggingFaceFW/fineweb",
+    "subset": "sample-10BT",
+    "dataset_revision": "9bb295ddab0e05d785b879661af7260fed5140fc",
+    "tokenizer": "openai-community/gpt2",
+    "tokenizer_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "split_seed": 20261003,
+    "validation_fraction": 0.05,
+    "train_tokens": 200000,
+    "validation_tokens": 20000,
+    "max_documents": 20000,
+    "max_seq_len": 4096,
+    "parquet_prefix": "sample/10BT"
+  },
+  "model": {
+    "dim": 256,
+    "heads": 4,
+    "layers": 4
+  },
+  "train": {
+    "attention": "flex",
+    "microbatch_tokens": 4096,
+    "packing_buffer": 64,
+    "accumulation": 1,
+    "steps": 3,
+    "warmup_steps": 0,
+    "eval_every": 3,
+    "eval_batches": 2,
+    "lr": 0.0003,
+    "weight_decay": 0.1,
+    "clip_grad": 1.0,
+    "checkpoint_every": 2,
+    "target_loss": null
+  },
+  "runpod": {
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "image": "pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel@sha256:a7103283ea7113e10ae5d014bd2342acebda0bc53164b2f7b1dd6eb7a766bdb6",
+    "max_seconds": 3600,
+    "network_volume_id": null
+  }
+}

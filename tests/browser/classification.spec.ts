@@ -2,19 +2,21 @@ import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import type { Article } from '../../scripts/content';
+import { tracks, categories as categoryLabels } from '../../src/data/classification';
 const catalog: Article[] = JSON.parse(readFileSync('src/data/posts.json', 'utf8'));
 
 for (const locale of ['ko', 'en'] as const) {
   test(`${locale}: grouped catalog and article classification`, async ({ page }) => {
     const prefix = locale === 'en' ? '/en' : '';
     await page.goto(`${prefix}/`);
-    await expect(page.locator('.article-track > h3')).toHaveText(locale === 'ko' ? ['공통', '추론', 'RL'] : ['Shared Concepts', 'Inference', 'RL']);
-    for (const track of ['shared', 'inference', 'rl']) {
+    const shownTracks = (['shared', 'inference', 'training', 'rl'] as const)
+      .filter(track => catalog.some(p => p.track === track && p.locales[locale]?.published));
+    await expect(page.locator('.article-track > h3')).toHaveText(shownTracks.map(track => tracks[track][locale]));
+    for (const track of shownTracks) {
       const group = page.locator(`[data-track="${track}"]`);
-      const categories = track === 'shared' ? [null, 'model', 'hardware', 'workload'] : track === 'inference' ? ['workload'] : [null];
-      const labels = track === 'shared'
-        ? (locale === 'ko' ? ['모델', '하드웨어', '워크로드'] : ['Models', 'Hardware', 'Workloads'])
-        : track === 'inference' ? [locale === 'ko' ? '워크로드' : 'Workloads'] : [];
+      const categories = ([null, 'model', 'hardware', 'workload'] as const)
+        .filter(category => catalog.some(p => p.track === track && p.category === category && p.locales[locale]?.published));
+      const labels = categories.filter(category => category !== null).map(category => categoryLabels[category][locale]);
       await expect(group.locator('.article-category > h4')).toHaveText(labels);
       for (const category of categories) {
         const expected = catalog.filter(p => p.track === track && p.category === category && p.locales[locale]?.published)

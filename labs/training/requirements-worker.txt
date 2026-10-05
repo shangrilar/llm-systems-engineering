@@ -1,0 +1,9 @@
+# PyTorch 2.8.0 is supplied by the CUDA base image; do not replace its CUDA build.
+huggingface-hub==0.36.2
+fsspec==2025.3.0
+transformers==4.56.2
+wandb==0.21.3
+pydantic==2.11.9
+tokenizers==0.22.2
+numpy==2.0.2
+pyarrow==21.0.0

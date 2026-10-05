@@ -1,0 +1,211 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: training-prep-02-data-preparation
+title: "Training preparation 2: from FineWeb to training batches"
+description: "Split FineWeb into training and validation documents, chunk long documents independently, and use runtime best-fit packing to build padding-free inputs and next-token targets."
+date: 2026-10-05
+---
+
+The [first preparation article](/en/posts/training-prep-01-repository-runpod/) established how to run GPU experiments and collect results. Now we prepare their data. Even when a source document is split into chunks and placed in a batch with other documents, we must preserve **which tokens share a context and what each token predicts next**.
+
+Our default pipeline splits FineWeb documents into training and validation, stores tokens per document, and builds batches at execution time. Documents that fit within 4k stay whole; longer ones become independent chunks. Attention is blocked between documents and chunks, and only real tokens enter the model, without padding. We do not assume this policy is best for every pretraining setup. This article examines the policy we selected and the boundaries its implementation preserves.
+
+## Make next-token targets from documents
+
+Pretraining starts by predicting the next token in the source text. Shifting a document by one position supplies inputs and targets without manually writing answer sentences. SFT later requires decisions about conversation formats and which positions contribute to loss; here we focus on next-token training on ordinary text.
+
+The source is `sample-10BT` from [FineWeb](https://huggingface.co/datasets/HuggingFaceFW/fineweb), a sample of English web text. We read only the budget needed for the lab. Using the 10BT sample does not mean downloading or training on all 10B tokens each time. The tokenizer is fixed to `openai-community/gpt2`.
+
+| Item | Fixed value in this lab |
+| --- | --- |
+| Source dataset | `HuggingFaceFW/fineweb` |
+| Sample / Parquet path | `sample-10BT` / `sample/10BT` |
+| Dataset revision | `9bb295ddab0e05d785b879661af7260fed5140fc` |
+| Tokenizer | `openai-community/gpt2` |
+| Tokenizer revision | `607a30d783dfa663caf39e06633721c8d4cfcd7e` |
+| Independent context limit | 4,096 predictor tokens |
+
+We tokenize the complete document and append **one EOS at the actual document end**. The GPT-2 tokenizer's EOS ID is 50256. No new EOS is inserted at an internal cut. Tokenization also does not truncate the original text to a length limit.
+
+Suppose a small illustrative document is tokenized as follows. These numbers, including EOS ID 99, are made-up examples, not actual GPT-2 tokenizer outputs.
+
+```text
+Document tokens: [11, 12, 13, 14, 15, 99]
+Input x:         [11, 12, 13, 14, 15]
+Target y:        [12, 13, 14, 15, 99]
+```
+
+A document with N tokens including EOS has **N−1 next-token pairs**. Its last real token predicts EOS, but we do not create a target after EOS itself. No separate BOS is inserted, so there is no pair for predicting the first token either.
+
+Our engine aligns `inputs` and `targets` in the data stage, so loss calculation does not shift them again. This differs from chapter 1's Hugging Face call with `labels=input_ids`, where the model performs the shift internally.
+
+## Split source documents into training and validation first
+
+To separate training data from evaluation data, **assign the source document before splitting it into chunks**. Assigning a long document's early chunks to training and later chunks to validation would put the same source on both sides.
+
+The current code uses a SHA-256 hash of the document text as its ID. It hashes that ID with a fixed split seed to assign training or validation. The same text and seed produce the same split when read again. Every resulting chunk inherits the source document's split.
+
+```python
+import hashlib
+from training_lab.data import document_split
+
+text = "A short example document."
+document_id = hashlib.sha256(text.encode()).hexdigest()
+split = document_split(document_id, seed=20261003,
+                       validation_fraction=0.05)
+```
+
+If identical text appears again, it is used only once. This is **exact-text deduplication**. The implementation does not remove all near duplicates or partially overlapping copies. A check that the intersection of source document IDs is zero is different from claiming there is no semantically similar content.
+
+`validation_fraction=0.05` sets the hash-based assignment probability. It does not guarantee that exactly 5% of collected tokens will be validation tokens. Training and validation have separate token budgets; whole documents are collected until each budget is filled. Preserving the final document can make the actual count slightly exceed the budget.
+
+## Store documents and offsets in the cache
+
+We do not store the data as fixed 4k rows from the start. Document tokens are appended to binary files, with each document's starting offset and length recorded in a separate index.
+
+```text
+data-cache/<identity>/
+  train.bin          # Per-document tokens including EOS, uint32
+  train.jsonl        # Document ID, starting offset, length
+  validation.bin
+  validation.jsonl
+  manifest.json      # Source, tokenizer, policy, counts, file hashes
+```
+
+Storing document B after A in the token file does not automatically connect their attention or targets. The index supplies boundaries for constructing each document's inputs and targets. We do not connect EOS to another document's first token as its target.
+
+Cache identity includes source and tokenizer revisions and splitting and collection policies. The maximum context length is excluded from this identity, allowing the context limit and packing to change at runtime without recreating source tokens. Current configuration validation permits context lengths from 2 to 4096. Changing the limit may also change the model's positional embedding configuration; it does not guarantee checkpoint compatibility.
+
+Cache reuse compares actual files against the manifest's hashes. An existing directory is checked for corruption rather than trusted automatically. Concurrent preparation by multiple processes is outside the current design, so run one preparation job at a time.
+
+## Split long documents without losing targets
+
+Documents within 4k are not cut further to fill empty space. Longer documents are split into consecutive independent chunks, including the final short chunk. For example, 9,000 text tokens followed by EOS supply 9,000 input-target pairs, divided into **4,096 + 4,096 + 808** pairs.
+
+Chunks do not attend to each other even if they share a source document. The second chunk cannot read the first chunk's preceding context. Using every token pair and preserving the entire long context are different things. This lab uses neither overlap that copies preceding context nor state passed from the previous chunk.
+
+Shifting each already-cut input separately can accidentally drop a target at every boundary. Each chunk therefore **looks ahead by one token for its targets**. The six-token example above, with an input limit of four, becomes:
+
+<a href="/images/training-prep-02-data-preparation/en/01-chunk-and-target.png?v=ea525562640e" id="figure-1"><picture><source width="720" height="2072" media="(max-width: 600px)" srcSet="/images/training-prep-02-data-preparation/en/01-chunk-and-target-mobile.png?v=b59e59360b57" /><img width="2400" height="1592" src="/images/training-prep-02-data-preparation/en/01-chunk-and-target.png?v=ea525562640e" alt="A document 11,12,13,14,15,EOS is split into inputs 11–14 and 15. The first targets are 12–15 and the last target is EOS. The lookahead 15 is only a target of the first chunk; its input stays four tokens long." loading="lazy" decoding="async" /></picture></a>
+
+The first chunk's final input 14 predicts token 15. In that chunk, 15 appears only as a target, not as an input the model can read. In the next chunk, 15 becomes the input that predicts EOS. **Target lookahead does not connect attention between chunks.**
+
+You can check the implementation directly. Run this example in `labs/training`.
+
+```python
+from training_lab.data import split_tokens
+
+tokens = [11, 12, 13, 14, 15, 99]
+chunks = list(split_tokens("example", tokens, max_seq_len=4))
+assert [len(c.inputs) for c in chunks] == [4, 1]
+assert [t for c in chunks for t in c.inputs] == tokens[:-1]
+assert [t for c in chunks for t in c.targets] == tokens[1:]
+```
+
+This checks that every source next-token pair remains exactly once. Position IDs also restart at zero for each independent chunk. Processing does not preserve the previous chunk's positions or attention.
+
+## Build batches at runtime with best-fit packing
+
+Document lengths vary. Giving each short document its own 4k row and padding the rest means processing many more rows than there are real tokens. Packing groups documents into the same execution batch to reduce this waste. Grouping documents and allowing them to read each other's context are separate decisions.
+
+From a bounded candidate buffer, the sampler selects **the longest chunk that fits the remaining space**, then looks for another if space remains. Repeating this constructs a logical pack. It does not solve a globally optimal combination over the entire dataset; it is a best-fit choice among buffered candidates.
+
+For example, let the pack limit be eight and the batch size two. Documents A, B, C, D have input lengths 6, 4, 3, 2. A and D supply eight inputs to the first pack; B and C supply seven to the second. No document is cut to fill space. No candidate fits the remaining slot, so it stays empty as we move to the next pack.
+
+<a href="/images/training-prep-02-data-preparation/en/02-best-fit-packing.png?v=c54402c3c6ca" id="figure-2"><picture><source width="720" height="2052" media="(max-width: 600px)" srcSet="/images/training-prep-02-data-preparation/en/02-best-fit-packing-mobile.png?v=b6310ce2b733" /><img width="2400" height="1512" src="/images/training-prep-02-data-preparation/en/02-best-fit-packing.png?v=c54402c3c6ca" alt="Best-fit groups documents A 6, B 4, C 3, D 2 into two packs. A and D fill eight input slots; B and C use seven, leaving one unused slot. Documents stay whole and no padding token is added." loading="lazy" decoding="async" /></picture></a>
+
+The actual `corrected` configuration uses the following batch-related settings, excerpted from the full configuration.
+
+```json
+{
+  "data": {"max_seq_len": 4096},
+  "train": {
+    "batch_size": 35,
+    "packing_buffer": 64,
+    "accumulation": 1,
+    "eval_microbatch_tokens": 8192
+  }
+}
+```
+
+Here, `batch_size` is **the number of logical packs in a microbatch**. Each pack has a maximum capacity of 4,096 and may contain multiple documents or chunks. The counts of 35 packs, independent segments, and real tokens are therefore different. Total input tokens are at most 35 × 4,096, reduced by unused capacity.
+
+4k limits an independent segment's context, not the microbatch's total tokens. Changing batch size changes how many packs are processed at once while preserving attention boundaries per segment. The original `microbatch_tokens` setting remains for comparison, but is not used together with an explicit `batch_size`.
+
+This policy changes document order to some extent. Continuing the same input order after restarting requires the current order, cursor, unused candidate buffer, and RNG state, not just a seed. Our checkpoints include this sampler state.
+
+## Pass only real tokens to the model, without padding
+
+Unused logical pack slots do not become padding tokens. We flatten the selected segments' real inputs and pass boundary metadata alongside them. In this lab, padding-free means **padding rows are not processed from embedding through QKV projection and MLP**. Excluding padding only from loss does not remove earlier computation.
+
+The preceding figure's four documents, in A, D, B, C order with lengths 6, 2, 4, 3, produce 15 model input rows. The second pack's unused slot is not materialized as an input. Boundaries are represented as follows:
+
+```text
+Segment input lengths: [6, 2, 4, 3]
+Logical pack lengths:  [8, 7]
+cu_seqlens:            [0, 6, 8, 12, 15]
+```
+
+`cu_seqlens` contains cumulative lengths: rows 0–5 form the first segment, rows 6–7 the second, and so on. **Pack boundaries alone are insufficient.** Different documents inside a pack must also be isolated, so we use every document or chunk boundary. Metadata is an int32 tensor; attention also receives the actual maximum segment length.
+
+<a href="/images/training-prep-02-data-preparation/en/03-packed-attention.png?v=f713945e0a97" id="figure-3"><picture><source width="720" height="1932" media="(max-width: 600px)" srcSet="/images/training-prep-02-data-preparation/en/03-packed-attention-mobile.png?v=58703f6f93f5" /><img width="2400" height="2352" src="/images/training-prep-02-data-preparation/en/03-packed-attention.png?v=f713945e0a97" alt="Only the real inputs A 6, D 2, B 4, C 3 are flattened. Position IDs restart at zero per document; cumulative boundaries are 0,6,8,12,15. Attention allows only each document block’s lower triangle, excluding other documents and future tokens." loading="lazy" decoding="async" /></picture></a>
+
+Ordinary QKV projections and MLPs process the collected real-token rows. Attention receives boundaries through [PyTorch variable-length attention](https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html). The `corrected` GPU path uses `torch.nn.attention.varlen.varlen_attn` with `window_size=(-1, 0)` for causal attention within each segment. Q/K/V have token, head, and head-dimension axes, or THD layout. THD alone does not isolate documents; boundary metadata and the causal setting are also necessary.
+
+This path does not build a T×T document mask for the entire flat input. The initial FlexAttention path uses a document-aware BlockMask; the CPU reference path runs causal SDPA separately per segment. These paths express the same document isolation differently. Internal GPU tile alignment is distinct from adding padding rows to model inputs.
+
+Loss is the sum of CE over real targets divided by their count. We do not average each document's mean loss with equal weight regardless of length. Accumulation over multiple microbatches must likewise use the update's total target count as the denominator to preserve token weighting. Chapter 3 examines gradient accumulation in detail.
+
+## Run data preparation and inspect the counts
+
+RunPod execution also prepares data automatically. To prepare it separately on a local computer, install the data dependencies in `requirements-worker.txt` with Python 3.11 or later, then use the following command. Data preparation itself does not need a GPU.
+
+```sh
+cd labs/training
+python3 -m pip install -r requirements-worker.txt
+python3 -m training_lab prepare --config corrected --cache data-cache
+```
+
+Pass the cache directory printed at the end to the next command, replacing `CACHE_DIRECTORY` with its actual path.
+
+```sh
+python3 -m training_lab inspect-data CACHE_DIRECTORY \
+  --config corrected --output data-stats.json
+```
+
+The cache used for the H100 run on October 4, 2026 had the following counts. Raw tokens include document-end EOS; prediction pairs are one fewer per document.
+
+| Split | Source documents | Raw tokens | Prediction pairs |
+| --- | ---: | ---: | ---: |
+| Train | 11,450 | 8,000,201 | 7,988,751 |
+| Validation | 152 | 100,703 | 100,551 |
+
+These are cache sizes. Reusing the cache during training increases cumulative processed tokens. Evaluation repeatedly uses a fixed sampler order and batch count to assess part of the cache; it does not consume the entire validation cache every time.
+
+A small CPU data sample also included a real long document. Its 8,991 tokens including EOS yielded 8,990 next-token pairs, with input lengths 4,096, 4,096, 798. In a separate packing sample, four segments supplied 4,055 real inputs to one logical pack. The remaining 41 slots of 4k capacity did not enter the model.
+
+Beyond length statistics and pack utilization, checks verify these relationships:
+
+- No source document ID appears in both training and validation.
+- Chunking neither drops nor duplicates input-target pairs, and preserves the actual document-end EOS.
+- Separate and packed execution produce outputs and gradients within tolerance.
+- Changing one document's inputs does not change another document's outputs.
+- Model input length equals the real-input count; positions restart at zero per segment.
+- Restoring the same sampler state continues with the same next batch.
+
+CPU reference checks and actual GPU preflight checks verified these conditions. CUDA varlen numerical error and document isolation are checked separately. High packing utilization alone does not establish preservation of these semantics.
+
+## Differences from other data layouts
+
+Another approach is to prebuild fixed-length sequences and execute with MBS=1. If those sequences contain multiple documents, they still need boundaries. **MBS=1 does not automatically guarantee document isolation or padding-free execution.** With appropriate boundaries it can run the same independent contexts, but changing batching or packing may require rebuilding the prepared groups.
+
+| Choice | Benefit | Cost to consider |
+| --- | --- | --- |
+| Additional fixed-length cuts | Easier to keep input shapes constant | Even short documents may be cut at pack boundaries |
+| Padded batches | Easier to represent per-document rows and lengths | Embeddings and MLPs may also process padding |
+| Offline prepacking | Less combination work during execution | Policy changes may require regrouping |
+| Runtime best-fit | Change batch, context, and packing with the same document cache | CPU selection cost and order/restart state management |
+
+[Fewer Truncations Improve Language Modeling](https://arxiv.org/abs/2404.10830) reports that reducing unnecessary document truncation through packing improved results under its pretraining conditions. This is one reason for choosing document preservation as our default. It does not guarantee better quality for our FineWeb sample, model, and execution budget. Nor do we describe our current candidate-buffer implementation as identical to the paper's full algorithm.
+
+Our default is **store source documents → create independent segments → build best-fit batches at runtime → pass real tokens and boundary metadata**. With data and the execution environment ready, [chapter 1](/en/posts/training-01-forward-backward/) follows one training step from output probabilities to loss, backward, and optimizer update.

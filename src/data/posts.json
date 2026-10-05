@@ -2275,5 +2275,91 @@
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
+  },
+  {
+    "articleId": "training-01-forward-backward",
+    "order": 51,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [
+      "training-01-forward-backward/01-training-cycle",
+      "training-01-forward-backward/02-next-token-distributions",
+      "training-01-forward-backward/03-cross-entropy",
+      "training-01-forward-backward/04-backward-flow",
+      "training-01-forward-backward/05-wgrad-xgrad",
+      "training-01-forward-backward/06-parameter-update"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "training-01-forward-backward",
+        "title": "학습 한 스텝: Forward에서 가중치 업데이트까지",
+        "description": "다음 토큰의 확률로 loss를 계산하고, backward에서 wgrad와 xgrad를 만든 뒤 optimizer가 가중치를 바꾸는 과정을 작은 수치와 실제 모델로 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-01-forward-backward",
+        "title": "One training step: from forward to a weight update",
+        "description": "Follow next-token probabilities into loss, separate wgrad and xgrad during backward, and see an optimizer change weights through small numerical examples and a real model.",
+        "published": true,
+        "sourceRevision": "c731cd45d11c2e6c22d45354a1647da8375ca626cff84b979d87abc068364a42",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
+  },
+  {
+    "articleId": "training-prep-01-repository-runpod",
+    "order": 49,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "training-prep-01-repository-runpod",
+        "title": "학습 준비 1: 저장소와 RunPod 환경",
+        "description": "편별 학습 코드와 공통 실행 도구를 구분하고, 두 API 키로 GPU 실험을 실행한 뒤 로그·프로파일·결과를 회수하는 과정을 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-prep-01-repository-runpod",
+        "title": "Training preparation 1: the repository and RunPod environment",
+        "description": "Separate chapter-specific training code from the shared runner, then use two API keys to run GPU experiments and collect logs, profiles, and results.",
+        "published": true,
+        "sourceRevision": "98cea946862106f6be313f42984ab6c80f315857115ea00b275574472ff4b3e7",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
+  },
+  {
+    "articleId": "training-prep-02-data-preparation",
+    "order": 50,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [
+      "training-prep-02-data-preparation/01-chunk-and-target",
+      "training-prep-02-data-preparation/02-best-fit-packing",
+      "training-prep-02-data-preparation/03-packed-attention"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "training-prep-02-data-preparation",
+        "title": "학습 준비 2: FineWeb에서 학습 배치까지",
+        "description": "FineWeb 문서를 학습·검증으로 나누고, 긴 문서의 독립 분할과 실행 시점 best-fit packing을 거쳐 padding 없는 입력과 다음 토큰 정답을 만드는 과정을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-prep-02-data-preparation",
+        "title": "Training preparation 2: from FineWeb to training batches",
+        "description": "Split FineWeb into training and validation documents, chunk long documents independently, and use runtime best-fit packing to build padding-free inputs and next-token targets.",
+        "published": true,
+        "sourceRevision": "73b0c5cd3d1ba8de8f0a2ce94f5001d3d750ee608b7cc2be44dd631987df9223",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
   }
 ]
