@@ -297,7 +297,7 @@
         "description": "Use MHA as a baseline to compare KV sharing in MQA and GQA, and examine how they reduce storage while preserving per-query outputs and what trade-offs follow.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "eeb8e1b0a9d2bedc490129662c925f7f5d15e8f96e856d608b19d8c5d17f6a3f",
+        "sourceRevision": "4528af4b25be19f1102cae1a51ddd2d55b757f65d2c83b9c404017a5e89b40c6",
         "reviewNote": "2026-09-27: Compared all six sections and five figure descriptions with the Korean source. Same token/head/component distinctions, projections, KV sharing, 64/32/16 storage counts, and qualified quality/runtime claims. Both bodies use MathML subscripts; existing localized figures retain their shared geometry and illustrative inputs."
       }
     }
@@ -1705,7 +1705,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Paragraph-by-paragraph Korean/English review; four bilingual figures, projection arithmetic, causal summary timing, overlapping recent entries, and storage/read counts checked on 2026-09-27.",
-        "sourceRevision": "62d3a20577ae2f0ae48bb3729d4ad20aded0ce0bd124fbd1e5439de37fc675ed"
+        "sourceRevision": "d03e5c42bdde2a86be733121e55cb34e1222cb592dedefc348131a664c4603d4"
       }
     }
   },
@@ -2239,7 +2239,7 @@
         "description": "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "bfcb9a9060214efdc8944c5a661c05554a07056460dd33044ca723768506acd9",
+        "sourceRevision": "233e3eacb2ab3a4fd063a8d438cb0d26e511cb2a4de3c028326999caf190c68b",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }

@@ -17,9 +17,9 @@ export default {
     p.text(130,390,['내용 투영 H Wᵤ','Content: H Wᵤ'],{size:24,weight:600,color:C.teal,anchor:'middle',width:235});
     p.text(390,390,['점수 투영 H Wₛ','Scores: H Wₛ'],{size:24,weight:600,color:C.purple,anchor:'middle',width:235});
     p.text(260,443,['학습되는 투영 행렬 · 아래는 예시 값','Learned projection matrices · Toy values'],{size:23,anchor:'middle',width:510});
-    p.text(130,492,'Wᵤ',{size:25,weight:600,color:C.teal,anchor:'middle',width:200});
+    p.text(130,492,'Wᵤ',{size:25,weight:600,color:C.purple,anchor:'middle',width:200});
     p.text(390,492,'Wₛ',{size:25,weight:600,color:C.purple,anchor:'middle',width:200});
-    matrix(p,44,517,[[2,0],[0,4]],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'teal'});
+    matrix(p,44,517,[[2,0],[0,4]],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'purple'});
     matrix(p,304,517,[['ln 3',0],[0,'ln 3']],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'purple'});
     p.arrow(130,647,130,692,C.teal);p.arrow(390,647,390,692,C.purple);
     p.text(130,733,['내용 U = H Wᵤ','Content U = H Wᵤ'],{size:23,weight:600,color:C.teal,anchor:'middle',width:240});

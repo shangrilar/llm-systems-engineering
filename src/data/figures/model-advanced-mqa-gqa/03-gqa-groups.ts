@@ -13,7 +13,7 @@ export default {
     const a=new Panel(locale,null,787,520,[0,68]);
     a.text(12,109,'T = 4 · hkv = 2',{size:24,weight:600,width:255});
     for(let g=0;g<2;g++){
-      const y=160+g*300,id=g===0?'A':'B',tone=g===0?'teal':'purple';
+      const y=160+g*300,id=g===0?'A':'B',tone='teal';
       a.rect(14,y,174,290,g===0?C.tealFill:C.purpleFill,C[tone],12);
       a.text(32,y+32,`KV ${id}`,{size:24,weight:600,color:C[tone],width:144});
       a.text(32,y+66,`K${id} [4×2]`,{size:21,weight:600,color:C[tone],width:154});
@@ -29,7 +29,7 @@ export default {
       a.box(attention.x,attention.y,attention.width,attention.height,'Attention','','blue');
       a.token(output.x,output.y,`o${i+1}`,42,'orange',46);
       connector(a,port(query,'bottom',.5,6),port(attention,'top',.5,8),{tone:'blue'});
-      connector(a,[250,y+23],port(attention,'left',.5,8),{tone:i<2?'teal':'purple'});
+      connector(a,[250,y+23],port(attention,'left',.5,8),{tone:'teal'});
       connector(a,port(attention,'right',.5,6),port(output,'left',.5,8),{tone:'orange'});
       a.circle(250,y+23,3.5,i<2?C.teal:C.purple,i<2?C.teal:C.purple);
     }

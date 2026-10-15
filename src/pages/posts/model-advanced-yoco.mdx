@@ -39,7 +39,7 @@ import AnnotPart from '../../components/AnnotPart.astro';
 
 Cross-attention의 계산 자체는 익숙한 attention입니다. 차이는 Query와 Key·Value가 어디에서 오는가에 있습니다. 그림 2에서는 현재 위치 p3의 뒤층 표현 하나가 앞부분에서 준비한 p0부터 p3까지의 값을 읽습니다. 행렬은 행 하나가 한 위치인 행벡터 표기입니다.
 
-<a href="/images/model-advanced-yoco/02-cross-attention-sources.png?v=5d6847b02046" id="figure-2"><picture><source width="720" height="2526" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/02-cross-attention-sources-mobile.png?v=c73ccb3d88be" /><img width="2400" height="2118" src="/images/model-advanced-yoco/02-cross-attention-sources.png?v=5d6847b02046" alt="현재 위치의 뒤층 표현으로 q를 만들고 앞부분의 네 위치 표현 M으로 K와 V를 만든다. 네 점수를 softmax로 바꾸어 V를 가중합한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-yoco/02-cross-attention-sources.png?v=dff2c676fa44" id="figure-2"><picture><source width="720" height="2526" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/02-cross-attention-sources-mobile.png?v=3a980348439a" /><img width="2400" height="2118" src="/images/model-advanced-yoco/02-cross-attention-sources.png?v=dff2c676fa44" alt="현재 위치의 뒤층 표현으로 q를 만들고 앞부분의 네 위치 표현 M으로 K와 V를 만든다. 네 점수를 softmax로 바꾸어 V를 가중합한다." loading="lazy" /></picture></a>
 
 뒤층의 현재 표현 h는 [1×4]입니다. 이 층의 Query 투영 <math><msub><mi>W</mi><mtext>Q</mtext></msub></math> [4×2]를 곱하면 q [1×2]가 됩니다. 앞부분의 네 위치 표현 M은 [4×4]이며, Key와 Value 투영을 각각 적용하면 K와 V는 모두 [4×2]입니다. 실제 블록의 정규화는 그림에서 생략했습니다.
 

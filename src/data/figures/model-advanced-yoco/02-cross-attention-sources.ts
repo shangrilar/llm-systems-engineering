@@ -12,8 +12,8 @@ export default {
     a.box(10,110,225,150,['뒤층 h(p3) [1×4]','Later h(p3) [1×4]'],['현재 위치 하나','One current position'],'blue');
     a.box(285,110,225,150,'M [4×4]',['앞부분의 p0…p3','Earlier outputs p0…p3'],'teal');
     a.arrow(122,270,122,320,C.blue);a.arrow(397,270,397,320,C.teal);
-    a.box(10,330,225,125,'W_Q [4×2]',['층마다 다름','Layer-specific'],'blue');
-    a.box(285,330,225,125,'W_K, W_V',['각각 [4×2]','Each [4×2]'],'teal');
+    a.box(10,330,225,125,'W_Q [4×2]',['층마다 다름','Layer-specific'],'purple');
+    a.box(285,330,225,125,'W_K, W_V',['각각 [4×2]','Each [4×2]'],'purple');
     a.arrow(122,465,122,515,C.blue);a.arrow(397,465,397,515,C.teal);
     a.box(10,525,225,120,'q [1×2]','','blue');
     a.box(285,525,225,120,'K, V [4×2]',['뒤층들이 공유','Shared by later layers'],'teal');
