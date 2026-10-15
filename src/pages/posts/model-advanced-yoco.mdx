@@ -6,6 +6,9 @@ description: "앞부분의 공통 KV를 뒷부분이 읽는 구조와 새 토큰
 date: 2026-09-29
 ---
 
+import Annot from '../../components/Annot.astro';
+import AnnotPart from '../../components/AnnotPart.astro';
+
 [층간 KV 공유](/posts/model-advanced-cross-layer-kv/)에서는 앞선 층이 만든 Key와 Value를 다음 층도 읽었습니다. YOCO(You Only Cache Once)는 이 역할을 모델의 앞뒤로 나눕니다. 앞부분이 문맥을 담은 공통 KV를 준비하고, 뒷부분의 여러 층이 그 값을 읽습니다.
 
 이렇게 나누면 저장 공간뿐 아니라 계산의 의존성도 달라집니다. <strong>앞부분만으로 과거의 KV를 준비할 수 있다면, 첫 답변을 위해 뒷부분의 모든 과거 위치까지 계산할 필요가 있을까요?</strong> 구조와 attention 연산을 먼저 살펴보고, 새 토큰을 처리하는 과정과 prompt를 처음 읽는 과정을 나누어 답해 보겠습니다. 마지막에는 문맥이 길어질 때 앞부분의 상태와 공통 KV의 저장량이 어떻게 달라지는지 비교합니다.
@@ -14,7 +17,13 @@ date: 2026-09-29
 
 [YOCO 논문 §2](https://arxiv.org/html/2405.05254v1#S2)는 앞부분을 self-decoder, 뒷부분을 cross-decoder라고 부릅니다. 두 부분 모두 같은 토큰열을 인과적으로 처리합니다. 그림 1은 각각 두 층으로 줄인 교육용 구조입니다.
 
-<a href="/images/model-advanced-yoco/01-producers-and-readers.png?v=b99e0193a214" id="figure-1"><picture><source width="720" height="2848" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/01-producers-and-readers-mobile.png?v=64aa2ced4937" /><img width="2400" height="3372" src="/images/model-advanced-yoco/01-producers-and-readers.png?v=b99e0193a214" alt="Self-decoder의 두 층은 각자의 recurrent/local 상태를 읽고 갱신한다. 최종 표현 M으로 만든 global KV는 뒤의 두 cross-decoder가 각자의 Query로 읽는다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-yoco/01-producers-and-readers" n={1} layout="side">
+<AnnotPart fig="model-advanced-yoco/01-producers-and-readers" panels="1" xr="0-0.5">
+
+**YOCO: 하나의 global KV를 재사용.** 앞부분의 최종 표현 M을 K와 V로 투영해 global KV 하나를 만들고, 뒤쪽 각 층은 자기 Q로 그 KV를 읽습니다. hidden 표현은 파란 경로를 따라 계속 바뀝니다. 앞쪽 층의 recurrent 또는 local 상태는 모델 크기와 local window가 정해지면 고정 크기이고, global KV는 문맥 길이 T에 따라 늘어납니다. 청록은 읽기, 주황은 갱신입니다.
+
+</AnnotPart>
+</Annot>
 
 앞의 두 층을 거친 최종 표현 M에는 위치별 문맥 정보가 들어 있습니다. M을 Key와 Value로 투영한 결과가 global KV입니다. 여기서 global은 뒷부분이 긴 과거 문맥을 읽을 수 있다는 뜻입니다. 현재 위치보다 뒤의 미래를 읽을 수 있다는 뜻은 아닙니다.
 
@@ -44,7 +53,15 @@ q와 K의 전치를 곱하면 [1×2] × [2×4] = [1×4]입니다. 네 성분은 
 
 이번에는 이미 p0부터 p3까지 처리했고, 현재 입력 <math><msub><mi>x</mi><mtext>4</mtext></msub></math>가 p4에 들어왔다고 하겠습니다. 그림 3은 recurrent self-decoder를 선택한 예시입니다. <math><msub><mi>S</mi><mtext>1</mtext></msub></math>과 <math><msub><mi>S</mi><mtext>2</mtext></msub></math>는 앞 두 층이 각각 갖는 상태이며, 표시한 2×2 크기는 설명용입니다.
 
-<a href="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=a7e5b0b0cc25" id="figure-3"><picture><source width="720" height="3326" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/03-new-token-through-both-halves-mobile.png?v=48509b7fa8a1" /><img width="2400" height="4478" src="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=a7e5b0b0cc25" alt="현재 입력 x4가 앞 두 층의 상태를 갱신하고 global KV에 p4를 추가한다. 뒤 두 층이 같은 KV를 읽어 다음 입력 x5를 선택한다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-yoco/03-new-token-through-both-halves" n={3} layout="side">
+<AnnotPart fig="model-advanced-yoco/03-new-token-through-both-halves" panels="1" xr="0-0.5">
+
+**앞 층도 매 토큰 계산합니다.** 현재 입력 x₄는 self-decoder 1, 2를 차례로 지나며 각 층의 recurrent state를 갱신합니다. S₁, S₂는 서로 다른 2×2 예시 상태입니다.
+
+**기록하고 읽기.** m₄에서 만든 현재 위치의 K/V를 global bank에 추가하고, cross-decoder 3, 4가 p0부터 p4까지 읽습니다. global K/V 칸 하나는 벡터입니다. 청록은 저장된 값 읽기, 주황은 상태 갱신이나 행 추가, 파랑은 층을 지나는 hidden입니다. 선택한 x₅는 다음 단계의 입력이며 아직 KV가 없습니다.
+
+</AnnotPart>
+</Annot>
 
 현재 토큰은 먼저 self-decoder 1을 지나며 그 층의 과거 상태를 읽고 갱신합니다. 그 결과가 self-decoder 2로 들어가 두 번째 층의 상태도 갱신합니다.
 
@@ -58,7 +75,17 @@ q와 K의 전치를 곱하면 [1×2] × [2×4] = [1×4]입니다. 네 성분은 
 
 이번에는 prompt p0부터 p3까지를 처음 받았고, 첫 생성 토큰 <math><msub><mi>x</mi><mtext>4</mtext></msub></math> 하나만 필요한 상황입니다. 그림 4의 칸은 attention mask가 아니라 **어느 층에서 어느 위치를 계산하는가**를 나타냅니다.
 
-<a href="/images/model-advanced-yoco/04-prefill-dependencies.png?v=1ec0922a825a" id="figure-4"><picture><source width="720" height="2370" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/04-prefill-dependencies-mobile.png?v=b6a4f1238ee5" /><img width="2400" height="2512" src="/images/model-advanced-yoco/04-prefill-dependencies.png?v=1ec0922a825a" alt="Self-decoder는 prompt 네 위치를 모두 계산하고 cross-decoder는 첫 출력에 필요한 p3만 계산한다. 나머지 세 위치의 뒤층 계산은 생략된다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-yoco/04-prefill-dependencies" n={4} layout="side">
+<AnnotPart fig="model-advanced-yoco/04-prefill-dependencies" panels="1" xr="0-0.5">
+
+**global KV 만들기.** 위 두 행은 prompt 네 위치를 모두 처리해 global KV를 만드는 self-decoder입니다.
+
+**생략하는 위치.** 아래 두 행에서 p0부터 p2까지의 cross-decoder 계산은 생략하고, 현재 p3만 두 층을 지나 p0부터 p3까지의 global KV를 읽고 첫 토큰 x₄를 고릅니다. 이 격자는 attention mask가 아니라 계산할 위치입니다. prompt 각 위치의 logprob처럼 과거 출력도 필요하면 생략 범위가 달라집니다.
+
+**생성이 이어질 때.** 선택된 x₄는 다음 입력이 되고, 그때 앞·뒤 층을 모두 지나며 새 KV를 추가합니다.
+
+</AnnotPart>
+</Annot>
 
 앞부분은 prompt의 네 위치를 모두 처리해야 합니다. 그래야 p0부터 p3까지의 공통 KV가 준비됩니다. 그다음에는 p3의 표현만 뒤쪽 두 층을 차례로 통과시켜 첫 생성 토큰을 선택할 수 있습니다.
 

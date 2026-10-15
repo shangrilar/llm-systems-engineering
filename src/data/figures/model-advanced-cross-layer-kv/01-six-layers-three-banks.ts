@@ -11,7 +11,7 @@ export default {
   panels(locale:Locale,mobile?:boolean){
     const w=520;
     return [false,true].map(shared=>{
-      const p=new Panel(locale,shared?['B. 두 층마다 하나의 KV','B. One KV bank per pair']:['A. 층마다 별도의 KV','A. One KV bank per layer'],1490,w);
+      const p=new Panel(locale,shared?['B. 두 층마다 하나의 KV','B. One KV bank per pair']:['A. 층마다 별도의 KV','A. One KV bank per layer'],1270,w);
       const bank=(producer:number,y:number)=>{
         p.rect(330,y,180,138,C.tealFill,C.teal);
         p.text(420,y+28,`KV-L${producer}`,{size:24,weight:600,color:C.teal,anchor:'middle',width:170});
@@ -34,7 +34,6 @@ export default {
       p.arrow(140,1056,140,1100,C.blue);p.text(140,1140,'h₇',{size:27,weight:600,color:C.blue,anchor:'middle',width:180});
       p.text(370,1140,shared?'3 × 16 = 48':'6 × 16 = 96',{size:27,weight:600,color:C.teal,anchor:'middle',width:300});
       p.text(260,1215,'K[4×2] + V[4×2] = 16',{size:25,weight:600,anchor:'middle',width:500});
-      p.box(20,1285,480,169,shared?['생산자는 L₁, L₃, L₅','Producers: L₁, L₃, L₅']:['생산자는 여섯 층 모두','All six layers produce KV'],shared?['각 층은 자기 Q로 공유 값을 읽습니다. 파란 경로는 activation입니다.','Each layer uses its own Q to read shared values. Blue paths carry activations.']:['Query와 attention은 여섯 개, KV도 여섯 묶음입니다.','Six Queries, six attention computations and six separate KV banks.'],'gray');
       return p;
     });
   },

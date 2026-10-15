@@ -131,9 +131,10 @@ export function validateContent() {
     for (const k of ["title", "description"] as const)
       if (metadata[k] && metadata[k] !== t[k])
         throw Error("Frontmatter/catalog mismatch: " + k);
-    const used = [...s.matchAll(/<Figure\s+id=["']([^"']+)["']/g)].map(
-      (m) => m[1],
-    );
+    const used = [
+      ...s.matchAll(/<Figure\s+id=["']([^"']+)["']/g),
+      ...s.matchAll(/<Annot(?:Part)?\s+fig=["']([^"']+)["']/g),
+    ].map((m) => m[1]);
     if (used.some((id) => !a.figureIds?.includes(id)))
       throw Error("Figure missing from article revision inputs");
     // Hash body, not catalog-derived page metadata; structural MDX, code and equations remain intact.

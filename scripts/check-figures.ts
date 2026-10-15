@@ -15,7 +15,13 @@ export async function checkFigures(){
       if(!existsSync(config)){problems.push(`${join(dir,file)}: no figure config`);continue;}
       if(!file.endsWith('.svg'))continue;
       const spec:FigureSpec=(await import(pathToFileURL(config).href)).default;
-      if(compose(spec,locale,mobile).svg!==readFileSync(join(dir,file),'utf8'))problems.push(`${join(dir,file)}: out of date, run npm run viz:build -- ${config} <QA dir>`);
+      const {svg,width,height}=compose(spec,locale,mobile);
+      if(svg!==readFileSync(join(dir,file),'utf8'))problems.push(`${join(dir,file)}: out of date, run npm run viz:build -- ${config} <QA dir>`);
+      // The PNG is rendered at 2x from this SVG; article crops (<Annot>) are computed from the same layout,
+      // so a PNG of another size is stale and would be cut in the wrong places.
+      const png=join(dir,file.replace(/\.svg$/,'.png'));
+      if(existsSync(png)){const b=readFileSync(png);const [w,h]=[b.readUInt32BE(16),b.readUInt32BE(20)];
+        if(w!==width*2||h!==height*2)problems.push(`${png}: ${w}×${h}, expected ${width*2}×${height*2}; regenerate the figure`);}
     }
   }
   return problems;

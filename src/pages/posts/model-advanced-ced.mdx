@@ -6,6 +6,9 @@ description: "생성 경로와 global·local KV의 출처를 비교하고, spars
 date: 2026-09-29
 ---
 
+import Annot from '../../components/Annot.astro';
+import AnnotPart from '../../components/AnnotPart.astro';
+
 [YOCO](/posts/model-advanced-yoco/)에서는 앞부분이 만든 공통 KV를 뒷부분이 읽었습니다. 덕분에 첫 출력을 위해 뒷부분의 모든 과거 위치를 계산할 필요는 없었습니다. 이 역할 분리를 이해하면 Causal Encoder–Decoder(CED)도 살펴볼 수 있습니다.
 
 이 글은 [DeepSeek-V4.1-Flash 보고서의 CED](https://arxiv.org/html/2609.19969v1#S2.SS2)를 다룹니다. **Encoder에서 만든 global 정보와 decoder가 직접 만든 local 정보를 함께 사용한다**는 점에 주목하겠습니다. 먼저 생성 경로와 KV의 출처를 확인합니다. 이어서 읽을 위치를 고르는 과정과 실제 attention 계산을 나누어 보고, 층 사이에서 무엇을 재사용하는지 살펴봅니다. 마지막으로 decoder 자체의 local 상태 때문에 prefill에 남는 계산을 설명합니다.
@@ -14,7 +17,18 @@ date: 2026-09-29
 
 Encoder와 decoder라는 이름만으로 새 토큰의 경로가 정해지지는 않습니다. 그림 1의 왼쪽은 별도의 입력열과 출력열을 갖는 T5형 구조이고, 오른쪽은 prompt와 생성 결과가 하나의 열로 이어지는 CED입니다.
 
-<a href="/images/model-advanced-ced/01-ed-and-ced-paths.png?v=459b67b716a0" id="figure-1"><picture><source width="720" height="3356" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/01-ed-and-ced-paths-mobile.png?v=5573d3cb7866" /><img width="2400" height="2748" src="/images/model-advanced-ced/01-ed-and-ced-paths.png?v=459b67b716a0" alt="T5형 모델은 고정된 source를 읽으며 target을 decoder에서 생성한다. CED에서는 새 입력 토큰이 causal encoder와 decoder를 모두 통과한다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/01-ed-and-ced-paths" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="1">
+
+**A. 전통 ED.** T5형 ED는 별도의 입력열을 양방향 encoder로 한 번 처리하고, 출력열만 decoder에서 이어 갑니다. 입력 3개와 출력 길이는 서로 독립적입니다. 선택한 y1은 다음 decoder 입력으로 돌아가며 encoder는 다시 실행하지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="2">
+
+**B. CED.** 하나로 이어지는 토큰열을 인과적으로 처리합니다. 선택한 x5는 다음 입력이 되면 causal encoder와 decoder를 모두 지납니다. 선택 직후의 토큰은 아직 자기 KV가 없습니다. 이 그림은 생성 단계의 경로이며, prefill에서 무엇을 생략하는지는 그림 6에서 비교합니다.
+
+</AnnotPart>
+</Annot>
 
 [T5형 encoder–decoder](https://jmlr.org/papers/v21/20-074.html)의 encoder는 source 전체를 양방향으로 처리합니다. 예를 들어 source의 첫 토큰 표현도 source의 마지막 토큰 정보를 사용할 수 있습니다. 이렇게 만든 source 표현은 target을 생성하는 동안 그대로 참조합니다.
 
@@ -28,7 +42,18 @@ Decoder에는 두 읽기 경로가 있습니다. Causal self-attention은 이전
 
 이번에는 화살표를 위치 격자로 바꾸어 보겠습니다. 그림 2의 행은 읽는 Query 위치이고, 열은 참조할 Key 위치입니다. 위 격자는 encoder 내부의 관계, 아래 격자는 decoder가 encoder 쪽 정보를 읽는 관계입니다.
 
-<a href="/images/model-advanced-ced/02-sequences-and-causality.png?v=e3668cd459eb" id="figure-2"><picture><source width="720" height="3158" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/02-sequences-and-causality-mobile.png?v=bc326f48e0ee" /><img width="2400" height="2626" src="/images/model-advanced-ced/02-sequences-and-causality.png?v=e3668cd459eb" alt="ED의 source와 target은 별도 위치축이다. CED 격자는 실제 sparse 선택이 아니라 현재와 과거를 허용하는 인과적 범위다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/02-sequences-and-causality" n={2} layout="cols">
+<AnnotPart fig="model-advanced-ced/02-sequences-and-causality" panels="1">
+
+**A. ED · 두 위치축.** 입력 세 위치와 출력 두 위치가 독립적인 T5형 예입니다. 각 출력 Query는 encoder가 준비한 입력 전체를 읽을 수 있습니다.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/02-sequences-and-causality" panels="2">
+
+**B. CED · 같은 위치축.** 같은 토큰열 안의 인과적 위치 대응입니다. 아래 격자는 압축·희소 선택 이전의 허용 범위이며 실제 CSA2 접근 행렬이 아닙니다. 실행 중에는 Query 한 위치가 여러 KV 항목을 읽을 수 있으므로, 같은 토큰열이라는 말이 Q와 KV 텐서의 길이가 같다는 뜻은 아닙니다.
+
+</AnnotPart>
+</Annot>
 
 왼쪽 예시는 source 세 위치와 target 두 위치입니다. Source와 target은 길이도 독립적이고, 위치 번호가 같다고 서로 대응하는 단어일 필요도 없습니다. 각 target Query는 encoder가 준비한 source 전체를 읽을 수 있습니다. 이는 아직 생성하지 않은 target 정답을 읽는 것과는 다릅니다.
 
@@ -96,7 +121,18 @@ Reindex의 검색 범위에도 제한이 있습니다. [Hierarchical Sparse Inde
 
 그림 6도 prompt 여섯 위치 p0부터 p5까지를 사용합니다. 앞뒤 각각 두 층, 최근 재계산 구간 W=2라는 교육용 조건입니다. 칸은 attention mask가 아니라 실행할 Query 위치입니다.
 
-<a href="/images/model-advanced-ced/04-prefill-replay.png?v=9bae001b1bac" id="figure-6"><picture><source width="720" height="3158" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/04-prefill-replay-mobile.png?v=e11e2a4e66c0" /><img width="2400" height="2626" src="/images/model-advanced-ced/04-prefill-replay.png?v=9bae001b1bac" alt="YOCO의 뒤층은 마지막 p5만 실행한다. CED의 뒤층은 최근 p4와 p5를 실행해 local KV의 근사 상태를 준비한다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/04-prefill-replay" n={6} layout="cols">
+<AnnotPart fig="model-advanced-ced/04-prefill-replay" panels="1">
+
+**A. YOCO · 마지막 위치만.** global KV를 모두 준비한 뒤 마지막 입력 위치만 cross-decoder에서 처리해 첫 출력을 얻습니다. 과거 위치의 뒤층 출력은 쓰이지 않습니다. 이 격자는 attention mask가 아니라 실행할 Query 위치입니다.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/04-prefill-replay" panels="2">
+
+**B. CED · 최근 구간 재계산.** decoder의 local KV도 필요하므로 최근 구간을 다시 계산합니다. W = 2는 설명용 값입니다. 이 bounded replay는 구간 밖의 local 참조를 잘라 근사 상태를 만들며, decoder 전체를 실행한 결과와 수학적으로 같지 않습니다. 긴 입력의 나머지 decoder 계산은 생략합니다.
+
+</AnnotPart>
+</Annot>
 
 YOCO 쪽은 앞부분에서 global KV를 준비한 뒤, p5만 cross-decoder의 두 층을 통과시켜 첫 생성 토큰을 선택할 수 있습니다. CED 쪽도 global KV의 원천은 앞부분에 있지만, decoder 자체의 local KV가 추가로 필요합니다. 그림에서는 최근 p4와 p5를 decoder에 다시 넣어 그 상태를 준비합니다.
 

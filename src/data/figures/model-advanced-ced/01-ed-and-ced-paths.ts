@@ -23,7 +23,6 @@ export default {
     a.token(110,885,['y1 · 다음 토큰 선택','y1 · Next token selected'],300,'orange',60);
     // The selected token returns as the next decoder input; the encoder is not rerun.
     a.path('M110 915 H55 V615 H104',C.orange,2.5,true,true);
-    a.box(20,985,480,105,['출력열만 Decoder에서 확장','Only the target grows in decoder'],['입력 3개와 출력 길이는 독립적','Source: 3 tokens; target length can differ'],'gray');
     const b=new Panel(locale,['B. CED · 하나로 이어지는 토큰열','B. CED · One continuing sequence'],1110);
     for(let i=0;i<5;i++)b.token(10+102*i,115,`x${i}`,92,i===4?'blue':'gray',55);
     b.text(260,218,['x0…x3은 처리됨 · 현재 x4','x0…x3 cached · x4 is current'],{size:23,anchor:'middle',width:500});

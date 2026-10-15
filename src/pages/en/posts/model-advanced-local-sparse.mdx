@@ -6,6 +6,9 @@ description: "Start with sliding window attention as a form of sparse attention,
 date: 2026-09-27
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 [The previous article](/en/posts/model-advanced-mla-computation/) changed how KV is represented and how its computation is ordered. This time, we will reduce the range of tokens each query reads. **Sparse Attention applies attention to only some positions**, rather than every past position. **Sliding Window Attention (SWA)**, which reads only nearby positions, is one form of sparse attention.
 
 We will first examine how SWA determines which positions to read, then extend it to patterns that also read selected distant positions. Next, we will trace how information travels through multiple layers and examine when reducing the positions read also allows a smaller KV cache. This article covers **connection rules determined by position**, independently of token content.
@@ -16,7 +19,18 @@ Suppose we have eight tokens, <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></
 
 SWA adds a distance limit. In this article, **a window of 3 means the current position and the two immediately preceding positions: three in total**. At <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, it reads only <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>, <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>. At the next position, <math aria-label="p8"><msub><mi>p</mi><mn>8</mn></msub></math>, the range moves to <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, and <math aria-label="p8"><msub><mi>p</mi><mn>8</mn></msub></math>. It is called a sliding window because the range moves with the current position.
 
-<a href="/images/model-advanced-local-sparse/en/01-read-window.png?v=b86724eea6b3" id="figure-1"><picture><source width="720" height="3550" media="(max-width: 600px)" srcSet="/images/model-advanced-local-sparse/en/01-read-window-mobile.png?v=f8f30f059290" /><img width="2400" height="2870" src="/images/model-advanced-local-sparse/en/01-read-window.png?v=b86724eea6b3" alt="Two grids with query position as rows and key position as columns compare full causal attention and a window of 3. Position 7 reads all eight positions or positions 5, 6, and 7. The total connection counts are 36 and 21." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-local-sparse/01-read-window" n={1} layout="cols">
+<AnnotPart fig="model-advanced-local-sparse/01-read-window" panels="1">
+
+**Full causal.** Filled cells are read connections, and hatched cells are future positions that do not exist yet. The current query row i = 7, outlined in blue, reads all eight positions 0 through 7.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-local-sparse/01-read-window" panels="2">
+
+**Sliding window.** Blank cells are past positions that are not read. With window 3, the current row reads only positions 5, 6, and 7. The figure shows a read rule; it does not mean the KV is deleted.
+
+</AnnotPart>
+</Annot>
 
 In Figure 1, the vertical axis is the query's token position, and the horizontal axis is the key's token position. Neither axis represents heads or vector components. Filled cells in a row indicate the positions that query reads; their shading does not represent attention weights. In the last row, outlined in blue, full causal attention reads eight cells, while SWA reads three.
 
@@ -34,7 +48,18 @@ With SWA, a token sufficiently far from the current position cannot be read dire
 
 Figure 2 compares two rules. The left adds the first position, <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>, to the latest three positions. The right adds positions spaced four positions apart, such as <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math> and <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>, to the latest three. Both are educational examples illustrating different connection rules, rather than reproductions of a particular model architecture.
 
-<a href="/images/model-advanced-local-sparse/en/02-local-and-landmarks.png?v=cb6e456c1e05" id="figure-2"><picture><source width="720" height="3744" media="(max-width: 600px)" srcSet="/images/model-advanced-local-sparse/en/02-local-and-landmarks-mobile.png?v=a8860bbd4ea9" /><img width="2400" height="2972" src="/images/model-advanced-local-sparse/en/02-local-and-landmarks.png?v=cb6e456c1e05" alt="Two rules add the first position or positions spaced four apart to the latest three positions. At position 7, the read sets are 0, 5, 6, 7 and 0, 4, 5, 6, 7." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-local-sparse/02-local-and-landmarks" n={2} layout="cols">
+<AnnotPart fig="model-advanced-local-sparse/02-local-and-landmarks" panels="1">
+
+**Local + anchor p0.** Teal marks the three local positions, including the current one, and purple marks the extra distant position p0. Positions picked by both rules count once.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-local-sparse/02-local-and-landmarks" panels="2">
+
+**Local + periodic landmarks.** Positions at multiples of 4 are also read. Neither rule reads future positions, and neither is a copy of a bidirectional encoder’s global mask. Picking positions by content comes in the next article.
+
+</AnnotPart>
+</Annot>
 
 On the left, the current <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math> reads <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math> as well as <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>, <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>. The **anchor** in the figure is a designated position that remains available to read. The direct connection to information at the first position is retained, but this does not make every intervening position readable. Positions <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math> through <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math> are still excluded.
 
@@ -50,7 +75,15 @@ In pure SWA, with no direct connections to distant positions, can information ou
 
 Return to the example in which every attention layer uses a window of 3. In Figure 3, the horizontal axis is token position, and the vertical axis is model depth. L0 denotes the input, while L1 through L3 denote representations after each layer. Moving upward means advancing to the next model layer, not advancing time to generate a new token.
 
-<a href="/images/model-advanced-local-sparse/en/03-depth-propagation.png?v=8ff2b5e0c390" id="figure-3"><picture><source width="720" height="2728" media="(max-width: 600px)" srcSet="/images/model-advanced-local-sparse/en/03-depth-propagation-mobile.png?v=ae388a6dde36" /><img width="2400" height="3704" src="/images/model-advanced-local-sparse/en/03-depth-propagation.png?v=8ff2b5e0c390" alt="Token positions and layer depth are separate axes. Information from input position 1 can pass through first-layer position 3 and second-layer position 5 to third-layer position 7. Its input receptive field spans positions 1 through 7." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-local-sparse/03-depth-propagation" n={3} layout="side">
+<AnnotPart fig="model-advanced-local-sparse/03-depth-propagation" panels="1">
+
+**How far information travels.** Each layer moves information at most two positions to the right. The orange path L0,p1 → L1,p3 → L2,p5 → L3,p7 is one example.
+
+**Inputs that reach L3,p7.** So L3,p7 can be influenced by input positions p1…p7, but p0 has not reached it yet. Indirect propagation does not guarantee the same information preservation as reading the original KV directly.
+
+</AnnotPart>
+</Annot>
 
 At L1, <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math> reads <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>, <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math> from L0. At L2, <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math> still reads only <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>, <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math> from the layer immediately below, but L1's <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math> can already reflect information from L0's <math aria-label="p3"><msub><mi>p</mi><mn>3</mn></msub></math>, <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>, and <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>. Tracing these paths expands the input range that can influence L2's <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math> to <math aria-label="p3"><msub><mi>p</mi><mn>3</mn></msub></math> through <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>. At L3, it expands to <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math> through <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>.
 
@@ -64,7 +97,18 @@ If we read fewer positions, can we delete the rest from the KV cache? The decidi
 
 The left side of Figure 4 shows a layer that never rereads positions once they leave its window. At <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, it needs KV for <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>, <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>; at <math aria-label="p8"><msub><mi>p</mi><mn>8</mn></msub></math>, it needs <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, and <math aria-label="p8"><msub><mi>p</mi><mn>8</mn></msub></math>. Position <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math> will never reenter this layer's window, so its KV can be discarded after processing <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>.
 
-<a href="/images/model-advanced-local-sparse/en/04-read-versus-retain.png?v=81ba0ef50671" id="figure-4"><picture><source width="720" height="4106" media="(max-width: 600px)" srcSet="/images/model-advanced-local-sparse/en/04-read-versus-retain-mobile.png?v=cdc47cc6f161" /><img width="2400" height="3318" src="/images/model-advanced-local-sparse/en/04-read-versus-retain.png?v=81ba0ef50671" alt="A window-only layer discards KV for position 5 and adds position 8 when moving from position 7 to 8, retaining the latest three positions. A separate full-attention layer retains its own KV. A layer where future queries may select other positions keeps eight positions even while reading only three." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-local-sparse/04-read-versus-retain" n={4} layout="cols">
+<AnnotPart fig="model-advanced-local-sparse/04-read-versus-retain" panels="1">
+
+**A window-only layer.** It never reads outside its window again, so this layer can discard old KV. The cache of another full-attention layer stays as that layer’s rule requires.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-local-sparse/04-read-versus-retain" panels="2">
+
+**A layer that selects from the original KV.** The next query may pick different positions, so KV that is not read now must still be kept: 8 stored, 3 read now. Unread does not mean disposable; whether KV can be deleted depends on the layer’s access rule and state lifetime.
+
+</AnnotPart>
+</Annot>
 
 By replacing old KV as new positions are added, this layer can keep a cache sized for the latest three positions. In physical memory, existing slots can be overwritten in a circular fashion. The figure shows states during token-by-token processing; it does not depict intermediate buffers used when processing multiple tokens together.
 

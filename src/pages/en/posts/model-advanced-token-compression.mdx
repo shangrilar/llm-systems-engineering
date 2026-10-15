@@ -6,6 +6,9 @@ description: "Trace how content and score projections build summary vectors, why
 date: 2026-09-27
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 [The previous article](/en/posts/model-advanced-sparse-indexer/) used an indexer to choose KV positions to read. This time, we will examine <strong>how information from several token positions is combined into a single summary KV entry before selection</strong>. Reading entries that represent several positions, rather than one entry per position, lets us handle a long context with fewer entries.
 
 We will first distinguish the compression axis from the one we learned about in MLA. Then we will trace the calculation that turns two input positions into one summary vector, examine why completed summaries are read alongside recent per-token KV, and finally connect compression to selecting summaries with an indexer.
@@ -54,7 +57,18 @@ To combine positions, their inputs must all have arrived. When processing tokens
 
 Figure 3 creates one summary for every two positions and separately retains KV for the latest three positions, including the current one. We will call this <strong>recent per-token KV</strong>. It means KV entries that have not been combined across positions, not the input vectors entering the model. “Original” in the figure likewise refers to entries before token-axis compression.
 
-<a href="/images/model-advanced-token-compression/en/03-causal-summary-and-local.png?v=7536c32c9645" id="figure-3"><picture><source width="720" height="3676" media="(max-width: 600px)" srcSet="/images/model-advanced-token-compression/en/03-causal-summary-and-local-mobile.png?v=5d3150bb0252" /><img width="2400" height="3116" src="/images/model-advanced-token-compression/en/03-causal-summary-and-local.png?v=7536c32c9645" alt="At p6, summaries b0 through b2 are complete, while b3 includes future p7 and cannot be read. Query q6 reads completed summaries and recent per-token KV at positions 4,5,6. At p8, b3 is also complete, and recent per-token KV covers 6,7,8. Future p9 is excluded." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-token-compression/03-causal-summary-and-local" n={3} layout="cols">
+<AnnotPart fig="model-advanced-token-compression/03-causal-summary-and-local" panels="1">
+
+**A. Current position p6.** Only b0 through b2 are complete, so their summaries are read; b3, which will include p7, is not read yet. The recent per-position originals 4, 5, and 6 cover the current block. p4 and p5 also contribute to b2, but the summary and the originals are separate read items.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-token-compression/03-causal-summary-and-local" panels="2">
+
+**B. Current position p8.** b3 is now complete and can be read. The recent originals move on to 6, 7, and 8. The unfinished block b4 is not read yet.
+
+</AnnotPart>
+</Annot>
 
 When processing <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>, summaries <math aria-label="b0"><msub><mi>b</mi><mn>0</mn></msub></math> for <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math> and <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math>, <math aria-label="b1"><msub><mi>b</mi><mn>1</mn></msub></math> for <math aria-label="p2"><msub><mi>p</mi><mn>2</mn></msub></math> and <math aria-label="p3"><msub><mi>p</mi><mn>3</mn></msub></math>, and <math aria-label="b2"><msub><mi>b</mi><mn>2</mn></msub></math> for <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math> and <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math> are complete. But group <math aria-label="b3"><msub><mi>b</mi><mn>3</mn></msub></math>, which combines <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math> and <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, cannot yet be completed. If <math aria-label="q6"><msub><mi>q</mi><mn>6</mn></msub></math> read a summary containing future position <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, it would be using future information.
 

@@ -6,6 +6,9 @@ description: "Compare generation paths and the sources of global and local KV, t
 date: 2026-09-29
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 In [YOCO](/en/posts/model-advanced-yoco/), the early layers produced shared KV for the later layers to read. This meant the later layers did not need to compute every past position to produce the first output. With this separation of roles in mind, we can now examine the Causal Encoder–Decoder (CED).
 
 This article covers [CED in the DeepSeek-V4.1-Flash report](https://arxiv.org/html/2609.19969v1#S2.SS2). We will focus on how it <strong>uses global information produced by the encoder together with local information produced by the decoder itself</strong>. We first trace token generation and the sources of KV, then separate position selection from the attention computation and examine what layers reuse. Finally, we explain the prefill work that remains because the decoder has its own local state.
@@ -14,7 +17,18 @@ This article covers [CED in the DeepSeek-V4.1-Flash report](https://arxiv.org/ht
 
 The names encoder and decoder alone do not determine the path of a new token. The left side of Figure 1 shows a T5-style architecture with separate input and output sequences. The right side shows CED, where the prompt and generated tokens form a single sequence.
 
-<a href="/images/model-advanced-ced/en/01-ed-and-ced-paths.png?v=c422c01ea960" id="figure-1"><picture><source width="720" height="3470" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/01-ed-and-ced-paths-mobile.png?v=0e21525cad29" /><img width="2400" height="2812" src="/images/model-advanced-ced/en/01-ed-and-ced-paths.png?v=c422c01ea960" alt="A T5-style model generates targets in its decoder while reading a fixed source. In CED, each new input token passes through both the causal encoder and decoder." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/01-ed-and-ced-paths" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="1">
+
+**A. Traditional ED.** A T5-style ED processes a separate source once with a bidirectional encoder and extends only the target in its decoder. The three source tokens and the target length are independent. The selected y1 returns as the next decoder input; the encoder is not rerun.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="2">
+
+**B. CED.** One continuing sequence is processed causally. When the selected x5 becomes the next input, it passes through both the causal encoder and the decoder. A token that has just been selected has no KV of its own yet. These are decode paths; Figure 6 compares what prefill can skip.
+
+</AnnotPart>
+</Annot>
 
 The encoder in a [T5-style encoder–decoder](https://jmlr.org/papers/v21/20-074.html) processes the entire source bidirectionally. For example, the representation of the first source token can use information from the last source token. The resulting source representations remain available throughout target generation.
 
@@ -28,7 +42,18 @@ In both cases, <strong>selecting a token and processing that token as the next i
 
 Let us replace the arrows with position grids. In Figure 2, rows are Query positions and columns are Key positions available for reference. The upper grids show relationships inside the encoder; the lower grids show how the decoder reads encoder information.
 
-<a href="/images/model-advanced-ced/en/02-sequences-and-causality.png?v=c7b348a24fb7" id="figure-2"><picture><source width="720" height="3204" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/02-sequences-and-causality-mobile.png?v=02ac2dd52b0a" /><img width="2400" height="2626" src="/images/model-advanced-ced/en/02-sequences-and-causality.png?v=c7b348a24fb7" alt="ED uses separate source and target position axes. The CED grids show the causal range of current and past positions, not the actual sparse selection." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/02-sequences-and-causality" n={2} layout="cols">
+<AnnotPart fig="model-advanced-ced/02-sequences-and-causality" panels="1">
+
+**A. ED · two position axes.** A T5-style example where three source positions and two target positions are independent. Each target query can read the whole source the encoder prepared.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/02-sequences-and-causality" panels="2">
+
+**B. CED · one position axis.** Causal correspondence within one token sequence. The lower grid is the causal allowance before compression and sparse selection, not the actual CSA2 access matrix. At run time one query position can read many KV entries, so one sequence does not mean Q and KV tensors have the same length.
+
+</AnnotPart>
+</Annot>
 
 The example on the left has three source positions and two target positions. Source and target lengths are independent, and positions with the same number need not represent corresponding words. Each target Query can read the entire source prepared by the encoder. This is different from reading target answers that have not yet been generated.
 
@@ -96,7 +121,18 @@ In this design, sharing KV reduces storage, while sharing selection lists reduce
 
 Figure 6 again uses six prompt positions, p0 through p5. The teaching example has two layers in each half and a recent replay segment W=2. Cells indicate Query positions to execute, not an attention mask.
 
-<a href="/images/model-advanced-ced/en/04-prefill-replay.png?v=5c4e28d72eb3" id="figure-6"><picture><source width="720" height="3224" media="(max-width: 600px)" srcSet="/images/model-advanced-ced/en/04-prefill-replay-mobile.png?v=48817bb5548e" /><img width="2400" height="2626" src="/images/model-advanced-ced/en/04-prefill-replay.png?v=5c4e28d72eb3" alt="YOCO executes only p5 in the later layers. CED executes recent positions p4 and p5 in the later layers to prepare approximate local KV state." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ced/04-prefill-replay" n={6} layout="cols">
+<AnnotPart fig="model-advanced-ced/04-prefill-replay" panels="1">
+
+**A. YOCO · only the last position.** After the global KV is fully prepared, only the last prompt position goes through the cross-decoder to produce the first output. Late-layer outputs at past positions are unused. The grid shows query positions to execute, not an attention mask.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/04-prefill-replay" panels="2">
+
+**B. CED · replay the recent span.** The decoder’s local KV is also needed, so the recent span is recomputed. W = 2 is a teaching value. This bounded replay cuts local references outside the span and yields approximate states, not ones mathematically equal to running the full decoder. The rest of the decoder work on a long prompt is skipped.
+
+</AnnotPart>
+</Annot>
 
 On the YOCO side, once the early layers have prepared global KV, only p5 needs to pass through the two cross-decoder layers to select the first generated token. In CED, the source of global KV is also in the early layers, but the decoder additionally needs its own local KV. The figure feeds recent positions p4 and p5 through the decoder again to prepare this state.
 

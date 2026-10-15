@@ -1470,7 +1470,7 @@
         "description": "Start with sliding window attention as a form of sparse attention, trace fixed connection patterns and information flow through layers, and distinguish the read range from KV cache storage.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "475d92d8dad9d973138d76954e87b822396cf6e3e1411d7c0104076bf364e3fb",
+        "sourceRevision": "207c2d0fcdcfd68a56ced7a9e3526cd05b194f8866b6b002eb15bf13d8ccb294",
         "reviewNote": "2026-09-27: Compared all five sections and four figures against Korean. Preserved window boundaries, read sets, 36/21 connection counts, layer-depth paths, receptive-field limits, layer-specific cache retention and qualified runtime claims."
       }
     }
@@ -1705,7 +1705,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Paragraph-by-paragraph Korean/English review; four bilingual figures, projection arithmetic, causal summary timing, overlapping recent entries, and storage/read counts checked on 2026-09-27.",
-        "sourceRevision": "e4fc1d92d57cea81b65d63d5f51227fed67d8571af3d6f8af4995bcd90086740"
+        "sourceRevision": "62d3a20577ae2f0ae48bb3729d4ad20aded0ce0bd124fbd1e5439de37fc675ed"
       }
     }
   },
@@ -2022,7 +2022,7 @@
         "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "c6668b0a2a05337c480e871e3a7628ba075aede83f4a6dd42d58c07d6f450bd1",
+        "sourceRevision": "07749c7ecab3ba34bb452705417cf4ea5d79b1b58b47e69c038996753ff833f3",
         "reviewNote": "2026-09-29: Removed the continuous-time discretization section and its corresponding English text; reviewed the transition from the update equations to the expanded recurrence."
       }
     }
@@ -2055,7 +2055,7 @@
         "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "280ffb013bd91c04d102a67bcfb27e16bdcdbcb14d637fc23ab819bd750148d6",
+        "sourceRevision": "5580f1847e216fa18a7026f882f7e80177c03cb76ec9c2fb3726a453df44a282",
         "reviewNote": "2026-09-29: Reviewed matching purpose-first explanations of Delta, negative A, input-dependent B/C, two new visual examples, figure order and preserved discretization discussion."
       }
     }
@@ -2087,7 +2087,7 @@
         "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "fbd5d36358fe5e30c17c53829cd111ecbbea72da7e1abfc158dffeab73f42941",
+        "sourceRevision": "7c38d613bc8c4c7e16dc6d1e8614f9f7a0062012fda750ea30c9885df2f1ab00",
         "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
       }
     }
@@ -2178,7 +2178,7 @@
         "description": "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "92ef620057e219b8c0aba792eb1d09d526ab1d78af2d819ff69a4a044b8ad120",
+        "sourceRevision": "36943238a0a5245573c724b31455c9ccf7baa3d4512677feff89c88edfc3763e",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2208,7 +2208,7 @@
         "description": "Compare KV storage across six layers, follow a new token as its Keys and Values are reused by the next layer, and examine the trade-off between storage and computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "2e11f9d2feee95128b2aa278d1e7fa62c67a0f6e8be002d87d5499820264adf9",
+        "sourceRevision": "8194ea10f57261b17e2439c718d1139525d4835acf1eaa7d5cf2ce8636c99e9b",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
@@ -2239,7 +2239,7 @@
         "description": "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "40613171f5fe679f20e40c979fe890d225e202f9fab759420b4e0dd5d29e08d0",
+        "sourceRevision": "bfcb9a9060214efdc8944c5a661c05554a07056460dd33044ca723768506acd9",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
@@ -2271,7 +2271,7 @@
         "description": "Compare generation paths and the sources of global and local KV, then connect sparse selection, three reuse modes, sequence compression, and prefill replay.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "d72c306b864c3497cc0249394db85b4a1176a64beb61e788437bc82af3b3392c",
+        "sourceRevision": "a4481df7966527902b11564851b520f11b4ad1b50d69ff5a1a3ed79949d1da90",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }

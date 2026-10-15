@@ -5,7 +5,7 @@ export default {
   eyebrow:['그림 1 · 읽을 위치의 지도','Figure 1 · Read positions'],
   title:['현재 위치에서 읽을 범위를 제한합니다','Limit which positions the current query reads'],
   subtitle:['한 층 · p0…p7 · 이 예의 window 3 = 현재 위치 + 직전 두 위치','One layer · p0…p7 · Here window 3 = current position + two previous positions'],
-  caption:['칠한 칸은 읽을 연결, 빗금은 미래 위치, 빈칸은 읽지 않는 과거 위치입니다. 파란 테두리는 현재 Query 행 i=7입니다. Full causal은 8개, window 3은 5·6·7의 3개 위치를 읽습니다. 이 그림은 접근 규칙이며 KV 삭제를 뜻하지 않습니다.','Filled cells are read connections; hatching marks future positions; blank cells are unread past positions. The blue outline marks current query row i=7. Full causal reads 8 positions, while window 3 reads 3 positions: 5,6,7. This is an access rule, not a KV deletion diagram.'],
+  captionIn:'article',caption:['칠한 칸은 읽을 연결, 빗금은 미래 위치, 빈칸은 읽지 않는 과거 위치입니다. 파란 테두리는 현재 Query 행 i=7입니다. Full causal은 8개, window 3은 5·6·7의 3개 위치를 읽습니다. 이 그림은 접근 규칙이며 KV 삭제를 뜻하지 않습니다.','Filled cells are read connections; hatching marks future positions; blank cells are unread past positions. The blue outline marks current query row i=7. Full causal reads 8 positions, while window 3 reads 3 positions: 5,6,7. This is an access rule, not a KV deletion diagram.'],
   alt:['Query 위치 i를 행, Key 위치 j를 열로 한 두 8×8 행렬. Full causal은 j≤i인 36칸, 현재 포함 window 3은 max(0,i−2)≤j≤i인 21칸이 활성이다. 마지막 행의 읽기 연결은 각각 0부터 7 전체와 5,6,7이다.','Two 8×8 matrices have query position i as rows and key position j as columns. Full causal activates 36 cells with j≤i. Window3, including the current position, activates 21 cells with max(0,i−2)≤j≤i. The final-row reads are all positions 0–7 and positions 5,6,7 respectively.'],
   sources:[{label:'Mistral 7B §2, sliding-window background',url:'https://arxiv.org/html/2310.06825v1#S2'}],
   panels(locale:Locale){

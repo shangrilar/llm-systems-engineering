@@ -6,6 +6,9 @@ description: "Compare KV storage across six layers, follow a new token as its Ke
 date: 2026-09-29
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 [MQA and GQA](/en/posts/model-advanced-mqa-gqa/) let multiple Query heads within a layer read the same Keys and Values. This reduces the KV stored per token, but each layer still produces its own KV.
 
 Now we will extend sharing across layers. <strong>If the next layer also reads the Keys and Values produced by an earlier layer, the model no longer needs a separate KV bank for every layer.</strong> Cross-Layer Attention (CLA) incorporates this sharing into the model architecture. Each layer forms its own Query, while only some layers produce Keys and Values.
@@ -18,7 +21,18 @@ Each layer’s attention compares the current Query with Keys at past and curren
 
 Figure 1 compares six layers after processing four tokens. Both architectures have one KV head, with two components in each Key and Value vector. On the right, adjacent layers form pairs. L₁ and L₂ read the KV produced by L₁; L₃ and L₄ read L₃’s KV; L₅ and L₆ read L₅’s KV.
 
-<a href="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks.png?v=c658256742a5" id="figure-1"><picture><source width="720" height="4430" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks-mobile.png?v=d9ec49ffa6a8" /><img width="2400" height="3584" src="/images/model-advanced-cross-layer-kv/en/01-six-layers-three-banks.png?v=c658256742a5" alt="Six separate KV banks hold 96 components; sharing across adjacent pairs uses 48. Both architectures retain six Queries and sequential layer computation." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-cross-layer-kv/01-six-layers-three-banks" n={1} layout="cols">
+<AnnotPart fig="model-advanced-cross-layer-kv/01-six-layers-three-banks" panels="1">
+
+**A. One KV bank per layer.** All six layers produce and keep their own KV. There are six queries and six attention computations, and each bank holds K[4×2] + V[4×2] = 16 components, so 96 in total.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-cross-layer-kv/01-six-layers-three-banks" panels="2">
+
+**B. One KV bank per pair.** Only L₁, L₃, and L₅ produce KV, and the next layer reads those values. Each layer still computes attention separately with its own query; the blue paths are activations passed between layers. Storage drops to 48 components, but that ratio is this example’s KV storage, not total memory or speed.
+
+</AnnotPart>
+</Annot>
 
 Each bank holds K[4×2] and V[4×2]. Eight Key components plus eight Value components give 16 components. Separate storage for all six layers requires 6 × 16 = 96 components, while sharing across pairs requires 3 × 16 = 48. With the same data type and tightly packed storage, this example halves the KV data size.
 
@@ -34,7 +48,15 @@ Consider only the first pair in Figure 1. KV for positions p0 through p3 is alre
 
 In Figure 2, the orange write happens first, then the two layers read the same KV in sequence. The T=4 and T=5 boxes on the right show one KV-L1 bank before and after an update, rather than two separate stores.
 
-<a href="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer.png?v=d5950e0b8946" id="figure-2"><picture><source width="720" height="3314" media="(max-width: 600px)" srcSet="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer-mobile.png?v=de3dec764261" /><img width="2400" height="4318" src="/images/model-advanced-cross-layer-kv/en/02-producer-then-consumer.png?v=d5950e0b8946" alt="L1 appends KV for p4, then both layers read it with their own Queries. Each attention output passes through output projection, residual, and FFN operations to form the next layer input." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-cross-layer-kv/02-producer-then-consumer" n={2} layout="side">
+<AnnotPart fig="model-advanced-cross-layer-kv/02-producer-then-consumer" panels="1" xr="0-0.5">
+
+**① L₁ writes, ② then reads.** When h₁ at p4 enters L₁, it produces q₁, k4, and v4. k4 and v4 are added as row p4 of KV-L1, and L₁’s q₁ reads p0 through p4. The two boxes on the right are the same bank before and after it grows from four rows to five.
+
+**③ L₂’s query, ④ reading the same KV.** L₂ can form its query only after h₂ exists. It writes no new KV and reads the same p0 through p4. p4 is the current position; the future position p5 does not exist yet. What is shared is the KV values produced, not the KV projection weights of different layers.
+
+</AnnotPart>
+</Annot>
 
 First, <math><msub><mi>k</mi><mn>4</mn></msub></math> and <math><msub><mi>v</mi><mn>4</mn></msub></math> are appended as row p4. KV-L1 now contains five rows, p0 through p4. Labels such as k0 and v0 name vectors at those positions, rather than their component values. Each Key and Value is two-dimensional, as in the previous section.
 

@@ -6,6 +6,9 @@ description: "Explore why models combine fixed-size state with position-indexed 
 date: 2026-09-28
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 The models covered from [Linear Attention](/en/posts/model-advanced-linear-attention/) through [Mamba](/en/posts/model-advanced-mamba-selective/) preserve the influence of past inputs in a state. Each new token updates that state, then reads the values needed for its current output. Once the model’s state size is fixed, generating more tokens does not continually increase this storage.
 
 Should we therefore replace every Attention layer with a state-based layer? That is a natural choice if reducing storage is the only objective. But it also changes how the model uses past information. Reading what has been written into a state differs from retaining KV at past positions and referring to it again with the current Query.
@@ -70,7 +73,23 @@ The runtime must also manage two forms of memory. KV appends a row for each new 
 
 The name Hybrid Attention does not always refer to the state-and-KV combination discussed so far. It can also describe arrangements of SWA or compressed Attention across layers. Figure 5 distinguishes them by what is being combined.
 
-<a href="/images/model-advanced-hybrid/en/04-two-kinds-of-hybrid.png?v=aaf4e547d2fd" id="figure-5"><picture><source width="720" height="2860" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/04-two-kinds-of-hybrid-mobile.png?v=be9776c3b6ac" /><img width="2400" height="3664" src="/images/model-advanced-hybrid/en/04-two-kinds-of-hybrid.png?v=aaf4e547d2fd" alt="Three categories: Kimi K3,Qwen3.8 and GLM5.3Flash combine state and KV; MiMoV2.6 combines SWA and global attention; DeepSeekV4 combines CSA and HCA." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-hybrid/04-two-kinds-of-hybrid" n={5} layout="stack">
+<AnnotPart fig="model-advanced-hybrid/04-two-kinds-of-hybrid" panels="1">
+
+**A. State + KV.** Mixes recurrent layers with a fixed-size state and KV attention layers. The two live in different layers and do not share one cache. The KV side need not be plain full attention. Model names refer only to the named variants (GLM-5.3-Flash is a different model from GLM-5.3).
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-hybrid/04-two-kinds-of-hybrid" panels="2">
+
+**B. Read range.** Mixes SWA layers with global layers. SWA still stores KV for recent positions.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-hybrid/04-two-kinds-of-hybrid" panels="3">
+
+**C. Compression and selection.** CSA and HCA use KV compressed along the token axis, not a fixed-size recurrent state. Only the compressed path is drawn; uncompressed KV for recent positions is also kept.
+
+</AnnotPart>
+</Annot>
 
 The first type, central to this article, combines state-based layers with KV Attention layers. [Kimi K3](https://huggingface.co/moonshotai/Kimi-K3) uses KDA and MLA; [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) uses GDN and full-context Attention. The KV side need not be conventional Full Attention. [GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash/blob/main/config.json) combines KDA and Sparse Attention, while [Qwen3.8-Flash-Next](https://huggingface.co/Qwen/Qwen3.8-Flash-Next) combines GDN and QSA.
 

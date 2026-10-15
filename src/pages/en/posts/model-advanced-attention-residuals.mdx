@@ -6,6 +6,9 @@ description: "Calculate a weighted read over earlier layer outputs, derive its w
 date: 2026-09-28
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 [HC/mHC](/en/posts/model-advanced-hc-mhc/) and [Gated Residual](/en/posts/model-advanced-gated-residual/) maintained representations of the same token in multiple streams. Each layer read those representations, computed a result, and wrote it back to the streams. They did not retain a separate output from every earlier layer.
 
 Attention Residuals (AttnRes) starts with a different question: <strong>can we keep earlier layers' results separate and let the next layer choose what to read?</strong> It applies the idea of attention, which selects information across tokens, to connections along depth.
@@ -104,7 +107,23 @@ The four-versus-three comparison in the diagram concerns one small example at on
 
 The shared question across these three articles was how information is stored between layers and supplied to the next computation. Figure 5 compares the designs using the same three criteria: storage, reading, and updating.
 
-<a href="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" id="figure-5"><picture><source width="720" height="2986" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/04-residual-designs-mobile.png?v=a77cef70b709" /><img width="2400" height="3174" src="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" alt="Compare mHC, GR and AttnRes by storage, read and update. mHC writes into mixed bypasses; GR writes into original bypasses. AttnRes reads depth sources and appends fresh output." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-attention-residuals/04-residual-designs" n={5} layout="stack">
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="1">
+
+**mHC.** Keeps several residual streams, reads them with one scalar per stream, and mixes the bypass with a constrained matrix. F’s output is written with one scalar per stream.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="2">
+
+**Gated Residual.** Reads with per-branch normalization and component-wise gated averages, and carries each original through unchanged. F’s output is added to the originals with one scalar per branch.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="3">
+
+**Attention Residuals.** Keeps earlier sublayers’ fresh outputs separately, reads them with attention over depth, and appends the new output to the list. The block variant updates a block sum instead of the list. The figure compares how information flows, not performance.
+
+</AnnotPart>
+</Annot>
 
 | Design | Stored unit | Read for the next computation | How fresh results are incorporated |
 |---|---|---|---|

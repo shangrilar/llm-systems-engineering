@@ -1,0 +1,44 @@
+---
+// A figure cut into regions, each with its explanation beside or under it (see AnnotPart).
+// layout: "cols" (regions side by side, notes under), "rows" (note beside each region),
+// "stack" (note under each full-width region), "side" (one region, notes beside it).
+import {localeFromPath} from '../i18n/index';
+import {figureSpec,headerCrop,cropStyle,hasMobile} from './annot';
+import {tr} from '@llm-systems/viz';
+interface Props{fig:string;n:number;layout:'cols'|'rows'|'stack'|'side'}
+const {fig,n,layout}=Astro.props;
+const locale=localeFromPath(Astro.url.pathname);
+const spec=await figureSpec(fig),alt=tr(spec.alt,locale);
+const desk=headerCrop(spec,fig,locale,false),mob=hasMobile(spec)?headerCrop(spec,fig,locale,true):null;
+const d=cropStyle(desk),m=mob&&cropStyle(mob,true);
+const full=desk.src;
+---
+<figure class={`annot annot-${layout}`} id={`figure-${n}`} data-figure-id={fig}>
+  <a class="annot-head" href={full} aria-label={locale==='en'?`Open full-size figure ${n}: ${tr(spec.title,'en')}`:`그림 ${n} 원본 열기: ${tr(spec.title,'ko')}`}>
+    <div class={`annot-crop${mob?' annot-desktop':''}`} style={d.wrap}><img src={desk.src} style={d.img} alt={alt} loading="lazy" decoding="async" /></div>
+    {mob&&m&&<div class="annot-crop annot-mobile" style={m.wrap}><img src={mob.src} style={m.img} alt={alt} loading="lazy" decoding="async" /></div>}
+  </a>
+  <div class="annot-body"><slot /></div>
+</figure>
+<style is:global>
+  .annot{margin:36px 0;width:min(1016px,calc(100vw - 64px));position:relative;left:50%;transform:translateX(-50%)}
+  .annot-crop{position:relative;overflow:hidden;width:100%}
+  .annot .annot-crop img{position:absolute;max-width:none;height:auto;display:block;margin:0}
+  .annot-head{display:block;margin:0 0 6px}
+  .annot-body{display:grid;gap:22px}
+  .annot-cols .annot-body{grid-auto-flow:column;grid-auto-columns:1fr;align-items:start}
+  .annot-part{border-top:1px solid var(--line);padding-top:10px}
+  .annot-rows .annot-part{display:grid;grid-template-columns:min(var(--cw),64%) minmax(0,1fr);gap:26px;align-items:center}
+  .annot-side .annot-part{display:grid;grid-template-columns:min(var(--cw),62%) minmax(0,1fr);gap:26px;align-items:start}
+  .annot-note{border-left:3px solid var(--green);padding-left:14px;font-size:15.5px;line-height:1.85}
+  .annot-note>:first-child{margin-top:4px}.annot-note>:last-child{margin-bottom:0}
+  .annot-note p{margin:8px 0}
+  .annot-mobile{display:none}
+  @media (max-width:700px){
+    .annot{width:auto;left:auto;transform:none}
+    .annot-cols .annot-body{grid-auto-flow:row}
+    .annot-rows .annot-part,.annot-side .annot-part{display:block}
+    .annot-note{margin-top:10px}
+  }
+  @media (max-width:600px){.annot-desktop{display:none}.annot-mobile{display:block}}
+</style>

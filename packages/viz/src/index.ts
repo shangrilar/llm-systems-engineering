@@ -2,6 +2,6 @@
 export {C,FONT_FAMILY,MONO_FAMILY,markerDefs,markerId,markerUrl,type Tone} from './theme';
 export {esc,svgText,tr,units,wrap,type Label,type Locale} from './text';
 export {Panel} from './panel';
-export {FRAME,compose,type FigureSpec,type Screen} from './frame';
+export {FRAME,compose,layoutBoxes,type FigureSpec,type FigureLayout,type Screen} from './frame';
 export {cells,curve,grid,timeline,type Bar,type Lane} from './primitives';
 export {matrix,port,connector,type Bounds,type Side,type Point,type MatrixValue,type MatrixOptions} from './diagram';

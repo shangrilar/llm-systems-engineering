@@ -6,6 +6,9 @@ description: "Compare state updates in Linear Attention and SSMs, then use small
 date: 2026-09-28
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 The Linear Attention family covered through [the previous article](/en/posts/model-advanced-gdn-kda/) writes past information into a fixed-size state and reads that state with the current Query. An SSM (State Space Model) also carries past information forward in a state. How does it differ from what we have already learned?
 
 We will connect the two approaches through <strong>the operations that retain state, write new information, and read an output</strong>. We will first examine an SSM with fixed coefficients, then calculate a small state vector to see how past inputs continue to contribute. Mamba, the subject of the next article, makes these coefficients depend on the current input.
@@ -22,7 +25,18 @@ The linear SSM considered here chooses to express these two influences with matr
 
 An SSM also adds a new contribution to the previous state, then reads an output from the updated state. The fixed-coefficient SSM we will examine specifies this process with three operations. <strong><math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> transforms the previous state, <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> turns the current input into a contribution to write, and C reads an output from the state.</strong> Figure 1 aligns the two approaches in the same order.
 
-<a href="/images/model-advanced-ssm-basics/en/01-state-through-time.png?v=e49f960ca9ac" id="figure-1"><picture><source width="720" height="2896" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/01-state-through-time-mobile.png?v=1b7be1fdbe51" /><img width="2400" height="2362" src="/images/model-advanced-ssm-basics/en/01-state-through-time.png?v=e49f960ca9ac" alt="Both panels process the old state, add current information, form the new state and read an output. Basic linear attention retains the old state, adds a key-value outer product and reads with the current query. A fixed SSM transforms the old state with Abar, adds Bbar times input, and reads with fixed C." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/01-state-through-time" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="1">
+
+**Linear attention.** Writes to the state with feature-mapped keys and values and reads it with the query. Denominator normalization is omitted.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="2">
+
+**SSM.** Retention (Ā), writing (B̄), and reading (C) sit in the same places. The direct output term is omitted, and fixed coefficients mean they are not regenerated per input during inference. The figure maps concepts; it does not compare state shapes or storage.
+
+</AnnotPart>
+</Annot>
 
 Basic Linear Attention leaves the previous state unchanged before adding a new Key–Value contribution. In the SSM, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> acts on the previous state before new information is added. Depending on its values, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> can reduce state components or mix them. Our small example will use different coefficients for the individual components.
 
@@ -66,7 +80,18 @@ So far, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>, <math><
 
 Figure 4 processes two inputs starting from the same previous state [2, 1]. Both cases retain [1, 0.8] through <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> and use the same <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> and C.
 
-<a href="/images/model-advanced-ssm-basics/en/04-fixed-coefficients.png?v=d5cbd96c9536" id="figure-4"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/04-fixed-coefficients-mobile.png?v=0b23fdf255ea" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/en/04-fixed-coefficients.png?v=d5cbd96c9536" alt="Inputs2 and−2 both retain [1,0.8] using rates [0.5,0.8]. The same writing coefficients [1,0.5] yield [2,1] or [−2,−1]. New states are [3,1.8] or [−1,−0.2], read by the same C as4.8 or−1.2." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/04-fixed-coefficients" n={4} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="1">
+
+**Input u = 2.** The old state [2, 1] is scaled by diag(Ā), u × B̄ is added to give [3, 1.8], and C reads 4.8.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="2">
+
+**Input u = −2.** The input and new state differ, but Ā, B̄, and C stay the same. Fixed here means the coefficients are not regenerated per input during inference, not that training cannot change them.
+
+</AnnotPart>
+</Annot>
 
 Input 2 adds [2, 1], producing [3, 1.8]. Input −2 adds [−2, −1], producing [−1, −0.2]. Reading with C=[1, 1] gives 4.8 and −1.2, respectively.
 

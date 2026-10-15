@@ -9,7 +9,7 @@ export default {
   alt:['x4가 self-decoder1과2를 통과하며 각기 S1과S2를 읽고 갱신한다. 출력 m4에서 k4,v4를 만들어 이전 네 행이 남아 있는 global bank에 주황 p4 행을 추가한다. Cross-decoder3과4가 각각 q3,q4로 같은 다섯 행을 읽고 LM head가 x5를 선택한다.','x4 passes through self-decoder 1 and 2, reading and updating distinct S1 and S2. Output m4 produces k4,v4, appended as orange p4 while the four older rows remain. Cross-decoder 3 and 4 read those five rows with q3 and q4; the LM head selects x5.'],
   sources:[{label:'YOCO §2 and §3.1, recurrent state and global KV',url:'https://arxiv.org/html/2405.05254v1#S2'},{label:'DeepSeek-V4.1-Flash report §2.2–2.3',url:'https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/blob/main/DeepSeek_V41_Tech_Report.pdf'}],
   panels(locale:Locale,mobile?:boolean){
-    const p=new Panel(locale,['p4: 계산 → 기록 → 읽기','p4: Compute → append → read'],mobile?2240:1960,mobile?520:1104);
+    const p=new Panel(locale,['p4: 계산 → 기록 → 읽기','p4: Compute → append → read'],mobile?1990:1960,mobile?520:1104);
     p.token(60,125,'x₄ · p4',170,'blue',68);p.arrow(145,203,145,265,C.blue);
     for(let i=0;i<2;i++){
       const y=275+i*240;
@@ -40,7 +40,6 @@ export default {
     p.arrow(145,1550,145,1610,C.blue);p.token(45,1620,'LM head',200,'orange',80);
     p.arrow(145,1710,145,1770,C.orange);p.token(25,1780,['x₅ · 다음 토큰 선택','x₅ · Next token'],240,'orange',65);
     p.text(145,1903,['다음 입력 · KV 없음','Next input · No KV yet'],{size:24,weight:600,color:C.orange,anchor:'middle',width:290});
-    p.box(mobile?20:600,mobile?2000:380,480,207,['앞 층도 매 토큰 계산합니다','Early layers run for every token'],['청록: 기존 값 읽기\n주황: 현재 상태·행 쓰기\n파랑: 층을 지나는 hidden','Teal: read stored values\nOrange: update state or append a row\nBlue: hidden flow through layers'],'gray');
     return [p];
   },
 } satisfies FigureSpec;

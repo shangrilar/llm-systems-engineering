@@ -9,7 +9,7 @@ export default {
   alt:['입력 p4의 h1에서 L1이 q1,k4,v4을 만든다. 이전 p0부터 p3까지의 네 행에 현재 p4 행을 추가해 KV-L1이 다섯 행이 된다. L1의 q1이 이를 읽고 h2를 만든 다음 L2가 h2에서 q2를 만들고 같은 bank를 읽어 h3를 만든다. 미래행은 없으며 L2가 쓰는 선도 없다.','L1 produces q1,k4,v4 from h1 at p4. Appending row p4 to the previous p0–p3 rows makes KV-L1 five rows long. L1 reads it with q1, yielding h2. L2 then forms q2 from h2, reads the same bank and yields h3. There is no future row and no L2 write.'],
   sources:[{label:'Cross-Layer Attention §2.2 and Figure 1',url:'https://arxiv.org/html/2405.12981v1#S2.SS2'}],
   panels(locale:Locale,mobile?:boolean){
-    const p=new Panel(locale,['p4가 두 층을 지나는 순서','p4 passes through two layers'],mobile?2140:1880,mobile?520:1104);
+    const p=new Panel(locale,['p4가 두 층을 지나는 순서','p4 passes through two layers'],1880,mobile?520:1104);
     const bank=(y:number,rows:number)=>{
       p.rect(310,y,200,90+rows*50,C.tealFill,C.teal);
       p.text(410,y+30,`KV-L1 · T=${rows}`,{size:22,weight:600,color:C.teal,anchor:'middle',width:194});
@@ -41,7 +41,6 @@ export default {
     p.arrow(130,1490,130,1515,C.blue);
     p.box(10,1525,230,125,['출력 투영·잔차·FFN','OutProj · residual · FFN'],['정규화 포함','Includes norm'],'gray');
     p.arrow(130,1660,130,1740,C.blue);p.token(80,1750,'h₃',100,'blue',60);
-    p.box(mobile?20:600,mobile?1895:650,480,211,['같은 KV · 서로 다른 Query','Same KV · Different Queries'],['L₂의 Query는 h₂가 나온 뒤 만듭니다. p4는 현재 위치이고 p5는 아직 없습니다.','L₂ forms its Query only after h₂ exists. p4 is current; p5 does not exist yet.'],'gray');
     return [p];
   },
 } satisfies FigureSpec;
