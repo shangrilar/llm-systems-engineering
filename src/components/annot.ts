@@ -36,7 +36,11 @@ export function panelCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolean
   const x0=Math.max(0,Math.min(...bs.map(b=>b.x))-PAD),y0=Math.max(0,Math.min(...bs.map(b=>b.y))-PAD);
   const x1=Math.min(L.width,Math.max(...bs.map(b=>b.x+b.w))+PAD),y1=Math.min(L.height,Math.max(...bs.map(b=>b.y+b.h))+PAD);
   let [cx0,cx1]=[x0,x1];
-  if(xr&&!mobile){const [f0,f1]=xr.split('-').map(Number);if(!(f0>=0&&f1<=1&&f0<f1))throw new Error('Invalid xr '+xr);cx0=x0+(x1-x0)*f0;cx1=x0+(x1-x0)*f1;}
+  if(xr!==undefined){
+    const m=/^(0(?:\.\d+)?|1)-(0(?:\.\d+)?|1)$/.exec(xr),f0=m?Number(m[1]):NaN,f1=m?Number(m[2]):NaN;
+    if(!(f0<f1))throw new Error('Invalid xr '+xr);
+    if(!mobile){cx0=x0+(x1-x0)*f0;cx1=x0+(x1-x0)*f1;}
+  }
   return {src:png(id,locale,mobile),box:[cx0,y0,cx1-cx0,y1-y0],size:[L.width,L.height]};
 }
 // Inline style that shows only `box` of an image of `size`, scaling with the container width.

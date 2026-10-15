@@ -13,7 +13,10 @@ for(const slug of slugs)for(const locale of ['ko','en'])for(const width of [1280
     for(const fig of await figures.all()){
       await fig.scrollIntoViewIfNeeded();
       await expect(fig.locator('a.annot-head')).toHaveAttribute('href',new RegExp(`/images/[a-z0-9-]+/${locale==='en'?'en/':''}[a-z0-9-]+\\.png\\?v=[0-9a-f]{12}$`));
-      const hasMobile=await fig.locator('.annot-mobile').count()>0;
+      // Expected from the figure config, so a figure that lost its mobile crops fails here.
+      const id=(await fig.getAttribute('data-figure-id'))!;
+      const hasMobile=!/screens:\s*\[\s*['"]desktop['"]\s*\]/.test(readFileSync(`src/data/figures/${id}.ts`,'utf8'));
+      expect(await fig.locator('.annot-mobile').count()>0).toBe(hasMobile);
       // The header and every part show exactly one crop: the mobile one at 600 px and below when it exists.
       for(const holder of [fig.locator('a.annot-head'),...await fig.locator('.annot-part').all()]){
         const shown=[];
