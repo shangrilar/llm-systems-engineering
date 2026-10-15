@@ -50,13 +50,13 @@ export default {
     p.el('text',{x:385,y:785,fill:C.blue,"font-size":21,"font-weight":400,"text-anchor":"start"},["Up 값","Up value"]);
     p.el("rect",{x:655,y:769,width:18,height:18,rx:3,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
     p.el('text',{x:685,y:785,fill:C.teal,"font-size":21,"font-weight":400,"text-anchor":"start"},["곱셈 결과","Product"]);
-    p.el('text',{x:350,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["크기 감소","Smaller magnitude"]);
+    p.el('text',{x:350,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["크기 감소","|value| ↓"]);
     p.el("path",{d:"M268,1044 L432,1044",fill:"none",stroke:C.slate,"stroke-width":1.5});
     p.el('text',{x:259,y:1050,fill:C.muted,"font-size":17,"font-weight":400,"text-anchor":"end"},"0");
     p.el("rect",{x:301,y:936,width:36,height:108,rx:3,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
     p.el("rect",{x:363,y:1033.2,width:36,height:10.8,rx:3,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
     p.el('text',{x:350,y:1131,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"1");
-    p.el('text',{x:570,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["크기 증가","Larger magnitude"]);
+    p.el('text',{x:570,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["절댓값 증가","|value| ↑"]);
     p.el("path",{d:"M488,1044 L652,1044",fill:"none",stroke:C.slate,"stroke-width":1.5});
     p.el('text',{x:479,y:1050,fill:C.muted,"font-size":17,"font-weight":400,"text-anchor":"end"},"0");
     p.el("rect",{x:521,y:1044,width:36,height:54,rx:3,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
@@ -68,7 +68,7 @@ export default {
     p.el("rect",{x:741,y:882,width:36,height:162,rx:3,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
     p.el("path",{d:"M803,1044 L839,1044",fill:"none",stroke:C.teal,"stroke-width":4});
     p.el('text',{x:790,y:1131,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"middle"},"3");
-    p.el('text',{x:1010,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["크기 증가","Larger magnitude"]);
+    p.el('text',{x:1010,y:842,fill:C.ink,"font-size":23,"font-weight":600,"text-anchor":"middle"},["절댓값 증가","|value| ↑"]);
     p.el("path",{d:"M928,1044 L1092,1044",fill:"none",stroke:C.slate,"stroke-width":1.5});
     p.el('text',{x:919,y:1050,fill:C.muted,"font-size":17,"font-weight":400,"text-anchor":"end"},"0");
     p.el("rect",{x:961,y:1017,width:36,height:27,rx:3,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});

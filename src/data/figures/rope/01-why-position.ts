@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 1","Figure 1"],
   title:["토큰별 계산에서 위치 정보까지","From token-wise computation to position information"],
-  subtitle:["지금까지의 흐름을 좁혀 보며, 위치 차이를 묻습니다.","Follow the computation and ask how position differences enter it."],
+  subtitle:["지금까지의 흐름을 좁혀 보며, 위치 차이를 묻습니다. · 위 단계 사이의 선은 내부를 확대한 관계","Follow the computation and ask how position differences enter it. · Lines between the top steps zoom inside, not computation order"],
   alt:["디코더 블록에서 Attention, 그 안의 Core Attention으로 범위를 좁힌다. QK 전치는 점수, mask는 참조 범위, PV는 정보 결합이다. 토큰 3에서 한 칸 전과 두 칸 전 모두 허용되지만 위치 차이는 다르다.","Narrow the decoder block down to Attention and Core Attention. QK transpose computes scores, the mask limits access, and PV combines information. Tokens one and two positions before token 3 are both allowed, with different distances."],
   caption:["Causal mask는 순서에 따라 참조 범위를 정합니다. 위치 차이를 점수에 직접 반영하는 연산은 아닙니다.","The causal mask defines an order-based range; it does not directly encode position differences in the scores."],
   sources:[],

@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 1","Figure 1"],
   title:["Attention의 전체 계산 흐름","The Attention Computation Flow"],
-  subtitle:["점수 계산 → 스케일링·마스크 → Softmax → Value 가중합","Scores → Scaling and masking → Softmax → Weighted sum of Values"],
+  subtitle:["점수 계산 → 스케일링·마스크 → Softmax → Value 가중합 · S·P의 행 = Query, 열 = Key","Scores → Scaling and masking → Softmax → Weighted sum of Values · S, P rows = queries, columns = keys"],
   alt:["배치와 헤드 축을 제외한 causal self-attention 한 헤드의 계산이다. Q(T×dh)와 K의 전치(dh×T)를 곱해 점수 S(T×T)를 만든다. 스케일링과 미래 토큰 마스크를 적용하고 행별 Softmax로 확률 P(T×T)를 구한다. P와 V(T×dh)의 곱은 출력 O(T×dh)다. 도형은 T=4, dh=2일 때의 모양이다. P의 미래 토큰 위치는 0이며 유효한 행의 합은 1이다. 번호는 수학적 설명 단계이며 별도 커널 개수를 의미하지 않는다.","Causal self-attention for one head, excluding batch and head axes. Q (T × dh) times the transpose of K (dh × T) produces scores S (T × T). Scaling and a future-token mask are followed by row-wise Softmax to produce probabilities P (T × T). P times V (T × dh) produces O (T × dh). The shapes use T=4 and dh=2. Future-token entries in P are zero, and each valid row sums to one. The numbers label mathematical explanation stages, not separate kernel counts."],
   caption:["배치와 헤드 축은 생략했습니다. 번호는 수학적 설명 단계이며 별도 커널의 개수를 뜻하지 않습니다.","Batch and head axes are omitted. Numbers are explanatory steps, not the number of separate kernels."],
   sources:[],

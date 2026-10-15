@@ -57,6 +57,7 @@ export default {
     p.el('text',{x:806,y:592,fill:C.teal,"font-size":26,"font-weight":600,"text-anchor":"middle"},"Router");
     p.el('text',{x:806,y:619,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},["선택 + 가중치","Selection + weights"]);
     p.el("path",{d:"M806,655 L806,727",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    p.el('text',{x:818,y:698,fill:C.teal,"font-size":19,"font-weight":600,"text-anchor":"start"},["선택 ID","Expert IDs"]);
     p.el("rect",{x:661,y:742,width:290,height:180,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:806,y:781,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},["선택된 experts","Selected experts"]);
     p.el("rect",{x:677,y:806,width:118,height:85,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
@@ -72,7 +73,7 @@ export default {
     p.el("rect",{x:981,y:742,width:158,height:180,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5,"stroke-dasharray":"7 6"});
     p.el('text',{x:1060,y:784,fill:C.muted,"font-size":24,"font-weight":600,"text-anchor":"middle"},"Shared");
     p.el('text',{x:1060,y:815,fill:C.muted,"font-size":24,"font-weight":600,"text-anchor":"middle"},"expert");
-    p.el('text',{x:1060,y:858,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},["선택 구성","Optional"]);
+    p.el('text',{x:1060,y:858,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},["옵션 · 모든 토큰","Optional · every token"]);
     p.el('text',{x:1060,y:894,fill:C.muted,"font-size":21,"font-weight":400,"text-anchor":"middle"},"d → d");
     p.el("path",{d:"M806,1142 V1210 H854",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
     p.el("path",{d:"M1060,938 V1210 H922",fill:"none",stroke:C.slate,"stroke-width":2.2,"stroke-dasharray":"7 6","marker-end":markerUrl(C.slate)});

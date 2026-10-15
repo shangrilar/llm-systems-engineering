@@ -12,7 +12,7 @@ In an earlier article, we saw that an MLP transforms each token’s vector indep
 
 In the structure we have explored so far, every token passes through the same MLP within a decoder block. We will call this a **dense MLP**. The sparse MoE structure in this article instead selects a subset of several MLPs to process each token. Each MLP is called an **expert**, and the component that selects the experts is called the **Router**.
 
-[![The dense structure on the left applies the same gated MLP to every token. In the MoE structure on the right, the Router selects E1 and E3 from four experts and adds their outputs after multiplying them by approximately 0.27 and 0.73. Both structures have d-dimensional inputs and outputs.](/images/moe/en/01-dense-and-moe.png)](/images/moe/en/01-dense-and-moe.png)
+[![The dense structure on the left applies the same gated MLP to every token. In the MoE structure on the right, the same x₁ is sent to the selected experts E1 and E3, while the Router only decides which experts to use and the weights for their outputs (about 0.27 and 0.73). Both structures have d-dimensional inputs and outputs.](/images/moe/en/01-dense-and-moe.png)](/images/moe/en/01-dense-and-moe.png)
 
 Figure 1 shows the same token input x₁ entering the two structures. On the left, x₁ passes through a single gated MLP to produce y₁. On the right, there are four experts, E1 through E4, and the Router selects E1 and E3. **Both selected experts receive the same x₁, but their different weights produce different transformations.** The experts in this example are the gated MLPs we explored earlier, each with its own Gate, Up, and Down projection weights.
 

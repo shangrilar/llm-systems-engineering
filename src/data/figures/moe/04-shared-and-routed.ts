@@ -49,11 +49,15 @@ export default {
     p.el("path",{d:"M312,842 L312,886",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
     p.el("rect",{x:683,y:550,width:410,height:75,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:888,y:582,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Router");
-    p.el('text',{x:888,y:610,fill:C.teal,"font-size":21,"font-weight":400,"text-anchor":"middle"},["expert 선택 + 가중치","Expert selection + weights"]);
+    p.el('text',{x:888,y:610,fill:C.teal,"font-size":21,"font-weight":400,"text-anchor":"middle"},["선택 ID + 가중치만 출력","Outputs only expert IDs + weights"]);
     p.el("path",{d:"M888,634 L888,649",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    // x itself goes to the routed experts; the router sends only expert IDs (down) and weights (to Combine).
+    p.el("path",{d:"M888,380 H662 V702 H675",fill:"none",stroke:C.blue,"stroke-width":2.5,"marker-end":markerUrl(C.blue)});p.el('text',{x:700,y:399,fill:C.blue,"font-size":17,"font-weight":600,"text-anchor":"start"},["입력 x","Input x"]);
+    p.el('text',{x:900,y:647,fill:C.teal,"font-size":17,"font-weight":600,"text-anchor":"start"},["선택 ID","Expert IDs"]);
+    p.el("path",{d:"M1093,587 H1112 V822 H1101",fill:"none",stroke:C.teal,"stroke-width":2.3,"stroke-dasharray":"7 5","marker-end":markerUrl(C.teal)});
     p.el("rect",{x:683,y:665,width:410,height:75,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:888,y:697,fill:C.blue,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Routed experts");
-    p.el('text',{x:888,y:725,fill:C.blue,"font-size":21,"font-weight":400,"text-anchor":"middle"},["선택된 expert 2개 계산","Compute the 2 selected experts"]);
+    p.el('text',{x:888,y:725,fill:C.blue,"font-size":21,"font-weight":400,"text-anchor":"middle"},["입력 x를 선택된 2개가 계산","Selected 2 experts compute on x"]);
     p.el("path",{d:"M888,750 L888,769",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
     p.el("rect",{x:683,y:785,width:410,height:75,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
     p.el('text',{x:888,y:817,fill:C.teal,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Combine");

@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 4","Figure 4"],
   title:["토큰 사이의 정보는 어디서 합쳐질까요?","Where is information combined across tokens?"],
-  subtitle:["디코더 블록 하나에서 토큰 간 연결을 따라갑니다.","Follow connections between tokens through one decoder block."],
+  subtitle:["디코더 블록 하나에서 토큰 간 연결을 따라갑니다. · 선은 정보 의존 관계(다른 위치에서 읽는 것은 K·V)","Follow connections between tokens through one decoder block. · Lines show information dependencies; other positions are read through K and V"],
   alt:["세 토큰의 세로 경로를 나란히 표시한다. RMSNorm, projection, RoPE와 MLP 또는 MoE는 같은 토큰 위치에서 계산한다. Core Attention에서 토큰1의 결과는 토큰1, 토큰2의 결과는 토큰1과2, 토큰3의 결과는 토큰1과2와3에 의존한다. 이어붙이기와 출력 projection, Residual 덧셈도 같은 위치에서 진행한다.","Three parallel token paths pass through a block. RMSNorm, projections, RoPE and MLP or MoE operate within each token position. In Core Attention, token 1 depends on token 1, token 2 on tokens 1 and 2, and token 3 on tokens 1, 2 and 3. Concatenation, output projection and residual additions preserve token positions."],
   caption:["토큰 간 의존 관계를 표시했습니다. Head별 계산과 Residual 우회선은 생략했습니다.","Token dependencies are shown; individual heads and residual bypass lines are omitted."],
   sources:[],
