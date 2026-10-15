@@ -44,6 +44,16 @@ export function panelCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolean
   }
   return {src:png(id,locale,mobile),box:[cx0,y0,cx1-cx0,y1-y0],size:[L.width,L.height]};
 }
+// Crops for one screen: the union of the panels, or one crop per panel when that union would also take in a panel
+// that was not listed (e.g. panels "1+3" of a 2×2 grid, which the mobile version stacks as 1, 2, 3, 4).
+export function panelCrops(spec:FigureSpec,id:string,locale:Locale,mobile:boolean,panels:string,xr?:string):Crop[]{
+  const union=panelCrop(spec,id,locale,mobile,panels,xr);
+  if(panels==='all'||!panels.includes('+'))return [union];
+  const L=layoutBoxes(spec,locale,mobile),picked=new Set(panels.split('+').map(Number));
+  const [x,y,w,h]=union.box,inside=(b:{x:number;y:number;w:number;h:number})=>b.x<x+w&&b.x+b.w>x&&b.y<y+h&&b.y+b.h>y;
+  if(!L.panels.some((b,i)=>!picked.has(i+1)&&inside(b)))return [union];
+  return [...picked].map(i=>panelCrop(spec,id,locale,mobile,String(i)));
+}
 // Inline style that shows only `box` of an image of `size`, scaling with the container width.
 // Desktop crops never show larger than the whole figure would at the annot width (1016 px for 1200 units),
 // so every region of a figure shares one scale.

@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
 import {readdirSync,readFileSync} from 'node:fs';
 import {layoutBoxes} from '@llm-systems/viz';
-import {figureSpec,headerCrop,panelCrop,cropStyle} from '../src/components/annot';
+import {figureSpec,headerCrop,panelCrop,panelCrops,cropStyle} from '../src/components/annot';
 // Crop boxes for every <AnnotPart> in use: inside the image, covering the named panels (or the xr share of them),
 // and turned into CSS that shows exactly that box.
 const parts=readdirSync('src/pages/posts').filter(f=>f.endsWith('.mdx')).flatMap(f=>
@@ -29,6 +29,14 @@ describe('annot crop geometry',()=>{
       expect(pct('width')).toBeCloseTo(L.width/w*100,3);
       expect(pct('left')).toBeCloseTo(-x/w*100,3);expect(pct('top')).toBeCloseTo(-y/h*100,3);
       expect(c.src).toMatch(/\.png\?v=[0-9a-f]{12}$/);
+    });
+  for(const u of parts.filter(p=>p.panels!=='all'))for(const locale of ['ko','en'] as const)for(const mobile of [false,true])
+    it(`${u.fig} panels ${u.panels} ${locale}${mobile?' mobile':''} shows no unlisted panel`,async()=>{
+      const spec=await figureSpec(u.fig);
+      if(mobile&&spec.screens&&!spec.screens.includes('mobile'))return;
+      const L=layoutBoxes(spec,locale,mobile),listed=new Set(u.panels.split('+').map(Number));
+      for(const c of panelCrops(spec,u.fig,locale,mobile,u.panels,u.xr)){const [x,y,w,h]=c.box;
+        L.panels.forEach((b,i)=>{if(!listed.has(i+1))expect(b.x>=x&&b.y>=y&&b.x+b.w<=x+w&&b.y+b.h<=y+h,`panel ${i+1}`).toBe(false);});}
     });
   it('rejects invalid panels and xr',async()=>{
     const id=parts[0].fig,spec=await figureSpec(id);
