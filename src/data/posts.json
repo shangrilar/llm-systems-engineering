@@ -1736,7 +1736,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared revised introduction and Key/Query write-read explanation with Korean; retained the reviewed numerical examples, equations, and five bilingual figures.",
-        "sourceRevision": "c946a7cde6eb37ccefd655523190ffb3c34f7be1f35a22effc2a9b87df2f34b0"
+        "sourceRevision": "963b0c41ba3c26cc8cc7a6d65f62e66e050379acdb986e709507d83aeb3d35d4"
       }
     }
   },
@@ -1766,7 +1766,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved.",
-        "sourceRevision": "414c06504301936a157278950d3a232aceb7df1f30eb49cf7e7d6ae08c220ef1"
+        "sourceRevision": "f781d7f6676dd1e2a34aefdfd8b23749845ee4dc5c64dc896bbb8393145b64c8"
       }
     }
   },
@@ -1992,7 +1992,7 @@
         "description": "Understand why softmax is replaced with independent feature maps, then follow outer-product writes, Query reads, and normalization by the sum of scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "152dbcd84d61c5736b636a223ed622a729aa1ff9def175a396c69c5652a650b2",
+        "sourceRevision": "25f3171dbe77d131842af467f0fa2ec2c4fef4b8cc7adb4ff30ba17f39d02e3f",
         "reviewNote": "Reviewed all nine sections, six equations, examples and six bilingual figures; clarified outer-product write/read scales, exact accumulation, and the transition to delta updates."
       }
     }
@@ -2087,7 +2087,7 @@
         "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "7c38d613bc8c4c7e16dc6d1e8614f9f7a0062012fda750ea30c9885df2f1ab00",
+        "sourceRevision": "f53d6610969273ce51a6853bc6b4c386cec5595d6f8a7134e9def6acad245728",
         "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
       }
     }

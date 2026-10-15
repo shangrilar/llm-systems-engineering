@@ -10,21 +10,21 @@ export default {
  const a=new Panel(locale,['1. Softmax 어텐션','1. Softmax attention'],490);
  a.token(145,85,'QKᵀ / √dₖ',230,'blue',65);
  a.arrow(260,160,260,180,C.blue);
- a.token(145,190,'softmax',230,'purple',65);
- a.text(260,287,['양수 가중치 · 합은 1','Positive weights · Sum = 1'],{size:23,anchor:'middle',width:490,color:C.purple});
- a.arrow(260,310,260,338,C.purple);
- a.token(145,350,['V와 곱하기','Multiply by V'],230,'teal',65);
+ a.token(145,190,'softmax',230,'gray',65);
+ a.text(260,287,['양수 가중치 · 합은 1','Positive weights · Sum = 1'],{size:23,anchor:'middle',width:490,color:C.blue});
+ a.arrow(260,310,260,338,C.blue);
+ a.token(145,350,['V와 곱하기','Multiply by V'],230,'gray',65);
  const b=new Panel(locale,['2. 점수 함수를 바꾸기','2. Change the score function'],490);
  for(let i=0;i<2;i++){
   const y=100+i*120;
   b.token(0,y,i===0?'Query q':'Key k',130,'blue',60);
   b.arrow(140,y+30,163,y+30,C.blue);
-  b.token(175,y,['양수로 변환','Positive map'],175,'purple',60);
-  b.arrow(360,y+30,383,y+30,C.purple);
+  b.token(175,y,['양수로 변환','Positive map'],175,'gray',60);
+  b.arrow(360,y+30,383,y+30,C.blue);
   b.token(395,y,i===0?'q̃':'k̃',120,'blue',60);
  }
  b.text(260,355,['내적 → 양수 점수','Dot product → Positive scores'],{size:23,anchor:'middle',width:500,color:C.blue});
- b.text(260,425,['점수 합으로 나누기 → 합은 1','Divide by score sum → Sum = 1'],{size:23,anchor:'middle',width:500,color:C.purple});
+ b.text(260,425,['점수 합으로 나누기 → 합은 1','Divide by score sum → Sum = 1'],{size:23,anchor:'middle',width:500,color:C.gray});
  const c=new Panel(locale,['3. 토큰별 점수를 먼저 계산','3. Compute token scores first'],590);
  c.text(255,111,'(Q̃K̃ᵀ)',{size:32,anchor:'middle',width:170,color:C.blue});
  c.text(365,111,'V',{size:32,anchor:'middle',width:60,color:C.muted});

@@ -8,9 +8,9 @@ export default {
  panels(locale:Locale){return [false,true].map(kda=>{const p=new Panel(locale,kda?['KDA · 성분별 α','KDA · α per component']:['GDN · 공유 α 하나','GDN · One shared α'],730);
  p.text(330,115,'S₂',{size:27,anchor:'middle',width:240,color:C.teal});matrix(p,235,150,[[2,0],[0,3]],{cellWidth:85,cellHeight:65,gap:15,size:29,tone:'teal'});
  for(let i=0;i<2;i++)p.text(30,195+i*80,[`Key 성분 ${i}`,`Key component ${i}`],{size:22,width:190});
- p.arrow(330,310,330,365,C.teal);p.text(330,412,['S̄ · 보정 전 상태','S̄ · Before correction'],{size:24,anchor:'middle',width:360,color:C.purple});
- const vals=kda?[[1.8,0],[0,.6]]:[[1,0],[0,1.5]];matrix(p,235,455,vals,{cellWidth:85,cellHeight:65,gap:15,size:29,tone:'purple'});
- if(kda){for(let i=0;i<2;i++){p.token(20,460+i*80,'α'+['₀','₁'][i]+' = '+[.9,.2][i],130,'purple',55);p.arrow(165,488+i*80,220,488+i*80,C.purple);}}
- else{p.token(20,500,'α = 0.5',130,'purple',55);p.line(160,527,180,527,C.purple,2);p.line(180,488,180,568,C.purple,2);p.arrow(180,488,220,488,C.purple);p.arrow(180,568,220,568,C.purple);}
+ p.arrow(330,310,330,365,C.teal);p.text(330,412,['S̄ · 보정 전 상태','S̄ · Before correction'],{size:24,anchor:'middle',width:360,color:C.teal});
+ const vals=kda?[[1.8,0],[0,.6]]:[[1,0],[0,1.5]];matrix(p,235,455,vals,{cellWidth:85,cellHeight:65,gap:15,size:29,tone:'teal'});
+ if(kda){for(let i=0;i<2;i++){p.token(20,460+i*80,'α'+['₀','₁'][i]+' = '+[.9,.2][i],130,'blue',55);p.arrow(165,488+i*80,220,488+i*80,C.blue);}}
+ else{p.token(20,500,'α = 0.5',130,'blue',55);p.line(160,527,180,527,C.blue,2);p.line(180,488,180,568,C.blue,2);p.arrow(180,488,220,488,C.blue);p.arrow(180,568,220,568,C.blue);}
  p.text(330,665,['열: Value 성분','Columns: Value components'],{size:22,anchor:'middle',width:350});return p;});}
 } satisfies FigureSpec;

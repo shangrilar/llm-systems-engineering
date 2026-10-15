@@ -10,9 +10,9 @@ export default {
  matrix(a,45,165,[[1],[0]],{cellWidth:70,cellHeight:65,gap:18,size:30,tone:'blue'});matrix(a,230,165,[[3,1],[0,3]],{cellWidth:95,cellHeight:65,gap:18,size:30,tone:'teal'});
  for(let i=0;i<2;i++)a.text(170,207+i*83,'×',{size:30,anchor:'middle',width:50});
  a.text(330,345,['행: Key 성분','Rows: Key components'],{size:22,anchor:'middle',width:330});
- a.text(260,410,'1×[3, 1] + 0×[0, 3]',{size:26,anchor:'middle',width:480});a.arrow(260,433,260,471,C.teal);matrix(a,162,490,[[3,1]],{cellWidth:90,cellHeight:65,gap:16,size:30,tone:'teal'});
+ a.text(260,410,'1×[3, 1] + 0×[0, 3]',{size:26,anchor:'middle',width:480});a.arrow(260,433,260,471,C.blue);matrix(a,162,490,[[3,1]],{cellWidth:90,cellHeight:65,gap:16,size:30,tone:'blue'});
  const b=new Panel(locale,['토큰별 기여','Per-token contributions'],610);
- b.text(150,120,'q₂ᵀkⱼ',{size:25,anchor:'middle',width:125,color:C.blue});b.text(355,120,'(q₂ᵀkⱼ)vⱼᵀ',{size:25,anchor:'middle',width:270,color:C.teal});
- for(let i=0;i<3;i++){const y=165+i*83;b.text(35,y+40,'p'+['₀','₁','₂'][i],{size:24,width:70});matrix(b,115,y,[[[1,0,1][i]]],{cellWidth:70,cellHeight:65,size:30,tone:'blue'});b.arrow(197,y+32,245,y+32,C.blue);matrix(b,260,y,[[[2,0],[0,0],[1,1]][i]],{cellWidth:85,cellHeight:65,gap:12,size:30,tone:'teal'});}
- b.text(260,445,'[2, 0] + [0, 0] + [1, 1]',{size:25,anchor:'middle',width:495});b.arrow(260,460,260,477,C.teal);matrix(b,162,490,[[3,1]],{cellWidth:90,cellHeight:65,gap:16,size:30,tone:'teal'});return[a,b];}
+ b.text(150,120,'q₂ᵀkⱼ',{size:25,anchor:'middle',width:125,color:C.blue});b.text(355,120,'(q₂ᵀkⱼ)vⱼᵀ',{size:25,anchor:'middle',width:270,color:C.blue});
+ for(let i=0;i<3;i++){const y=165+i*83;b.text(35,y+40,'p'+['₀','₁','₂'][i],{size:24,width:70});matrix(b,115,y,[[[1,0,1][i]]],{cellWidth:70,cellHeight:65,size:30,tone:'blue'});b.arrow(197,y+32,245,y+32,C.blue);matrix(b,260,y,[[[2,0],[0,0],[1,1]][i]],{cellWidth:85,cellHeight:65,gap:12,size:30,tone:'blue'});}
+ b.text(260,445,'[2, 0] + [0, 0] + [1, 1]',{size:25,anchor:'middle',width:495});b.arrow(260,460,260,477,C.blue);matrix(b,162,490,[[3,1]],{cellWidth:90,cellHeight:65,gap:16,size:30,tone:'blue'});return[a,b];}
 } satisfies FigureSpec;

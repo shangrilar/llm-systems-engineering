@@ -9,6 +9,6 @@ export default {
  panels(locale:Locale){return [false,true].map(state=>{const p=new Panel(locale,state?['상태 하나 갱신','Update one state']:['토큰별 KV 보관','Store KV per token'],790);
  for(let t=0;t<3;t++){const y=100+t*215;p.token(15,y+30,'p'+['₀','₁','₂'][t],65,'blue',50);p.arrow(90,y+55,145,y+55,C.blue);
  if(state){p.text(302,y-8,'S'+['₁','₂','₃'][t],{size:25,anchor:'middle',width:260,color:C.teal});matrix(p,220,y+15,[ [[2,0],[0,0]],[[2,0],[0,3]],[[3,1],[0,3]] ][t],{cellWidth: 70,cellHeight:48,gap:8,tone:'teal',size:25});if(t<2)p.arrow(294,y+130,294,y+184,C.teal);}
- else{for(let j=0;j<=t;j++){p.text(175,y+26+j*50,'p'+['₀','₁','₂'][j],{size:21,width:50});p.token(220,y+j*50,'k'+['₀','₁','₂'][j],105,'blue',42);p.token(340,y+j*50,'v'+['₀','₁','₂'][j],105,'teal',42);}}}
+ else{for(let j=0;j<=t;j++){p.text(175,y+26+j*50,'p'+['₀','₁','₂'][j],{size:21,width:50});p.token(220,y+j*50,'k'+['₀','₁','₂'][j],105,'teal',42);p.token(340,y+j*50,'v'+['₀','₁','₂'][j],105,'teal',42);}}}
  p.text(260,765,state?['2×2 · 행: Key 성분 / 열: Value 성분','2×2 · Rows: Key / Columns: Value']:['행: 토큰 위치','Rows: token positions'],{size:22,anchor:'middle',width:500,color:C.muted});return p;});}
 } satisfies FigureSpec;

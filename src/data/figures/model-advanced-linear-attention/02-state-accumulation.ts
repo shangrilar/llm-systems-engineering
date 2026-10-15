@@ -8,8 +8,8 @@ export default {
  sources:[{label:'Linear Attention §3.3',url:'https://arxiv.org/html/2006.16236v3#S3.SS3'}],
  panels(locale:Locale){const p=new Panel(locale,null,1120);const states=[[[0,0],[0,0]],[[2,0],[0,0]],[[2,0],[0,3]],[[3,1],[0,3]]];
  for(let i=0;i<4;i++){const y=60+i*270;p.text(405,y-18,'S'+['₀','₁','₂','₃'][i],{size:25,width:150,anchor:'middle',color:C.teal});matrix(p,338,y,states[i],{cellWidth: 60,cellHeight:52,gap:8,size:27,tone:'teal'});
- if(i<3){const dy=y+155;p.arrow(402,y+122,402,dy-12,C.teal);p.circle(402,dy+10,18,'white',C.teal);p.text(402,dy+19,'+',{size:29,anchor:'middle',width:35});p.arrow(402,dy+37,402,y+212,C.teal);
- p.token(15,dy-45,'p'+['₀','₁','₂'][i], 60,'blue',46);p.text(15,dy+38,['k=[1,0]','k=[0,1]','k=[1,0]'][i],{size:21,width:155,color:C.blue});p.text(15,dy+ 70,['v=[2,0]','v=[0,3]','v=[1,1]'][i],{size:21,width:155,color:C.teal});
+ if(i<3){const dy=y+155;p.arrow(402,y+122,402,dy-12,C.teal);p.circle(402,dy+10,18,'white',C.gray);p.text(402,dy+19,'+',{size:29,anchor:'middle',width:35});p.arrow(402,dy+37,402,y+212,C.teal);
+ p.token(15,dy-45,'p'+['₀','₁','₂'][i], 60,'blue',46);p.text(15,dy+38,['k=[1,0]','k=[0,1]','k=[1,0]'][i],{size:21,width:155,color:C.blue});p.text(15,dy+ 70,['v=[2,0]','v=[0,3]','v=[1,1]'][i],{size:21,width:155,color:C.blue});
  p.text(245,dy-58,'k'+['₀','₁','₂'][i]+'v'+['₀','₁','₂'][i]+'ᵀ',{size:24,anchor:'middle',width:170,color:C.orange});matrix(p,184,dy-30,[ [[2,0],[0,0]],[[0,0],[0,3]],[[1,1],[0,0]] ][i],{cellWidth: 50,cellHeight:44,gap:8,size:25,tone:'orange'});p.arrow(303,dy+10,373,dy+10,C.orange);
  }}return[p];}
 } satisfies FigureSpec;

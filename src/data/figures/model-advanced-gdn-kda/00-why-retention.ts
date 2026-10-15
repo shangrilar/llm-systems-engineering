@@ -8,8 +8,8 @@ export default {
  sources:[{label:'Gated DeltaNet §3.1',url:'https://arxiv.org/html/2412.06464v1#S3.SS1'}],
  panels(locale:Locale){return [false,true].map(gated=>{const p=new Panel(locale,gated?['GDN · 남긴 뒤 수정','GDN · Retain, then correct']:['DeltaNet · 연결 수정','DeltaNet · Correct the association'],850);
  p.text(260,105,'S₂',{size:26,anchor:'middle',width:300,color:C.teal});matrix(p,165,135,[[2,0],[0,3]],{cellWidth:90,cellHeight:60,gap:10,size:29,tone:'teal'});
- p.arrow(260,280,260,315,C.purple);p.token(105,330,gated?['기존 상태 × 0.5','Old state × 0.5']:['기존 상태 그대로','Keep the old state'],310,'purple',55);p.arrow(260,400,260,435,C.purple);
+ p.arrow(260,280,260,315,C.teal);p.token(105,330,gated?['기존 상태 × 0.5','Old state × 0.5']:['기존 상태 그대로','Keep the old state'],310,'gray',55);p.arrow(260,400,260,435,C.teal);
  matrix(p,165,450,gated?[[1,0],[0,1.5]]:[[2,0],[0,3]],{cellWidth:90,cellHeight:60,gap:10,size:29,tone:'teal'});
  p.arrow(260,595,260,620,C.orange);p.text(260,661,['델타 보정 · β=1','Delta correction · β=1'],{size:25,anchor:'middle',width:490,color:C.orange});p.arrow(260,675,260,700,C.orange);
- matrix(p,165,715,gated?[[1,1],[0,1.5]]:[[1,1],[0,3]],{cellWidth:90,cellHeight:55,gap:10,size:29,tone:'teal'});p.rect(160,775,200,65,'none',C.purple,2);return p;});}
+ matrix(p,165,715,gated?[[1,1],[0,1.5]]:[[1,1],[0,3]],{cellWidth:90,cellHeight:55,gap:10,size:29,tone:'teal'});p.rect(160,775,200,65,'none',C.gray,2);return p;});}
 } satisfies FigureSpec;

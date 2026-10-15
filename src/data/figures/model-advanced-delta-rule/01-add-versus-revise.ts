@@ -7,12 +7,12 @@ export default {
  alt:['두 패널 모두 기존 S₂에서 같은 Key로 [2,0]을 읽고 새 Value [1,1]을 받는다. 왼쪽은 새 기여를 더해 같은 Key로 [3,1]을 읽는다. 오른쪽은 새 내용 쪽으로 연결을 수정해 같은 Key로 [1,1]을 읽는다.','Both panels start with readout [2,0] from S₂ under the same Key and receive new Value [1,1]. Accumulation adds the contribution and reads [3,1]. Delta revises the association toward the new content and reads [1,1].'],
  sources:[{label:'DeltaNet §2.2',url:'https://arxiv.org/html/2406.06484v1#S2.SS2'}],
  panels(locale:Locale){return [false,true].map(delta=>{const p=new Panel(locale,delta?['델타 규칙','Delta rule']:['단순 누적','Additive rule'],800);
- p.text(260,120,['기존 상태에서 Key로 읽은 값','Read with the Key before update'],{size:24,anchor:'middle',width:500,color:C.teal});matrix(p,165,155,[[2,0]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'teal'});
- p.text(260,280,['새로 기록할 Value','New Value to write'],{size:24,anchor:'middle',width:500,color:C.orange});matrix(p,165,315,[[1,1]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'orange'});
- p.arrow(260,400,260,435,C.orange);
- p.token(60,450,delta?['새 내용 쪽으로 연결 수정','Revise toward new content']:['새 기여를 더하기','Add the new contribution'],400,'purple',70);
- if(delta){p.path('M355 187 H492 V485 H468',C.teal,2.5,true,true);p.text(484,250,['차이에 사용','For the gap'],{size:18,color:C.teal,anchor:'end',width:120});}
- p.arrow(260,535,260,565,C.purple);
- p.text(260,615,['같은 Key로 기록 결과 확인','Check the write with the same Key'],{size:23,anchor:'middle',width:500,color:C.blue});matrix(p,165,650,[delta?[1,1]:[3,1]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'teal'});
+ p.text(260,120,['기존 상태에서 Key로 읽은 값','Read with the Key before update'],{size:24,anchor:'middle',width:500,color:C.blue});matrix(p,165,155,[[2,0]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'blue'});
+ p.text(260,280,['새로 기록할 Value','New Value to write'],{size:24,anchor:'middle',width:500,color:C.blue});matrix(p,165,315,[[1,1]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'blue'});
+ p.arrow(260,400,260,435,C.blue);
+ p.token(60,450,delta?['새 내용 쪽으로 연결 수정','Revise toward new content']:['새 기여를 더하기','Add the new contribution'],400,'gray',70);
+ if(delta){p.path('M355 187 H492 V485 H468',C.blue,2.5,true,true);p.text(484,250,['차이에 사용','For the gap'],{size:18,color:C.blue,anchor:'end',width:120});}
+ p.arrow(260,535,260,565,C.gray);
+ p.text(260,615,['같은 Key로 기록 결과 확인','Check the write with the same Key'],{size:23,anchor:'middle',width:500,color:C.blue});matrix(p,165,650,[delta?[1,1]:[3,1]],{cellWidth:85,cellHeight:65,gap:10,size:30,tone:'blue'});
  return p;});}
 } satisfies FigureSpec;

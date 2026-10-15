@@ -19,7 +19,7 @@ import AnnotPart from '../../components/AnnotPart.astro';
 
 먼저 두 방식이 무엇을 저장하는지 비교해 보겠습니다. 그림 1의 양쪽에는 같은 네 위치 p₀, p₁, p₂, p₃가 들어옵니다. 각 위치의 블록은 그 층에 들어오는 벡터 하나이고, 상태 안의 작은 칸은 벡터가 아닌 상태의 성분입니다.
 
-<a href="/images/model-advanced-hybrid/00-two-memory-forms.png?v=5e198f690d2b" id="figure-1"><picture><source width="720" height="2702" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/00-two-memory-forms-mobile.png?v=398d944e1dd8" /><img width="2400" height="2260" src="/images/model-advanced-hybrid/00-two-memory-forms.png?v=5e198f690d2b" alt="p0부터 p3까지 입력할 때 2×2 상태는 크기를 유지하며 내용이 바뀐다. KV Attention은 각 입력의 K,V 벡터를 별도 행으로 남겨 네 행을 보관한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/00-two-memory-forms.png?v=919498c75002" id="figure-1"><picture><source width="720" height="2702" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/00-two-memory-forms-mobile.png?v=f48551cff03b" /><img width="2400" height="2260" src="/images/model-advanced-hybrid/00-two-memory-forms.png?v=919498c75002" alt="p0부터 p3까지 입력할 때 2×2 상태는 크기를 유지하며 내용이 바뀐다. KV Attention은 각 입력의 K,V 벡터를 별도 행으로 남겨 네 행을 보관한다." loading="lazy" /></picture></a>
 
 왼쪽은 입력이 들어올 때마다 같은 크기의 상태를 갱신합니다. 그림에 여러 상태가 보이는 것은 시간에 따른 변화를 나란히 보여주기 위해서입니다. 실제 생성 과정에서 이 상태들을 모두 보관한다는 뜻은 아닙니다. p₃까지 처리한 뒤에는 마지막 상태를 다음 토큰으로 넘깁니다.
 
@@ -33,7 +33,7 @@ import AnnotPart from '../../components/AnnotPart.astro';
 
 KV Attention에는 현재 Query를 기준으로 과거 위치들의 표현을 직접 비교하는 경로가 있습니다. 하이브리드 모델은 이 경로를 일부 층에 남기고, 다른 층에서는 상태를 갱신하도록 구성할 수 있습니다. 그림 2는 전체 여섯 층을 같게 두고 배치만 비교한 교육용 예시입니다.
 
-<a href="/images/model-advanced-hybrid/01-layerwise-memory.png?v=4fe56087908b" id="figure-2"><picture><source width="720" height="3602" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/01-layerwise-memory-mobile.png?v=56140fc76b07" /><img width="2400" height="2122" src="/images/model-advanced-hybrid/01-layerwise-memory.png?v=4fe56087908b" alt="Attention 여섯 층은 모두 KV를, recurrent 여섯 층은 모두 상태를 갖는다. 혼합 구성은 네 상태와 두 KV를 갖는다. 각 구성에서 현재 토큰 표현이 아래에서 위로 흐른다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/01-layerwise-memory.png?v=b68019de4beb" id="figure-2"><picture><source width="720" height="3602" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/01-layerwise-memory-mobile.png?v=286b095ed1cc" /><img width="2400" height="2122" src="/images/model-advanced-hybrid/01-layerwise-memory.png?v=b68019de4beb" alt="Attention 여섯 층은 모두 KV를, recurrent 여섯 층은 모두 상태를 갖는다. 혼합 구성은 네 상태와 두 KV를 갖는다. 각 구성에서 현재 토큰 표현이 아래에서 위로 흐른다." loading="lazy" /></picture></a>
 
 가운데 구성은 모든 층이 상태를 사용하고, 오른쪽 혼합 구성은 R₁ → R₂ → A₃ → R₄ → R₅ → A₆ 순서로 처리합니다. R은 상태 기반 층, A는 KV Attention 층이며 하첨자는 층 번호입니다. 서로 다른 R 층은 각각 자신의 상태를 가지고, A₃과 A₆도 각각 자신의 KV를 저장합니다.
 
@@ -57,7 +57,7 @@ Transformer++는 8.68, Mamba-2는 8.60이고, Mamba-2의 48개 층 가운데 6�
 
 상태 기반 층은 각각 2×2 상태, 즉 4개 성분을 저장한다고 하겠습니다. Attention 층은 토큰마다 Key 2개 성분과 Value 2개 성분을 저장합니다. 모든 칸은 동일한 크기의 성분 하나이며, head나 토큰 하나를 뜻하지 않습니다.
 
-<a href="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=6e41eb245854" id="figure-4"><picture><source width="720" height="2524" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/03-fixed-state-growing-kv-mobile.png?v=b801153b7e04" /><img width="2400" height="2288" src="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=6e41eb245854" alt="T4와 T8에서 여섯 Attention층과 네 recurrent층 두 Attention층의 저장량을 비교한다. 고정2×2 상태는 그대로이며 토큰별KV행은4개에서8개로 증가한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=d1ebf47a4a65" id="figure-4"><picture><source width="720" height="2524" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/03-fixed-state-growing-kv-mobile.png?v=ba6a22c8fc13" /><img width="2400" height="2288" src="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=d1ebf47a4a65" alt="T4와 T8에서 여섯 Attention층과 네 recurrent층 두 Attention층의 저장량을 비교한다. 고정2×2 상태는 그대로이며 토큰별KV행은4개에서8개로 증가한다." loading="lazy" /></picture></a>
 
 모든 층이 Attention이면 각 층에 토큰 수의 4배만큼 성분이 필요합니다. 층이 여섯 개이므로 토큰 수를 T라 할 때 합계는 24T입니다. T=4에서는 96개, T=8에서는 192개입니다.
 
@@ -101,7 +101,7 @@ Transformer++는 8.68, Mamba-2는 8.60이고, Mamba-2의 48개 층 가운데 6�
 
 마지막으로 그림 2의 혼합 구성에서 p₃을 처리하는 순간을 따라가겠습니다. 층 2는 GDN, 층 3은 KV Attention이라고 하겠습니다. 두 층 모두 p₀부터 p₂까지 처리한 기억이 있고, 이제 p₃ 위치의 입력 표현을 받습니다.
 
-<a href="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=a2b76735b815" id="figure-6"><picture><source width="720" height="3284" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/02-one-token-two-memories-mobile.png?v=265a58e05938" /><img width="2400" height="2758" src="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=a2b76735b815" alt="층2GDN은p3의입력에서q,k,v,alpha,beta를만들고S3을S4로갱신한후q로읽는다. 그출력이층3입력으로이어지고층3은자신의QKV로캐시에p3행을추가해읽는다. 두저장소는각각같은층의p4처리로이어진다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=960945ccf617" id="figure-6"><picture><source width="720" height="3284" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/02-one-token-two-memories-mobile.png?v=6d9b0165e3ed" /><img width="2400" height="2758" src="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=960945ccf617" alt="층2GDN은p3의입력에서q,k,v,alpha,beta를만들고S3을S4로갱신한후q로읽는다. 그출력이층3입력으로이어지고층3은자신의QKV로캐시에p3행을추가해읽는다. 두저장소는각각같은층의p4처리로이어진다." loading="lazy" /></picture></a>
 
 먼저 층 2는 자신의 입력 표현에서 학습된 가중치를 사용해 Query, Key, Value와 유지율 α₃, 보정 강도 β₃을 계산합니다.
 

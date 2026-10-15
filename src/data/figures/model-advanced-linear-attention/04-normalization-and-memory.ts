@@ -9,25 +9,25 @@ export default {
  panels(locale:Locale){
  const a=new Panel(locale,['1. 가중합을 점수 합으로 나누기','1. Normalize the weighted sum'],850);
  a.text(150,120,['점수','Score'],{size:23,anchor:'middle',width:120,color:C.blue});
- a.text(355,120,['점수 × Value','Score × Value'],{size:23,anchor:'middle',width:270,color:C.teal});
+ a.text(355,120,['점수 × Value','Score × Value'],{size:23,anchor:'middle',width:270,color:C.blue});
  for(let i=0;i<3;i++){const y=155+i*90;
  a.text(25,y+38,'p'+['₀','₁','₂'][i],{size:24,width:60});
  matrix(a,115,y,[[[1,0,1][i]]],{cellWidth:70,cellHeight:60,size:28,tone:'blue'});
- matrix(a,255,y,[[[2,0],[0,0],[1,1]][i]],{cellWidth:85,cellHeight:60,gap:12,size:28,tone:'teal'});
+ matrix(a,255,y,[[[2,0],[0,0],[1,1]][i]],{cellWidth:85,cellHeight:60,gap:12,size:28,tone:'blue'});
  }
- a.arrow(150,415,150,448,C.purple);a.arrow(346,415,346,448,C.teal);
- a.text(150,490,'1 + 0 + 1',{size:24,anchor:'middle',width:200,color:C.purple});
- a.text(346,490,['가중합','Weighted sum'],{size:24,anchor:'middle',width:210,color:C.teal});
- matrix(a,115,520,[[2]],{cellWidth:70,cellHeight:60,size:30,tone:'purple'});
- matrix(a,255,520,[[3,1]],{cellWidth:85,cellHeight:60,gap:12,size:30,tone:'teal'});
+ a.arrow(150,415,150,448,C.blue);a.arrow(346,415,346,448,C.blue);
+ a.text(150,490,'1 + 0 + 1',{size:24,anchor:'middle',width:200,color:C.gray});
+ a.text(346,490,['가중합','Weighted sum'],{size:24,anchor:'middle',width:210,color:C.blue});
+ matrix(a,115,520,[[2]],{cellWidth:70,cellHeight:60,size:30,tone:'blue'});
+ matrix(a,255,520,[[3,1]],{cellWidth:85,cellHeight:60,gap:12,size:30,tone:'blue'});
  a.text(260,660,'[3, 1] ÷ 2',{size:30,anchor:'middle',width:480});
- a.arrow(260,680,260,710,C.teal);matrix(a,153,735,[[1.5,.5]],{cellWidth:100,cellHeight:60,gap:14,size:30,tone:'teal'});
+ a.arrow(260,680,260,710,C.blue);matrix(a,153,735,[[1.5,.5]],{cellWidth:100,cellHeight:60,gap:14,size:30,tone:'blue'});
  const b=new Panel(locale,['2. 같은 점수 합을 z로 계산하기','2. Compute the same sum with z'],850);
  b.text(325,120,['Key · 각 칸은 성분','Key · Cells are components'],{size:23,anchor:'middle',width:360,color:C.blue});
  for(let i=0;i<3;i++){const y=155+i*90;b.text(85,y+38,'p'+['₀','₁','₂'][i],{size:24,width:70});matrix(b,220,y,[[[1,0],[0,1],[1,0]][i]],{cellWidth:85,cellHeight:60,gap:12,size:28,tone:'blue'});if(i<2)b.text(310,y+83,'+',{size:25,anchor:'middle',width:50});}
- b.arrow(310,415,310,448,C.purple);b.text(120,525,'z₃ =',{size:27,width:85,color:C.purple});matrix(b,220,485,[[2,1]],{cellWidth:85,cellHeight:60,gap:12,size:30,tone:'purple'});
- b.text(260,615,'q₂ᵀz₃ = 1×2 + 0×1',{size:26,anchor:'middle',width:500,color:C.purple});b.arrow(260,638,260,668,C.purple);
- matrix(b,220,695,[[2]],{cellWidth:80,cellHeight:60,size:30,tone:'purple'});
- b.text(260,805,['점수의 합','Sum of scores'],{size:24,anchor:'middle',width:480,color:C.purple});
+ b.arrow(310,415,310,448,C.teal);b.text(120,525,'z₃ =',{size:27,width:85,color:C.teal});matrix(b,220,485,[[2,1]],{cellWidth:85,cellHeight:60,gap:12,size:30,tone:'teal'});
+ b.text(260,615,'q₂ᵀz₃ = 1×2 + 0×1',{size:26,anchor:'middle',width:500,color:C.gray});b.arrow(260,638,260,668,C.blue);
+ matrix(b,220,695,[[2]],{cellWidth:80,cellHeight:60,size:30,tone:'blue'});
+ b.text(260,805,['점수의 합','Sum of scores'],{size:24,anchor:'middle',width:480,color:C.blue});
  return[a,b];}
 } satisfies FigureSpec;

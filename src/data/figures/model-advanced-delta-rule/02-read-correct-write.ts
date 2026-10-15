@@ -9,10 +9,10 @@ export default {
  const a=new Panel(locale,['1. 이번 Key에 연결된 값 읽기','1. Read the current association'],520);
  a.token(125,95,'k₂ = [1, 0]',270,'blue',60);
  a.text(75,245,'S₂',{size:27,width:70,color:C.teal});matrix(a,180,200,[[2,0],[0,3]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'teal'});
- a.arrow(260,340,260,375,C.blue);matrix(a,165,400,[[2,0]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'teal'});
+ a.arrow(260,340,260,375,C.blue);matrix(a,165,400,[[2,0]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'blue'});
  const b=new Panel(locale,['2. 새 Value와의 차이 구하기','2. Find the difference'],520);
- b.text(260,115,['새 Value','New Value'],{size:24,anchor:'middle',width:480,color:C.orange});matrix(b,165,140,[[1,1]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'orange'});
- b.text(260,240,['− 읽은 값','− Read value'],{size:24,anchor:'middle',width:480,color:C.teal});matrix(b,165,265,[[2,0]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'teal'});
+ b.text(260,115,['새 Value','New Value'],{size:24,anchor:'middle',width:480,color:C.blue});matrix(b,165,140,[[1,1]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'blue'});
+ b.text(260,240,['− 읽은 값','− Read value'],{size:24,anchor:'middle',width:480,color:C.blue});matrix(b,165,265,[[2,0]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'blue'});
  b.arrow(260,340,260,375,C.orange);matrix(b,165,400,[[-1,1]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'orange'});
  const c=new Panel(locale,['3. 같은 Key로 차이 기록하기','3. Write through the same Key'],610);
  c.token(125,95,'k₂ = [1, 0]',270,'blue',60);
@@ -25,7 +25,7 @@ export default {
  const xs=[5,200,395],vals=[[[2,0],[0,3]],[[-1,1],[0,0]],[[1,1],[0,3]]];
  for(let i=0;i<3;i++){d.text(xs[i]+54,130,['S₂','ΔS','S₃'][i],{size:25,anchor:'middle',width:115,color:i===1?C.orange:C.teal});matrix(d,xs[i],160,vals[i],{cellWidth:50,cellHeight:55,gap:6,size:24,tone:i===1?'orange':'teal'});}
  d.text(163,218,'+',{size:30,anchor:'middle',width:35});d.text(357,218,'=',{size:30,anchor:'middle',width:35});
- d.token(125,330,'k₂ = [1, 0]',270,'blue',60);d.arrow(260,405,260,440,C.blue);matrix(d,165,465,[[1,1]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'teal'});
- d.text(260,578,['새 Value와 일치','Matches the new Value'],{size:24,anchor:'middle',width:490,color:C.teal});
+ d.token(125,330,'k₂ = [1, 0]',270,'blue',60);d.arrow(260,405,260,440,C.blue);matrix(d,165,465,[[1,1]],{cellWidth:85,cellHeight:60,gap:10,size:28,tone:'blue'});
+ d.text(260,578,['새 Value와 일치','Matches the new Value'],{size:24,anchor:'middle',width:490,color:C.blue});
  return[a,b,c,d];}
 } satisfies FigureSpec;

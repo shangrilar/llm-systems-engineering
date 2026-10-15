@@ -14,10 +14,10 @@ export default {
    p.text(ox,oy,hybrid?['하이브리드','Hybrid']:['Attention만','Attention only'],{size:25,weight:600,width:490});
    for(let l=1;l<=6;l++){
     const x=ox+(l-1)*83,isA=!hybrid||l%3===0;
-    p.text(x+31,oy+49,`${isA?'A':'R'}${l}`,{size:22,anchor:'middle',width:70,color:isA?C.purple:C.teal});
-    matrix(p,x+(isA?0:17),oy+69,Array.from({length:isA?T:2},()=>Array.from({length:isA?4:2},()=>null)),{cellWidth:14,cellHeight:14,gap:3,tone:isA?'purple':'teal'});
+    p.text(x+31,oy+49,`${isA?'A':'R'}${l}`,{size:22,anchor:'middle',width:70,color:C.gray});
+    matrix(p,x+(isA?0:17),oy+69,Array.from({length:isA?T:2},()=>Array.from({length:isA?4:2},()=>null)),{cellWidth:14,cellHeight:14,gap:3,tone:'teal'});
    }
-   p.text(ox+246,oy+256,hybrid?`16 + ${8*T} = ${16+8*T}`:`24 × ${T} = ${24*T}`,{size:31,weight:600,anchor:'middle',width:495,color:hybrid?C.teal:C.purple});
+   p.text(ox+246,oy+256,hybrid?`16 + ${8*T} = ${16+8*T}`:`24 × ${T} = ${24*T}`,{size:31,weight:600,anchor:'middle',width:495,color:C.gray});
   }
   return p;
  });}
