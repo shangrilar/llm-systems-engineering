@@ -1,7 +1,7 @@
 import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-delta-rule',figureId:'02-read-correct-write',number:'ma-09-02',eyebrow:['그림 3','Figure 3'],title:['읽고, 차이만큼 고쳐 쓰기','Read, then write the correction'],
- subtitle:['같은 S₂에서 출발 · k₂=[1,0] · β=1','Start from the same S₂ · k₂=[1,0] · β=1'],captionIn:'article',
+ subtitle:['같은 S₂에서 출발 · k₂=[1,0] · β=1 · 4는 같은 Key로 한 검산','Start from the same S₂ · k₂=[1,0] · β=1 · Panel 4 checks with the same key'],captionIn:'article',
  caption:['단위 Key와 β=1인 교육용 예시다. 모델 parameter가 아닌 요청 상태를 갱신한다.','Illustrative unit Key and β=1. This updates request state, not model parameters.'],
  alt:['S₂에서 k₂로 [2,0]을 읽고 v₂=[1,1]에서 빼면 e=[−1,1]이다. 같은 Key와 e의 외적으로 ΔS=[[-1,1],[0,0]]을 만들고 S₂에 더해 S₃=[[1,1],[0,3]]으로 갱신한다.','Read [2,0] from S₂ with k₂, subtract from v₂=[1,1] to get e=[−1,1], form ΔS=[[-1,1],[0,0]] with the same Key, then add to S₂ to obtain S₃=[[1,1],[0,3]].'],
  sources:[{label:'DeltaNet §2.2',url:'https://arxiv.org/html/2406.06484v1#S2.SS2'}],

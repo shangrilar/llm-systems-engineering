@@ -1736,7 +1736,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared revised introduction and Key/Query write-read explanation with Korean; retained the reviewed numerical examples, equations, and five bilingual figures.",
-        "sourceRevision": "ecb2398131fab2dacedc4858dbce82122dc6c1f081724c4a2a91b7caceb86073"
+        "sourceRevision": "c946a7cde6eb37ccefd655523190ffb3c34f7be1f35a22effc2a9b87df2f34b0"
       }
     }
   },
@@ -1766,7 +1766,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved.",
-        "sourceRevision": "975e486770a6ef223853166bbf9cb22ccea2e100664436c869ee644187f32b23"
+        "sourceRevision": "414c06504301936a157278950d3a232aceb7df1f30eb49cf7e7d6ae08c220ef1"
       }
     }
   },
@@ -1992,7 +1992,7 @@
         "description": "Understand why softmax is replaced with independent feature maps, then follow outer-product writes, Query reads, and normalization by the sum of scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "62a10565ec3f7ba764401578d73a54969f0965f4c51f99c0092c15d5e512cd7f",
+        "sourceRevision": "152dbcd84d61c5736b636a223ed622a729aa1ff9def175a396c69c5652a650b2",
         "reviewNote": "Reviewed all nine sections, six equations, examples and six bilingual figures; clarified outer-product write/read scales, exact accumulation, and the transition to delta updates."
       }
     }
@@ -2022,7 +2022,7 @@
         "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "36c674c7d9c8147e899bc2b1c8ccff25482a5120a43270f1a7501758399dec05",
+        "sourceRevision": "c6668b0a2a05337c480e871e3a7628ba075aede83f4a6dd42d58c07d6f450bd1",
         "reviewNote": "2026-09-29: Removed the continuous-time discretization section and its corresponding English text; reviewed the transition from the update equations to the expanded recurrence."
       }
     }
@@ -2055,7 +2055,7 @@
         "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b43a46b3eac72b1ca7acd516fecb33652977197c392dd91b62aa8145ca0f5633",
+        "sourceRevision": "280ffb013bd91c04d102a67bcfb27e16bdcdbcb14d637fc23ab819bd750148d6",
         "reviewNote": "2026-09-29: Reviewed matching purpose-first explanations of Delta, negative A, input-dependent B/C, two new visual examples, figure order and preserved discretization discussion."
       }
     }
@@ -2087,7 +2087,7 @@
         "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "10dd968bf15268e3063097a138d7303465b66ff42d910f9fc1772670106ed7dd",
+        "sourceRevision": "fbd5d36358fe5e30c17c53829cd111ecbbea72da7e1abfc158dffeab73f42941",
         "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
       }
     }
@@ -2118,7 +2118,7 @@
         "description": "Trace reading, bypass mixing, and writing from the same input, then examine why mHC constrains repeated mixing and what the wider residual path costs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b765dae85b075e5f359aacf8693f9113346e9e4e68018d31abab1312cd13d8cd",
+        "sourceRevision": "e64717543575738de90d8eeb35271c8ff02f2f4bd0af5b8210b1a04a54bd955d",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2147,7 +2147,7 @@
         "description": "Follow one numerical example through branch normalization, componentwise read gates, and branchwise scalar writes in Gated Residual.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "54900acfda8c0001d9ee84baa540e05515e003ddac26648df3cc02a6ab6b2ef2",
+        "sourceRevision": "7e6a9801594d125bb8ae76a740ad4013fd8bb458640c5ca125cc94e9f4b4ab8a",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2178,7 +2178,7 @@
         "description": "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "9effde5fdfd74345a1c40e718ab7f3aebb004e779f083835d02a1efc59e860fa",
+        "sourceRevision": "92ef620057e219b8c0aba792eb1d09d526ab1d78af2d819ff69a4a044b8ad120",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }

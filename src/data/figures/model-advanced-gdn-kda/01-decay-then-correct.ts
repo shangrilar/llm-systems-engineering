@@ -1,7 +1,7 @@
 import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-gdn-kda',figureId:'01-decay-then-correct',number:'ma-10-01',eyebrow:['그림 2','Figure 2'],title:['남긴 상태를 읽고 차이만큼 보정하기','Read the retained state, then correct'],
- subtitle:['k₂=[1,0], v₂=[1,1] · α=0.5, β=1','k₂=[1,0], v₂=[1,1] · α=0.5, β=1'],captionIn:'article',
+ subtitle:['k₂=[1,0], v₂=[1,1] · α=0.5, β=1 · 행: Key 성분 · 열: Value 성분','k₂=[1,0], v₂=[1,1] · α=0.5, β=1 · Rows: key components · Columns: value components'],captionIn:'article',
  caption:['유지율을 적용한 상태에서 읽은 값을 기준으로 차이를 계산한다.','Compute the difference from the readout of the retained state.'],
  alt:['1: S₂=[[2,0],[0,3]]를 α=0.5만큼 남겨 S̄=[[1,0],[0,1.5]]로 만든다. 2: 현재 Key로 S̄를 읽으면 [1,0]이다. 3: 새 Value [1,1]과의 차이는 [0,1]이다. 4: β=1로 보정량 [[0,1],[0,0]]을 S̄에 더해 S₃=[[1,1],[0,1.5]]를 만든다.','1: Retain half of S₂=[[2,0],[0,3]] to obtain S̄=[[1,0],[0,1.5]]. 2: The current Key reads [1,0] from S̄. 3: Subtract this from the new Value [1,1] to get [0,1]. 4: With β=1, add [[0,1],[0,0]] to S̄, yielding S₃=[[1,1],[0,1.5]].'],
  sources:[{label:'Gated DeltaNet §3.1',url:'https://arxiv.org/html/2412.06464v1#S3.SS1'}],

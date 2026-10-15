@@ -1,13 +1,13 @@
 import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-gdn-kda',figureId:'03-state-versus-output-gates',number:'ma-10-03',eyebrow:['그림 4','Figure 4'],title:['한 토큰에서 유지와 보정을 함께 조절하기','Retention and correction for one token'],
- subtitle:['현재 토큰 p₂ · 한 head · 상태 갱신 → Query로 읽기','Current token p₂ · One head · Update state → Read with Query'],captionIn:'article',
+ subtitle:['현재 토큰 p₂ · 한 head · 상태 갱신 → Query로 읽기 · α: GDN [1] / KDA [dₖ] · β: [1] · 투영 뒤 범위 변환','Current token p₂ · One head · Update state → Read with Query · α: GDN [1] / KDA [dₖ] · β: [1] · Range transform after projection'],captionIn:'article',
  caption:['α와 β는 현재 입력에서 계산되어 서로 다른 단계에 사용된다. 같은 토큰의 Key와 Value로 보정하고 Query로 갱신된 상태를 읽는다.','The current input produces α and β for different steps. Its Key and Value drive correction; its Query reads the updated state.'],
  alt:['왼쪽 현재 입력 p₂에서 학습한 투영과 변환으로 유지율 α와 보정 비율 β를 계산한다. 오른쪽 기존 상태 S₂에 α를 적용한 후, 현재 Key와 Value 및 β로 델타 보정하여 S₃를 얻는다. S₃는 다음 시점으로 전달되고 현재 Query는 S₃를 읽어 출력을 만든다.','Left: learned projections and transforms of p₂ produce retention α and correction strength β. Right: apply α to S₂, then use the current Key, Value and β for delta correction. S₃ continues to the next step and is read by the current Query for the output.'],
  sources:[{label:'Gated DeltaNet §3.1',url:'https://arxiv.org/html/2412.06464v1#S3.SS1'},{label:'Kimi Linear §3',url:'https://arxiv.org/html/2510.26692v1#S3'}],
  panels(locale:Locale){
  const a=new Panel(locale,['입력에서 조절값 계산','Compute controls from the input'],800);
- a.token(180,110,'p₂',160,'blue',60);a.arrow(260,185,260,225,C.blue);a.token(55,245,['학습한 가중치로 투영','Project with learned weights'],410,'gray',70);
+ a.token(180,110,'p₂',160,'blue',60);a.arrow(260,185,260,225,C.blue);a.token(55,245,['투영 + 범위 변환','Projection + range transform'],410,'gray',70);
  a.line(260,330,260,380,C.purple,2);a.line(125,380,395,380,C.purple,2);a.arrow(125,380,125,430,C.purple);a.arrow(395,380,395,430,C.orange);
  a.token(20,450,'α',210,'purple',60);a.token(290,450,'β',210,'orange',60);
  a.text(125,565,['기존 상태 유지율','Old-state retention'],{size:25,anchor:'middle',width:235,color:C.purple});a.text(395,565,['차이 반영 비율','Correction strength'],{size:25,anchor:'middle',width:235,color:C.orange});

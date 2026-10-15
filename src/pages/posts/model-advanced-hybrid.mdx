@@ -54,7 +54,7 @@ Transformer++는 8.68, Mamba-2는 8.60이고, Mamba-2의 48개 층 가운데 6�
 
 상태 기반 층은 각각 2×2 상태, 즉 4개 성분을 저장한다고 하겠습니다. Attention 층은 토큰마다 Key 2개 성분과 Value 2개 성분을 저장합니다. 모든 칸은 동일한 크기의 성분 하나이며, head나 토큰 하나를 뜻하지 않습니다.
 
-<a href="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=8f71a179ff8d" id="figure-4"><picture><source width="720" height="2476" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/03-fixed-state-growing-kv-mobile.png?v=eb589431b83f" /><img width="2400" height="2288" src="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=8f71a179ff8d" alt="T4와 T8에서 여섯 Attention층과 네 recurrent층 두 Attention층의 저장량을 비교한다. 고정2×2 상태는 그대로이며 토큰별KV행은4개에서8개로 증가한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=6e41eb245854" id="figure-4"><picture><source width="720" height="2524" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/03-fixed-state-growing-kv-mobile.png?v=b801153b7e04" /><img width="2400" height="2288" src="/images/model-advanced-hybrid/03-fixed-state-growing-kv.png?v=6e41eb245854" alt="T4와 T8에서 여섯 Attention층과 네 recurrent층 두 Attention층의 저장량을 비교한다. 고정2×2 상태는 그대로이며 토큰별KV행은4개에서8개로 증가한다." loading="lazy" /></picture></a>
 
 모든 층이 Attention이면 각 층에 토큰 수의 4배만큼 성분이 필요합니다. 층이 여섯 개이므로 토큰 수를 T라 할 때 합계는 24T입니다. T=4에서는 96개, T=8에서는 192개입니다.
 
@@ -82,7 +82,7 @@ Transformer++는 8.68, Mamba-2는 8.60이고, Mamba-2의 48개 층 가운데 6�
 
 마지막으로 그림 2의 혼합 구성에서 p₃을 처리하는 순간을 따라가겠습니다. 층 2는 GDN, 층 3은 KV Attention이라고 하겠습니다. 두 층 모두 p₀부터 p₂까지 처리한 기억이 있고, 이제 p₃ 위치의 입력 표현을 받습니다.
 
-<a href="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=616e25b16514" id="figure-6"><picture><source width="720" height="3236" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/02-one-token-two-memories-mobile.png?v=9d952c75a955" /><img width="2400" height="2692" src="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=616e25b16514" alt="층2GDN은p3의입력에서q,k,v,alpha,beta를만들고S3을S4로갱신한후q로읽는다. 그출력이층3입력으로이어지고층3은자신의QKV로캐시에p3행을추가해읽는다. 두저장소는각각같은층의p4처리로이어진다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=a2b76735b815" id="figure-6"><picture><source width="720" height="3284" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/02-one-token-two-memories-mobile.png?v=265a58e05938" /><img width="2400" height="2758" src="/images/model-advanced-hybrid/02-one-token-two-memories.png?v=a2b76735b815" alt="층2GDN은p3의입력에서q,k,v,alpha,beta를만들고S3을S4로갱신한후q로읽는다. 그출력이층3입력으로이어지고층3은자신의QKV로캐시에p3행을추가해읽는다. 두저장소는각각같은층의p4처리로이어진다." loading="lazy" /></picture></a>
 
 먼저 층 2는 자신의 입력 표현에서 학습된 가중치를 사용해 Query, Key, Value와 유지율 α₃, 보정 강도 β₃을 계산합니다.
 

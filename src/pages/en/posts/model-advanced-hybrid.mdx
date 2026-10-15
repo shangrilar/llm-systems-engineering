@@ -54,7 +54,7 @@ In a hybrid model, the cache in KV layers still grows with context length. Figur
 
 Assume each state-based layer stores a 2×2 state, or four components. Each Attention layer stores two Key components and two Value components per token. Every cell represents one component of equal size, not a head or a whole token.
 
-<a href="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv.png?v=9c8f92acb855" id="figure-4"><picture><source width="720" height="2524" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv-mobile.png?v=d3e19dabfa23" /><img width="2400" height="2288" src="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv.png?v=9c8f92acb855" alt="Compare six attention layers with four recurrent and two attention layers at T4 and T8. Fixed 2×2 states stay the same while KV rows grow from four to eight." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv.png?v=07a8ca1074e4" id="figure-4"><picture><source width="720" height="2570" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv-mobile.png?v=04047a4cc542" /><img width="2400" height="2354" src="/images/model-advanced-hybrid/en/03-fixed-state-growing-kv.png?v=07a8ca1074e4" alt="Compare six attention layers with four recurrent and two attention layers at T4 and T8. Fixed 2×2 states stay the same while KV rows grow from four to eight." loading="lazy" /></picture></a>
 
 If all layers use Attention, each layer needs four times the token count in components. Across six layers, the total is 24T for T tokens: 96 at T=4 and 192 at T=8.
 
@@ -82,7 +82,7 @@ The third type combines compression and selection methods. [DeepSeek-V4](https:/
 
 Finally, follow p₃ through the hybrid configuration in Figure 2. Let layer 2 use GDN and layer 3 use KV Attention. Both layers hold memory from processing p₀ through p₂ and now receive an input representation for p₃.
 
-<a href="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=0c1ac36a7ca0" id="figure-6"><picture><source width="720" height="3304" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/02-one-token-two-memories-mobile.png?v=fbdd9b031535" /><img width="2400" height="2794" src="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=0c1ac36a7ca0" alt="Layer2GDN derives q,k,v,alpha,beta for p3,updates S3 toS4,and reads with q. Its output becomes layer3input. Layer3creates its own QKV,appends thep3KVrow,and reads thecache. Each store persists into its own layer’sp4step." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=460d142b00ec" id="figure-6"><picture><source width="720" height="3352" media="(max-width: 600px)" srcSet="/images/model-advanced-hybrid/en/02-one-token-two-memories-mobile.png?v=414cb04b5da9" /><img width="2400" height="2858" src="/images/model-advanced-hybrid/en/02-one-token-two-memories.png?v=460d142b00ec" alt="Layer2GDN derives q,k,v,alpha,beta for p3,updates S3 toS4,and reads with q. Its output becomes layer3input. Layer3creates its own QKV,appends thep3KVrow,and reads thecache. Each store persists into its own layer’sp4step." loading="lazy" /></picture></a>
 
 Layer 2 first uses learned weights to derive a Query, Key, Value, retention factor α₃, and correction strength β₃ from its input representation.
 

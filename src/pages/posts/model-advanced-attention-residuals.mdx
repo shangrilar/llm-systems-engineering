@@ -18,7 +18,7 @@ Embedding을 e, 각 sublayer의 새 출력을 <math><msub><mi>f</mi><mn>1</mn></
 
 기본 residual에서는 e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, <math><msub><mi>f</mi><mn>2</mn></msub></math>가 합쳐진 표현을 다음 F에 넣습니다. Full AttnRes에서는 이 세 벡터를 별도 source, 즉 읽을 후보로 보관합니다. 그림 1에서 중요한 차이는 화살표의 개수보다 <strong>다음 입력을 만들 때 무엇을 따로 읽을 수 있는가</strong>입니다.
 
-<a href="/images/model-advanced-attention-residuals/01-position-versus-depth.png?v=92c439b90a94" id="figure-1"><picture><source width="720" height="2590" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/01-position-versus-depth-mobile.png?v=6e7154bdd3e5" /><img width="2400" height="2168" src="/images/model-advanced-attention-residuals/01-position-versus-depth.png?v=92c439b90a94" alt="왼쪽 e에 f1,f2를 차례로 더한 누적값을 F3가 읽는다. 오른쪽 e,f1,f2 각각에 alpha를 곱한 합을 F3가 읽는다. f3는 F3 실행 뒤에 생긴다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/01-position-versus-depth.png?v=2b24a50ace60" id="figure-1"><picture><source width="720" height="2590" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/01-position-versus-depth-mobile.png?v=a617c9d5672f" /><img width="2400" height="2168" src="/images/model-advanced-attention-residuals/01-position-versus-depth.png?v=2b24a50ace60" alt="왼쪽 e에 f1,f2를 차례로 더한 누적값을 F3가 읽는다. 오른쪽 e,f1,f2 각각에 alpha를 곱한 합을 F3가 읽는다. f3는 F3 실행 뒤에 생긴다." loading="lazy" /></picture></a>
 
 오른쪽은 e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, <math><msub><mi>f</mi><mn>2</mn></msub></math>에 각각 비중을 곱해 입력 <math><msub><mi>h</mi><mn>3</mn></msub></math>을 만듭니다. 그 입력을 <math><msub><mi>F</mi><mn>3</mn></msub></math>가 처리하면 새로운 출력 <math><msub><mi>f</mi><mn>3</mn></msub></math>이 생깁니다. 그 뒤의 계산부터 <math><msub><mi>f</mi><mn>3</mn></msub></math>도 source로 사용할 수 있습니다. 아직 계산하지 않은 출력을 미리 읽는 순환은 없습니다.
 
@@ -34,7 +34,7 @@ Embedding을 e, 각 sublayer의 새 출력을 <math><msub><mi>f</mi><mn>1</mn></
 
 다음 층이 e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, <math><msub><mi>f</mi><mn>2</mn></msub></math>를 읽는 비중을 각각 0.25, 0.5, 0.25로 두겠습니다. 비중을 어디서 구하는지는 다음 절에서 설명하고, 먼저 그 비중으로 어떤 입력이 만들어지는지 보겠습니다.
 
-<a href="/images/model-advanced-attention-residuals/01b-weighted-read.png?v=05da009d4ff8" id="figure-2"><picture><source width="720" height="2514" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/01b-weighted-read-mobile.png?v=5590c489057f" /><img width="2400" height="2178" src="/images/model-advanced-attention-residuals/01b-weighted-read.png?v=05da009d4ff8" alt="비중 .25,.5,.25를 세 원본에 곱한 기여 [.5,0,0],[0,2,0],[0,0,1.5]를 더해 [.5,2,1.5]. 비중을 .5,.25,.25로 바꾸면 [1,1,1.5]." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/01b-weighted-read.png?v=268fd1a09526" id="figure-2"><picture><source width="720" height="2562" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/01b-weighted-read-mobile.png?v=cf9d20644745" /><img width="2400" height="2178" src="/images/model-advanced-attention-residuals/01b-weighted-read.png?v=268fd1a09526" alt="비중 .25,.5,.25를 세 원본에 곱한 기여 [.5,0,0],[0,2,0],[0,0,1.5]를 더해 [.5,2,1.5]. 비중을 .5,.25,.25로 바꾸면 [1,1,1.5]." loading="lazy" /></picture></a>
 
 각 비중은 source 벡터 전체에 곱합니다.
 
@@ -56,7 +56,7 @@ Embedding을 e, 각 sublayer의 새 출력을 <math><msub><mi>f</mi><mn>1</mn></
 
 그림 3은 점수를 만드는 경로와 그 비중으로 원본을 섞는 경로를 구분합니다. 점수를 계산할 때는 source를 RMSNorm으로 정규화합니다. 가중합에 사용하는 값은 정규화 전 원본입니다.
 
-<a href="/images/model-advanced-attention-residuals/02-learned-depth-query.png?v=89c54b5ce2d4" id="figure-3"><picture><source width="720" height="2454" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/02-learned-depth-query-mobile.png?v=fc53a4ca9753" /><img width="2400" height="2098" src="/images/model-advanced-attention-residuals/02-learned-depth-query.png?v=89c54b5ce2d4" alt="원본 e=[2,0,0], f1=[0,4,0], f2=[0,0,6]을 RMSNorm으로 정규화하면 각 비영 성분은 √3이다. w=[0,ln2/√3,0]으로 점수 [0,ln2,0]을 만들고 softmax 비중 [.25,.5,.25]를 원본에 적용해 h3=[.5,2,1.5]를 얻는다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/02-learned-depth-query.png?v=522358afcb3a" id="figure-3"><picture><source width="720" height="2502" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/02-learned-depth-query-mobile.png?v=704d6ec341de" /><img width="2400" height="2098" src="/images/model-advanced-attention-residuals/02-learned-depth-query.png?v=522358afcb3a" alt="원본 e=[2,0,0], f1=[0,4,0], f2=[0,0,6]을 RMSNorm으로 정규화하면 각 비영 성분은 √3이다. w=[0,ln2/√3,0]으로 점수 [0,ln2,0]을 만들고 softmax 비중 [.25,.5,.25]를 원본에 적용해 h3=[.5,2,1.5]를 얻는다." loading="lazy" /></picture></a>
 
 Gain을 1로 두고 ε를 생략하면 e = [2, 0, 0]의 RMS는 2/√3입니다. 이를 나누면 [√3, 0, 0]이 됩니다. 같은 방식으로 <math><msub><mi>f</mi><mn>1</mn></msub></math>과 <math><msub><mi>f</mi><mn>2</mn></msub></math>는 각각 [0, √3, 0], [0, 0, √3]이 됩니다. 원본의 크기 2, 4, 6이 점수에 그대로 곱해지는 효과를 정규화가 줄여 줍니다.
 

@@ -2,7 +2,7 @@ import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-linear-attention',figureId:'00-state-overview',number:'ma-08-00',
  eyebrow:['그림 1','Figure 1'],title:['KV 목록에서 고정 크기 상태로','From a KV list to a fixed-size state'],
- subtitle:['한 층 · 한 head · 시점별 저장 모습','One layer · One head · Storage at successive steps'],
+ subtitle:['한 층 · 한 head · 시점별 저장 모습 · 교육용 2×2 · 마지막 S₃만 지금 보관','One layer · One head · Storage at successive steps · Teaching 2×2 · Only the last S₃ is kept now'],
  captionIn:'article',caption:['각 열은 다른 저장 방식이고 각 행은 시간에 따른 모습입니다. 오른쪽은 상태 하나를 덮어 갱신합니다.','Columns compare storage schemes; rows show successive times. The right scheme updates one state in place.'],
  alt:['왼쪽은 p₀,p₁,p₂를 처리할 때 토큰별 KV가 1,2,3행으로 증가한다. 오른쪽은 같은 입력마다 2×2 상태가 바뀌며 이전 상태가 다음 상태로 연결된다. 상태의 행은 Key 성분이고 열은 Value 성분이다.','At p₀,p₁,p₂ the KV list grows from one to three rows. A fixed 2×2 state instead changes in place, linked across time. State rows are Key components and columns are Value components.'],
  sources:[{label:'Linear Attention §3.3',url:'https://arxiv.org/html/2006.16236v3#S3.SS3'}],

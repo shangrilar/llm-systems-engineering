@@ -2,7 +2,7 @@ import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-attention-residuals',figureId:'01b-weighted-read',number:'ma-14-01b',eyebrow:['그림 2','Figure 2'],
  title:['어떤 출력에 비중을 두느냐에 따라 읽는 값이 달라집니다','Different source weights change the value read'],
- subtitle:['같은 세 source · d = 3 · 비중을 가정한 교육용 비교','Same three sources · d = 3 · Illustrative assumed weights'],captionIn:'article',
+ subtitle:['같은 세 source · d = 3 · 비중을 가정한 교육용 비교 · 원본 행렬: 행 = source, 열 = 특징','Same three sources · d = 3 · Illustrative assumed weights · Source matrix: rows = sources, columns = features'],captionIn:'article',
  caption:['e=[2,0,0],f1=[0,4,0],f2=[0,0,6]을 비중 [.25,.5,.25]로 합치면 [.5,2,1.5]다. [.5,.25,.25]로 바꾸면 [1,1,1.5]다. 두 비중은 같은 source에 대한 독립적인 설명용 대안이다. 다음 그림에서 첫 비중을 실제 score/softmax 계산으로 연결한다. 비중 벡터는 source 축, 결과는 특징 성분 축이다.','For e=[2,0,0],f1=[0,4,0],f2=[0,0,6], weights [.25,.5,.25] yield [.5,2,1.5], while [.5,.25,.25] yield [1,1,1.5]. These are independent illustrative alternatives for the same sources. The next figure derives the first set via scores and softmax. Weights index sources; outputs index features.'],
  alt:['비중 .25,.5,.25를 세 원본에 곱한 기여 [.5,0,0],[0,2,0],[0,0,1.5]를 더해 [.5,2,1.5]. 비중을 .5,.25,.25로 바꾸면 [1,1,1.5].','Weighted contributions [.5,0,0],[0,2,0],[0,0,1.5] sum to [.5,2,1.5]. Changing weights to [.5,.25,.25] changes the result to [1,1,1.5].'],
  sources:[{label:'Attention Residuals',url:'https://arxiv.org/abs/2603.15031'}],

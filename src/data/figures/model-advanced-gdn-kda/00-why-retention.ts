@@ -2,7 +2,7 @@ import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-gdn-kda',figureId:'00-why-retention',number:'ma-10-00',eyebrow:['그림 1','Figure 1'],
  title:['연결 수정과 기존 상태 유지는 다른 조절','Correcting an association and retaining state'],
- subtitle:['같은 S₂ · k₂=[1,0], v₂=[1,1] · β=1','Same S₂ · k₂=[1,0], v₂=[1,1] · β=1'],captionIn:'article',
+ subtitle:['같은 S₂ · k₂=[1,0], v₂=[1,1] · β=1 · 교육용 값','Same S₂ · k₂=[1,0], v₂=[1,1] · β=1 · Teaching values'],captionIn:'article',
  caption:['델타 보정이 건드리지 않는 둘째 행도 유지율로 줄일 수 있다.','Retention can also reduce the second row, which this delta correction leaves unchanged.'],
  alt:['같은 상태 [[2,0],[0,3]]에서 델타만 적용하면 [[1,1],[0,3]]이다. GDN은 α=0.5로 [[1,0],[0,1.5]]를 만든 뒤 같은 Key와 Value로 보정해 [[1,1],[0,1.5]]를 만든다. 둘째 행의 차이를 강조한다.','Starting from [[2,0],[0,3]], delta alone gives [[1,1],[0,3]]. GDN first retains half, producing [[1,0],[0,1.5]], then corrects to [[1,1],[0,1.5]]. The second-row difference is highlighted.'],
  sources:[{label:'Gated DeltaNet §3.1',url:'https://arxiv.org/html/2412.06464v1#S3.SS1'}],

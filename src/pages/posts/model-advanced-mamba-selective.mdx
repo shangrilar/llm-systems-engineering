@@ -30,7 +30,7 @@ A는 학습된 상태 성분별 변화율입니다. Mamba-1에서는 이 값들�
 
 그림 2에서는 한 채널의 상태 성분 하나만 보겠습니다. 이전 상태는 2, A는 ln(0.5)로 같게 두고 Δ만 바꿉니다. Δ=1이면 절반인 1이 남고, Δ=2이면 4분의 1인 0.5가 남습니다.
 
-<a href="/images/model-advanced-mamba-selective/06-delta-retention.png?v=cc058ef42558" id="figure-2"><picture><source width="720" height="2148" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/06-delta-retention-mobile.png?v=4f8cc3e3f968" /><img width="2400" height="1812" src="/images/model-advanced-mamba-selective/06-delta-retention.png?v=cc058ef42558" alt="이전 상태2에서 Δ1은1을 남기고2를 기록한다. Δ2는0.5를 남기고4를 기록한다. A,B,u는 같고 Δ만 다르다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-mamba-selective/06-delta-retention.png?v=b07234b036a0" id="figure-2"><picture><source width="720" height="2148" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/06-delta-retention-mobile.png?v=a56f17bb25d7" /><img width="2400" height="1812" src="/images/model-advanced-mamba-selective/06-delta-retention.png?v=b07234b036a0" alt="이전 상태2에서 Δ1은1을 남기고2를 기록한다. Δ2는0.5를 남기고4를 기록한다. A,B,u는 같고 Δ만 다르다." loading="lazy" /></picture></a>
 
 Δ는 새 입력을 기록하는 크기에도 관여합니다. 그림에서 B=1, 입력 u=2를 고정하면, Δ=1일 때 기록 기여는 2이고 Δ=2일 때는 4입니다. 다른 값을 고정하고 Δ를 줄이면 기존 상태는 더 많이 남기고 새 입력은 더 적게 기록합니다.
 
@@ -40,7 +40,7 @@ Mamba는 Δ를 입력에서 계산해 A를 통한 유지 방식을 바꿉니다.
 
 Δ로 기록 크기를 조절할 수 있어도, 그것만으로는 기록 방식을 자유롭게 바꿀 수 없습니다. 한 채널의 상태에 두 성분이 있고 B=[1, 2]로 고정되어 있다고 해보겠습니다. Δ를 1에서 2로 늘리면 기록 계수는 [1, 2]에서 [2, 4]가 되지만, 두 성분의 비율은 항상 1:2입니다.
 
-<a href="/images/model-advanced-mamba-selective/07-write-components.png?v=d62a7f399711" id="figure-3"><picture><source width="720" height="2252" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/07-write-components-mobile.png?v=da7b77b81682" /><img width="2400" height="1934" src="/images/model-advanced-mamba-selective/07-write-components.png?v=d62a7f399711" alt="고정 B 1,2에 Δ1과2를 곱하면 기록은1,2와2,4로 비율이 같다. Δ1을 유지하고 입력별 B를1,0과0,1로 바꾸면 기록할 상태 성분이 바뀐다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-mamba-selective/07-write-components.png?v=ae56d27a3f6e" id="figure-3"><picture><source width="720" height="2346" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/07-write-components-mobile.png?v=82a3f780f116" /><img width="2400" height="1934" src="/images/model-advanced-mamba-selective/07-write-components.png?v=ae56d27a3f6e" alt="고정 B 1,2에 Δ1과2를 곱하면 기록은1,2와2,4로 비율이 같다. Δ1을 유지하고 입력별 B를1,0과0,1로 바꾸면 기록할 상태 성분이 바뀐다." loading="lazy" /></picture></a>
 
 반면 B를 입력에서 계산하면 어떤 입력에서는 B=[1, 0]으로 첫 성분에 기록하고, 다른 입력에서는 B=[0, 1]로 둘째 성분에 기록할 수 있습니다. 그림 3은 이 차이를 보기 위해 한 채널의 입력 u=1을 같게 둔 교육용 예시입니다. 오른쪽의 두 입력은 전체 특징 벡터가 다르고, 그 특징에서 서로 다른 B가 계산되었다고 가정합니다.
 
@@ -56,7 +56,7 @@ A와 B가 상태를 변화시키는 데 쓰이는 반면, C는 갱신된 상태�
 
 이제 세 경로를 함께 보겠습니다. 그림 4의 <math><msub><mi>x</mi><mi>t</mi></msub></math>는 SSM에 들어오는 현재 위치의 특징 벡터이고, 앞선 글의 스칼라 입력 u는 이 벡터의 한 채널 값입니다. 전체 특징에서 계수를 계산하고 각 채널은 자신의 입력값과 상태를 가지고 갱신합니다. 현재 입력에서 계산한 값에는 시점 t를 하첨자로 붙였습니다.
 
-<a href="/images/model-advanced-mamba-selective/02-input-coefficients.png?v=42cd179cf1a8" id="figure-4"><picture><source width="720" height="2426" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/02-input-coefficients-mobile.png?v=b206a374322e" /><img width="2400" height="2036" src="/images/model-advanced-mamba-selective/02-input-coefficients.png?v=42cd179cf1a8" alt="입력 특징에서 학습된 가중치로 투영해 B와C를 얻고 Delta경로에는 추가 투영과softplus를 적용한다. 고정된A와Delta는 유지계수를 만들고 Delta와B는 기록계수를 만든다. C는 읽기에 쓰인다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-mamba-selective/02-input-coefficients.png?v=3abf84d10eeb" id="figure-4"><picture><source width="720" height="2472" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/02-input-coefficients-mobile.png?v=a0e1be5060dd" /><img width="2400" height="2036" src="/images/model-advanced-mamba-selective/02-input-coefficients.png?v=3abf84d10eeb" alt="입력 특징에서 학습된 가중치로 투영해 B와C를 얻고 Delta경로에는 추가 투영과softplus를 적용한다. 고정된A와Delta는 유지계수를 만들고 Delta와B는 기록계수를 만든다. C는 읽기에 쓰인다." loading="lazy" /></picture></a>
 
 B와 C는 학습된 가중치로 입력 특징을 투영해 만듭니다. 상태 크기가 N이면 각각 N개 성분을 가지며, Mamba-1에서는 같은 시점의 채널들에 공유됩니다. Δ는 추가 투영과 softplus 함수를 거쳐 채널마다 하나의 양수로 계산됩니다. 고정된 A와 Δ로 유지 계수 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>를 만들고, B와 Δ로 기록 계수 <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>를 만듭니다.
 
@@ -66,7 +66,7 @@ B와 C는 학습된 가중치로 입력 특징을 투영해 만듭니다. 상태
 
 학습된 A도 양쪽에서 같습니다. 두 성분을 ln(0.5)와 ln(0.8)로 정하겠습니다. 이 값들은 exp를 적용하면 각각 0.5와 0.8이 되므로, Δ=1일 때 앞선 SSM 글과 같은 유지 계수를 얻습니다. 계수와 입력은 계산을 따라가기 쉽게 고른 교육용 예시입니다.
 
-<a href="/images/model-advanced-mamba-selective/03-selective-update.png?v=e9e6b51e4427" id="figure-5"><picture><source width="720" height="3208" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/03-selective-update-mobile.png?v=835646bede59" /><img width="2400" height="2666" src="/images/model-advanced-mamba-selective/03-selective-update.png?v=e9e6b51e4427" alt="경우A는 Delta1,B1,0.5,C1,1에서 남긴상태1,0.8과 기록2,1을 더해3,1.8을 만들고4.8을 읽는다. 경우B는 Delta2,B0.25,0.5,C1,0에서0.5,0.64와1,2를 더해1.5,2.64를 만들고1.5를 읽는다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-mamba-selective/03-selective-update.png?v=7d3c5bbd329a" id="figure-5"><picture><source width="720" height="3208" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/03-selective-update-mobile.png?v=512dc9621334" /><img width="2400" height="2666" src="/images/model-advanced-mamba-selective/03-selective-update.png?v=7d3c5bbd329a" alt="경우A는 Delta1,B1,0.5,C1,1에서 남긴상태1,0.8과 기록2,1을 더해3,1.8을 만들고4.8을 읽는다. 경우B는 Delta2,B0.25,0.5,C1,0에서0.5,0.64와1,2를 더해1.5,2.64를 만들고1.5를 읽는다." loading="lazy" /></picture></a>
 
 왼쪽은 Δ=1, B=[1, 0.5], C=[1, 1]입니다. <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>의 성분은 [0.5, 0.8]이므로 이전 상태 [2, 1]에서 [1, 0.8]을 남깁니다. <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>=ΔB는 [1, 0.5]이고, 입력 2를 곱한 기록 기여는 [2, 1]입니다. 두 기여를 더한 새 상태는 [3, 1.8]이며, C로 읽은 출력은 4.8입니다.
 
@@ -102,7 +102,7 @@ B와 C는 학습된 가중치로 입력 특징을 투영해 만듭니다. 상태
 
 지금까지 살펴본 선택적 SSM은 실제 Mamba 블록의 핵심 연산입니다. 전체 블록에는 SSM에 들어갈 특징을 만드는 연산과, SSM에서 읽은 값을 출력으로 가공하는 연산도 있습니다. 그림 6은 대표적인 Mamba-1 블록에서 그 위치를 보여줍니다.
 
-<a href="/images/model-advanced-mamba-selective/04-mamba-block.png?v=4c6cc2838cc6" id="figure-6"><picture><source width="720" height="3312" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/04-mamba-block-mobile.png?v=eed6afbd142a" /><img width="2400" height="2788" src="/images/model-advanced-mamba-selective/04-mamba-block.png?v=4c6cc2838cc6" alt="입력은 norm과projection이후 주 분기와출력gate분기로 나뉜다. 주 분기에는짧은합성곱과SiLU후선택적SSM이있다. 출력gate를곱하고projection후residual과합한다. 다음시점으로전달되는것은합성곱의최근입력기록과채널별N성분SSM상태다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-mamba-selective/04-mamba-block.png?v=13a79d2e2ee1" id="figure-6"><picture><source width="720" height="3406" media="(max-width: 600px)" srcSet="/images/model-advanced-mamba-selective/04-mamba-block-mobile.png?v=2f6d8f4542cc" /><img width="2400" height="2852" src="/images/model-advanced-mamba-selective/04-mamba-block.png?v=13a79d2e2ee1" alt="입력은 norm과projection이후 주 분기와출력gate분기로 나뉜다. 주 분기에는짧은합성곱과SiLU후선택적SSM이있다. 출력gate를곱하고projection후residual과합한다. 다음시점으로전달되는것은합성곱의최근입력기록과채널별N성분SSM상태다." loading="lazy" /></picture></a>
 
 입력 벡터는 정규화와 투영을 거쳐 두 분기로 나뉩니다. 주 분기는 짧은 causal convolution, 즉 현재 위치와 가까운 과거 입력을 함께 처리하는 합성곱을 통과합니다. 그 뒤 SiLU 활성화 함수를 거친 특징이 선택적 SSM으로 들어갑니다. 앞서 x라고 부른 입력 특징은 이 위치의 값입니다.
 

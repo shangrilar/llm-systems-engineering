@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-hybrid',figureId:'02-one-token-two-memories',number:'ma-12-06',layout:'wide',
  eyebrow:['그림 6 · 한 토큰의 실행','Figure 6 · One token in flight'],
  title:['표현은 다음 층으로, 기억은 다음 토큰으로 이어집니다','Representations go to the next layer; memory goes to the next token'],
- subtitle:['현재 위치 p₃ · 층 2: GDN → 층 3: KV Attention · 점선: 같은 층의 다음 토큰 처리','Current position p₃ · Layer 2: GDN → Layer 3: KV attention · Dashed: next token in the same layer'],
+ subtitle:['현재 위치 p₃ · 층 2: GDN → 층 3: KV Attention · 점선: 같은 층의 다음 토큰 처리 · q·k·v는 각 층의 값(층 2와 층 3은 서로 다름)','Current position p₃ · Layer 2: GDN → Layer 3: KV attention · Dashed: next token in the same layer · q, k, v belong to each layer (layers 2 and 3 differ)'],
  captionIn:'article',caption:['p3을 처리하기 전 S3에서 처리 후 S4로 갱신한다. GDN은 같은 입력에서 q,k,v,alpha,beta를 만든 뒤 갱신된 상태를 q로 읽는다. 출력 투영과FFN,residual은 출력 단계에 접었다. Attention층은 이전층의 출력에서 자신의QKV를 만든다. state 성분의 숫자는 시간,p의숫자는 위치,층번호는 패널제목이다. 한 상태의전후모습은 별도영구복사본이 아니다.','For p3, update pre-token S3 to post-token S4. GDN derives q,k,v,alpha,beta from its input and reads the updated state with q. Output projection,FFN and residual are folded into output. The attention layer derives its own QKV from the previous layer output. State subscripts count tokens; panel labels identify layers. Before/after snapshots are not permanent copies.'],
  alt:['층2GDN은p3의입력에서q,k,v,alpha,beta를만들고S3을S4로갱신한후q로읽는다. 그출력이층3입력으로이어지고층3은자신의QKV로캐시에p3행을추가해읽는다. 두저장소는각각같은층의p4처리로이어진다.','Layer2GDN derives q,k,v,alpha,beta for p3,updates S3 toS4,and reads with q. Its output becomes layer3input. Layer3creates its own QKV,appends thep3KVrow,and reads thecache. Each store persists into its own layer’sp4step.'],
  sources:[{label:'Gated DeltaNet',url:'https://arxiv.org/abs/2412.06464'}],

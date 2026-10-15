@@ -2,7 +2,7 @@ import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-linear-attention',figureId:'04-normalization-and-memory',number:'ma-08-04',eyebrow:['그림 6','Figure 6'],
  title:['점수의 합으로 나누기','Divide by the sum of scores'],
- subtitle:['그림 5와 같은 입력 · q₂ = [1, 0]','Same inputs as Figure 5 · q₂ = [1, 0]'],captionIn:'article',
+ subtitle:['그림 5와 같은 입력 · q₂ = [1, 0] · 두 방식의 분모 2는 같은 값(q₂ᵀz₃)','Same inputs as Figure 5 · q₂ = [1, 0] · Both denominators are the same 2 (q₂ᵀz₃)'],captionIn:'article',
  caption:['S로 가중합을 계산하고 z로 점수의 합을 계산한다. 분모는 토큰 개수가 아니라 현재 Query에 대한 점수의 합이다.','S supplies the weighted sum, while z supplies the sum of scores for the current Query, not the number of tokens.'],
  alt:['왼쪽에서 p₀,p₁,p₂의 점수1,0,1을 더해 분모2를 얻고 Value 기여[2,0],[0,0],[1,1]을 더해 분자[3,1]을 얻는다. [3,1]을2로 나누면[1.5,0.5]다. 오른쪽에서 Key [1,0],[0,1],[1,0]을 더한 z₃=[2,1]을 q₂=[1,0]으로 읽어 같은 점수 합2를 계산한다.','Left: scores1,0,1 sum to denominator2; Value contributions[2,0],[0,0],[1,1] sum to numerator[3,1]. Dividing by2 gives[1.5,0.5]. Right: Keys[1,0],[0,1],[1,0] sum to z₃=[2,1]. Query[1,0] reads this to compute the same score sum2.'],
  sources:[{label:'Linear Attention normalization',url:'https://arxiv.org/html/2006.16236v3#S3.SS3'}],

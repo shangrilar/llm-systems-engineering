@@ -20,7 +20,7 @@ GDN은 이를 위해 기존 상태에 유지율 α를 곱합니다. α가 1에 �
 
 그림 1은 같은 상태에서 시작해 같은 Key [1, 0]과 새 Value [1, 1]을 기록하는 두 경우입니다. 양쪽 모두 β=1로 보정합니다. 오른쪽에만 기존 상태를 절반 남기는 단계를 추가했습니다.
 
-<a href="/images/model-advanced-gdn-kda/00-why-retention.png?v=5d24fac16b7f" id="figure-1"><picture><source width="720" height="2604" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/00-why-retention-mobile.png?v=071f29c968ea" /><img width="2400" height="2220" src="/images/model-advanced-gdn-kda/00-why-retention.png?v=5d24fac16b7f" alt="같은 상태 [[2,0],[0,3]]에서 델타만 적용하면 [[1,1],[0,3]]이다. GDN은 α=0.5로 [[1,0],[0,1.5]]를 만든 뒤 같은 Key와 Value로 보정해 [[1,1],[0,1.5]]를 만든다. 둘째 행의 차이를 강조한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-gdn-kda/00-why-retention.png?v=169ec06a6efd" id="figure-1"><picture><source width="720" height="2652" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/00-why-retention-mobile.png?v=cfe5987f1c45" /><img width="2400" height="2220" src="/images/model-advanced-gdn-kda/00-why-retention.png?v=169ec06a6efd" alt="같은 상태 [[2,0],[0,3]]에서 델타만 적용하면 [[1,1],[0,3]]이다. GDN은 α=0.5로 [[1,0],[0,1.5]]를 만든 뒤 같은 Key와 Value로 보정해 [[1,1],[0,1.5]]를 만든다. 둘째 행의 차이를 강조한다." loading="lazy" /></picture></a>
 
 왼쪽은 델타 규칙만 적용하므로 첫 행 [2, 0]이 [1, 1]로 바뀌고, 둘째 행 [0, 3]은 유지됩니다. 오른쪽은 먼저 상태 전체에 0.5를 곱한 뒤 보정하므로, 첫 행은 똑같이 [1, 1]이 되지만 둘째 행은 [0, 1.5]로 줄어듭니다. <strong>이번 Key에 대한 보정이 건드리지 않는 부분도 유지율을 통해 줄일 수 있습니다.</strong>
 
@@ -32,7 +32,7 @@ GDN의 순서는 <strong>기존 상태에 유지율 적용 → 남긴 상태를 
 
 그림 2에서는 앞선 글과 동일하게 두 토큰까지 반영한 상태 <math><msub><mi>S</mi><mn>2</mn></msub></math>에서 현재 토큰 <math><msub><mi>p</mi><mn>2</mn></msub></math>를 처리해 <math><msub><mi>S</mi><mn>3</mn></msub></math>를 만듭니다. 행은 Key 성분, 열은 Value 성분입니다. α=0.5, β=1을 사용하며, 유지율을 적용한 중간 상태는 <math><mover accent="true"><mi>S</mi><mo>¯</mo></mover></math>로 표시하겠습니다.
 
-<a href="/images/model-advanced-gdn-kda/01-decay-then-correct.png?v=1ff622c338ad" id="figure-2"><picture><source width="720" height="2994" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/01-decay-then-correct-mobile.png?v=63342c53977e" /><img width="2400" height="2538" src="/images/model-advanced-gdn-kda/01-decay-then-correct.png?v=1ff622c338ad" alt="1: S₂=[[2,0],[0,3]]를 α=0.5만큼 남겨 유지율을 적용한 상태=[[1,0],[0,1.5]]로 만든다. 2: 현재 Key로 유지율을 적용한 상태를 읽으면 [1,0]이다. 3: 새 Value [1,1]과의 차이는 [0,1]이다. 4: β=1로 보정량 [[0,1],[0,0]]을 유지율을 적용한 상태에 더해 S₃=[[1,1],[0,1.5]]를 만든다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-gdn-kda/01-decay-then-correct.png?v=5a20fb322e95" id="figure-2"><picture><source width="720" height="3042" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/01-decay-then-correct-mobile.png?v=0348a8103709" /><img width="2400" height="2538" src="/images/model-advanced-gdn-kda/01-decay-then-correct.png?v=5a20fb322e95" alt="1: S₂=[[2,0],[0,3]]를 α=0.5만큼 남겨 유지율을 적용한 상태=[[1,0],[0,1.5]]로 만든다. 2: 현재 Key로 유지율을 적용한 상태를 읽으면 [1,0]이다. 3: 새 Value [1,1]과의 차이는 [0,1]이다. 4: β=1로 보정량 [[0,1],[0,0]]을 유지율을 적용한 상태에 더해 S₃=[[1,1],[0,1.5]]를 만든다." loading="lazy" /></picture></a>
 
 기존 상태의 첫 행 [2, 0]과 둘째 행 [0, 3]에 α=0.5를 곱하면 각각 [1, 0], [0, 1.5]가 됩니다. 현재 Key [1, 0]으로 이 상태를 읽으면 첫 행인 [1, 0]이 나옵니다.
 
@@ -58,7 +58,7 @@ GDN에서는 한 헤드의 상태 전체에 같은 α를 곱합니다. 예를 �
 
 KDA는 유지율을 Key 성분별로 계산합니다. 이 글처럼 상태의 행이 Key 성분인 표기에서는 <strong>각 행에 서로 다른 유지율을 곱하는 것</strong>으로 볼 수 있습니다. [Kimi Linear 논문 §3](https://arxiv.org/html/2510.26692v1#S3)은 GDN의 스칼라 감쇠를 성분별 감쇠로 확장합니다.
 
-<a href="/images/model-advanced-gdn-kda/02-component-retention.png?v=c6c439bc9c3d" id="figure-3"><picture><source width="720" height="2302" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/02-component-retention-mobile.png?v=66c49de1e0a4" /><img width="2400" height="1976" src="/images/model-advanced-gdn-kda/02-component-retention.png?v=c6c439bc9c3d" alt="두 방식 모두 S₂=[[2,0],[0,3]]에서 시작한다. GDN은 α=0.5 하나를 두 행에 적용해 [[1,0],[0,1.5]]를 만든다. KDA는 Key 성분0에0.9, 성분1에0.2를 적용해 [[1.8,0],[0,0.6]]을 만든다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-gdn-kda/02-component-retention.png?v=228bb2aa8470" id="figure-3"><picture><source width="720" height="2350" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/02-component-retention-mobile.png?v=1221150d73e4" /><img width="2400" height="1976" src="/images/model-advanced-gdn-kda/02-component-retention.png?v=228bb2aa8470" alt="두 방식 모두 S₂=[[2,0],[0,3]]에서 시작한다. GDN은 α=0.5 하나를 두 행에 적용해 [[1,0],[0,1.5]]를 만든다. KDA는 Key 성분0에0.9, 성분1에0.2를 적용해 [[1.8,0],[0,0.6]]을 만든다." loading="lazy" /></picture></a>
 
 그림 3의 왼쪽은 GDN입니다. 두 행 모두 0.5를 곱해 [1, 0]과 [0, 1.5]를 만듭니다. 오른쪽은 KDA입니다. 첫 행에는 0.9를 곱해 [1.8, 0]을 남기고, 둘째 행에는 0.2를 곱해 [0, 0.6]을 남깁니다. 앞의 성분을 더 많이 유지하면서 뒤의 성분은 더 크게 줄일 수 있습니다.
 
@@ -74,7 +74,7 @@ Q·K·V를 만드는 과정과 같은 관점으로 이해할 수 있습니다. Q
 
 그림 4의 왼쪽은 이 조절값을 만드는 과정이고, 오른쪽은 만들어진 값이 사용되는 위치입니다. 왼쪽 <math><msub><mi>p</mi><mn>2</mn></msub></math> 블록은 위치 번호 2나 토큰 ID가 아니라, <strong>그 위치의 토큰이 현재 층에 들어올 때 가진 벡터 전체</strong>를 나타냅니다.
 
-<a href="/images/model-advanced-gdn-kda/03-state-versus-output-gates.png?v=d9ec0ee1a1d2" id="figure-4"><picture><source width="720" height="2792" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/03-state-versus-output-gates-mobile.png?v=63174fee97ed" /><img width="2400" height="2544" src="/images/model-advanced-gdn-kda/03-state-versus-output-gates.png?v=d9ec0ee1a1d2" alt="왼쪽 현재 입력 p₂에서 학습한 투영과 변환으로 유지율 α와 보정 비율 β를 계산한다. 오른쪽 기존 상태 S₂에 α를 적용한 후, 현재 Key와 Value 및 β로 델타 보정하여 S₃를 얻는다. S₃는 다음 시점으로 전달되고 현재 Query는 S₃를 읽어 출력을 만든다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-gdn-kda/03-state-versus-output-gates.png?v=3686effc6229" id="figure-4"><picture><source width="720" height="2838" media="(max-width: 600px)" srcSet="/images/model-advanced-gdn-kda/03-state-versus-output-gates-mobile.png?v=2df01b849451" /><img width="2400" height="2544" src="/images/model-advanced-gdn-kda/03-state-versus-output-gates.png?v=3686effc6229" alt="왼쪽 현재 입력 p₂에서 학습한 투영과 변환으로 유지율 α와 보정 비율 β를 계산한다. 오른쪽 기존 상태 S₂에 α를 적용한 후, 현재 Key와 Value 및 β로 델타 보정하여 S₃를 얻는다. S₃는 다음 시점으로 전달되고 현재 Query는 S₃를 읽어 출력을 만든다." loading="lazy" /></picture></a>
 
 그림에서는 “학습한 가중치로 투영”으로 간략히 표시했지만, 투영 결과를 유지율이나 보정 비율로 사용하려면 값의 범위를 조절하는 변환도 적용합니다. 예를 들어 [Kimi Linear 논문 §4](https://arxiv.org/html/2510.26692v1#S4)에서 β는 현재 입력을 가중치로 투영한 값에 sigmoid를 적용해 계산합니다. α는 두 단계의 투영과 감쇠 함수를 거쳐 Key 성분별 값으로 만듭니다.
 

@@ -1,7 +1,7 @@
 import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-delta-rule',figureId:'03-strength-and-interference',number:'ma-09-03',layout:'wide',eyebrow:['그림 4','Figure 4'],title:['β로 보정량 조절하기','Control the correction with β'],
- subtitle:['모두 같은 S₂에서 출발 · k₂=[1,0], v₂=[1,1]','All cases start from the same S₂ · k₂=[1,0], v₂=[1,1]'],captionIn:'article',
+ subtitle:['모두 같은 S₂에서 출발 · k₂=[1,0], v₂=[1,1] · 결과는 같은 k₂로 읽은 값 · β는 경계값을 고른 교육용 비교','All cases start from the same S₂ · k₂=[1,0], v₂=[1,1] · Results are reads with the same k₂ · β values chosen to show the edges'],captionIn:'article',
  caption:['β=0,0.5,1은 같은 상태에서 출발하는 비교이며 연속 시간 단계가 아니다.','β=0,0.5,1 are alternative updates from the same state, not successive time steps.'],
  alt:['같은 이전 상태 [[2,0],[0,3]]에 보정량 [[−1,1],[0,0]]을 β=0,0.5,1만큼 반영한다. 현재 Key로 읽은 값은 각각 [2,0],[1.5,0.5],[1,1]이다.','From the same old state, scale correction [[−1,1],[0,0]] by β=0,0.5,1. Readouts with the current Key are [2,0],[1.5,0.5],[1,1].'],
  sources:[{label:'DeltaNet',url:'https://arxiv.org/html/2406.06484v1#S2.SS2'}],
