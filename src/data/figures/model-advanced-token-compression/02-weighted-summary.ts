@@ -39,11 +39,11 @@ export default {
     matrix(q,304,165,[['0.75','0.25'],['0.25','0.75']],{cellWidth:80,cellHeight:54,gap:10,size:25,tone:'orange'});
     q.path('M130 300 V343 H225 V385',C.teal,2.5,false,true);
     q.path('M390 300 V343 H295 V385',C.orange,2.5,false,true);
-    q.token(95,405,['대응하는 성분끼리 곱하기','Elementwise multiply'],330,'orange',85);
+    q.token(95,405,['U ⊙ A · 성분끼리 곱하기','U ⊙ A · Elementwise multiply'],330,'orange',85);
     q.arrow(260,508,260,560,C.orange);
     matrix(q,175,603,[['1.5',0],[0,3]],{cellWidth:78,cellHeight:54,gap:10,size:25,tone:'orange',rowLabels:['p₀','p₁'],columnLabels:[['성분 1','C1'],['성분 2','C2']]});
     q.arrow(260,742,260,790,C.purple);
-    q.token(95,810,['위치 방향으로 합산 ↓','Sum across positions ↓'],330,'purple',65);
+    q.token(95,810,['Σ 위치 · 위치 방향 합산 ↓','Σ positions · Sum down ↓'],330,'purple',65);
     q.text(260,931,'[1.5 + 0, 0 + 3]',{size:27,anchor:'middle',width:490});
     q.arrow(260,961,260,1005,C.purple);
     q.text(105,1067,'c₀ =',{size:28,weight:600,color:C.purple,anchor:'end',width:100});

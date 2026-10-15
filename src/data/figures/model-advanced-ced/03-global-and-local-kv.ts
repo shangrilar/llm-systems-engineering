@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-ced',figureId:'03-global-and-local-kv',number:'ced-03',
  eyebrow:['그림 3 · 실제 Decoder의 공유 구조','Figure 3 · Actual decoder sharing'],
  title:['Global KV는 한 번 만들고, Local KV는 층마다 만듭니다','One global KV bank; local KV in every layer'],
- subtitle:['DeepSeek-V4.1-Flash · Decoder 20층 · 시퀀스 압축률 m = 1','DeepSeek-V4.1-Flash · 20 decoder layers · Sequence compression m = 1'],
+ subtitle:['DeepSeek-V4.1-Flash · Decoder 20층 · 시퀀스 압축률 m = 1 · 고르는 과정은 그림 4','DeepSeek-V4.1-Flash · 20 decoder layers · Sequence compression m = 1 · Selection in Figure 4'],
  captionIn:'article',caption:['첫 Full 층이 encoder 최종 표현에서 만든 global KV를 나머지 decoder 층이 재사용합니다. Local KV는 각 층의 현재 표현에서 만듭니다.','The first Full layer builds global KV from final encoder states; later decoder layers reuse it. Every layer builds local KV from its own current states.'],
  alt:['Encoder 최종 표현 E가 첫 Full 층의 global KV 생성으로 연결된다. Full 1개, Reindex 4개, Reuse 15개가 동일 global bank를 사용하고 모든 층은 자신의 local KV를 만든다.','Final encoder states E supply global KV generation in the first Full layer. One Full, four Reindex and fifteen Reuse layers use the same global bank, with layer-local KV in every layer.'],
  sources:[{label:'DeepSeek Figure 3 and §4.2.1',url:'https://arxiv.org/html/2609.19969v1#S1.F3'}],
@@ -23,6 +23,9 @@ export default {
  b.arrow(95,180,95,260,C.blue);b.token(30,270,'Main Qₗ',180,'blue',60);
  b.arrow(120,340,120,400,C.blue);b.path('M360 235 V435 H320',C.orange,2.5,false,true);
  b.box(30,410,280,120,'Attention',['선택된 global도 함께 읽기','Local + selected global'],'blue');
+ // Selected entries of the shared global bank (panel A) also enter this layer's attention; selection is shown in Figure 4.
+ b.path('M470 390 V490 H320',C.teal,2.5,true,true);
+ b.text(374,320,['A의 global KV에서 고른 항목','Picked from A’s global KV'],{size:17,color:C.teal,width:112});
  b.arrow(170,540,170,580,C.blue);b.token(30,590,['Attention 출력','Attention output'],280,'blue',60);
  b.box(30,720,460,100,'Full → Reuse ×3','','teal');
  b.arrow(260,830,260,860,C.blue);

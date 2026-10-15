@@ -22,7 +22,7 @@ export default {
       }
       p.arrow(35,225,35,602,C.muted);
       g.outline(7,0,7,7,'blue',4);
-      p.text(285,664,local?['전체 활성 연결: 21개','Active connections: 21']:['전체 활성 연결: 36개','Active connections: 36'],{size:25,weight:600,color:C.teal,anchor:'middle',width:440});
+      p.text(285,664,local?['Query 8개 전체의 연결: 21개','All 8 queries: 21 connections']:['Query 8개 전체의 연결: 36개','All 8 queries: 36 connections'],{size:25,weight:600,color:C.teal,anchor:'middle',width:440});
       p.token(216,715,'q7',88,'blue',54);
       p.text(20,747,['읽기 연결','Read links'],{size:23,color:C.muted,width:170});
       const row=cells(p,38,864,Array.from({length:8},(_,i)=>local&&i<5?null:String(i)),{tone:'teal',w:48,h:56,gap:8,size:24});

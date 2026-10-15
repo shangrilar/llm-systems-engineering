@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:['그림 2','Figure 2'],
   title:['토큰 순서와 저장 위치 연결하기','Connect token order to storage locations'],
-  subtitle:['첫 실행 뒤: B의 KV 7칸과 C의 KV 6칸을 각각 2블록에 저장했습니다.','After the first execution: B’s 7 KV positions and C’s 6 occupy 2 blocks each.'],
+  subtitle:['첫 실행 뒤: B의 KV 7칸과 C의 KV 6칸을 각각 2블록에 저장했습니다. 양쪽은 같은 KV의 논리 순서와 실제 위치입니다(두 벌이 아님).','After the first execution: B’s 7 KV positions and C’s 6 occupy 2 blocks each. Both sides show the same KV: logical order and physical location, not two copies.'],
   alt:['B의 논리 블록 L0는 토큰 위치 0에서 3의 KV를 담고 물리 블록 P3에 저장된다. L1은 위치 4에서 6의 KV를 담고 P0에 저장된다. C의 L0와 L1은 각각 P1과 P4에 저장된다. P2와 P5는 비어 있다. 각 논리 블록에서 블록 테이블을 거쳐 실제 KV 셀까지 연결선이 이어진다.','B’s logical block L0 contains KV for token positions 0 through 3 and is stored in physical block P3. L1 contains positions 4 through 6 and is stored in P0. C’s L0 and L1 are stored in P1 and P4, respectively. P2 and P5 are free. Connections run from each logical block through the block table to the actual KV cells.'],
   caption:["블록 테이블이 요청 안의 토큰 순서와 실제 KV 저장 위치를 연결합니다.","The block table connects token order within a request to actual KV storage locations."],
   sources:[],

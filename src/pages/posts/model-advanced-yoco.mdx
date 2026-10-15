@@ -14,7 +14,7 @@ date: 2026-09-29
 
 [YOCO 논문 §2](https://arxiv.org/html/2405.05254v1#S2)는 앞부분을 self-decoder, 뒷부분을 cross-decoder라고 부릅니다. 두 부분 모두 같은 토큰열을 인과적으로 처리합니다. 그림 1은 각각 두 층으로 줄인 교육용 구조입니다.
 
-<a href="/images/model-advanced-yoco/01-producers-and-readers.png?v=5a788909f7e8" id="figure-1"><picture><source width="720" height="2848" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/01-producers-and-readers-mobile.png?v=b8135aa40ad2" /><img width="2400" height="3372" src="/images/model-advanced-yoco/01-producers-and-readers.png?v=5a788909f7e8" alt="Self-decoder의 두 층은 각자의 recurrent/local 상태를 읽고 갱신한다. 최종 표현 M으로 만든 global KV는 뒤의 두 cross-decoder가 각자의 Query로 읽는다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-yoco/01-producers-and-readers.png?v=b99e0193a214" id="figure-1"><picture><source width="720" height="2848" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/01-producers-and-readers-mobile.png?v=64aa2ced4937" /><img width="2400" height="3372" src="/images/model-advanced-yoco/01-producers-and-readers.png?v=b99e0193a214" alt="Self-decoder의 두 층은 각자의 recurrent/local 상태를 읽고 갱신한다. 최종 표현 M으로 만든 global KV는 뒤의 두 cross-decoder가 각자의 Query로 읽는다." loading="lazy" /></picture></a>
 
 앞의 두 층을 거친 최종 표현 M에는 위치별 문맥 정보가 들어 있습니다. M을 Key와 Value로 투영한 결과가 global KV입니다. 여기서 global은 뒷부분이 긴 과거 문맥을 읽을 수 있다는 뜻입니다. 현재 위치보다 뒤의 미래를 읽을 수 있다는 뜻은 아닙니다.
 
@@ -44,7 +44,7 @@ q와 K의 전치를 곱하면 [1×2] × [2×4] = [1×4]입니다. 네 성분은 
 
 이번에는 이미 p0부터 p3까지 처리했고, 현재 입력 <math><msub><mi>x</mi><mtext>4</mtext></msub></math>가 p4에 들어왔다고 하겠습니다. 그림 3은 recurrent self-decoder를 선택한 예시입니다. <math><msub><mi>S</mi><mtext>1</mtext></msub></math>과 <math><msub><mi>S</mi><mtext>2</mtext></msub></math>는 앞 두 층이 각각 갖는 상태이며, 표시한 2×2 크기는 설명용입니다.
 
-<a href="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=d404c738c05a" id="figure-3"><picture><source width="720" height="3278" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/03-new-token-through-both-halves-mobile.png?v=f63a9c151d44" /><img width="2400" height="4412" src="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=d404c738c05a" alt="현재 입력 x4가 앞 두 층의 상태를 갱신하고 global KV에 p4를 추가한다. 뒤 두 층이 같은 KV를 읽어 다음 입력 x5를 선택한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=a7e5b0b0cc25" id="figure-3"><picture><source width="720" height="3326" media="(max-width: 600px)" srcSet="/images/model-advanced-yoco/03-new-token-through-both-halves-mobile.png?v=48509b7fa8a1" /><img width="2400" height="4478" src="/images/model-advanced-yoco/03-new-token-through-both-halves.png?v=a7e5b0b0cc25" alt="현재 입력 x4가 앞 두 층의 상태를 갱신하고 global KV에 p4를 추가한다. 뒤 두 층이 같은 KV를 읽어 다음 입력 x5를 선택한다." loading="lazy" /></picture></a>
 
 현재 토큰은 먼저 self-decoder 1을 지나며 그 층의 과거 상태를 읽고 갱신합니다. 그 결과가 self-decoder 2로 들어가 두 번째 층의 상태도 갱신합니다.
 

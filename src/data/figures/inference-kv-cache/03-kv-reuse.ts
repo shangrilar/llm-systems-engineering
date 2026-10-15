@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 3","Figure 3"],
   title:["계산한 K와 V를 저장하고 다음 생성에서 읽습니다","Save computed K and V for the next generation step"],
-  subtitle:["같은 세 실행에서 각 층의 새 계산, K·V 추가, Attention의 참조를 따라갑니다.","Follow new computation, K/V additions, and attention reads in each layer across the same executions."],
+  subtitle:["같은 세 실행에서 각 층의 새 계산, K·V 추가, Attention의 참조를 따라갑니다. Q·K·V는 각 층의 현재 입력 표현에서 계산합니다.","Follow new computation, K/V additions, and attention reads in each layer across the same executions. Q, K, and V come from each layer’s current input representation."],
   alt:["첫 실행은 p0 p1 p2의 K와 V를 각 층의 캐시에 저장하고 x0를 선택합니다. 다음 실행은 x0의 새 Q와 K와 V만 계산하고 과거 및 현재 KV를 Attention에서 읽어 x1을 선택합니다. 이어 x1의 KV를 추가하고 x2를 선택합니다. 각 실행에서 선택한 출력 토큰의 KV는 아직 만들어지지 않았습니다.","The first execution stores p0 p1 p2 K/V in each layer’s cache and selects x0. The next computes new Q/K/V for x0, lets attention read past and current K/V, and selects x1. Then x1 adds its K/V and x2 is selected. The selected output token has not yet produced its own K/V."],
   caption:["캐시를 사용하면 실행마다 새 입력 토큰의 Q·K·V만 계산합니다.","With a cache, each run computes Q, K, and V only for the new input token."],
   sources:[],

@@ -28,7 +28,7 @@ export default {
  articleId:'model-advanced-mla-storage',figureId:'04-cache-growth',number:'ma-02-04',layout:'wide',
  eyebrow:['그림 4 · 토큰 증가와 저장량','Figure 4 · Cache growth comparison'],
  title:['같은 한 토큰, 서로 다른 추가 저장량','One more token, different storage increments'],
- subtitle:['한 요청 · 한 층 · 교육용 설정 · 칸 하나 = 1성분','One request · One layer · Teaching configurations · One cell = one component'],
+ subtitle:['서로 다른 교육용 설정의 저장 성분 수 · 한 요청 · 한 층 · 칸 하나 = 1성분','Stored components under different teaching configurations · One request · One layer · One cell = one component'],
  captionIn:'article',caption:['MHA와 GQA는 1편의 설정, MLA는 2편의 설정이다. 구조별 저장 대상과 추가량을 비교하며 모델 품질이나 속도를 비교하는 실험은 아니다.','MHA and GQA use Article 1 settings; MLA uses Article 2 settings. This compares stored representations and increments, not measured quality or speed.'],
  alt:['가로로 MHA, GQA, MLA를 비교하고 각 구조에서 위쪽 T=4가 아래쪽 T=5로 이어진다. MHA는 KV 헤드 4개에 K와 V 각 2성분으로 64에서 80성분, GQA는 KV 헤드 2개로 32에서 40성분, MLA는 잠재 3성분과 공유 위치 Key 2성분으로 20에서 25성분이다. 모든 성분 칸은 같은 크기이며 새 p4 행에만 주황 테두리를 표시한다. 추가량은 각각 16,8,5다. 모바일에서는 구조별 비교를 차례로 쌓는다.','MHA, GQA and MLA appear in columns, each progressing vertically from T=4 to T=5. MHA has four KV heads with two K and two V components, growing from 64 to 80; GQA has two KV heads, growing from 32 to 40; MLA stores three latent and two shared positional-key components, growing from 20 to 25. Equal-size cells represent components; only the new p4 row has an orange outline. Increments are 16,8,5. Mobile stacks the three comparisons.'],
  sources:[{label:'GQA',url:'https://arxiv.org/abs/2305.13245'},{label:'DeepSeek-V2 §2.1',url:'https://arxiv.org/html/2405.04434v5#S2.SS1'}],

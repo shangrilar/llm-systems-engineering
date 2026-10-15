@@ -18,7 +18,7 @@ export default {
       for(let l=0;l<2;l++){
         const y=295+l*190;
         p.box(10,y,250,125,kind===0?`Self-decoder ${l+1}`:`Causal encoder ${l+1}`,kind===0?['효율적 Self-attention','Efficient self-attention']:['앞 층의 표현 갱신','Update representations'],'blue');
-        p.box(310,y,200,125,`State ${l+1}`,['recurrent / local','recurrent / local'],'teal');
+        p.box(310,y,200,125,`State ${l+1}`,['recurrent 또는 local','recurrent or local'],'teal');
         p.arrow(300,y+40,270,y+40,C.teal);
         p.arrow(270,y+95,300,y+95,C.orange);
         p.arrow(135,y+135,135,y+180,C.blue);

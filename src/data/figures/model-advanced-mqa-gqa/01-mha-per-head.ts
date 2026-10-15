@@ -51,6 +51,7 @@ export default {
     c.text(328,190,'V1 [4×2]',{size:24,weight:600,color:C.teal,width:190});
     const k=matrix(c,70,219,Array.from({length:4},()=>[null,null]),{cellWidth:57,cellHeight:36,rowLabels:['p0','p1','p2','p3'],size:21,tone:r=>r===3?'orange':'teal'});
     const v=matrix(c,330,219,Array.from({length:4},()=>[null,null]),{cellWidth:57,cellHeight:36,size:21,tone:r=>r===3?'orange':'teal'});
+    c.text(12,690,['K1·V1의 행 = 토큰 위치 p0–p3 (1·2의 행은 head)','K1, V1 rows = token positions p0–p3 (rows in 1–2 are heads)'],{size:18,color:C.muted,width:500});
     const weights=box(c,{x:70,y:430,width:180,height:86},['점수 → softmax','Scores → softmax']);
     c.text(86,554,['가중치 4개','4 weights'],{size:22,color:C.blue,width:150});
     const sum=box(c,{x:324,y:430,width:178,height:86},['Value 가중합','Weighted values'],'teal');

@@ -24,7 +24,7 @@ export default {
  a.path('M510 230 V880 H430',C.teal,2.5,false,true);
  a.arrow(260,945,260,975,C.teal);a.token(100,985,'Global p0',150,'teal',65);a.token(270,985,'Global p3',150,'teal',65);
  const b=new Panel(locale,['B. Main attention · 값 읽기','B. Main attention · Read values'],1090);
- b.box(20,110,225,150,['선택된 Main KV','Selected main KV'],['Global p0, p3','Global p0, p3'],'teal');
+ b.box(20,110,225,150,['선택된 Main KV','Selected main KV'],['A가 고른 p0, p3','p0, p3 picked in A'],'teal');
  b.box(275,110,225,150,'Local SWA KV',['층별 h에서 · p4, p5','From layer h · p4, p5'],'orange');
  b.path('M130 270 V350',C.teal,2.5,false,true);b.path('M390 270 V350',C.orange,2.5,false,true);
  b.box(30,360,460,105,['Concatenation · 읽을 항목 연결','Concatenation · Join entries'],'','gray');
