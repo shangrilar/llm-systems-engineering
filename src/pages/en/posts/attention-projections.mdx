@@ -24,7 +24,7 @@ Of these three stages, **Core Attention performs the computation that combines i
 
 Q, K and V stand for **Query, Key and Value**. Query and Key are used to determine how much information to take from each token, while Value holds the information to gather according to those weights. All three vectors start from the same input, but are computed with different weights. Writing the weight matrices as Wq, Wk and Wv gives `Q = X × Wq`, `K = X × Wk` and `V = X × Wv`.
 
-[![The same three-by-eight input X is multiplied by different eight-by-eight weight matrices Wq, Wk and Wv to produce Q, K and V. The third input and output rows are highlighted, and the columns of the weights and outputs are colored to indicate two heads.](/images/attention-projections/en/02-qkv-projections.png)](/images/attention-projections/en/02-qkv-projections.png)
+[![The same three-by-eight input X is multiplied by different eight-by-eight weight matrices Wq, Wk and Wv to produce Q, K and V. The third input and output rows are highlighted, and the columns of the weights and outputs are colored to indicate two heads.](/images/attention-projections/en/02-qkv-projections.png?v=70ee5dcbb544)](/images/attention-projections/en/02-qkv-projections.png?v=70ee5dcbb544)
 
 In this example, each weight matrix has shape d × d, or 8 × 8. Multiplying the eight components in one row of X by the corresponding entries in one column of the weight matrix and adding the products produces one output component. Repeating this for eight columns gives eight output components. **Even with the same X, Wq, Wk and Wv contain different weights, so Q, K and V are differently transformed vectors.** The dots in the figures represent learnable weights; their actual values and biases are omitted.
 
@@ -44,7 +44,7 @@ Each head uses all d components of the input vector and is computed with differe
 
 The Core Attention result H contains the results of multiple heads for each token. In this example, each head contributes four components, giving eight components per token. H therefore has the same shape as the input: T × d, or 3 × 8.
 
-[![H, which contains the results of two heads, is multiplied by the eight-by-eight weight matrix Wo to produce Y. The top four and bottom four rows of Wo correspond to the input heads. Y is added to residual input R at the same token position.](/images/attention-projections/en/04-output-projection.png)](/images/attention-projections/en/04-output-projection.png)
+[![H, which contains the results of two heads, is multiplied by the eight-by-eight weight matrix Wo to produce Y. The top four and bottom four rows of Wo correspond to the input heads. Y is added to residual input R at the same token position.](/images/attention-projections/en/04-output-projection.png?v=a6540b1684fb)](/images/attention-projections/en/04-output-projection.png?v=a6540b1684fb)
 
 The output projection computes `Y = H × Wo`. H has shape T × d and Wo has shape d × d, so Y also has shape T × d. Computing one output component uses an entire row of H and an entire column of Wo. As a result, **components from multiple heads for the same token participate in a single weighted sum**. Learned weights combine the information gathered by each head into a new vector.
 

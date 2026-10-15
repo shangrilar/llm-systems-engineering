@@ -16,7 +16,7 @@ Let the input tokens be `p0 p1 p2`. Here, `p` denotes the initial input, and `x`
 
 Passing the input through the model computes a representation at each position. The [LM Head](/en/posts/embedding-to-lm-head/) uses this representation to produce logits, prediction scores for tokens in the vocabulary. To generate the next token, we use **the scores at the final input position**. Here, scores at `p2` select the first output, `x0`. We can choose the highest-scoring token or draw one from a probability distribution derived from the scores.
 
-[![The input p0 p1 p2 selects x0. Appending x0 to the input context selects x1, and appending x1 selects x2. Each output connects to the input of the next execution.](/images/inference-kv-cache/en/01-generation-loop.png)](/images/inference-kv-cache/en/01-generation-loop.png)
+[![The input p0 p1 p2 selects x0. Appending x0 to the input context selects x1, and appending x1 selects x2. Each output connects to the input of the next execution.](/images/inference-kv-cache/en/01-generation-loop.png?v=17d6c32f43c6)](/images/inference-kv-cache/en/01-generation-loop.png?v=17d6c32f43c6)
 
 After selecting `x0`, the context for the next prediction becomes `p0 p1 p2 x0`. We use this context to select `x1`, then append `x1` to select `x2`. The arrows returning from the output on the right to the input in the next row show this repetition. The next input token is determined only after the current token has been selected.
 
@@ -42,7 +42,7 @@ Causal attention explains why we can keep using past computation. A position att
 
 This property holds at each layer. Attention at past positions cannot see future positions, and token-wise operations such as normalization and MLPs do not mix in future positions either. By **retaining K/V already computed at each layer**, we can process a new position without rerunning computation at past positions. [Transformers explanation of KV reuse](https://huggingface.co/docs/transformers/v4.57.0/en/cache_explanation#attention-matrices)
 
-[![Initially, K/V for p0 p1 p2 is stored in each layer's cache. The next execution computes new Q/K/V for x0, and its Q reads both cached past K/V and current K/V for x0. The same process then applies to x1.](/images/inference-kv-cache/en/03-kv-reuse.png)](/images/inference-kv-cache/en/03-kv-reuse.png)
+[![Initially, K/V for p0 p1 p2 is stored in each layer's cache. The next execution computes new Q/K/V for x0, and its Q reads both cached past K/V and current K/V for x0. The same process then applies to x1.](/images/inference-kv-cache/en/03-kv-reuse.png?v=8e1a646ac639)](/images/inference-kv-cache/en/03-kv-reuse.png?v=8e1a646ac639)
 
 The figure expands the attention part of each model layer. Rounded cells are input and output tokens; split rectangles labeled with K/V and a position are stored computation results. Orange paths add new K/V to the cache, while green paths show attention reading K/V.
 

@@ -114,7 +114,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images.",
-        "sourceRevision": "2c70cc028f1c472211c882960f879ce675a088b1b70b53406953293cada27814"
+        "sourceRevision": "8d00020a02f1e92dab4a43b036c21f6aea0a99a70b61549fc19d5c7c264d6702"
       }
     }
   },
@@ -143,7 +143,7 @@
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b0f640e2b218672b90d2402f232134d332d226c78c791faafb8597e8531295af",
+        "sourceRevision": "479caaf774a8815e9a761236d057d88d942933b8894985c10ec9c7c8f45be08b",
         "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -206,7 +206,7 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "af5c52e26d01b69df68e35d5fe7fe8f53c7cbc7e23c2e9d2fedc8797aea5024c",
+        "sourceRevision": "b8927aa1e94c67967c7d8edcffc913c38e79ca5868bf809e5cb49f149e55b338",
         "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -235,7 +235,7 @@
         "title": "MoE: Choosing Which MLPs to Use for Each Token",
         "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
         "published": true,
-        "sourceRevision": "9edfa24e8a9629c141e06b4aaed8a8147edd0fdcc1bba3c2d669bbe006d2d03f",
+        "sourceRevision": "718b6922af4b2af53fa2e4ce263913877f6fabf60df4637f784469b352eb14ad",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and captions for figures 3–4 were newly written in both languages from the article text."
       }
@@ -265,7 +265,7 @@
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
         "published": true,
-        "sourceRevision": "c997253464a2b92dc641e8ae6fadc674ab9b73d86a0ce199e673c92ab0b401ba",
+        "sourceRevision": "cc44f9e0239ba389aceadb098fc156c3f8016c88057eb2581b34bded56ccec41",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the existing note became a caption, and captions for figures 1–3 were newly written in both languages from the article text."
       }
@@ -542,7 +542,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged.",
-        "sourceRevision": "fd2f64879d3642e9464c2fcb60be984d2f623c87bc4a506ce7a9ff5ed4211717"
+        "sourceRevision": "beb95677b3caa2b0e6f283fa9c1552f730cc06dca9663cf30c15c413c44a723a"
       }
     }
   },
@@ -1167,7 +1167,7 @@
         "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "9e1e79bd9993d31487b0306f06141eceb928ad1e89029cb7d84e5f36ccc86b57",
+        "sourceRevision": "e77ce7e7344b9151897107505a33754f702f9df47a1155e542bbf59a7ac1089a",
         "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
@@ -1260,7 +1260,7 @@
         "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "5d23c6b8b69f8340778b2b2f69efe6e4b9f7ebfdfab14acf0ed353303f1039d4",
+        "sourceRevision": "6be8a9564fb01b98218e29ee30bcb098f99f1478e3179867896e5ae16edda67c",
         "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages. Figure 2 was redrawn with shared primitives (cells, curve)."
       }
     }

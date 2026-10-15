@@ -12,7 +12,7 @@ In an earlier article, we saw that an MLP transforms each token’s vector indep
 
 In the structure we have explored so far, every token passes through the same MLP within a decoder block. We will call this a **dense MLP**. The sparse MoE structure in this article instead selects a subset of several MLPs to process each token. Each MLP is called an **expert**, and the component that selects the experts is called the **Router**.
 
-[![The dense structure on the left applies the same gated MLP to every token. In the MoE structure on the right, the same x₁ is sent to the selected experts E1 and E3, while the Router only decides which experts to use and the weights for their outputs (about 0.27 and 0.73). Both structures have d-dimensional inputs and outputs.](/images/moe/en/01-dense-and-moe.png)](/images/moe/en/01-dense-and-moe.png)
+[![The dense structure on the left applies the same gated MLP to every token. In the MoE structure on the right, the same x₁ is sent to the selected experts E1 and E3, while the Router only decides which experts to use and the weights for their outputs (about 0.27 and 0.73). Both structures have d-dimensional inputs and outputs.](/images/moe/en/01-dense-and-moe.png?v=49e7c6264cdd)](/images/moe/en/01-dense-and-moe.png?v=49e7c6264cdd)
 
 Figure 1 shows the same token input x₁ entering the two structures. On the left, x₁ passes through a single gated MLP to produce y₁. On the right, there are four experts, E1 through E4, and the Router selects E1 and E3. **Both selected experts receive the same x₁, but their different weights produce different transformations.** The experts in this example are the gated MLPs we explored earlier, each with its own Gate, Up, and Down projection weights.
 
@@ -24,7 +24,7 @@ The key to MoE is that **the model’s total parameter count can be distinguishe
 
 The Router takes a token’s input vector and determines **which experts to use and how much weight to give each expert’s output**. Figure 2 uses one token with d = 8 and four experts. The Router’s weight matrix Wᵣ has shape 8 × 4. Multiplying x₁ by this matrix produces four scores, one for each expert.
 
-[![Multiplying the 8-dimensional input x₁ by an 8-by-4 Router weight matrix gives scores [1, 0, 2, -1]. Top-2 selects Expert 1 with score 1 and Expert 3 with score 2. Softmax then produces weights of approximately 0.269 and 0.731.](/images/moe/en/02-router.png)](/images/moe/en/02-router.png)
+[![Multiplying the 8-dimensional input x₁ by an 8-by-4 Router weight matrix gives scores [1, 0, 2, -1]. Top-2 selects Expert 1 with score 1 and Expert 3 with score 2. Softmax then produces weights of approximately 0.269 and 0.731.](/images/moe/en/02-router.png?v=7e6f1793b62d)](/images/moe/en/02-router.png?v=7e6f1793b62d)
 
 The scores in this example, starting with E1, are `[1, 0, 2, −1]`. **Top-2 means selecting the two highest scores.** The highest score, 2, belongs to E3, and the next highest, 1, belongs to E1, so these two experts are selected. In the figure’s label `Expert 1 (score 1)`, the first 1 is the expert’s number, while the 1 in parentheses is the score computed by the Router.
 
@@ -52,7 +52,7 @@ Although several tokens are grouped by expert, **this process does not combine i
 
 The experts we have explored so far process only the tokens that the Router selects for them. These are called **routed experts**. Some MoE models also include a **shared expert that processes every token regardless of the Router’s selections**. Figure 4 keeps the four routed experts and Top-2 selection from the earlier example and adds one shared expert.
 
-[![The same input X enters two paths. Shared expert S processes all three tokens, while the routed path selects two of four experts per token and computes their weighted sum R. Adding S and R elementwise for the same token preserves the d-dimensional output.](/images/moe/en/04-shared-and-routed.png)](/images/moe/en/04-shared-and-routed.png)
+[![The same input X enters two paths. Shared expert S processes all three tokens, while the routed path selects two of four experts per token and computes their weighted sum R. Adding S and R elementwise for the same token preserves the d-dimensional output.](/images/moe/en/04-shared-and-routed.png?v=3a4dd62b483b)](/images/moe/en/04-shared-and-routed.png?v=3a4dd62b483b)
 
 Shared expert S on the left receives x₁, x₂, and x₃. It **applies the same MLP to each token independently**, so it resembles the dense MLP we explored earlier in processing every token. The right side summarizes the process in Figure 3: the Router selects experts, and Combine takes a weighted sum of their outputs. We will call the result of this routed path R(x).
 

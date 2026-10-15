@@ -12,7 +12,7 @@ In the previous article, we explored how Core Attention computes scores between 
 
 In the decoder block we have explored so far, RMSNorm, MLP, and residual addition are applied independently to each token. Within Attention, Q, K, and V projections and the output projection also transform components of the same token. **Core Attention is where vectors from different tokens are compared and their information is gathered.** Within it, QKᵀ computes scores between tokens, and PV computes a weighted sum of their Value vectors.
 
-[![Narrow the decoder block down to Attention and Core Attention. QK transpose computes scores, the causal mask limits access, and PV computes a weighted sum of Values. Token 1 is two positions before token 3, while token 2 is one position before it.](/images/rope/en/01-why-position.png)](/images/rope/en/01-why-position.png)
+[![Narrow the decoder block down to Attention and Core Attention. QK transpose computes scores, the causal mask limits access, and PV computes a weighted sum of Values. Token 1 is two positions before token 3, while token 2 is one position before it.](/images/rope/en/01-why-position.png?v=fcc3c7d3d00c)](/images/rope/en/01-why-position.png?v=fcc3c7d3d00c)
 
 The dot product of Q and K multiplies corresponding components of the two vectors and adds the products. **The dot-product calculation itself has no term that directly specifies where the two tokens are or how many positions apart they are.** If the same Q and K are used unchanged, their dot product is the same wherever they are placed.
 
@@ -40,7 +40,7 @@ Rotating this vector by 30° changes its components to approximately `[0.366, 1.
 
 RoPE determines its rotation angles from **the token position and the rotation rate of each component pair**. For a given pair, moving one position forward adds a fixed angle to its rotation. Different component pairs within a vector have different rotation rates. To illustrate this distinction, Figure 4 uses 30° per position for the first pair and 10° per position for the second.
 
-[![Rotate the same input [1, 1, 1, −1] at positions 0, 1, and 2. The first component pair rotates by 0, 30, and 60 degrees; the second rotates by 0, 10, and 20 degrees. Together, the two pairs still contain four components.](/images/rope/en/04-position-and-pairs.png)](/images/rope/en/04-position-and-pairs.png)
+[![Rotate the same input [1, 1, 1, −1] at positions 0, 1, and 2. The first component pair rotates by 0, 30, and 60 degrees; the second rotates by 0, 10, and 20 degrees. Together, the two pairs still contain four components.](/images/rope/en/04-position-and-pairs.png?v=58c8d774e9cd)](/images/rope/en/04-position-and-pairs.png?v=58c8d774e9cd)
 
 Token 1 is at position 0, so both pairs have a rotation angle of 0°. Token 2 is at position 1, so the angles are 30° and 10°; token 3 is at position 2, so they are 60° and 20°. Blue and green distinguish **two component pairs within the same head**, rather than different heads. The figure holds the input fixed to compare only the effect of position.
 
@@ -60,7 +60,7 @@ For component pair i of Q or K, written as `[a, b]`, we substitute this angle in
 
 Each vector is rotated according to its own position, so how does the difference between two token positions enter the comparison? Figure 5 compares **two cases with the same Q and K before rotation**. For one component pair, Q is `[1, 0]`, K is `[1, 1]`, and the rotation rate is 30° per position. Here we consider only the position-dependent rotations and dot products, before applying a mask.
 
-[![On the left, Q is at position 0 and K at position 1. On the right, Q is at position 1 and K at position 2. K position minus Q position is 1 in both cases. Rotating both Q and K by another 30 degrees preserves their 75-degree angle and dot product of approximately 0.366.](/images/rope/en/05-relative-position.png)](/images/rope/en/05-relative-position.png)
+[![On the left, Q is at position 0 and K at position 1. On the right, Q is at position 1 and K at position 2. K position minus Q position is 1 in both cases. Rotating both Q and K by another 30 degrees preserves their 75-degree angle and dot product of approximately 0.366.](/images/rope/en/05-relative-position.png?v=fe66ad8e34b3)](/images/rope/en/05-relative-position.png?v=fe66ad8e34b3)
 
 On the left, Q is at position 0 and K at position 1, so their rotations are 0° and 30°. On the right, Q is at position 1 and K at position 2, so their rotations are 30° and 60°. **The right-hand case is the result of rotating both vectors on the left by another 30°.** Rotating both vectors by the same angle changes their individual directions but preserves the angle between them. Their lengths are also preserved, so the dot product is approximately 0.366 in both cases.
 
@@ -70,7 +70,7 @@ The **token positions differ by one in both cases**. On the left, `K position �
 
 Let us return to the Q and K used in the previous article. Figure 6 **compares scores before and after applying RoPE to the same Q and K**. The token positions are 0, 1, and 2, using the same illustrative rotation rates of 30° and 10° as in Figure 4. In both score matrices, each dot product is divided by √dh = 2.
 
-[![Compare scores before and after applying RoPE to the previous article's Q and K. Token 3's score row changes from [1, 0, 3] to approximately [0.866, −0.430, 3]. A causal mask and Softmax are then applied before computing the weighted sum of V.](/images/rope/en/06-attention-scores.png)](/images/rope/en/06-attention-scores.png)
+[![Compare scores before and after applying RoPE to the previous article's Q and K. Token 3's score row changes from [1, 0, 3] to approximately [0.866, −0.430, 3]. A causal mask and Softmax are then applied before computing the weighted sum of V.](/images/rope/en/06-attention-scores.png?v=c9a282e2bfa3)](/images/rope/en/06-attention-scores.png?v=c9a282e2bfa3)
 
 For token 3, the score row changes from `[1, 0, 3]` to approximately `[0.866, −0.430, 3]`. The first two values are scores against tokens 1 and 2, and the last is the score against itself. **Q and K at the same position receive the same rotation, so the self-score is preserved.** Q and K at different positions receive different rotation angles, changing those scores in this example.
 

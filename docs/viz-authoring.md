@@ -107,3 +107,4 @@ import AnnotPart from '../../components/AnnotPart.astro';
 - 600px 이하에서는 모바일 PNG에서 같은 패널을 잘라 쓰고 설명을 아래로 쌓는다. 모바일 변형이 없는 그림(`screens:['desktop']`)은 데스크톱 조각을 그대로 줄인다.
 - 옮긴 설명은 그림 설정의 `captionIn:'article'`로 이미지에서 빼고, 그림 안의 긴 설명 상자도 지운다. 오해를 막는 짧은 문구(예: "허용 범위 ≠ 희소 선택")는 그림에 남긴다.
 - `tests/annot.test.ts`가 그림·패널 번호의 유효성과 한·영 분할의 일치를 검사하고, `npm run check`는 `<Annot fig>`가 글의 `figureIds`에 있는지 확인한다.
+- `viz:build`는 이미지 폴더의 `renders.json`에 SVG와 그 SVG에서 렌더한 PNG의 해시를 기록한다. `npm run check`는 기록이 있는 PNG가 현재 SVG에서 나왔는지 확인하고, `<Annot>`에 쓰는 그림은 기록이 반드시 있어야 한다(같은 크기의 오래된 PNG로 잘못 잘리는 것을 막는다). `tests/browser/annot.spec.ts`는 한·영 1280px·390px에서 조각 이미지가 로드되고 조각이 이미지 밖으로 벗어나지 않는지 확인한다.

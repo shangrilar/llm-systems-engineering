@@ -16,7 +16,7 @@ date: 2026-09-12
 
 Q의 한 행은 정보를 모을 토큰의 Query 벡터이고, K의 한 행은 참조할 토큰의 Key 벡터입니다. 두 벡터를 내적하면 토큰 사이의 점수 하나가 나옵니다. 이를 행렬 곱 QKᵀ로 계산하면 **행은 Query 토큰, 열은 Key 토큰에 해당하는 T × T 점수 행렬 S**가 됩니다.
 
-[![Q와 K의 전치를 곱해 T × T 점수 행렬을 만들고, 스케일링과 마스크 및 행별 Softmax로 확률 P를 구합니다. P와 V를 곱하면 T × dₕ 출력이 됩니다.](/images/attention-memory-and-softmax/01-attention-flow.png)](/images/attention-memory-and-softmax/01-attention-flow.png)
+[![Q와 K의 전치를 곱해 T × T 점수 행렬을 만들고, 스케일링과 마스크 및 행별 Softmax로 확률 P를 구합니다. P와 V를 곱하면 T × dₕ 출력이 됩니다.](/images/attention-memory-and-softmax/01-attention-flow.png?v=acc9c3a605a5)](/images/attention-memory-and-softmax/01-attention-flow.png?v=acc9c3a605a5)
 
 그림 1의 두 번째 단계에서는 점수를 √dₕ로 나누어 크기를 조절하고, 참조할 수 없는 위치에 마스크를 적용합니다. 여기서는 자기 자신과 이전 토큰만 참조하는 causal mask를 사용합니다. 미래 토큰의 점수를 −∞로 두면 Softmax에서 그 위치의 확률은 0이 됩니다.
 

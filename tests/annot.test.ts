@@ -18,10 +18,17 @@ describe('annot figures',()=>{
       const path=`src/data/figures/${u.fig}.ts`;
       expect(existsSync(path),path).toBe(true);
       const spec=(await import('../'+path)).default;
-      for(const mobile of [false,true]){
-        const n=layoutBoxes(spec,'ko',mobile).panels.length;
+      for(const locale of ['ko','en'] as const)for(const mobile of [false,true]){
+        const n=layoutBoxes(spec,locale,mobile).panels.length;
         for(const i of u.panels.split('+').map(Number))expect(i>=1&&i<=n,`${u.fig} panel ${i}`).toBe(true);
       }
+    }
+  });
+  it('keeps every part on its parent figure',()=>{
+    for(const file of withAnnot){
+      const s=readFileSync(file,'utf8');
+      for(const block of s.matchAll(/<Annot fig="([^"]+)"[^>]*>([\s\S]*?)<\/Annot>/g))
+        for(const part of block[2].matchAll(/<AnnotPart fig="([^"]+)"/g))expect(part[1],file).toBe(block[1]);
     }
   });
   it('splits each figure the same way in Korean and English',()=>{
