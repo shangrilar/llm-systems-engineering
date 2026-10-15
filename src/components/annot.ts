@@ -26,11 +26,12 @@ export function headerCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolea
   const L=layoutBoxes(spec,locale,mobile);
   return {src:png(id,locale,mobile),box:[0,0,L.width,L.header+4],size:[L.width,L.height]};
 }
-// Union of the listed panels (1-based, e.g. "1+2"), padded and clamped to the figure.
+// Union of the listed panels (1-based, e.g. "1+2"), padded and clamped to the figure. "all" takes every panel of
+// the screen being cropped, for figures whose desktop and mobile versions split into different panel counts.
 // `xr` keeps only part of the region's width, as fractions "0-0.55" (desktop only; mobile panels are narrow).
 export function panelCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolean,panels:string,xr?:string):Crop{
   const L=layoutBoxes(spec,locale,mobile);
-  const idx=panels.split('+').map(Number);
+  const idx=panels==='all'?L.panels.map((_,i)=>i+1):panels.split('+').map(Number);
   if(idx.some(i=>!Number.isInteger(i)||i<1||i>L.panels.length))throw new Error(`Invalid panels "${panels}" for ${id}`);
   const bs=idx.map(i=>L.panels[i-1]);
   const x0=Math.max(0,Math.min(...bs.map(b=>b.x))-PAD),y0=Math.max(0,Math.min(...bs.map(b=>b.y))-PAD);

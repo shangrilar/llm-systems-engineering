@@ -17,7 +17,8 @@ describe('annot crop geometry',()=>{
       expect(c.size).toEqual([L.width,L.height]);
       expect(x).toBeGreaterThanOrEqual(0);expect(y).toBeGreaterThanOrEqual(0);
       expect(x+w).toBeLessThanOrEqual(L.width+1e-6);expect(y+h).toBeLessThanOrEqual(L.height+1e-6);
-      for(const i of u.panels.split('+').map(Number)){
+      const idx=u.panels==='all'?L.panels.map((_,i)=>i+1):u.panels.split('+').map(Number);
+      for(const i of idx){
         const b=L.panels[i-1];
         expect(y).toBeLessThanOrEqual(b.y);expect(y+h).toBeGreaterThanOrEqual(b.y+b.h);
         if(!u.xr||mobile){expect(x).toBeLessThanOrEqual(b.x);expect(x+w).toBeGreaterThanOrEqual(b.x+b.w);}

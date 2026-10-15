@@ -9,7 +9,7 @@ for (const locale of ['ko', 'en'] as const) {
   test(`${locale}: grouped catalog and article classification`, async ({ page }) => {
     const prefix = locale === 'en' ? '/en' : '';
     await page.goto(`${prefix}/`);
-    const shownTracks = (['shared', 'inference', 'training', 'rl'] as const)
+    const shownTracks = (['shared', 'inference', 'training', 'rl', 'feature'] as const)
       .filter(track => catalog.some(p => p.track === track && p.locales[locale]?.published));
     await expect(page.locator('.article-track > h3')).toHaveText(shownTracks.map(track => tracks[track][locale]));
     for (const track of shownTracks) {

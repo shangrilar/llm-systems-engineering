@@ -20,7 +20,7 @@ describe('annot figures',()=>{
       const spec=(await import('../'+path)).default;
       for(const locale of ['ko','en'] as const)for(const mobile of [false,true]){
         const n=layoutBoxes(spec,locale,mobile).panels.length;
-        for(const i of u.panels.split('+').map(Number))expect(i>=1&&i<=n,`${u.fig} panel ${i}`).toBe(true);
+        if(u.panels!=='all')for(const i of u.panels.split('+').map(Number))expect(i>=1&&i<=n,`${u.fig} panel ${i}`).toBe(true);
       }
     }
   });

@@ -6,6 +6,7 @@ export const tracks = {
   inference: { ko: '추론', en: 'Inference' },
   training: { ko: '학습', en: 'Training' },
   rl: { ko: 'RL', en: 'RL' },
+  feature: { ko: '특집', en: 'Features' },
 };
 export const categories = {
   model: { ko: '모델', en: 'Models' },
