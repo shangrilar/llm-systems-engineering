@@ -1,11 +1,12 @@
 import {Panel,C,FLOW,math,nameGap,flowMatrix,junction,flowStep,badge,flowWire,type FlowSizes,type FlowSide,type Bounds,type Label,type Tone,type Locale,type FigureSpec} from '@llm-systems/viz';
+import {numbered} from '../deepseek-kv-cache/numbers';
 export {Panel,C,math,nameGap,badge};
 export const L=(ko:string,en:string):Label=>[ko,en];
 export type Node=Bounds&{cx:number};
 export const wire=flowWire;
 export function embed(p:Panel,child:Panel,x:number,y:number,attrs=""){p.raw(`<g ${attrs} transform="translate(${x} ${y})">${child.svg()}</g>`);}
 export function spec(id:string,title:Label,sub:Label,alt:Label,panels:(l:Locale,m?:boolean)=>Panel[]):FigureSpec{
- return{articleId:'mla-flow',figureId:id,number:'mla-flow-'+id,layout:'wide',eyebrow:'MLA',title,subtitle:sub,captionIn:'article',caption:alt,alt,sources:[{label:'DeepSeek-V2 · §2.1 & Appendix C',url:'https://arxiv.org/html/2405.04434v5#S2.SS1'}],panels};
+ return{articleId:'mla-flow',figureId:id,number:'mla-flow-'+id,layout:'wide',eyebrow:numbered('mla-flow/'+id,'MLA'),title,subtitle:sub,captionIn:'article',caption:alt,alt,sources:[{label:'DeepSeek-V2 · §2.1 & Appendix C',url:'https://arxiv.org/html/2405.04434v5#S2.SS1'}],panels};
 }
 
 // MLA figures use the shared flow grammar (`@llm-systems/viz` flow.ts). This file keeps what is specific to MLA:

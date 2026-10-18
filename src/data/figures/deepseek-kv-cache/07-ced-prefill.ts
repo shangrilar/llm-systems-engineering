@@ -1,5 +1,6 @@
 import {Panel,C,connector,math,type FigureSpec,type Label,type Locale} from '@llm-systems/viz';
 import {L} from './drawing';
+import {numbered} from './numbers';
 // CED prefill as described in the V4.1 report (§2.2, §3.2.2): the encoder runs on every prompt position; the
 // decoder's global KV is built from the encoder output, so the decoder layers only run the most recent window to
 // prepare their local KV. Teaching size: 8 positions, 2 + 2 layers, window 2 (real: 20 + 20 layers, 128).
@@ -54,9 +55,9 @@ function panel(l:Locale){
  math(p,0,y,L('최근 구간 밖의 SWA 참조를 자르는 근사 · 예시 8위치·2+2층·window 2 / 실제 20+20층·128','approximation: SWA references outside the window are cut · example 8 positions, 2 + 2 layers, window 2 / real 20 + 20 layers, 128'),{size:15,color:C.muted,width:1100});
  p.height=y+24;return p;
 }
-export default {articleId:'deepseek-kv-cache',figureId:'07-ced-prefill',number:'deepseek-kv-cache-07-ced-prefill',layout:'wide',eyebrow:'CED',
+export default {articleId:'deepseek-kv-cache',figureId:'07-ced-prefill',number:'deepseek-kv-cache-07-ced-prefill',layout:'wide',eyebrow:numbered('deepseek-kv-cache/07-ced-prefill','CED'),
  title:L('CED prefill: decoder는 최근 구간만 실행','CED prefill: the decoder runs only the recent window'),
- subtitle:L('캐시 재사용 없이 prompt를 처리할 때 · 아래에서 위로 실행','processing a prompt without cache reuse · computation runs upwards'),
+ subtitle:L('캐시 재사용 없이 prompt를 처리할 때 · 아래에서 위로 실행 · 보고서의 bounded replay 방식','a prompt without cache reuse · runs upwards · bounded replay per the report'),
  captionIn:'article',screens:['desktop'],
  caption:L('encoder 층은 prompt의 모든 위치를 실행하고, 그 출력에서 decoder가 읽을 global KV를 모든 위치에 대해 만든다. decoder 층은 최근 window의 위치만 실행해 각 층의 local KV를 준비하고, 이때 global KV에서 선택한 항목을 읽는다.','The encoder layers run on every prompt position, and their output yields the decoder’s global KV for every position. The decoder layers run only the recent window to prepare each layer’s local KV, reading selected global KV entries.'),
  alt:L('위치 8개와 층 4개의 격자. encoder 층 1·2는 모든 위치가 실행된다. encoder 최종 출력에서 모든 위치의 global KV가 만들어진다. decoder 층 1·2는 마지막 두 위치만 실행되어 local KV를 준비하고 나머지 여섯 위치는 실행이 생략된다. 실행되는 decoder 칸은 global KV에서 선택한 항목을 읽는다.','A grid of 8 positions and 4 layers. Encoder layers 1 and 2 run on every position. The encoder output builds the global KV for every position. Decoder layers 1 and 2 run only the last two positions to prepare local KV; the other six are skipped. The running decoder cells read selected global KV entries.'),

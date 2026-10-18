@@ -1,11 +1,12 @@
 import {Panel,C,FLOW,math,nameGap,flowMatrix,junction,flowStep,badge,flowWire,type FlowSizes,type FlowSide,type Label,type Locale,type FigureSpec,type Tone,type Wire} from '@llm-systems/viz';
+import {numbered} from '../deepseek-kv-cache/numbers';
 export {Panel,C,math,badge};
 export const L=(ko:string,en:string):Label=>[ko,en];
 export type Sizes=FlowSizes;
 export const SZ=FLOW;
 const REPO='https://github.com/deepseek-ai/DeepSeek-V3.2-Exp/tree/87e509a2e5a100d221c97df52c6e8be7835f0057';
 export function spec(id:string,title:Label,sub:Label,alt:Label,panels:(l:Locale,m?:boolean)=>Panel[]):FigureSpec{
- return{articleId:'dsa-flow',figureId:id,number:'dsa-flow-'+id,layout:'wide',eyebrow:'DSA',title,subtitle:sub,captionIn:'article',caption:alt,alt,
+ return{articleId:'dsa-flow',figureId:id,number:'dsa-flow-'+id,layout:'wide',eyebrow:numbered('dsa-flow/'+id,'DSA'),title,subtitle:sub,captionIn:'article',caption:alt,alt,
   sources:[{label:'DeepSeek-V3.2-Exp report · §2.1 (DSA)',url:REPO},{label:'DeepSeek-V3.2-Exp inference code · Indexer',url:REPO+'/inference'}],panels};
 }
 export function embed(p:Panel,child:Panel,x:number,y:number,attrs=''){p.raw(`<g ${attrs} transform="translate(${x} ${y})">${child.svg()}</g>`);}

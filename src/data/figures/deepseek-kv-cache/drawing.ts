@@ -1,4 +1,5 @@
 import {Panel,C,wrap,type Label,type Locale,type FigureSpec} from '@llm-systems/viz';
+import {numbered} from './numbers';
 export const L=(ko:string,en:string):Label=>[ko,en];
 
 // Long-context KV cache growth per original token, g = lim M(N)/N, for one copy of the model body.
@@ -101,7 +102,7 @@ function graph(l:Locale,m:boolean,kind:'store'|'read',o:Opt){
  p.height=y;return p;
 }
 export function spec(id:string,title:Label,sub:Label,alt:Label,o:Opt={}):FigureSpec{
- return{articleId:'deepseek-kv-cache',figureId:id,number:'deepseek-kv-cache-'+id,eyebrow:L('KV 캐시 비교','KV cache comparison'),title,subtitle:sub,captionIn:'article',caption:alt,alt,
+ return{articleId:'deepseek-kv-cache',figureId:id,number:'deepseek-kv-cache-'+id,eyebrow:numbered('deepseek-kv-cache/'+id,L('KV 캐시 비교','KV cache comparison')),title,subtitle:sub,captionIn:'article',caption:alt,alt,
   sources:[{label:'DeepSeek-V2 report · §2.1, Table 1',url:'https://arxiv.org/abs/2405.04434'},
    {label:'FlashMLA FP8 KV cache (V3.2)',url:'https://github.com/deepseek-ai/FlashMLA/blob/ba89a3466e9470ad08ab39738d4e7bb66989e1e7/README.md#fp8-kv-cache'},
    {label:'SGLang DeepSeek-V4 KV layout',url:'https://github.com/sgl-project/sglang/blob/main/python/sglang/kernels/ops/attention/dsv4/kv_layout.py'},

@@ -2401,16 +2401,16 @@
       "ko": {
         "slug": "deepseek-kv-cache",
         "title": "DeepSeek의 KV 캐시: 토큰당 3.9 MB에서 890 B까지",
-        "description": "가상 MHA에서 V2, V3.2, V4, V4.1로 이어지는 DeepSeek의 attention을 토큰당 KV 캐시라는 하나의 숫자로 따라가며, 각 세대의 숫자를 직접 계산합니다.",
+        "description": "V2부터 V3.2, V4, V4.1로 이어지는 DeepSeek의 attention을 토큰당 KV 캐시라는 하나의 숫자로 따라가며, 각 세대의 숫자를 직접 계산합니다.",
         "published": true
       },
       "en": {
         "slug": "deepseek-kv-cache",
         "title": "DeepSeek's KV Cache: From 3.9 MB to 890 B per Token",
-        "description": "Following DeepSeek's attention from a hypothetical MHA baseline through V2, V3.2, V4, and V4.1 with one number, the KV cache per token, and working out that number for each generation.",
+        "description": "Following DeepSeek's attention through V2, V3.2, V4, and V4.1 with one number, the KV cache per token, and working out that number for each generation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "fd4c7804cb0fa31d204d335fa1070bd58a4f0653dd56408642ea731c29b4ca9a",
+        "sourceRevision": "125f85844f7bc6a7ec5891f44fb3015727019fcb39b0ad4bb57c1d6e735cd21b",
         "reviewNote": "2026-10-18: English draft reviewed against the final Korean draft in two Codex rounds (2026-10-15); release edits (closing sentence removed) applied to both; section, figure, note and caption order compared."
       }
     }

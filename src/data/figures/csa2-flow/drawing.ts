@@ -5,11 +5,12 @@ export type Sizes=FlowSizes;
 export const SZ=FLOW;
 const REPO='https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash';
 export function spec(id:string,title:Label,sub:Label,alt:Label,panels:(l:Locale,m?:boolean)=>Panel[],wide=true):FigureSpec{
- return{articleId:'csa2-flow',figureId:id,number:'csa2-flow-'+id,layout:wide?'wide':undefined,eyebrow:'CSA2',title,subtitle:sub,captionIn:'article',caption:alt,alt,
+ return{articleId:'csa2-flow',figureId:id,number:'csa2-flow-'+id,layout:wide?'wide':undefined,eyebrow:numbered('csa2-flow/'+id,'CSA2'),title,subtitle:sub,captionIn:'article',caption:alt,alt,
   sources:[{label:'DeepSeek-V4.1-Flash report · §2.3 (CSA2)',url:'https://arxiv.org/html/2609.19969v1'},{label:'DeepSeek-V4.1-Flash model card and code',url:REPO}],panels};
 }
 export function embed(p:Panel,child:Panel,x:number,y:number,attrs=''){p.raw(`<g ${attrs} transform="translate(${x} ${y})">${child.svg()}</g>`);}
 import {chain,type Item} from '../dsa-flow/drawing';
+import {numbered} from '../deepseek-kv-cache/numbers';
 export {chain};
 export type {Item};
 // Plane widths follow the order of column sizes (not to scale). V4-Pro-like values: c 512, r_q 1536, D 7168, n_h·c 128×512.

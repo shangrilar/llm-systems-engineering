@@ -1,5 +1,6 @@
 import {Panel,C,FLOW,math,badge,type FlowSizes,type Label,type Locale,type FigureSpec} from '@llm-systems/viz';
 import {chain,embed,type Item} from '../dsa-flow/drawing';
+import {numbered} from '../deepseek-kv-cache/numbers';
 export {Panel,C,math,badge,chain,embed};
 export type {Item};
 export const L=(ko:string,en:string):Label=>[ko,en];
@@ -7,7 +8,7 @@ export type Sizes=FlowSizes;
 export const SZ=FLOW;
 const REPO='https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro';
 export function spec(id:string,title:Label,sub:Label,alt:Label,panels:(l:Locale,m?:boolean)=>Panel[]):FigureSpec{
- return{articleId:'hca-flow',figureId:id,number:'hca-flow-'+id,layout:'wide',eyebrow:'HCA',title,subtitle:sub,captionIn:'article',caption:alt,alt,
+ return{articleId:'hca-flow',figureId:id,number:'hca-flow-'+id,layout:'wide',eyebrow:numbered('hca-flow/'+id,'HCA'),title,subtitle:sub,captionIn:'article',caption:alt,alt,
   sources:[{label:'DeepSeek-V4 report · §2.3.2 (HCA)',url:REPO},{label:'DeepSeek-V4-Pro inference code · Attention, Compressor',url:REPO+'/blob/main/inference/model.py'}],panels};
 }
 // Plane widths follow the order of column sizes (not to scale). V4-Pro values:

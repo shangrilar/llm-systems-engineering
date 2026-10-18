@@ -1,5 +1,6 @@
 import {Panel,C,connector,type FigureSpec,type Label,type Locale,type Tone} from '@llm-systems/viz';
 import {L} from './drawing';
+import {numbered} from './numbers';
 // Where a CED decoder layer's KV comes from, for the current token t (V4.1 report §2.2–2.3).
 // Left: the layer stack, computation flowing upwards. The encoder output builds the shared global KV (main KV +
 // search keys), made by the decoder's first Full layer and shared by the rest. Right: inside one decoder layer, its
@@ -69,9 +70,9 @@ function panel(l:Locale){
  p.text(0,zy+zh+40,L('예시 2+2층 / 실제 20+20층 · 정규화와 위치 변환은 생략','example 2 + 2 layers / real 20 + 20 · normalization and position transforms omitted'),{size:15,color:C.muted,width:1100});
  p.height=zy+zh+64;return p;
 }
-export default {articleId:'deepseek-kv-cache',figureId:'06-ced-sources',number:'deepseek-kv-cache-06-ced-sources',layout:'wide',eyebrow:'CED',
+export default {articleId:'deepseek-kv-cache',figureId:'06-ced-sources',number:'deepseek-kv-cache-06-ced-sources',layout:'wide',eyebrow:numbered('deepseek-kv-cache/06-ced-sources','CED'),
  title:L('decoder 층은 두 출처의 KV를 자기 Query로 읽는다','A decoder layer reads KV from two sources with its own query'),
- subtitle:L('global KV는 encoder 출력에서 · Query와 local KV는 이 층에서','global KV from the encoder output · query and local KV from this layer'),
+ subtitle:L('global KV는 encoder 출력에서 · Query와 local KV는 이 층에서 · 보고서의 CED 실행 방식','global KV from the encoder output · query and local KV from this layer · CED as run in the report'),
  captionIn:'article',screens:['desktop'],
  caption:L('CED decoder 층의 KV 출처. global KV(main KV와 검색용 key)는 encoder 최종 출력에서 decoder 첫 Full 층이 만들고 나머지 층이 공유한다. 각 decoder 층은 자기 입력에서 주 Query와 local KV를 만들고, 자기 주 Query로 선택된 main KV와 자기 local KV를 함께 읽는다.','Where a CED decoder layer’s KV comes from. The global KV (main KV and search keys) is built from the encoder output by the decoder’s first Full layer and shared by the rest. Each decoder layer makes its own query and local KV from its input and reads the selected main KV together with its own local KV with that query.'),
  alt:L('왼쪽은 아래에서 위로 쌓인 encoder 층 1·2와 decoder 층 1·2. encoder 최종 출력에서 오른쪽의 공유 global KV(main KV와 검색용 key)로 화살표가 간다. 아래 확대 상자는 decoder 층 2 안에서 이 층 입력이 주 Query와 local KV로 갈라지고, 검색용 key로 고른 위치의 main KV와 local KV를 주 Query가 함께 읽어 가중합하는 과정을 보여 준다.','Left: encoder layers 1–2 and decoder layers 1–2 stacked upwards. The encoder output feeds the shared global KV (main KV and search keys) on the right. The zoom box shows decoder layer 2: its input splits into its main query and local KV, and the main query reads the main KV entries picked with the search keys together with the local KV, then takes a weighted sum.'),
