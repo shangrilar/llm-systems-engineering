@@ -1,0 +1,34 @@
+{
+ "01-projections": {
+  "svg": "e155f2f12b0f22183f6f4f0f613243a13a9a4e36f5cbb2a526040ee2d2e6a5a0",
+  "png": "a65ce2b8c5a6bff9e0b26f422c4f2de19b49446e3d9d18e94e6df99ab21a9c35"
+ },
+ "01-projections-mobile": {
+  "svg": "f1a0b331b8fa160bc654582d15e32183d6703d498358291a5d482445a5adf58a",
+  "png": "8065b74a6e8a8d8667ef2882092b5bb14ee36dd1de7b4de8f040420bf792aa99"
+ },
+ "02-attention": {
+  "svg": "6dc6261e9888fcabc16c01456e182d887cf4533156251061acfb1c4f56bcb2a5",
+  "png": "c1c8b1a286528bcc1e4bfb11f347f6ebaa447e5743fef950223288908686373b"
+ },
+ "02-attention-mobile": {
+  "svg": "cee4b2f6d6a633c23ce73af135639b9fc81cd7dd568e696b49f0bfd74629ea75",
+  "png": "39d948a515e94ba7132bda2494f6cc510161980f7c64f77cdb9dd5a710433e95"
+ },
+ "03-key-absorption": {
+  "svg": "f2957979398fda80b5031c4762c60cb57b8e1135cf9402aab2c5b9e06ea6bbc1",
+  "png": "d44c535e2b7ceee0d595f57f247093497b7c3f13aad6c97e964d97785624c324"
+ },
+ "03-key-absorption-mobile": {
+  "svg": "544bcf3fbe58d66f2e2a1a6dd2914dce30673b3e140e7200e11f8b31783ac2a9",
+  "png": "b2f634c858499ec17d0ed64730eb3eae4997e464737f7f8efabcacddad9e11c6"
+ },
+ "04-value-absorption": {
+  "svg": "eb2ea4f7ca51bfb08601d17cba97abdc5af6f3835659501d13fce09c0c1b25a1",
+  "png": "318652d9fc9c94c5554e24681bfc787a4e8ac916276e941961ae830f564c10f8"
+ },
+ "04-value-absorption-mobile": {
+  "svg": "8e3827a145919c38b04ab229cc9ecbd6baf177cd7c73efe5c44941e32a56009a",
+  "png": "ca194597d465be8ef35933fe12d5f92fb89a7f68293be37dd8d565b8ba239825"
+ }
+}

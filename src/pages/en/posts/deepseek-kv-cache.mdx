@@ -1,0 +1,697 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: deepseek-kv-cache
+title: "DeepSeek's KV Cache: From 3.9 MB to 890 B per Token"
+description: "Following DeepSeek's attention from a hypothetical MHA baseline through V2, V3.2, V4, and V4.1 with one number, the KV cache per token, and working out that number for each generation."
+date: 2026-10-18
+---
+
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
+One of the main costs of long-context inference is the **KV cache**: the Keys and Values of earlier positions, stored so they do not have to be recomputed every time a new token is generated. As the [KV cache article](/en/posts/inference-kv-cache/) showed, this storage grows in proportion to context length and is multiplied by the number of requests served at once. So how much the cache grows when the context gains one token goes a long way toward setting the cost of long-context inference.
+
+DeepSeek changed its attention design several times between V2 and V4.1. This article follows those changes through one number, the **KV cache per token**. A hypothetical MHA model with V2's dimensions, storing every head's K and V, would use about 3.9 MB per token. V4.1-Flash uses 890 B per token, about 1/4,400 of that.
+
+This reduction did not happen in a single step. The cache per token can be seen roughly as a product of four factors.
+
+```text
+KV cache per token ≈ width of the stored vector (dimensions)
+                     × stored rows per token
+                     × number of layers storing KV
+                     × bytes per element
+```
+
+V2's MLA narrowed the **width of the stored vector**. V3.2's DSA reduced **the number of positions read**, rather than the amount stored. V4's CSA and HCA compress several tokens into one to reduce the **stored rows per token**, and V4.1's CSA2 lets layers share KV to reduce the **number of layers that store global KV**. Along the way, bytes per element also dropped from BF16 to FP8 and then FP4. Below, we look at what changed in each generation through figures and then work out the numbers ourselves.
+
+## KV cache per token at a glance
+
+First, here are the numbers for five models in one figure. All bars use a **log scale**. Each step is 10×, so differences in bar length should not be read as ratios. Read the number at the end of each bar together with "≈1/N of MHA".
+
+<Annot fig="deepseek-kv-cache/00-kv-per-token" n={1} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/00-kv-per-token" panels="1">
+
+**Storage.** The amount added per token in a long context, computed in the deployed **cache formats** this article adopts. V2 is BF16, V3.2 and V4 mix FP8 and BF16 in their KV, and V4.1 stores global KV in FP4. The hypothetical MHA is a reference that assumes BF16 storage. This section focuses on this panel.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/00-kv-per-token" panels="2">
+
+**Reads.** What all layers read to generate one token in a 128K context, converted to BF16. The units differ, so this panel has its own scale; it is covered in detail in the V3.2 section.
+
+</AnnotPart>
+<span slot="caption">Figure 1. KV cache stored and read when generating one token. The two charts have different units and scales.</span>
+</Annot>
+
+The format and bytes are listed under each bar. V4.1's local KV cache is FP8, though other formats are possible depending on the engine and options.
+
+A few things stand out. On the storage side, V3.2 is smaller than V2, but only because it stores in FP8. Counted at the same precision, V3.2 is actually larger. V4 drops by more than an order of magnitude, and V4.1 reaches 890 B. Under V4 and V4.1, an orange line adds a local KV (SWA) that is kept separately. Why these values come out the way they do is what this article is about.
+
+<details>
+<summary>More detail: how this article counts "KV cache per token"</summary>
+
+- **Average growth in a long context.** Compressed models need 4 or 128 tokens to build one entry, so the same amount is not added at every token. We take the total cache divided by the number of tokens once the context is long enough.
+- **One copy of the model body, one request.** B requests of the same length that do not share cache need B times the storage. Storage per GPU has to be worked out separately, depending on whether tensor parallelism splits or replicates the cache. The MTP module is excluded.
+- **Search keys are included.** A search key is the small key an indexer scores to rank candidate positions; the flow diagrams label it "indexer key." From V3.2 on, models store these keys separately to pick positions to read. They also build up in proportion to context, so they are counted.
+- **Storage uses the deployed cache formats chosen for this article, page padding included.** It can vary by engine and options.
+- **The local KV cache that keeps only recent positions is listed separately.** Once the last 128 positions are filled it stops growing, so it is not part of the per-token growth. The local KV values in the figure are the data size of the last 128 positions, excluding spare page space and intermediate compression state.
+- **These values are computed from model configs and cache formats, not measured on GPUs.**
+- **The hypothetical MHA** is a reference that assumes V2's dimensions (60 layers, 128 heads, 128 dimensions per head) with every head's K and V stored. No such model exists, and it is not meant to be an MHA model of equal quality.
+
+</details>
+
+## The baseline: MHA that stores every head's K and V
+
+The starting point is [core attention](/en/posts/core-attention/). In MHA, each layer builds a Key and a Value for every head and stores both in the cache. Plugging in V2's numbers, storing one token takes:
+
+```text
+Hypothetical MHA: 60 layers × 128 heads × (Key 128 + Value 128) × 2 B
+                = 3,932,160 B ≈ 3.9 MB
+```
+
+At about 3.9 MB per token, a 128K-token context (131,072 positions) needs about 515 GB of cache for a single request. In decode, this whole cache is read for every new token. Storage and reads are both a problem. [MQA and GQA](/en/posts/model-advanced-mqa-gqa/) cut this value by letting several heads share K and V. DeepSeek took a different path.
+
+## DeepSeek-V2
+
+V2 narrows the **width of the stored vector** with **MLA** (Multi-head Latent Attention). Instead of per-head K and V, it stores a small shared vector (the latent) from which they can be built, plus a positional Key. Below we look at what is stored, how attention is computed without expanding per-head K and V, and then the storage per token. Figure 2 shows the effect.
+
+<Annot fig="deepseek-kv-cache/01-guide-v2" n={2} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/01-guide-v2" panels="1">
+
+V2 uses **69,120 B** per token, about 1/57 of MHA.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/01-guide-v2" panels="2">
+
+At a context of 131,072 tokens, the reads to generate one token (BF16 equivalent) drop from about 515 GB for the hypothetical MHA to about **9.06 GB**.
+
+</AnnotPart>
+<span slot="caption">Figure 2. MHA and V2.</span>
+</Annot>
+
+### MLA: three paths from the same input
+
+Figure 3 shows one MLA layer drawn with V3's dimensions. The input X splits three ways.
+
+<Annot fig="mla-flow/01-projections" n={3} layout="rows" whole>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.029-0.502" only="path:0">
+
+**Query path.** X is reduced to a Query latent C<sup>Q</sup> (1,536 dimensions), and from it each head builds a content query Q<sup>C</sup><sub>h</sub> and a positional query Q<sup>R</sup><sub>h</sub>. Queries are not stored in the KV cache for later tokens.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.436-0.794" only="path:1">
+
+**Shared KV path.** X is reduced to the 512-dimensional C<sup>KV</sup>, which is **stored in the cache**. Per-head Keys and Values are not stored, because they can be built by multiplying C<sup>KV</sup> by per-head weights W<sup>UK</sup><sub>h</sub> and W<sup>UV</sup><sub>h</sub>.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.765-0.995" only="path:2">
+
+**Positional Key.** One 64-dimensional K<sup>R</sup> with RoPE applied is **shared by all heads** and stored in the cache. If the position-dependent rotation entered the C<sup>KV</sup> path, the "absorption" shown later would not work, so it gets its own path ([MLA storage article](/en/posts/model-advanced-mla-storage/)).
+
+</AnnotPart>
+<span slot="caption">Figure 3. MLA branches from one input.</span>
+</Annot>
+
+What stays in the cache is **C<sup>KV</sup> (512 dimensions) and K<sup>R</sup> (64 dimensions)**.
+
+The matrix figures in this article follow the same rules. Activations have tokens as rows and features as columns, and weights are drawn with the shape [input, output]. Box widths show only the order of column sizes and are not to scale. Figures that use other axes say so inside the figure.
+
+### Content score and positional score
+
+Figure 4 is the attention computation of one head.
+
+<Annot fig="mla-flow/02-attention" n={4} layout="side" whole>
+<AnnotPart fig="mla-flow/02-attention" panels="1" xr="0.173-0.849">
+
+The score is the sum of two parts: the content score Q<sup>C</sup><sub>h</sub> (K<sup>C</sup><sub>h</sub>)<sup>T</sup>, from multiplying content components, and the positional score Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup>, from multiplying positional components. This equals the dot product of a Query and Key formed by concatenating the two components.
+
+Then come scaling, the causal mask, and softmax, followed by a weighted sum of V. The results of all heads are concatenated and passed through the output projection.
+
+From this figure alone, MLA looks as if it still expands every head's K and V for the computation. Then storage would be small, but each step would need computation to rebuild K and V. Decode with absorption avoids this rebuilding.
+
+</AnnotPart>
+<span slot="caption">Figure 4. Add two scores for attention.</span>
+</Annot>
+
+### Computing without expanding K and V
+
+Figure 5 computes the same content score in three ways. All three start from the same C<sup>Q</sup> and C<sup>KV</sup>.
+
+<Annot fig="mla-flow/03-key-absorption" n={5} layout="cols" whole>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0-0.329">
+
+**① Expand.** As in Figure 4, build the per-head K<sup>C</sup><sub>h</sub>, then multiply by the Query. The dot product runs over d<sub>k</sub> dimensions.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0.329-0.66">
+
+**② Absorb.** Only the parentheses move. By associativity of matrix multiplication, Q<sup>C</sup><sub>h</sub> (C<sup>KV</sup> W<sup>UK</sup><sub>h</sub>)<sup>T</sup> = (Q<sup>C</sup><sub>h</sub> (W<sup>UK</sup><sub>h</sub>)<sup>T</sup>) (C<sup>KV</sup>)<sup>T</sup>. Multiplying W<sup>UK</sup><sub>h</sub> on the Query side first gives a 512-dimensional Q̂<sub>h</sub>, which is multiplied directly with C<sup>KV</sup> from the cache. K is never expanded.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0.657-0.989">
+
+**③ Pre-merge the weights.** The two Query-side weights are merged into one in advance. This is mathematically the same, but the merged weight can be larger, so real implementations do not necessarily use it.
+
+</AnnotPart>
+<span slot="caption">Figure 5. The same score without expanding K.</span>
+</Annot>
+
+The three forms produce algebraically the same content score. With finite precision and quantization, rounding error can differ slightly. All three only change the order in which the content score is computed; the positional score Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup> and the scaling stay as they are. The same can be done on the Value side.
+
+<Annot fig="mla-flow/04-value-absorption" n={6} layout="cols" whole>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0-0.329">
+
+**① Expand.** Expand V<sub>h</sub> to [T, d<sub>v</sub>], then take its weighted sum with the probabilities P<sub>h</sub>.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0.329-0.66">
+
+**② Absorb.** First, use the probabilities to take a weighted sum of the rows of C<sup>KV</sup>, giving U<sub>h</sub>. Then multiply U<sub>h</sub> by W<sup>UV</sup><sub>h</sub> and the output weight. V is never expanded.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0.657-0.989">
+
+**③ Pre-merge the weights.** W<sup>UV</sup><sub>h</sub> and W<sup>O</sup><sub>h</sub> are merged into one in advance.
+
+</AnnotPart>
+<span slot="caption">Figure 6. The same output without expanding V.</span>
+</Annot>
+
+Swapping the order of the weighted sum and the matrix multiplication gives the same result. This way, a decode step completes its computation while **reading only C<sup>KV</sup> and K<sup>R</sup> from the cache**. The derivation of absorption is traced with a small example in the [MLA computation article](/en/posts/model-advanced-mla-computation/).
+
+### Working out V2's number
+
+Now V2's number follows. Each layer stores 512 dimensions of C<sup>KV</sup> and 64 of K<sup>R</sup>.
+
+```text
+V2: 60 layers × (C^KV 512 + K^R 64) × 2 B = 69,120 B  (about 1/57 of MHA)
+```
+
+V3 has the same MLA structure with 61 layers, so 61 × 576 × 2 = 70,272 B. That is why this article does not treat V3 separately.
+
+MLA cut storage sharply, but the **range that is read** is unchanged. Each decode step still reads C<sup>KV</sup> at every earlier position. In a 128K context, V2 reads 60 layers × 131,072 × 1,152 B ≈ 9.06 GB per step. That is far less than MHA's 515 GB, but it keeps growing as the context gets longer.
+
+## DeepSeek-V3.2
+
+V3.2 keeps MLA and adds **DSA** (DeepSeek Sparse Attention) to choose **which positions to read**. A small lightning indexer scores positions and picks up to 2,048 of them, and the main attention uses only the picked positions. Below we look at how the search key is built, the score that picks positions, and the main attention over the picked positions, and then work out storage and reads. Figure 7 shows the effect.
+
+<Annot fig="deepseek-kv-cache/02-guide-v32" n={7} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/02-guide-v32" panels="1">
+
+V3.2 uses **48,068 B** per token. It is smaller than V2 because of a deployed format that uses FP8. Counting every stored element at the same BF16 precision, the added search key actually makes it larger.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/02-guide-v32" panels="2">
+
+Reads drop sharply thanks to position selection, to about **2.19 GB**, about 1/4 of V2. Most of it is search keys.
+
+</AnnotPart>
+<span slot="caption">Figure 7. From MHA to V3.2.</span>
+</Annot>
+
+### DSA: three things the indexer builds
+
+The indexer is a small attention mechanism used to decide which positions to pick. As Figure 8 shows, it builds three things.
+
+<Annot fig="dsa-flow/01-indexer-projections" n={8} layout="rows" whole>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.038-0.461" only="path:0">
+
+**Indexer query.** q<sup>I</sup><sub>j</sub> is built for each head j from MLA's Query latent C<sup>Q</sup> (64 heads × 128 dimensions). It reuses the same latent as the main attention.
+
+</AnnotPart>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.461-0.745" only="path:1">
+
+**Search key** (labeled indexer key). **Only one** k<sup>I</sup> is built from the input X and shared by all indexer heads. This value **builds up in the cache**, because later tokens need k<sup>I</sup> at each earlier position to evaluate it. Compared at the same precision, this extra key increases storage.
+
+</AnnotPart>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.702-0.954" only="path:2">
+
+**Head weights.** w<sup>I</sup> is built from X and sets, for each token, how much each of the 64 heads' judgments counts.
+
+</AnnotPart>
+<span slot="caption">Figure 8. Three things the indexer builds.</span>
+</Annot>
+
+### The score that picks positions
+
+<Annot fig="dsa-flow/02-index-score" n={9} layout="stack" whole>
+<AnnotPart fig="dsa-flow/02-index-score" panels="1" xr="0.03-0.887">
+
+For each head, take the dot product of the query and the shared key, apply ReLU, and multiply the result by the head weight. Then sum over all heads.
+
+From the score I, up to 2,048 highest-scoring positions are picked per row, giving a selection mask M: 0 for picked positions and −∞ for the rest.
+
+</AnnotPart>
+<span slot="caption">Figure 9. Indexer score and top-k per row.</span>
+</Annot>
+
+In the report's notation:
+
+```text
+I(t, s) = Σⱼ w^I(t, j) × ReLU( q^I(t, j) · k^I(s) )
+```
+
+The indexer has no softmax, and w<sup>I</sup> is not a probability. The score is used only for ranking.
+
+### MLA that reads only the picked positions
+
+<Annot fig="dsa-flow/03-sparse-attention" n={10} layout="stack" whole>
+<AnnotPart fig="dsa-flow/03-sparse-attention" panels="1" xr="0.018-0.941">
+
+The main attention is the absorbed MLA shown earlier (② in Figure 5).
+
+Adding M to the score makes the probability of unpicked positions zero after softmax.
+
+</AnnotPart>
+<span slot="caption">Figure 10. Absorbed MLA scores plus the selection mask, then softmax.</span>
+</Annot>
+
+The figure only expresses the result with a mask. Whether a real kernel reads only the picked positions depends on the implementation.
+
+### Working out V3.2's number
+
+Start with the structure alone. What is stored is MLA's 576 dimensions plus a 128-dimensional search key, 704 dimensions in all. Counted at the same BF16, that is 61 layers × 704 × 2 B = 85,888 B, 22% more than V3 (70,272 B). **DSA is not a technique for reducing storage.** Unpicked positions are not removed from the cache either, because the next token may pick different positions.
+
+Real deployments store at lower precision. For one token in one layer, two groups of values are stored.
+
+**Main KV, 656 B.** The 512 dimensions of C<sup>KV</sup> are stored in FP8 at 1 B per element, 512 B. FP8 has a narrow representable range, so a **scale** factor for each group of values is stored with it. There is one FP32 scale per 128 dimensions, so 4 × 4 B = 16 B. The 64 dimensions of the positional Key K<sup>R</sup> are not quantized and stay in BF16, 64 × 2 B = 128 B. Together, 512 + 16 + 128 = 656 B.
+
+**Search key, 132 B.** The 128 dimensions of the search key k<sup>I</sup> are stored in FP8 for 128 B, with one FP32 scale for all 128 dimensions, 4 B. 128 + 4 = 132 B. The search key is quantized to FP8 including its RoPE part; unlike the main KV, no part of it is left in BF16.
+
+```text
+Main KV:     C^KV 512 × 1 B + scale 4 × 4 B + K^R 64 × 2 B = 512 + 16 + 128 = 656 B
+Search key:  k^I 128 × 1 B + scale 1 × 4 B               = 128 + 4        = 132 B
+V3.2: 61 layers × (656 + 132) B = 48,068 B  (about 1/82 of MHA)
+```
+
+
+### Looking at reads
+
+What DSA cuts is what one decode step **reads**. The right chart of Figure 7 shows what all layers read to generate one token (one decode step) in a 128K context. Each bar is colored in proportion to the KV read by attention (blue) and the search keys read to pick positions (red). Each entry a layer references is counted once. A cache shared by several layers is counted again for each layer that reads it, but it is not counted twice because of multiple heads in the same layer or the two roles of K and V. SWA is included; repeated loads in practice and writes of the new cache are excluded.
+
+This value is a BF16-equivalent logical amount that counts, once per layer, the KV used by the main attention and the search keys needed to pick positions. It is not actual memory traffic.
+
+In V3.2, the KV read by attention is 61 layers × 2,048 positions × 1,152 B ≈ 144 MB, less than 1/60 of V2's 9.06 GB. In exchange, the indexer scans the keys of every position: 61 layers × 131,072 × 256 B ≈ 2.05 GB. Counted this way at BF16, search keys make up about 93% of the logical reads. That alone does not mean picking positions takes most of the execution time, because computation and actual memory access patterns differ.
+
+The indexer is still cheap because each key is small (128 dimensions, FP8), every head reads the same key, and there is no softmax, only ReLU and a weighted sum. But it still scans the whole context. Cutting this cost together with storage is the task V4 takes on. How the indexer works is covered in the [sparse indexer article](/en/posts/model-advanced-sparse-indexer/).
+
+## DeepSeek-V4-Flash
+
+V4 **compresses the KV of several tokens into one entry**, reducing the **stored rows per token**. It mixes two schemes with different compression ratios across layers. **CSA** (Compressed Sparse Attention) compresses overlapping spans into one entry every 4 tokens and reads selectively with an indexer. **HCA** (Heavily Compressed Attention) compresses 128 non-overlapping tokens into one entry and reads every completed entry. Recent positions are kept separately without compression. Below we start with HCA, which is simpler, move on to CSA, and then work out the numbers. Figure 11 shows the effect.
+
+<Annot fig="deepseek-kv-cache/03-guide-v4" n={11} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="1">
+
+V4-Flash uses about **3,563 B** per token. The local KV that keeps recent positions is listed separately in orange.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="2">
+
+Reads under the same conditions are about **214 MB**.
+
+</AnnotPart>
+<span slot="caption">Figure 11. From MHA to V4-Flash.</span>
+</Annot>
+
+This article uses V4-Flash as its reference. Of its 43 layers, the first 2 are SWA layers that see only recent positions; 21 are CSA and 20 are HCA. It is also worth noting up front that V4 is not MLA with a compressor added. V4 does not expand per-head K and V from a latent the way MLA does. **A single 512-dimensional entry serves as both Key and Value for every head.**
+
+### HCA: 128 tokens into one
+
+In this article, the uncompressed KV of the last 128 positions is called the **local KV (SWA)**. What is compressed and built up across a long context splits in two. The compressed KV that attention actually reads is the **main KV**, and CSA, shown later, adds search keys that pick positions to read. The main KV and search keys together are the **global KV**. Here "local" refers to the range of recent positions. The V4 report describes the branch that reads recent positions as sliding window attention; the names local KV, main KV, and global KV come from the V4.1 report.
+
+An HCA layer builds three branches from the input X.
+
+<Annot fig="hca-flow/01-weight-map" n={12} layout="rows" whole>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.035-0.371" only="path:q">
+
+**Query.** Built through a latent c<sup>Q</sup>, as in MLA.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.337-0.57" only="path:w">
+
+**Local KV.** Built one per token without compression, keeping only the last 128.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.538-0.936" only="path:c+z">
+
+**Compressed KV.** Builds candidates C and scores Z, then merges m′ tokens into one entry.
+
+</AnnotPart>
+<span slot="caption">Figure 12. Learned weights of HCA attention.</span>
+</Annot>
+
+Compression is a weighted average computed separately for each channel. For teaching, m′ is reduced to 4; a real HCA layer uses m′ = 128.
+
+<Annot fig="hca-flow/02-compression" n={13} layout="rows">
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.009-0.562">
+
+**①② Set the weights and merge.** The position bias B is added to the scores Z of the tokens in the block, and a softmax along the token direction sets the weights. Merging the candidates C channel by channel with those weights leaves one row.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.562-0.759">
+
+**③ Finish the entry.** The merged row goes through RMSNorm and RoPE to become an entry. An entry is complete only once its block is full.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.759-0.987">
+
+**Compare.** The local KV is built separately for each token, without compression.
+
+</AnnotPart>
+<span slot="caption">Figure 13. Building a compressed entry.</span>
+</Annot>
+
+<Annot fig="hca-flow/03-visible-entries" n={14} layout="rows">
+<AnnotPart fig="hca-flow/03-visible-entries" panels="1" yr="0.014-0.515">
+
+**t = 6.** Token t reads all completed compressed entries concatenated with the recent window, which includes the current token. Here only block 0 is complete, and the recent tokens of the still incomplete block 1 are read through the window.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/03-visible-entries" panels="1" yr="0.515-0.92">
+
+**t = 7.** Block 1 is now complete too, adding one compressed entry. The window is read as well, so the same original token can appear in both a compressed entry and a window entry.
+
+</AnnotPart>
+<span slot="caption">Figure 14. Entries token t can read.</span>
+</Annot>
+
+<Annot fig="hca-flow/04-attention" n={15} layout="rows">
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.012-0.405">
+
+**① Scores.** The visible entries E are used **as both Key and Value**. Here E plays the Key role. There are no weights that expand per-head K and V.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.405-0.713">
+
+**② Weighting.** A softmax that includes the sink gives the weights, and the same E is summed with them as the Value. **Sink**: each head adds exp(z′ₕ), from a learned value z′ₕ, to the softmax denominator, so the weights on the real entries can sum to less than 1. This leaves room to pay less attention to every entry. **Inverse rotation**: the entries also serve as Values with RoPE applied, so the last 64 dimensions of the output are rotated back by the current query position to align them to relative distance. This does not erase position information completely.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.713-0.919">
+
+**③ Output transform.** Heads are grouped for the output projection.
+
+</AnnotPart>
+<span slot="caption">Figure 15. Attention over a shared K = V.</span>
+</Annot>
+
+Since K and V are the same entry, it only needs to be stored once.
+
+### CSA: compress with overlap and read selectively
+
+CSA adds two things to the same frame as HCA. Compression spans overlap, and an indexer picks which entries to read.
+
+<Annot fig="csa-flow/01-weight-map" n={16} layout="rows">
+<AnnotPart fig="csa-flow/01-weight-map" panels="1" xr="0-0.86" yr="0.033-0.547" only="path:q+iq">
+
+**Query and indexer.** The Query path is the same as in HCA. The new indexer projects the Query latent it shares with the main attention to build the indexer query.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/01-weight-map" panels="1" xr="0-0.86" yr="0.486-0.973" only="path:c+z">
+
+**Compressed KV.** The weights for candidates C and scores Z are twice as wide as in HCA, because each span is compressed with an overlap into its neighbor.
+
+</AnnotPart>
+<span slot="caption">Figure 16. Learned weights of CSA attention.</span>
+</Annot>
+
+<Annot fig="csa-flow/02-overlap-compression" n={17} layout="rows">
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.008-0.64">
+
+**①② One entry from 8 tokens.** One CSA entry reads 8 tokens: the 4 tokens of its own span (b) and the 4 of the previous span (a). m = 4 is CSA's real value.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.64-0.796">
+
+**③ Finish the entry.** Even so, one entry is produced every 4 tokens. The number of stored rows is 1/4 of the number of tokens.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.796-0.948">
+
+**Neighboring entries.** Neighboring entries share half of their source tokens, so information from both sides of a block boundary can be reflected. This is weighted compression, so it does not mean the information is preserved as is, and the first entry has no previous span.
+
+</AnnotPart>
+<span slot="caption">Figure 17. Building an entry with overlapping compression.</span>
+</Annot>
+
+<Annot fig="csa-flow/03-indexer" n={18} layout="rows">
+<AnnotPart fig="csa-flow/03-indexer" panels="1" yr="0.025-0.677">
+
+**①②③ Key, query, head weights.** CSA's indexer uses the same score formula as V3.2's, but builds its keys with a **separate compressor**. So search keys are also stored one per 4 tokens, with 128 dimensions.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/03-indexer" panels="1" yr="0.677-0.947">
+
+**④ Score and select.** Scores are combined with the head weights, and the highest-scoring blocks are picked for each token. Blocks not yet complete at that query position are not candidates.
+
+</AnnotPart>
+<span slot="caption">Figure 18. CSA's indexer.</span>
+</Annot>
+
+<Annot fig="csa-flow/04-visible-entries" n={19} layout="stack">
+<AnnotPart fig="csa-flow/04-visible-entries" panels="1" xr="0-0.931">
+
+Token t reads the k compressed entries picked by the indexer plus the recent window. This differs from HCA, which reads **all** compressed entries.
+
+HCA compresses 128×, so there are few entries and reading them all is fine. CSA compresses 4×, so there are many entries, and it reads selectively.
+
+</AnnotPart>
+<span slot="caption">Figure 19. Entries actually read.</span>
+</Annot>
+
+### Working out V4-Flash's number
+
+CSA layers store a 512-dimensional main KV entry and a 128-dimensional search key every 4 tokens, and HCA layers store a 512-dimensional main KV entry every 128 tokens.
+
+On structure alone, counted at the same BF16, that is 21 × 640 × 2 B ÷ 4 + 20 × 512 × 2 B ÷ 128 = 6,880 B, about one-tenth of V2. The width of the stored vector (512) is close to MLA's 576, but the stored rows per token dropped to 1/4 and 1/128.
+
+The deployed format stores main KV entries mostly in FP8 and search keys in FP4. The format used in this article is 584 B per main KV entry and 68 B per search key.
+
+```text
+V4-Flash: 21 layers × (584 + 68) B ÷ 4 + 20 layers × 584 B ÷ 128 ≈ 3,514 B
+          with page alignment padding ≈ 3,563 B  (about 1/1,104 of MHA)
+```
+
+<details>
+<summary>More detail: the V4-Flash cache format</summary>
+
+```text
+Main KV entry: 448 non-RoPE dims × 1 B (FP8 E4M3) + 64 RoPE dims × 2 B (BF16)
+               + one UE8M0 scale per 64 channels, 1 B × 7 + padding 1 B = 584 B
+Search key:    128 dims × 0.5 B (FP4 E2M1)
+               + one UE8M0 scale per 32 channels, 1 B × 4 = 68 B
+Page (256 tokens): CSA KV 64 entries × 584 B = 37,376 B → aligned to 576 B units: 37,440 B
+                   HCA KV 2 entries × 584 B = 1,168 B → 1,728 B
+                   CSA search keys 64 entries × 68 B = 4,352 B (no padding)
+Per token: (21 × (37,440 + 4,352) + 20 × 1,728) ÷ 256 ≈ 3,563 B
+```
+
+This calculation applies pages of 256 original tokens and the alignment rules. Page padding can vary with the engine's page settings.
+
+</details>
+
+On top of this there is a separate **local KV cache**. All 43 layers keep the KV of the last 128 positions without compression. In the deployed format that is 43 × 128 × 584 B ≈ 3.2 MB. This value stops growing once the last 128 positions are filled. But as the per-token growth shrank, local KV became a larger share of storage. Approximating global KV as per-token growth × context length, the two are about equal at roughly 900 tokens. For shorter contexts, the local KV cache is larger. The approximation ignores rounding of compressed blocks and intermediate compression state.
+
+Reads (the right chart of Figure 11) also dropped. The KV read by attention is about 38 MB, and the keys read by the indexer about 176 MB. That is less than V3.2's 2.05 GB because search keys are compressed 4× and only 21 layers use the indexer. HCA layers read every compressed entry, so that part keeps growing in proportion to context.
+
+## DeepSeek-V4.1-Flash
+
+V4.1 changes compression and selection with **CSA2** and shares KV and selection lists across layers. This brings the number of layers that store global KV down to four, and storing main KV in FP4 also cuts storage. In addition, the **CED** structure, together with an approximation that recomputes only the recent span, reduces prompt-processing compute. Below we look at the changes to compression and selection, cross-layer sharing, and CED in that order, then work out the numbers. Figure 20 shows the effect.
+
+<Annot fig="deepseek-kv-cache/04-guide-v41" n={20} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/04-guide-v41" panels="1">
+
+V4.1-Flash uses **890 B** per token, about 1/4,400 of the hypothetical MHA.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/04-guide-v41" panels="2">
+
+Reads under the same conditions are about **126 MB**.
+
+</AnnotPart>
+<span slot="caption">Figure 20. All five models.</span>
+</Annot>
+
+### CSA2: compression without overlap, and the search key
+
+CSA2 changes two things within a layer. Compression spans no longer overlap, and the search key is built from the main KV instead of by a separate compressor.
+
+<Annot fig="csa2-flow/07-compression-span" n={21} layout="cols">
+<AnnotPart fig="csa2-flow/07-compression-span" panels="1">
+
+**CSA.** One entry reads its own span together with the previous span, sharing half of its tokens with the neighboring entry.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/07-compression-span" panels="2">
+
+**CSA2.** Spans do not overlap, so each token goes into exactly one entry. The position bias B inside the compressor is gone as well.
+
+</AnnotPart>
+<span slot="caption">Figure 21. CSA2 compresses without overlap. Drawn with m = 4 for comparison.</span>
+</Annot>
+
+The compression ratio also dropped. In real CSA2, encoder layers pack 2 tokens into one entry (m = 2), and decoder layers build one entry per token without compression (m = 1).
+
+<Annot fig="csa2-flow/06-indexer-key-source" n={22} layout="rows" whole>
+<AnnotPart fig="csa2-flow/06-indexer-key-source" panels="1" xr="0-0.966" yr="0.009-0.525">
+
+**CSA.** The compressor ran twice on the same input to build the main KV and the search key separately.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/06-indexer-key-source" panels="1" xr="0-0.966" yr="0.525-0.955">
+
+**CSA2.** There is only one compressor. Its output after compression and RMSNorm, **before RoPE**, is projected and normalized to build the search key. RoPE is then applied separately to the main KV and the search key.
+
+</AnnotPart>
+<span slot="caption">Figure 22. CSA2 builds the search key from the main KV.</span>
+</Annot>
+
+Because both come from the same entry, they are easier to pass along together in the cross-layer sharing shown next.
+
+### Sharing KV across layers: Full, Reindex, Reuse
+
+Until now, every layer stored its own KV. In V4.1-Flash, **four Full layers build and store global KV**, and the remaining CSA2 layers share it. The first two layers use SWA only, and all 40 layers build their own local KV.
+
+Each CSA2 layer is fixed to one of three modes.
+
+<Annot fig="csa2-flow/01-three-modes" n={23} layout="cols" whole>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0-0.342">
+
+A **Full** layer builds new main KV and search keys and picks its top-k with its own indexer. **Only Full layers store global KV.** Full is not dense attention over every position either; it reads only the top-k.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0.342-0.675">
+
+A **Reindex** layer borrows the main KV and search keys of the most recent preceding Full layer and picks positions again with its own indexer query.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0.675-0.981">
+
+A **Reuse** layer has no indexer. It borrows both the main KV and the selection list from earlier layers.
+
+</AnnotPart>
+<span slot="caption">Figure 23. The three modes of a CSA2 layer: what it builds and what it borrows.</span>
+</Annot>
+
+In all three modes, the Query and local KV are built in the layer itself, and each layer computes its own attention. What is shared is the global KV and the selection list, not the result of attention. The principle of cross-layer sharing is covered in the [cross-layer KV sharing article](/en/posts/model-advanced-cross-layer-kv/).
+
+V4.1-Flash's 40 layers split into the first 20 (encoder) and the last 20 (decoder).
+
+<Annot fig="csa2-flow/04-layer-layout" n={24} layout="rows" whole>
+<AnnotPart fig="csa2-flow/04-layer-layout" panels="1" xr="0-0.957" yr="0.017-0.506">
+
+**Encoder.** The first 2 layers use SWA only, and the remaining 18 form three groups of [Full, Reuse×5].
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/04-layer-layout" panels="1" xr="0-0.957" yr="0.506-0.816">
+
+**Decoder.** The global KV for all 20 layers is built by **only the first Full layer**, and four Reindex layers pick positions again.
+
+</AnnotPart>
+<span slot="caption">Figure 24. The 40-layer layout of DeepSeek-V4.1-Flash. The groups that share KV differ from the groups that share selections.</span>
+</Annot>
+
+In the end, 4 layers store global KV: 3 Full layers in the encoder and 1 in the decoder. In the decoder, the cost of picking is also bounded by a hierarchical indexer. Figure 25 shows the hierarchical selection scheme the report describes.
+
+<Annot fig="csa2-flow/05-hierarchical-indexer" n={25} layout="rows" whole>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.011-0.444">
+
+**① First Full layer.** It scores every position to pick its own top-512, and at the same time picks high-scoring blocks to build a candidate pool (up to 2,048 blocks × 8 positions = 16,384 positions per query).
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.444-0.678">
+
+**② Reindex layer.** In this hierarchical scheme, it scores only within this pool and does not scan the whole context again.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.678-0.942">
+
+**③ Reuse layer.** The Reuse layer in this example uses the selection of the ② Reindex layer as is. In general, it reuses the selection of the most recent Full or Reindex layer.
+
+</AnnotPart>
+<span slot="caption">Figure 25. Hierarchical sparse indexer.</span>
+</Annot>
+
+The cost of the first Full layer scanning the whole context remains.
+
+### CED: the decoder's global KV comes from the encoder
+
+V4.1's encoder and decoder are not the encoder and decoder of a translation model. Both process the same token sequence causally. In decode, the current token passes through the 20 encoder layers and then the 20 decoder layers in turn. This structure is called **CED** (Causal Encoder-Decoder). The difference lies in where the KV that decoder layers read is built.
+
+<Annot fig="deepseek-kv-cache/06-ced-sources" n={26} layout="stack">
+<AnnotPart fig="deepseek-kv-cache/06-ced-sources" panels="1" xr="0-0.988">
+
+**Left: the layer stack.** Token t passes through the layers from bottom to top. The decoder's global KV (main KV and search keys) is built not from the decoder's own hidden states but from the **encoder's final output**. The first decoder Full layer projects this output to build it, and the other decoder layers share it.
+
+**Right: inside one decoder layer.** This layer builds the **main Query and local KV** from its own input. It then concatenates the main KV at positions picked with the search keys and its own local KV, scores them **with its own main Query**, and takes the weighted sum.
+
+</AnnotPart>
+<span slot="caption">Figure 26. A decoder layer reads KV from two sources with its own Query. Follows the CED execution described in the report.</span>
+</Annot>
+
+Even when several layers share the global KV, the Query that reads it differs from layer to layer.
+
+This split makes it possible to cut compute in prefill, where the prompt is processed.
+
+<Annot fig="deepseek-kv-cache/07-ced-prefill" n={27} layout="stack">
+<AnnotPart fig="deepseek-kv-cache/07-ced-prefill" panels="1" xr="0-0.993">
+
+**Encoder layers** run over every position of the prompt. Their output builds the global KV that the decoder reads, for every position.
+
+The only cache left to prepare by running the decoder is each decoder layer's **local KV**, and local KV needs only the last 128 positions. So **decoder layers run only over the positions in the recent window.** This is called **replay**.
+
+</AnnotPart>
+<span slot="caption">Figure 27. CED prefill. Follows the bounded replay execution described in the report.</span>
+</Annot>
+
+Replay does more than project KV. It passes the recent positions through the decoder layers in order, running attention and the FFN as well. The first decoder layer takes the encoder output at those positions, each later layer takes the output of the decoder layer just below it, and during the run each layer also reads its selected entries from the global KV.
+
+For long prompts, the number of (position, layer) evaluations in prefill is roughly halved, since the 20 decoder layers run only over the recent span rather than the whole prompt. This cuts **prefill compute**, not the KV cache, and it is a ratio of evaluations, not of time. Replay is also an approximation. Computing the hidden state at the first position of the recent span exactly would need local KV from positions before it, and replay cuts off that reference. The savings apply only to prefill. In decode, which generates new tokens, all 40 encoder and decoder layers run. CED is covered in more detail in the [CED article](/en/posts/model-advanced-ced/).
+
+### Working out V4.1-Flash's number
+
+Four layers store global KV. The 3 encoder Full layers store one entry every 2 tokens, and the 1 decoder Full layer stores one entry per token. One entry is 512 dimensions of main KV plus 128 of search key.
+
+On structure alone, counted at the same BF16, that is (3 ÷ 2 + 1) × (512 + 128) × 2 B = 3,200 B, about half of V4-Flash. The compression ratio actually went down (4 → 2 and 1), but the number of layers storing global KV fell from 41 (21 CSA + 20 HCA) to 4.
+
+The deployed format stores main KV entries in FP4: 512 dimensions × 0.5 B = 256 B, plus one FP8 (E4M3) scale of 1 B per 16 channels, 32 B, for 288 B. The RoPE part is quantized as well. Search keys are 68 B, the same as V4.
+
+```text
+V4.1-Flash: (3 ÷ 2 + 1) × (288 + 68) B = 2.5 × 356 = 890 B  (about 1/4,418 of MHA)
+```
+
+All 40 layers keep local KV for the last 128 positions. In the deployed format (FP8 with one UE8M0 scale per 32 channels, 528 B per token), that is 40 × 128 × 528 B ≈ 2.7 MB. Using the same approximation against 890 B per token, the two are about equal at roughly 3,038 tokens. For shorter contexts, keeping recent positions is actually the main storage cost.
+
+For reads (the right chart of Figure 20), the KV read by attention is about 25 MB and the keys read by the indexer about 101 MB. Sharing KV does not stop each layer from computing attention, so each of the 38 CSA2 layers reads 512 entries. Storage is one copy, but reads happen in every layer.
+
+## What was cut and what remains
+
+Putting the five models together again, each generation cut a different factor.
+
+| Model | What changed | Factor reduced | KV per token (deployed format) |
+| --- | --- | --- | --- |
+| Hypothetical MHA | baseline | N/A (baseline) | 3,932,160 B (BF16 assumed) |
+| V2 | MLA | width of the stored vector | 69,120 B (BF16) |
+| V3.2 | DSA, FP8 KV | positions read (storage grows structurally) | 48,068 B |
+| V4-Flash | CSA and HCA, shared K = V | stored rows per token | 3,563 B |
+| V4.1-Flash | CSA2, FP4 KV (CED cuts prefill compute) | layers that store global KV | 890 B |
+
+Precision also went down from generation to generation. Going from BF16 to FP8 and then FP4 roughly halved storage, and then halved it again, even for the same structure.
+
+The costs that remain are also clear. First, the **local KV cache** stays at a fixed size once the last 128 positions are filled, and its share grows as the per-token growth shrinks. Second, there is the **cost of picking positions**. In the right chart of Figure 1, most of what the sparse models read is search keys. Third, compression, selection, and CED's replay involve **approximation**. The models are trained with these structures, so equal quality cannot be assumed; quality has to be judged from the evaluations in the reports.
+
+Finally, storage falling to 1/4,400 does not make decode 4,400 times faster. Real speed depends on compute, kernel implementation, memory layout, and batch size.
+
+## Sources
+
+**Model structure and reports**
+- DeepSeek-V2 report §2.1. The hypothetical MHA is counted the same way as Table 1's comparison of storage by attention type. The abstract's "93.3% KV cache reduction" is a comparison with DeepSeek 67B, so it differs from the ratios in this article. https://arxiv.org/abs/2405.04434
+- DeepSeek-V3.2 official inference code (Indexer, KV cache). Decode uses the absorbed (②) path. https://huggingface.co/deepseek-ai/DeepSeek-V3.2/tree/main/inference
+- DeepSeek-V4 report §2.3, §4.2.1 and the V4-Flash config: https://arxiv.org/abs/2606.19348 · https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash
+- DeepSeek-V4.1-Flash report §2.2–2.4, §3.2.2, §4.2.1 and config. The abstract's global KV cache of 890 B per token matches the calculation in the text. The hierarchical indexer is a structure the report introduced in later training. The CED and bounded replay in Figures 26 and 27 also follow the execution described in the report; the public reference code reviewed for this article does not implement this execution path separately. https://arxiv.org/abs/2609.19969
+
+**Cache formats used for storage**
+- V3.2 main KV: FlashMLA's FP8 KV cache format (per token, 512 B of FP8 values, 16 B of scales, 128 B of RoPE, no extra padding). https://github.com/deepseek-ai/FlashMLA/blob/ba89a3466e9470ad08ab39738d4e7bb66989e1e7/README.md#fp8-kv-cache
+- V3.2 search keys: SGLang IndexKeyCache (values and scales split within a 64-token page, 8,448 B). The HF reference code keeps C<sup>KV</sup> in a BF16 buffer, so counted as in that code it is 61 × (1,152 + 132) = 78,324 B. https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/mem_cache/index_key_cache.py
+- V4 and V4.1: SGLang's DeepSeek-V4 kernel formats and memory pool (V4 584 B with page alignment, V4.1 FP4 288 B, search keys 68 B). Formats can differ by engine and options. V2 can also be deployed with an FP8 KV option, and for V4 there is also a TensorRT-LLM path that stores even RoPE in FP8. https://github.com/sgl-project/sglang/blob/main/python/sglang/kernels/ops/attention/dsv4/kv_layout.py · https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
+
+**Read calculations**
+- A BF16-equivalent logical amount that counts, once each, the KV each layer uses for attention and the search keys needed to pick positions. The main attention in the V3.2 reference code and Reindex in the V4.1 reference code compute all scores and then apply a mask, so this differs from that code's actual access.

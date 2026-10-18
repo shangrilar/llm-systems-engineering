@@ -1,0 +1,18 @@
+{
+ "01-weight-map": {
+  "svg": "cadcf8597286ab223a1f8a38df5a608ee1785fbad20aba0eb4b523c28cfe9fab",
+  "png": "bb4bdbf07c1180935e55f067e723b77a6e65fc42f6499cae8f81880e514b7369"
+ },
+ "02-overlap-compression": {
+  "svg": "c1998144c5f038fee7ac9e74b7206106deb94b914e47bdb32a8f15263b9aa02a",
+  "png": "477909b5c5e7cf7710c42d25bb3c9a1be75bfe006fb9b115459f6c4371fe746d"
+ },
+ "03-indexer": {
+  "svg": "4e831eb96016171022f0a2b2b4ef1e475df065bd93ceb5eba6cc0c289f5cde54",
+  "png": "862bc7a9fe54ea2844e936018273764e836dd936774cf0b37435dc17d1302f55"
+ },
+ "04-visible-entries": {
+  "svg": "0919352cb07eff9e5746be230af24834856a14c581134be8171b32ce2e7e6ba4",
+  "png": "445cdf89270c7f6cf3aa6960e6d7ec407d56ab5fac37c310e2f11aa6e0b89f5f"
+ }
+}

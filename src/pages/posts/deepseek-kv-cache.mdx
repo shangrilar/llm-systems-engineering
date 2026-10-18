@@ -1,0 +1,692 @@
+---
+layout: ../../layouts/Post.astro
+articleId: deepseek-kv-cache
+title: "DeepSeek의 KV 캐시: 토큰당 3.9 MB에서 890 B까지"
+description: "가상 MHA에서 V2, V3.2, V4, V4.1로 이어지는 DeepSeek의 attention을 토큰당 KV 캐시라는 하나의 숫자로 따라가며, 각 세대의 숫자를 직접 계산합니다."
+date: 2026-10-18
+---
+
+import Annot from '../../components/Annot.astro';
+import AnnotPart from '../../components/AnnotPart.astro';
+
+긴 문맥 추론에서 중요한 비용 중 하나는 **KV 캐시**입니다. 새 토큰을 생성할 때마다 이전 위치의 Key와 Value를 다시 계산하지 않으려고 저장해 두는 값입니다. [KV 캐시 글](/posts/inference-kv-cache/)에서 본 것처럼, 이 저장량은 문맥 길이에 비례하게 늘고 동시에 처리하는 요청 수만큼 곱해집니다. 그래서 토큰 하나가 늘 때 캐시가 얼마나 늘어나는지가 긴 문맥 추론의 비용을 크게 좌우합니다.
+
+DeepSeek은 V2부터 V4.1까지 attention 구조를 여러 번 바꿨습니다. 이 글은 그 변화를 **토큰당 KV 캐시**라는 하나의 숫자로 따라갑니다. V2 모델과 같은 크기로 K와 V를 모두 저장하는 가상의 MHA 모델은 토큰당 약 3.9 MB를 사용합니다. V4.1-Flash는 토큰당 890 B를 사용합니다. 약 4,400분의 1입니다.
+
+이 차이는 한 번에 생긴 것이 아닙니다. 토큰당 캐시는 대략 네 요소의 곱으로 볼 수 있습니다.
+
+```text
+토큰당 KV 캐시 ≈ 저장 벡터의 폭(차원) × 토큰당 저장 행 수 × 저장하는 층 수 × 원소당 bytes
+```
+
+V2의 MLA는 **저장 벡터의 폭**을 줄였습니다. V3.2의 DSA는 저장량 대신 **읽는 위치**를 줄였습니다. V4의 CSA·HCA는 여러 토큰을 하나로 압축해 **저장 행 수**를 줄였고, V4.1의 CSA2는 층끼리 KV를 나눠 써서 **global KV를 저장하는 층 수**를 줄였습니다. 그 사이 원소당 bytes도 BF16에서 FP8, FP4로 내려갔습니다. 아래에서는 세대마다 무엇이 바뀌었는지 그림으로 확인하고, 그 숫자를 직접 계산해 보겠습니다.
+
+## 토큰당 KV 캐시 한눈에 보기
+
+먼저 다섯 모델의 숫자를 한 그림에 놓겠습니다. 막대는 모두 **로그 눈금**입니다. 한 칸이 10배이므로 막대 길이의 차이를 비율로 읽으면 안 됩니다. 막대 끝의 숫자와 "MHA의 약 1/N"을 함께 보면 됩니다.
+
+<Annot fig="deepseek-kv-cache/00-kv-per-token" n={1} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/00-kv-per-token" panels="1">
+
+**저장량.** 긴 문맥에서 토큰당 늘어나는 양을 이 글에서 정한 배포 **캐시 형식**으로 계산했습니다. V2는 BF16, V3.2와 V4는 FP8·BF16 혼합 KV, V4.1은 FP4 global KV입니다. 가상 MHA는 BF16으로 저장한다고 가정한 비교 기준입니다. 이 절에서는 이쪽을 봅니다.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/00-kv-per-token" panels="2">
+
+**읽는 양.** 128K 문맥에서 토큰 하나를 생성할 때 모든 층이 읽는 양을 BF16으로 환산했습니다. 단위가 달라 눈금을 따로 두었고, V3.2 절에서 자세히 다룹니다.
+
+</AnnotPart>
+<span slot="caption">그림 1. KV 캐시를 저장하는 양과 토큰 하나를 생성할 때 읽는 양. 두 그래프는 단위와 눈금이 다릅니다.</span>
+</Annot>
+
+각 막대 아래에 형식과 bytes를 적었습니다. V4.1의 local KV 캐시는 FP8이며, 엔진과 옵션에 따라 다른 형식도 가능합니다.
+
+몇 가지가 눈에 띕니다. 왼쪽 저장량에서 V3.2는 V2보다 작지만, 이것은 FP8 저장 덕분입니다. 같은 정밀도로 세면 V3.2가 오히려 더 큽니다. V4에서 크기가 한 자릿수 이상 줄고, V4.1에서 890 B에 도달합니다. V4와 V4.1 아래에는 주황색으로 "별도: local KV (SWA, 최근 128위치)"가 붙어 있습니다. 이 값들이 왜 그렇게 나오는지가 이 글의 내용입니다.
+
+<details>
+<summary>더 알아보기: 이 글에서 "토큰당 KV 캐시"를 세는 방법</summary>
+
+- **긴 문맥에서의 평균 증가량**입니다. 압축 모델은 토큰 4개나 128개가 모여야 entry 하나를 만들기 때문에, 매 토큰 같은 크기가 쌓이지는 않습니다. 문맥이 충분히 길 때 전체 캐시를 토큰 수로 나눈 값을 씁니다.
+- **모델 본체 한 벌, 요청 하나** 기준입니다. 같은 길이의 요청 B개가 캐시를 공유하지 않으면 전체 저장량은 B배입니다. GPU 한 장의 저장량은 텐서 병렬화가 캐시를 나누는지 복제하는지에 따라 따로 계산해야 합니다. MTP 모듈은 제외했습니다.
+- **검색용 key(indexer key)를 포함합니다.** V3.2 이후 모델은 읽을 위치를 고르기 위한 작은 key를 따로 저장합니다. 이것도 문맥에 비례해 쌓이므로 함께 셉니다.
+- **저장량은 이 글에서 정한 배포 캐시 형식과 페이지 패딩을 포함한 값입니다.** 엔진과 옵션에 따라 달라질 수 있습니다.
+- **최근 위치만 보관하는 local KV 캐시는 따로 적습니다.** 최근 128위치가 찬 뒤에는 더 늘지 않기 때문에 토큰당 증가량에 넣지 않았습니다. 그림의 local KV 값은 최근 128위치의 데이터 크기이며, 페이지 여유와 압축 중간 상태는 제외했습니다.
+- **GPU 실측값이 아니라 모델 설정과 캐시 형식으로 계산한 값입니다.**
+- **가상 MHA**는 V2의 치수(60층, head 128개, head당 128차원)로 모든 head의 K와 V를 저장한다고 가정한 기준입니다. 실제로 존재하는 모델이 아니며, 같은 성능을 내는 MHA 모델이라는 뜻도 아닙니다.
+
+</details>
+
+## 기준점: 모든 head의 K·V를 저장하는 MHA
+
+출발점은 [기본 attention](/posts/core-attention/)입니다. MHA에서는 층마다 head별 Key와 Value를 만들고, 그 둘을 모두 캐시에 저장합니다. V2의 숫자를 넣으면 토큰 하나를 저장할 때 다음과 같습니다.
+
+```text
+가상 MHA: 60층 × 128 head × (Key 128 + Value 128) × 2 B = 3,932,160 B ≈ 3.9 MB
+```
+
+토큰 하나에 약 3.9 MB이면, 128K 토큰(131,072 위치)의 문맥은 요청 하나의 캐시만으로 약 515 GB가 필요합니다. decode에서는 새 토큰 하나를 만들 때마다 이 캐시 전체를 읽어야 합니다. 저장량과 읽는 양이 함께 문제가 되는 것입니다. [MQA·GQA](/posts/model-advanced-mqa-gqa/)는 여러 head가 K·V를 공유해 이 값을 줄였습니다. DeepSeek은 다른 길을 택했습니다.
+
+## DeepSeek-V2
+
+V2는 **MLA**(Multi-head Latent Attention)로 **저장 벡터의 폭**을 줄였습니다. head별 K와 V 대신, 이를 만들 수 있는 작은 공통 벡터(latent)와 위치용 Key를 저장합니다. 아래에서는 무엇을 저장하는지, head별 K·V를 펼치지 않고 attention을 계산하는 방법을 본 뒤 토큰당 저장량을 계산합니다. 그림 2는 그 효과를 보여 줍니다.
+
+<Annot fig="deepseek-kv-cache/01-guide-v2" n={2} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/01-guide-v2" panels="1">
+
+V2는 토큰당 **69,120 B**로 MHA의 약 1/57입니다.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/01-guide-v2" panels="2">
+
+문맥 131,072토큰에서 토큰 하나를 생성할 때 읽는 양(BF16 환산)은 가상 MHA의 약 515 GB에서 약 **9.06 GB**로 줄었습니다.
+
+</AnnotPart>
+<span slot="caption">그림 2. MHA와 V2.</span>
+</Annot>
+
+### MLA: 같은 입력에서 갈라지는 세 경로
+
+그림 3은 V3 치수로 그린 MLA 한 층입니다. 입력 X는 세 갈래로 나뉩니다.
+
+<Annot fig="mla-flow/01-projections" n={3} layout="rows" whole>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.029-0.502" only="path:0">
+
+**Query 경로.** X를 Query latent C<sup>Q</sup>(1,536차원)로 줄인 뒤, head마다 내용용 Q<sup>C</sup><sub>h</sub>와 위치용 Q<sup>R</sup><sub>h</sub>를 만듭니다. Query는 이후 토큰을 위한 KV 캐시에 저장하지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.436-0.794" only="path:1">
+
+**공유 KV 경로.** X를 512차원 C<sup>KV</sup>로 줄여 **캐시에 저장**합니다. head별 Key와 Value는 C<sup>KV</sup>에 head마다 다른 W<sup>UK</sup><sub>h</sub>, W<sup>UV</sup><sub>h</sub>를 곱해 만들 수 있으므로 저장하지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/01-projections" panels="1" xr="0.014-0.994" yr="0.765-0.995" only="path:2">
+
+**위치용 Key.** RoPE를 적용한 64차원 K<sup>R</sup>을 하나 만들어 **모든 head가 공유**하고 캐시에 저장합니다. 위치에 따라 달라지는 회전이 C<sup>KV</sup> 경로에 끼어들면 뒤에서 볼 "흡수"를 할 수 없어서 경로를 따로 둡니다([MLA 저장 구조 글](/posts/model-advanced-mla-storage/)).
+
+</AnnotPart>
+<span slot="caption">그림 3. 같은 입력에서 갈라지는 MLA.</span>
+</Annot>
+
+캐시에 남는 것은 **C<sup>KV</sup>(512차원)와 K<sup>R</sup>(64차원)** 두 가지입니다.
+
+이 글의 행렬 그림은 같은 규칙을 따릅니다. 활성값은 행이 토큰, 열이 특징이고, 가중치는 [입력, 출력] 모양으로 그립니다. 상자 폭은 열 차원의 크기 순서만 나타내고 실제 크기에 비례하지 않습니다. 다른 축을 쓰는 그림은 그림 안에 따로 표시했습니다.
+
+### 내용 점수와 위치 점수
+
+그림 4는 한 head의 attention 계산입니다.
+
+<Annot fig="mla-flow/02-attention" n={4} layout="side" whole>
+<AnnotPart fig="mla-flow/02-attention" panels="1" xr="0.173-0.849">
+
+점수는 두 부분의 합입니다. 내용 성분끼리 곱한 점수 Q<sup>C</sup><sub>h</sub> (K<sup>C</sup><sub>h</sub>)<sup>T</sup>와, 위치 성분끼리 곱한 점수 Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup>입니다. 이것은 두 성분을 이어 붙인 Query와 Key의 내적과 같습니다.
+
+이어서 scale, causal mask, softmax를 거쳐 V를 가중합하고, 모든 head의 결과를 이어 붙여 출력 투영합니다.
+
+이 그림만 보면 MLA도 결국 head별 K와 V를 모두 펼쳐 계산하는 것처럼 보입니다. 그러면 저장은 작게 해도 매 단계 K와 V를 복원하는 계산이 필요해집니다. 흡수를 사용하는 decode에서는 이 복원을 피합니다.
+
+</AnnotPart>
+<span slot="caption">그림 4. 두 점수를 더해 attention.</span>
+</Annot>
+
+### K와 V를 펼치지 않고 계산하기
+
+그림 5는 같은 내용 점수를 세 가지 방식으로 계산합니다. 세 장면 모두 같은 C<sup>Q</sup>와 C<sup>KV</sup>에서 시작합니다.
+
+<Annot fig="mla-flow/03-key-absorption" n={5} layout="cols" whole>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0-0.329">
+
+**① 펼치기.** 그림 4 그대로 head별 K<sup>C</sup><sub>h</sub>를 만든 뒤 Query와 곱합니다. 내적은 d<sub>k</sub> 차원에서 일어납니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0.329-0.66">
+
+**② 흡수.** 괄호의 위치만 바꿉니다. 행렬 곱의 결합 법칙으로 Q<sup>C</sup><sub>h</sub> (C<sup>KV</sup> W<sup>UK</sup><sub>h</sub>)<sup>T</sup> = (Q<sup>C</sup><sub>h</sub> (W<sup>UK</sup><sub>h</sub>)<sup>T</sup>) (C<sup>KV</sup>)<sup>T</sup>입니다. Query 쪽에서 W<sup>UK</sup><sub>h</sub>를 먼저 곱해 512차원 Q̂<sub>h</sub>를 만들고, 캐시의 C<sup>KV</sup>와 바로 곱합니다. K를 펼치지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/03-key-absorption" panels="1" xr="0.657-0.989">
+
+**③ 가중치 미리 합치기.** Query 쪽 두 가중치를 미리 하나로 합칩니다. 수학적으로는 같지만 합친 가중치가 더 커질 수 있어, 실제 구현이 반드시 이 방식을 쓰지는 않습니다.
+
+</AnnotPart>
+<span slot="caption">그림 5. K를 펼치지 않고 같은 점수.</span>
+</Annot>
+
+세 방식은 대수적으로 같은 내용 점수를 만듭니다. 유한 정밀도와 양자화에서는 반올림 오차가 조금 달라질 수 있습니다. 세 방식 모두 내용 점수의 계산 순서만 바꾸며, 위치 점수 Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup>와 scale은 그대로입니다. Value 쪽도 같은 방식이 가능합니다.
+
+<Annot fig="mla-flow/04-value-absorption" n={6} layout="cols" whole>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0-0.329">
+
+**① 펼치기.** V<sub>h</sub>를 [T, d<sub>v</sub>]로 펼친 뒤 확률 P<sub>h</sub>로 가중합합니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0.329-0.66">
+
+**② 흡수.** 확률로 C<sup>KV</sup>의 행을 먼저 가중합해 U<sub>h</sub>를 만들고, 그 뒤에 W<sup>UV</sup><sub>h</sub>와 출력 가중치를 곱합니다. V를 펼치지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="mla-flow/04-value-absorption" panels="1" xr="0.657-0.989">
+
+**③ 가중치 미리 합치기.** W<sup>UV</sup><sub>h</sub>와 W<sup>O</sup><sub>h</sub>를 미리 하나로 합칩니다.
+
+</AnnotPart>
+<span slot="caption">그림 6. V를 펼치지 않고 같은 출력.</span>
+</Annot>
+
+가중합과 행렬 곱의 순서를 바꿔도 결과는 같습니다. 이렇게 하면 decode 한 단계는 **캐시에 있는 C<sup>KV</sup>와 K<sup>R</sup>만 읽고** 계산을 마칩니다. 흡수의 유도 과정은 [MLA 계산 글](/posts/model-advanced-mla-computation/)에서 작은 예시로 따라갈 수 있습니다.
+
+### V2의 숫자 계산
+
+이제 V2의 숫자가 나옵니다. 층마다 C<sup>KV</sup> 512차원과 K<sup>R</sup> 64차원을 저장합니다.
+
+```text
+V2: 60층 × (C^KV 512 + K^R 64) × 2 B = 69,120 B  (MHA의 약 1/57)
+```
+
+V3는 같은 MLA 구조에 층이 61개이므로 61 × 576 × 2 = 70,272 B입니다. 이 글에서 V3를 따로 다루지 않는 이유입니다.
+
+MLA로 저장량은 크게 줄었지만 **읽는 범위**는 그대로입니다. decode 한 단계는 여전히 모든 이전 위치의 C<sup>KV</sup>를 읽습니다. 128K 문맥에서 V2가 한 단계에 읽는 양은 60층 × 131,072 × 1,152 B ≈ 9.06 GB입니다. MHA의 515 GB보다 훨씬 작지만, 문맥이 길어질수록 이 값도 계속 늘어납니다.
+
+## DeepSeek-V3.2
+
+V3.2는 MLA를 그대로 두고 **DSA**(DeepSeek Sparse Attention)를 더해 **읽을 위치**를 고릅니다. 작은 lightning indexer가 점수를 매겨 위치를 최대 2,048개 고르고, 주 attention은 선택된 위치만 사용합니다. 아래에서는 검색용 key를 만드는 법, 위치를 고르는 점수, 고른 위치만 쓰는 주 attention을 본 뒤 저장량과 읽는 양을 계산합니다. 그림 7은 그 효과를 보여 줍니다.
+
+<Annot fig="deepseek-kv-cache/02-guide-v32" n={7} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/02-guide-v32" panels="1">
+
+V3.2는 토큰당 **48,068 B**입니다. V2보다 작은 것은 FP8을 쓰는 배포 형식의 효과입니다. 모든 저장 원소를 같은 BF16으로 세면 검색용 key가 더해져 오히려 커집니다.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/02-guide-v32" panels="2">
+
+읽는 양은 위치 선택으로 크게 줄어 약 **2.19 GB**, V2의 약 1/4입니다. 대부분은 검색용 key입니다.
+
+</AnnotPart>
+<span slot="caption">그림 7. MHA부터 V3.2까지.</span>
+</Annot>
+
+### DSA: indexer가 만드는 세 가지
+
+indexer는 고를 위치를 판단하기 위한 작은 attention입니다. 그림 8처럼 세 가지를 만듭니다.
+
+<Annot fig="dsa-flow/01-indexer-projections" n={8} layout="rows" whole>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.038-0.461" only="path:0">
+
+**indexer query.** q<sup>I</sup><sub>j</sub>는 MLA의 Query latent C<sup>Q</sup>에서 head j마다 만듭니다(64 head × 128차원). 주 attention과 같은 latent를 다시 씁니다.
+
+</AnnotPart>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.461-0.745" only="path:1">
+
+**검색용 key**(indexer key). k<sup>I</sup>는 입력 X에서 **하나만** 만들고 모든 indexer head가 공유합니다. 이 값은 **캐시에 쌓입니다.** 이후 토큰이 이전 위치를 평가하려면 그 위치의 k<sup>I</sup>가 필요하기 때문입니다. 같은 정밀도로 비교하면, 이 추가 key 때문에 저장량이 늘어납니다.
+
+</AnnotPart>
+<AnnotPart fig="dsa-flow/01-indexer-projections" panels="1" xr="0.014-0.919" yr="0.702-0.954" only="path:2">
+
+**head 가중치.** w<sup>I</sup>는 X에서 만들며, 토큰마다 64개 head 각각의 판단을 얼마나 반영할지 정합니다.
+
+</AnnotPart>
+<span slot="caption">그림 8. indexer가 만드는 세 가지.</span>
+</Annot>
+
+### 위치를 고르는 점수
+
+<Annot fig="dsa-flow/02-index-score" n={9} layout="stack" whole>
+<AnnotPart fig="dsa-flow/02-index-score" panels="1" xr="0.03-0.887">
+
+head마다 query와 공유 key를 내적하고 ReLU를 거친 뒤 head 가중치를 곱해 모두 더합니다.
+
+점수 I에서 행마다 점수가 높은 위치를 최대 2,048개 고르고 선택 마스크 M을 만듭니다. 고른 위치는 0, 나머지는 −∞입니다.
+
+</AnnotPart>
+<span slot="caption">그림 9. indexer 점수와 행마다 top-k.</span>
+</Annot>
+
+보고서의 식으로는 다음과 같습니다.
+
+```text
+I(t, s) = Σⱼ w^I(t, j) × ReLU( q^I(t, j) · k^I(s) )
+```
+
+indexer에는 softmax가 없고, w<sup>I</sup>도 확률이 아닙니다. 점수는 순위를 정하는 데만 쓰입니다.
+
+### 고른 위치만 보는 MLA
+
+<Annot fig="dsa-flow/03-sparse-attention" n={10} layout="stack" whole>
+<AnnotPart fig="dsa-flow/03-sparse-attention" panels="1" xr="0.018-0.941">
+
+주 attention은 앞에서 본 흡수된 MLA(그림 5의 ②) 그대로입니다.
+
+점수에 M을 더하면 선택되지 않은 위치는 softmax 뒤 확률이 0이 됩니다.
+
+</AnnotPart>
+<span slot="caption">그림 10. 흡수된 MLA의 점수에 선택 마스크를 더한 뒤 softmax.</span>
+</Annot>
+
+그림은 같은 결과를 마스크로 표현했을 뿐입니다. 실제 커널이 고른 위치만 골라 읽는지는 구현마다 다릅니다.
+
+### V3.2의 숫자 계산
+
+먼저 구조만 보겠습니다. 저장하는 값은 MLA의 576차원에 검색용 key 128차원이 더해진 704차원입니다. 같은 BF16으로 세면 61층 × 704 × 2 B = 85,888 B로, V3(70,272 B)보다 22% 늘어납니다. **DSA는 저장량을 줄이는 기술이 아닙니다.** 선택되지 않은 위치도 캐시에서 지우지 않습니다. 다음 토큰은 다른 위치를 고를 수 있기 때문입니다.
+
+실제 배포에서는 정밀도를 낮춰 저장합니다. 토큰 하나, 층 하나에 저장하는 값은 두 묶음입니다.
+
+**주 KV 656 B.** C<sup>KV</sup> 512차원은 원소마다 1 B인 FP8로 저장해 512 B입니다. FP8은 표현할 수 있는 범위가 좁기 때문에 값을 묶음마다 다시 맞추는 **scale**을 함께 저장합니다. 128차원마다 FP32 scale을 하나씩 두므로 4개 × 4 B = 16 B입니다. 위치용 Key K<sup>R</sup> 64차원은 양자화하지 않고 BF16 그대로 64 × 2 B = 128 B로 둡니다. 합치면 512 + 16 + 128 = 656 B입니다.
+
+**검색용 key 132 B.** 검색용 key k<sup>I</sup> 128차원을 FP8로 128 B, 128차원 전체에 FP32 scale 하나를 4 B로 둡니다. 128 + 4 = 132 B입니다. 검색용 key는 RoPE 부분까지 FP8로 양자화하며, 주 KV처럼 BF16으로 남겨 두는 부분이 없습니다.
+
+```text
+주 KV:       C^KV 512 × 1 B + scale 4 × 4 B + K^R 64 × 2 B = 512 + 16 + 128 = 656 B
+검색용 key:  k^I 128 × 1 B + scale 1 × 4 B               = 128 + 4        = 132 B
+V3.2: 61층 × (656 + 132) B = 48,068 B  (MHA의 약 1/82)
+```
+
+
+### 읽는 양으로 보면
+
+DSA가 줄이는 것은 decode 한 단계가 **읽는 양**입니다. 그림 7의 오른쪽 그래프는 128K 문맥에서 토큰 하나를 생성할 때(decode 한 단계) 모든 층이 읽는 양입니다. 막대 하나를 attention이 읽는 KV(파랑)와 위치를 고르려고 읽는 검색용 key(빨강)의 비율대로 나눠 칠했습니다. 각 층이 참조하는 entry를 한 번씩 셌습니다. 여러 층이 공유하는 캐시는 읽는 층마다 다시 세고, 같은 층의 여러 head나 K·V 두 역할 때문에 중복해서 세지는 않습니다. SWA는 포함하고, 실제 반복 load와 새 캐시 쓰기는 제외했습니다.
+
+이 값은 주 attention에 사용되는 KV와 위치 선택에 필요한 검색용 key를 층마다 한 번씩 센 BF16 환산 논리량이며, 실제 메모리 트래픽은 아닙니다.
+
+V3.2에서 attention이 읽는 KV는 61층 × 2,048 위치 × 1,152 B ≈ 144 MB입니다. V2의 9.06 GB에서 60분의 1 이상 줄었습니다. 대신 indexer가 모든 위치의 key를 훑습니다. 61층 × 131,072 × 256 B ≈ 2.05 GB입니다. BF16 환산 방식으로 세면 검색용 key가 논리적 읽기량의 약 93%를 차지합니다. 다만 이것만으로 위치 고르기가 실행 시간의 대부분이라고 결론 내릴 수는 없습니다. 계산량과 실제 메모리 접근 방식이 다르기 때문입니다.
+
+그래도 indexer가 저렴한 이유는 key 하나가 작고(128차원, FP8), 모든 head가 같은 key를 읽으며, softmax 없이 ReLU와 가중합만 하기 때문입니다. 그러나 문맥 전체를 훑는다는 사실은 변하지 않습니다. 이 비용과 저장량을 함께 줄이는 것이 V4의 과제입니다. indexer의 원리는 [sparse indexer 글](/posts/model-advanced-sparse-indexer/)에서 다뤘습니다.
+
+## DeepSeek-V4-Flash
+
+V4는 여러 토큰의 KV를 **하나의 entry로 압축**해 **저장 행 수**를 줄였습니다. 압축률이 다른 두 방식을 층마다 섞어 씁니다. **CSA**(Compressed Sparse Attention)는 겹치는 구간을 압축해 4토큰마다 entry 하나를 만들고, indexer로 골라 읽습니다. **HCA**(Heavily Compressed Attention)는 겹치지 않는 128토큰을 entry 하나로 압축하고, 완성된 entry를 모두 읽습니다. 최근 위치는 압축하지 않고 따로 보관합니다. 아래에서는 구조가 단순한 HCA부터 보고 CSA로 넘어간 뒤 숫자를 계산합니다. 그림 11은 그 효과를 보여 줍니다.
+
+<Annot fig="deepseek-kv-cache/03-guide-v4" n={11} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="1">
+
+V4-Flash는 토큰당 약 **3,563 B**입니다. 최근 위치를 따로 보관하는 local KV는 주황색으로 따로 적었습니다.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="2">
+
+같은 조건의 읽는 양은 약 **214 MB**입니다.
+
+</AnnotPart>
+<span slot="caption">그림 11. MHA부터 V4-Flash까지.</span>
+</Annot>
+
+이 글은 V4-Flash를 기준으로 합니다. 43층 가운데 처음 2층은 최근 위치만 보는 SWA 층이고, CSA가 21층, HCA가 20층입니다. 또 V4는 MLA 위에 압축기를 더한 것이 아니라는 점을 먼저 짚어 두겠습니다. V4는 MLA처럼 head별 K·V를 latent에서 펼치는 구조를 쓰지 않습니다. **하나의 512차원 entry를 모든 head가 Key와 Value로 함께 씁니다.**
+
+### HCA: 128개 토큰을 하나로
+
+이 글에서는 최근 128위치의 압축하지 않은 KV를 **local KV(SWA)**라고 부르겠습니다. 압축해서 긴 문맥에 걸쳐 쌓이는 쪽은 둘로 나뉩니다. attention이 실제로 읽는 압축 KV가 **main KV**이고, 뒤에서 볼 CSA에는 읽을 위치를 고르는 검색용 key가 더해집니다. main KV와 검색용 key를 합쳐 **global KV**라고 부릅니다. 여기서 local은 최근 위치라는 범위를 뜻합니다. V4 보고서는 최근 위치를 읽는 갈래를 sliding window attention으로 설명하고, local KV·main KV·global KV라는 이름은 V4.1 보고서가 씁니다.
+
+HCA 층은 입력 X에서 세 갈래를 만듭니다.
+
+<Annot fig="hca-flow/01-weight-map" n={12} layout="rows" whole>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.035-0.371" only="path:q">
+
+**Query.** MLA처럼 latent c<sup>Q</sup>를 거쳐 만듭니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.337-0.57" only="path:w">
+
+**local KV.** 압축하지 않고 토큰마다 하나씩 만들어 최근 128개만 유지합니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/01-weight-map" panels="1" xr="0.014-1" yr="0.538-0.936" only="path:c+z">
+
+**압축 KV.** 후보 C와 점수 Z를 만들어, 토큰 m′개를 하나의 entry로 합칩니다.
+
+</AnnotPart>
+<span slot="caption">그림 12. HCA 층 attention의 학습 가중치.</span>
+</Annot>
+
+압축은 채널마다 따로 하는 가중 평균입니다. 교육용으로 m′ = 4로 줄였으며, 실제 HCA 층은 m′ = 128입니다.
+
+<Annot fig="hca-flow/02-compression" n={13} layout="rows">
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.009-0.562">
+
+**①② 비중 정하고 합치기.** 블록 안 토큰들의 점수 Z에 위치 편향 B를 더하고, 토큰 방향으로 softmax해 비중을 정합니다. 그 비중으로 후보 C를 채널마다 합치면 한 행이 남습니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.562-0.759">
+
+**③ entry 완성.** 합친 행이 RMSNorm과 RoPE를 거쳐 entry가 됩니다. 블록이 다 차야 entry가 완성됩니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/02-compression" panels="1" yr="0.759-0.987">
+
+**비교.** local KV는 압축하지 않고 토큰마다 따로 만듭니다.
+
+</AnnotPart>
+<span slot="caption">그림 13. 압축 entry 만들기.</span>
+</Annot>
+
+<Annot fig="hca-flow/03-visible-entries" n={14} layout="rows">
+<AnnotPart fig="hca-flow/03-visible-entries" panels="1" yr="0.014-0.515">
+
+**t = 6.** 토큰 t는 완성된 압축 entry 전부와 현재 토큰을 포함한 최근 window를 이어 붙여 읽습니다. 여기서는 블록 0만 완성됐고, 아직 미완성인 블록 1의 최근 토큰은 window로 읽습니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/03-visible-entries" panels="1" yr="0.515-0.92">
+
+**t = 7.** 블록 1도 완성돼 압축 entry가 하나 늘어납니다. window도 함께 읽으므로, 같은 원본 토큰이 압축 entry와 window entry에 동시에 들어갈 수 있습니다.
+
+</AnnotPart>
+<span slot="caption">그림 14. 토큰 t가 읽을 수 있는 entry.</span>
+</Annot>
+
+<Annot fig="hca-flow/04-attention" n={15} layout="rows">
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.012-0.405">
+
+**① 점수.** 가시 entry E를 **Key와 Value로 동시에** 씁니다. 여기서는 E가 Key 역할을 합니다. head별로 K와 V를 펼치는 가중치가 없습니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.405-0.713">
+
+**② 가중합.** sink를 포함한 softmax로 비중을 구한 뒤, 같은 E를 Value로 가중합합니다. **sink**: head마다 학습한 값 z′ₕ로 exp(z′ₕ)를 softmax 분모에 더하므로, 실제 entry들의 가중치 합이 1보다 작아질 수 있습니다. 어느 entry에도 주의를 덜 줄 여지를 남기는 장치입니다. **역회전**: entry는 RoPE를 적용한 채 Value로도 쓰이므로, 출력의 마지막 64차원을 현재 query 위치만큼 반대로 회전해 상대 거리 기준으로 맞춥니다. 위치 정보를 완전히 지우는 연산은 아닙니다.
+
+</AnnotPart>
+<AnnotPart fig="hca-flow/04-attention" panels="1" xr="0-0.771" yr="0.713-0.919">
+
+**③ 출력 변환.** head를 그룹으로 묶어 출력 투영합니다.
+
+</AnnotPart>
+<span slot="caption">그림 15. 공유 K=V를 읽는 attention.</span>
+</Annot>
+
+K와 V가 같은 entry이므로 저장도 한 번이면 됩니다.
+
+### CSA: 겹쳐서 압축하고 골라 읽기
+
+CSA는 HCA와 같은 틀에 두 가지를 더합니다. 압축 구간을 겹치게 하고, indexer로 entry를 골라 읽습니다.
+
+<Annot fig="csa-flow/01-weight-map" n={16} layout="rows">
+<AnnotPart fig="csa-flow/01-weight-map" panels="1" xr="0-0.86" yr="0.033-0.547" only="path:q+iq">
+
+**Query와 indexer.** Query 경로는 HCA와 같습니다. 새로 생긴 indexer는 주 attention과 공유하는 Query latent를 투영해 indexer query를 만듭니다.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/01-weight-map" panels="1" xr="0-0.86" yr="0.486-0.973" only="path:c+z">
+
+**압축 KV.** 후보 C와 점수 Z의 가중치 폭이 HCA의 두 배입니다. 이웃 구간과 겹쳐 압축하기 때문입니다.
+
+</AnnotPart>
+<span slot="caption">그림 16. CSA 층 attention의 학습 가중치.</span>
+</Annot>
+
+<Annot fig="csa-flow/02-overlap-compression" n={17} layout="rows">
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.008-0.64">
+
+**①② 8개 토큰으로 entry 하나.** CSA의 entry 하나는 자기 구간 4개 토큰(b)과 이전 구간 4개 토큰(a), 모두 8개를 읽어 만듭니다. m = 4는 CSA의 실제 값입니다.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.64-0.796">
+
+**③ entry 완성.** 그래도 entry는 4개 토큰마다 하나씩 생깁니다. 저장 행 수는 토큰 수의 1/4입니다.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/02-overlap-compression" panels="1" yr="0.796-0.948">
+
+**이웃 entry.** 이웃한 entry가 원본 토큰 구간을 절반씩 공유하므로, 블록 경계 양쪽의 정보를 함께 반영할 수 있습니다. 가중 압축이므로 정보를 그대로 보존한다는 뜻은 아니며, 첫 entry에는 이전 구간이 없습니다.
+
+</AnnotPart>
+<span slot="caption">그림 17. 겹침 압축으로 entry 만들기.</span>
+</Annot>
+
+<Annot fig="csa-flow/03-indexer" n={18} layout="rows">
+<AnnotPart fig="csa-flow/03-indexer" panels="1" yr="0.025-0.677">
+
+**①②③ key, query, head 가중치.** CSA의 indexer는 V3.2의 indexer와 같은 점수 식을 쓰지만, key를 **별도의 압축기**로 만듭니다. 그래서 검색용 key도 4개 토큰마다 하나씩, 128차원으로 저장됩니다.
+
+</AnnotPart>
+<AnnotPart fig="csa-flow/03-indexer" panels="1" yr="0.677-0.947">
+
+**④ 점수와 선택.** head 가중치로 점수를 합치고, 토큰마다 점수가 높은 블록을 고릅니다. 그 query 위치까지 아직 완성되지 않은 블록은 후보가 아닙니다.
+
+</AnnotPart>
+<span slot="caption">그림 18. CSA의 indexer.</span>
+</Annot>
+
+<Annot fig="csa-flow/04-visible-entries" n={19} layout="stack">
+<AnnotPart fig="csa-flow/04-visible-entries" panels="1" xr="0-0.931">
+
+토큰 t는 indexer가 고른 압축 entry k개와 최근 window를 읽습니다. HCA가 압축 entry를 **모두** 읽는 것과 다릅니다.
+
+HCA는 128배 압축이라 entry 수가 적으므로 모두 읽어도 됩니다. CSA는 4배 압축이라 entry가 많아, 골라 읽습니다.
+
+</AnnotPart>
+<span slot="caption">그림 19. 실제로 읽는 entry.</span>
+</Annot>
+
+### V4-Flash의 숫자 계산
+
+CSA 층은 4개 토큰마다 main KV entry 512차원과 검색용 key 128차원을, HCA 층은 128개 토큰마다 main KV entry 512차원을 저장합니다.
+
+구조만 보면, 같은 BF16으로 세어도 21 × 640 × 2 B ÷ 4 + 20 × 512 × 2 B ÷ 128 = 6,880 B로 V2보다 10배 작습니다. 저장 벡터의 폭(512)은 MLA의 576과 비슷한데, 토큰당 저장 행 수가 1/4, 1/128로 줄었기 때문입니다.
+
+배포 형식에서는 main KV entry를 대부분 FP8로, 검색용 key를 FP4로 저장합니다. 이 글에서 쓰는 배포 형식은 main KV 항목당 584 B, 검색용 key 항목당 68 B입니다.
+
+```text
+V4-Flash: 21층 × (584 + 68) B ÷ 4 + 20층 × 584 B ÷ 128 ≈ 3,514 B
+          페이지 정렬 패딩까지 세면 ≈ 3,563 B  (MHA의 약 1/1,104)
+```
+
+<details>
+<summary>더 알아보기: V4-Flash 캐시 형식의 구성</summary>
+
+```text
+main KV entry: RoPE 아닌 448차원 × 1 B (FP8 E4M3) + RoPE 64차원 × 2 B (BF16)
+              + 64채널마다 UE8M0 scale 1 B × 7 + 패딩 1 B = 584 B
+검색용 key:  128차원 × 0.5 B (FP4 E2M1) + 32채널마다 UE8M0 scale 1 B × 4 = 68 B
+페이지(256토큰): CSA KV 64 entry × 584 B = 37,376 B → 576 B 단위 정렬 37,440 B
+                 HCA KV 2 entry × 584 B = 1,168 B → 1,728 B
+                 CSA 검색용 key 64 entry × 68 B = 4,352 B (패딩 없음)
+토큰당: (21 × (37,440 + 4,352) + 20 × 1,728) ÷ 256 ≈ 3,563 B
+```
+
+위 계산에는 원토큰 256개 단위 페이지와 정렬 규칙을 적용했습니다. 페이지 패딩은 엔진의 페이지 설정에 따라 달라질 수 있습니다.
+
+</details>
+
+여기에 **local KV 캐시**가 별도로 있습니다. 43층 모두 최근 128개 위치의 KV를 압축 없이 보관합니다. 배포 형식으로 43 × 128 × 584 B ≈ 3.2 MB입니다. 이 값은 최근 128위치가 찬 뒤에는 더 늘지 않습니다. 그러나 토큰당 증가량이 작아진 만큼 상대적으로 커졌습니다. global KV를 토큰당 증가량 × 문맥 길이로 근사하면, 둘이 비슷해지는 문맥 길이는 약 900토큰입니다. 그보다 짧은 문맥에서는 local KV 캐시가 더 큽니다. 압축 블록의 반올림과 압축 중간 상태는 제외한 근사입니다.
+
+읽는 양(그림 11의 오른쪽 그래프)도 줄었습니다. attention이 읽는 KV는 약 38 MB, indexer가 읽는 key는 약 176 MB입니다. 검색용 key가 4배 압축되고 indexer를 쓰는 층도 21개뿐이어서 V3.2의 2.05 GB보다 작습니다. HCA 층은 압축 entry를 모두 읽으므로, 이 부분은 문맥에 비례해 계속 늘어납니다.
+
+## DeepSeek-V4.1-Flash
+
+V4.1은 **CSA2**로 압축과 선택을 바꾸고, 층 사이에서 KV와 선택 목록을 공유합니다. 이로써 global KV를 저장하는 층이 네 개로 줄었고, main KV를 FP4로 저장하는 것도 저장량 감소에 기여합니다. 또 **CED** 구조와 최근 구간을 다시 계산하는 근사 방식으로 prompt 처리 계산을 줄입니다. 아래에서는 압축과 선택의 변화, 층간 공유, CED 순서로 살펴본 뒤 숫자를 계산합니다. 그림 20은 그 효과를 보여 줍니다.
+
+<Annot fig="deepseek-kv-cache/04-guide-v41" n={20} layout="cols">
+<AnnotPart fig="deepseek-kv-cache/04-guide-v41" panels="1">
+
+V4.1-Flash는 토큰당 **890 B**로 가상 MHA의 약 1/4,400입니다.
+
+</AnnotPart>
+<AnnotPart fig="deepseek-kv-cache/04-guide-v41" panels="2">
+
+같은 조건의 읽는 양은 약 **126 MB**입니다.
+
+</AnnotPart>
+<span slot="caption">그림 20. 다섯 모델 모두.</span>
+</Annot>
+
+### CSA2: 겹침 없는 압축과 검색용 key
+
+CSA2는 한 층 안에서 두 가지가 바뀌었습니다. 압축 구간이 겹치지 않게 되었고, 검색용 key를 별도 압축기 대신 main KV에서 만듭니다.
+
+<Annot fig="csa2-flow/07-compression-span" n={21} layout="cols">
+<AnnotPart fig="csa2-flow/07-compression-span" panels="1">
+
+**CSA.** entry 하나가 자기 구간과 이전 구간을 함께 읽어, 이웃 entry와 토큰을 절반씩 공유합니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/07-compression-span" panels="2">
+
+**CSA2.** 구간이 겹치지 않아 각 토큰은 entry 하나에만 들어갑니다. 압축기 안의 위치 편향 B도 없앴습니다.
+
+</AnnotPart>
+<span slot="caption">그림 21. CSA2는 겹치지 않고 압축합니다. 비교를 위해 m = 4로 그렸습니다.</span>
+</Annot>
+
+압축률도 낮아졌습니다. 실제 CSA2의 encoder 층은 토큰 2개를 하나로(m = 2), decoder 층은 압축 없이 토큰마다 하나씩(m = 1) entry를 만듭니다.
+
+<Annot fig="csa2-flow/06-indexer-key-source" n={22} layout="rows" whole>
+<AnnotPart fig="csa2-flow/06-indexer-key-source" panels="1" xr="0-0.966" yr="0.009-0.525">
+
+**CSA.** 같은 입력에서 압축기를 두 번 돌려 main KV와 검색용 key를 따로 만들었습니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/06-indexer-key-source" panels="1" xr="0-0.966" yr="0.525-0.955">
+
+**CSA2.** 압축기를 하나만 두고, 압축과 RMSNorm을 마친 **RoPE 적용 전** 값을 투영하고 정규화해 검색용 key를 만듭니다. 그 뒤 main KV와 검색용 key에 각각 RoPE를 적용합니다.
+
+</AnnotPart>
+<span slot="caption">그림 22. CSA2는 검색용 key를 main KV에서 만듭니다.</span>
+</Annot>
+
+두 값이 같은 entry에서 나오므로, 뒤에서 볼 층간 공유에서 함께 넘기기 쉬워집니다.
+
+### 층끼리 KV 나눠 쓰기: Full, Reindex, Reuse
+
+지금까지는 층마다 자기 KV를 저장했습니다. V4.1-Flash에서는 **네 Full 층이 global KV를 만들어 저장하고**, 나머지 CSA2 층은 이를 공유합니다. 처음 두 층은 SWA만 쓰며, local KV는 40층 모두 각자 만듭니다.
+
+CSA2의 각 층은 세 모드 중 하나로 고정되어 있습니다.
+
+<Annot fig="csa2-flow/01-three-modes" n={23} layout="cols" whole>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0-0.342">
+
+**Full** 층은 main KV와 검색용 key를 새로 만들고, 자기 indexer로 top-k를 고릅니다. **global KV를 저장하는 층은 Full 층뿐입니다.** Full도 모든 위치를 읽는 dense attention이 아니라 top-k만 읽습니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0.342-0.675">
+
+**Reindex** 층은 가까운 Full 층의 main KV와 검색용 key를 빌리고, 자기 indexer query로 위치를 다시 고릅니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/01-three-modes" panels="1" xr="0.675-0.981">
+
+**Reuse** 층은 indexer가 없습니다. main KV와 선택 목록을 모두 앞 층에서 빌립니다.
+
+</AnnotPart>
+<span slot="caption">그림 23. CSA2 층의 세 모드: 무엇을 새로 만들고 무엇을 가져오는가.</span>
+</Annot>
+
+세 모드 모두 Query와 local KV는 자기 층에서 새로 만들고, attention도 각자 계산합니다. 공유하는 것은 global KV와 선택 목록이지 attention의 결과가 아닙니다. 층간 공유의 원리는 [층간 KV 공유 글](/posts/model-advanced-cross-layer-kv/)에서 다뤘습니다.
+
+V4.1-Flash의 40층은 앞의 20층(encoder)과 뒤의 20층(decoder)으로 나뉩니다.
+
+<Annot fig="csa2-flow/04-layer-layout" n={24} layout="rows" whole>
+<AnnotPart fig="csa2-flow/04-layer-layout" panels="1" xr="0-0.957" yr="0.017-0.506">
+
+**encoder.** 처음 2층이 SWA만 쓰고, 나머지 18층이 [Full, Reuse×5] 묶음 세 개입니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/04-layer-layout" panels="1" xr="0-0.957" yr="0.506-0.816">
+
+**decoder.** 20층의 global KV를 **첫 Full 층 하나만** 만들고, 네 Reindex 층이 위치를 다시 고릅니다.
+
+</AnnotPart>
+<span slot="caption">그림 24. DeepSeek-V4.1-Flash의 40층 배치. KV를 공유하는 묶음과 선택을 공유하는 묶음은 다릅니다.</span>
+</Annot>
+
+결국 global KV를 저장하는 층은 encoder의 Full 3개와 decoder의 Full 1개, 모두 4개입니다. decoder에서는 계층형 indexer로 고르는 비용도 묶어 둡니다. 그림 25는 보고서가 설명하는 계층형 선택 방식을 보여 줍니다.
+
+<Annot fig="csa2-flow/05-hierarchical-indexer" n={25} layout="rows" whole>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.011-0.444">
+
+**① 첫 Full 층.** 모든 위치를 점수 매기며 자기 top-512를 고르고, 동시에 점수가 높은 블록을 골라 후보 pool(query마다 최대 2,048블록 × 8위치 = 16,384위치)을 만듭니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.444-0.678">
+
+**② Reindex 층.** 이 pool 안에서만 점수를 매깁니다. 문맥 전체를 다시 훑지 않습니다.
+
+</AnnotPart>
+<AnnotPart fig="csa2-flow/05-hierarchical-indexer" panels="1" xr="0-0.958" yr="0.678-0.942">
+
+**③ Reuse 층.** 이 예시의 Reuse 층은 ② Reindex 층의 선택을 그대로 씁니다. 일반적으로는 가장 최근 Full 또는 Reindex 층의 선택을 재사용합니다.
+
+</AnnotPart>
+<span slot="caption">그림 25. 계층형 sparse indexer.</span>
+</Annot>
+
+첫 Full 층이 전체를 훑는 비용은 남습니다.
+
+### CED: decoder의 global KV는 encoder에서
+
+V4.1의 encoder와 decoder는 번역 모델의 encoder–decoder와 다릅니다. 둘 다 같은 토큰열을 인과적으로 처리합니다. decode에서는 현재 토큰이 encoder 20층을 지난 뒤 decoder 20층을 차례로 지납니다. 이 구조를 **CED**(Causal Encoder–Decoder)라고 부릅니다. 차이는 decoder 층이 읽는 KV를 어디서 만드느냐에 있습니다.
+
+<Annot fig="deepseek-kv-cache/06-ced-sources" n={26} layout="stack">
+<AnnotPart fig="deepseek-kv-cache/06-ced-sources" panels="1" xr="0-0.988">
+
+**왼쪽: 층 스택.** 토큰 t가 아래에서 위로 층을 지납니다. decoder의 global KV(main KV와 검색용 key)는 decoder 자신의 hidden이 아니라 **encoder 최종 출력**에서 만듭니다. decoder 첫 Full 층이 이 출력을 투영해 만들고, 나머지 decoder 층은 공유합니다.
+
+**오른쪽: decoder 층 하나의 안.** 이 층은 자기 입력에서 **주 Query와 local KV**를 만듭니다. 그리고 검색용 key로 고른 위치의 main KV와 자기 local KV를 이어 붙여, **자기 주 Query로** 점수를 매기고 가중합합니다.
+
+</AnnotPart>
+<span slot="caption">그림 26. decoder 층은 두 출처의 KV를 자기 Query로 읽습니다. 보고서의 CED 실행 방식을 따랐습니다.</span>
+</Annot>
+
+global KV를 여러 층이 공유해도 읽는 Query는 층마다 다릅니다.
+
+이 구분 덕분에 prompt를 처리하는 prefill에서 계산을 줄일 수 있습니다.
+
+<Annot fig="deepseek-kv-cache/07-ced-prefill" n={27} layout="stack">
+<AnnotPart fig="deepseek-kv-cache/07-ced-prefill" panels="1" xr="0-0.993">
+
+**encoder 층**은 prompt의 모든 위치를 실행합니다. 그 출력에서 decoder가 읽을 global KV가 모든 위치에 대해 만들어집니다.
+
+그러면 decoder를 실행해 추가로 준비해야 하는 캐시는 각 decoder 층의 **local KV**뿐이고, local KV는 최근 128위치만 필요합니다. 그래서 **decoder 층은 최근 window의 위치만 실행합니다.** 이것을 **replay**라고 합니다.
+
+</AnnotPart>
+<span slot="caption">그림 27. CED prefill. 보고서의 bounded replay 실행 방식을 따랐습니다.</span>
+</Annot>
+
+replay는 KV를 투영만 하는 것이 아니라, 최근 위치들을 decoder 층에 차례로 통과시키며 attention과 FFN까지 실행합니다. 첫 decoder 층은 그 위치의 encoder 출력을, 다음 층은 바로 아래 decoder 층의 출력을 받고, 실행하는 동안 global KV에서 선택한 항목도 읽습니다.
+
+긴 prompt에서는 prefill에서 실행하는 (위치, 층) 칸 수가 약 절반으로 줄어듭니다(decoder 20층을 prompt 전체가 아닌 최근 구간에만 실행하므로). 이것은 KV 캐시가 아니라 **prefill 계산**을 줄이는 효과이고, 칸 수의 비율이지 시간의 비율도 아닙니다. 또 replay는 근사입니다. 최근 구간 첫 위치의 hidden을 정확히 얻으려면 그보다 앞 위치의 local KV도 필요한데, replay는 그 참조를 자릅니다. 이 절약은 prefill에만 해당합니다. 새 토큰을 생성하는 decode에서는 encoder와 decoder를 합친 40층을 모두 실행합니다. CED는 [CED 글](/posts/model-advanced-ced/)에서 더 자세히 다뤘습니다.
+
+### V4.1-Flash의 숫자 계산
+
+global KV를 저장하는 층은 4개입니다. encoder의 Full 3층은 토큰 2개마다, decoder의 Full 1층은 토큰마다 entry를 하나씩 저장합니다. entry 하나는 main KV 512차원과 검색용 key 128차원입니다.
+
+구조만 보면, 같은 BF16으로 세어 (3 ÷ 2 + 1) × (512 + 128) × 2 B = 3,200 B로 V4-Flash의 절반 정도입니다. 압축률은 오히려 낮아졌지만(4 → 2, 1), global KV를 저장하는 층이 41개(CSA 21 + HCA 20)에서 4개로 줄었기 때문입니다.
+
+배포 형식에서는 main KV entry를 FP4로 저장합니다. 512차원 × 0.5 B = 256 B에, 16채널마다 FP8(E4M3) scale 1 B씩 32 B를 더해 288 B입니다. RoPE 부분도 함께 양자화합니다. 검색용 key는 V4와 같은 68 B입니다.
+
+```text
+V4.1-Flash: (3 ÷ 2 + 1) × (288 + 68) B = 2.5 × 356 = 890 B  (MHA의 약 1/4,418)
+```
+
+local KV 캐시는 40층 모두 최근 128위치를 보관합니다. 배포 형식(FP8과 32채널마다 UE8M0 scale, 토큰당 528 B)으로 40 × 128 × 528 B ≈ 2.7 MB입니다. 같은 근사로 토큰당 890 B와 비교하면, 둘이 비슷해지는 문맥 길이는 약 3,038토큰입니다. 그보다 짧은 문맥에서는 최근 위치를 보관하는 비용이 오히려 주된 저장량입니다.
+
+읽는 양(그림 20의 오른쪽 그래프)은 attention이 읽는 KV가 약 25 MB, indexer가 읽는 key가 약 101 MB입니다. KV를 공유해도 각 층은 attention을 계산하므로, 38개 CSA2 층이 각각 512개 entry를 읽습니다. 저장량은 한 벌이지만 읽기는 층마다 일어납니다.
+
+## 무엇을 줄였고 무엇이 남았나
+
+다섯 모델을 다시 정리하면, 세대마다 서로 다른 요소를 줄였습니다.
+
+| 모델 | 바뀐 것 | 줄인 요소 | 토큰당 KV (배포 형식) |
+| --- | --- | --- | --- |
+| 가상 MHA | 기준 | — | 3,932,160 B (BF16 가정) |
+| V2 | MLA | 저장 벡터의 폭 | 69,120 B (BF16) |
+| V3.2 | DSA, FP8 KV | 읽는 위치 (구조상 저장은 늘어남) | 48,068 B |
+| V4-Flash | CSA·HCA, K=V 공유 | 토큰당 저장 행 수 | 3,563 B |
+| V4.1-Flash | CSA2, FP4 KV (CED는 prefill 계산 감소) | global KV를 저장하는 층 수 | 890 B |
+
+정밀도도 세대마다 함께 내려갔습니다. BF16에서 FP8, FP4로 가면서 같은 구조라도 저장량이 절반, 다시 절반 가까이 줄었습니다.
+
+남는 비용도 분명합니다. 첫째, **local KV 캐시**는 최근 128위치가 찬 뒤에는 고정된 크기로 남고, 토큰당 증가량이 작아질수록 상대적으로 커집니다. 둘째, **위치를 고르는 비용**입니다. 그림 1의 오른쪽 그래프에서 sparse 모델의 읽는 양은 대부분 검색용 key가 차지합니다. 셋째, 압축과 선택, CED의 replay에는 **근사**가 들어갑니다. 모델은 이 구조로 학습되므로 같은 품질을 낸다고 가정할 수는 없고, 품질은 보고서의 평가로 판단해야 합니다.
+
+마지막으로, 저장량이 1/4,400이 되었다고 decode가 4,400배 빨라지는 것은 아닙니다. 실제 속도는 계산량, 커널 구현, 메모리 배치, 배치 크기에 따라 달라집니다.
+
+## 출처
+
+**모델 구조와 보고서**
+- DeepSeek-V2 보고서 §2.1. 가상 MHA는 표 1의 attention 방식별 저장량 비교와 같은 방식으로 셌습니다. 초록의 "KV 캐시 93.3% 감소"는 DeepSeek 67B와의 비교라서 이 글의 배수와 다릅니다. https://arxiv.org/abs/2405.04434
+- DeepSeek-V3.2 공식 추론 코드(Indexer, KV 캐시). decode에서는 흡수(②) 경로를 씁니다. https://huggingface.co/deepseek-ai/DeepSeek-V3.2/tree/main/inference
+- DeepSeek-V4 보고서 §2.3, §4.2.1과 V4-Flash config: https://arxiv.org/abs/2606.19348 · https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash
+- DeepSeek-V4.1-Flash 보고서 §2.2–2.4, §3.2.2, §4.2.1과 config. 초록의 global KV 캐시 890 B/토큰은 본문의 계산과 같습니다. 계층형 indexer는 보고서가 후속 학습에서 도입한 구조입니다. 그림 26·27의 CED와 bounded replay도 보고서의 실행 방식이며, 이 글에서 검토한 공개 참조 코드에는 이 실행 경로가 따로 구현되어 있지 않습니다. https://arxiv.org/abs/2609.19969
+
+**저장량 계산에 쓴 캐시 형식**
+- V3.2 주 KV: FlashMLA의 FP8 KV cache 형식(토큰마다 FP8 값 512 B, scale 16 B, RoPE 128 B, 추가 패딩 없음). https://github.com/deepseek-ai/FlashMLA/blob/ba89a3466e9470ad08ab39738d4e7bb66989e1e7/README.md#fp8-kv-cache
+- V3.2 검색용 key: SGLang IndexKeyCache(64토큰 페이지에 값과 scale을 나눠 8,448 B). HF 참조 코드는 C<sup>KV</sup>를 BF16 버퍼에 두므로, 그 코드대로 세면 61 × (1,152 + 132) = 78,324 B입니다. https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/mem_cache/index_key_cache.py
+- V4·V4.1: SGLang의 DeepSeek-V4 커널 형식과 메모리 풀(V4 584 B·페이지 정렬, V4.1 FP4 288 B, 검색용 key 68 B). 엔진과 옵션에 따라 형식이 다를 수 있습니다. V2도 FP8 KV 옵션으로 배포할 수 있고, V4에는 RoPE까지 FP8로 저장하는 TensorRT-LLM 경로도 있습니다. https://github.com/sgl-project/sglang/blob/main/python/sglang/kernels/ops/attention/dsv4/kv_layout.py · https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
+
+**읽는 양 계산**
+- 각 층이 attention에 쓰는 KV와 위치 선택에 필요한 검색용 key를 한 번씩 센 BF16 환산 논리량입니다. V3.2 참조 코드의 주 attention과 V4.1 참조 코드의 Reindex는 전체 점수를 계산한 뒤 마스크를 적용하므로, 그 코드의 실제 접근량과는 다릅니다.

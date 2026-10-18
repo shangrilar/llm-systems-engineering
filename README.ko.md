@@ -120,3 +120,7 @@
 - [에이전트 전체를 보고 스케줄링하기](https://ai-systems-engineering.com/posts/rl-program-scheduling/)
 - [새 가중치를 추론 엔진으로 전달하기](https://ai-systems-engineering.com/posts/rl-weight-sync/)
 - [LLM RL 총정리: 토큰의 선택에서 시스템의 순환까지](https://ai-systems-engineering.com/posts/rl-summary/)
+
+### 특집
+
+- [DeepSeek의 KV 캐시: 토큰당 3.9 MB에서 890 B까지](https://ai-systems-engineering.com/posts/deepseek-kv-cache/)
