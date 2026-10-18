@@ -25,3 +25,11 @@ export function mat(p:Panel,S:Sizes,cx:number,y:number,name:string,row:string,co
 }
 export function mop(p:Panel,S:Sizes,cx:number,y:number,s='×',ports?:{a:FlowSide;b:FlowSide;t?:boolean}){junction(p,S,cx,y,s,ports);}
 export function rope(p:Panel,S:Sizes,cx:number,cy:number,from:'below'|'right'){flowStep(p,S,cx,cy,'RoPE',{input:{from,label:L('위치 p_t','position p_t')}});}
+// Horizontal flow rows (desktop): a plane centred on the row line, and a product whose weight sits above it.
+export function hmat(p:Panel,S:Sizes,cx:number,cy:number,name:string,row:string,col:string,o:{w?:number;h?:number;tone?:Tone;heads?:boolean}={}):Mat{
+ const h=o.h??48;return mat(p,S,cx,cy-h/2,name,row,col,{...o,dims:'center'});
+}
+export function hmul(p:Panel,S:Sizes,cx:number,cy:number,name:string,row:string,col:string,o:{tone?:Tone;ports?:{a:FlowSide;b:FlowSide;t?:boolean}}={}){
+ const w=colW(S,col),tone=o.tone??'purple';
+ flowMatrix(p,S,cx,cy-94,name,row,col,{w,tone,dims:'right'});flowWire(p,[[cx,cy-46],[cx,cy-17]],tone);junction(p,S,cx,cy,'×',o.ports);
+}

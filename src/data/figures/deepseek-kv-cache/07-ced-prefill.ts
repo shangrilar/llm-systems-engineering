@@ -56,7 +56,7 @@ function panel(l:Locale){
  p.height=y+24;return p;
 }
 export default {articleId:'deepseek-kv-cache',figureId:'07-ced-prefill',number:'deepseek-kv-cache-07-ced-prefill',layout:'wide',eyebrow:numbered('deepseek-kv-cache/07-ced-prefill','CED'),
- title:L('CED prefill: decoder는 최근 구간만 실행','CED prefill: the decoder runs only the recent window'),
+ title:L('CED prefill: decoder는 최근 구간만 근사 실행','CED prefill: the decoder runs only the recent window, approximately'),
  subtitle:L('캐시 재사용 없이 prompt를 처리할 때 · 아래에서 위로 실행 · 보고서의 bounded replay 방식','a prompt without cache reuse · runs upwards · bounded replay per the report'),
  captionIn:'article',screens:['desktop'],
  caption:L('encoder 층은 prompt의 모든 위치를 실행하고, 그 출력에서 decoder가 읽을 global KV를 모든 위치에 대해 만든다. decoder 층은 최근 window의 위치만 실행해 각 층의 local KV를 준비하고, 이때 global KV에서 선택한 항목을 읽는다.','The encoder layers run on every prompt position, and their output yields the decoder’s global KV for every position. The decoder layers run only the recent window to prepare each layer’s local KV, reading selected global KV entries.'),

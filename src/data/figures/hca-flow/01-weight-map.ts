@@ -18,23 +18,27 @@ const rows=(S:Sizes)=>({
   mul(S,'W^Z','D','c'),mat(S,'Z','c',{tone:'teal'})] as Item[],
   note:[]},
 });
-function desktop(l:Locale){
- const S=SZ.desk,p=new Panel(l,null,0,1104),ws:Wire[]=[],bus=80,R=rows(S),keys=['q','w','c','z'] as const,ys=[270,455,625,790],fan:FanTap[]=[];
- flowMatrix(p,S,bus,66,'X','T','D',{w:colW(S,'D'),dims:'right'});
-
+// One panel per branch (C and Z together), each starting from its own copy of X, so a note can follow each branch.
+type Key='q'|'w'|'c'|'z';
+const GROUPS:{keys:Key[];title:Label}[]=[{keys:['q'],title:L('Query','Query')},{keys:['w'],title:L('local KV (SWA)','Local KV (SWA)')},{keys:['c','z'],title:L('압축 KV: 후보 C와 점수 Z','Compression KV: candidates C and scores Z')}];
+const same=L('위와 같은 입력','same input as above');
+function desktop(l:Locale,g:number){
+ const S=SZ.desk,p=new Panel(l,null,0,1104),ws:Wire[]=[],R=rows(S),{keys,title}=GROUPS[g],y0=170;
+ math(p,0,30,title,{size:S.title,weight:600,width:800});
+ const X=flowMatrix(p,S,80,y0-24,'X','T','D',{w:colW(S,'D'),dims:keys.length>1?'right':'center'});
+ // Beside the name, so the wire down to a second row stays clear.
+ if(g)math(p,112,y0-36,same,{size:S.note-2,color:C.muted,width:170});
+ let y=y0;
  keys.forEach((k,i)=>{
-  const a=R[k],y=ys[i];
-  p.raw(`<g data-path="${k}">`);
-  // The query row is the longest; it starts further left so Q stays inside the panel (its title is short).
+  const a=R[k];y=y0+i*170;
+  // The query row is the longest; it starts further left so Q stays inside the panel.
   const x0=k==='q'?262:290;
-  const placed=chain(p,S,'h',[x0,y],a.items,ws,{tone:a.tone,group:`data-path="${k}"`});
-  fan.push({to:[x0-17,y],group:`data-path="${k}"`});
-  p.text(bus+20,y-10,a.title,{size:S.note,weight:600,width:190});
+  const placed=chain(p,S,'h',[x0,y],a.items,ws,{tone:a.tone});
+  ws.push(i?{from:[X.cx,X.y+X.height],to:[x0-17,y],start:'down',end:'right'}:{from:[X.x+X.width,y],to:[x0-17,y],start:'right',end:'right'});
   const last=placed.at(-1)!;
   a.note.forEach((n,j)=>k==='q'?math(p,last.x,y+84+j*26,n,{size:S.note-2,color:C.muted,anchor:'middle',width:300}):math(p,last.right[0]+28,y+7-(a.note.length-1)*13+j*26,n,{size:S.note-2,color:C.muted,width:360}));
-  p.raw('</g>');
  });
- fanOut(p,[bus,114],fan);connect(p,ws);p.height=ys[3]+110;return p;
+ connect(p,ws);p.height=y+90;return p;
 }
 function lane(l:Locale,k:'q'|'w'|'c'|'z'){
  const S=SZ.mob,p=new Panel(l,null,0,328),ws:Wire[]=[],cx=100,a=rows(S)[k];
@@ -46,11 +50,10 @@ function lane(l:Locale,k:'q'|'w'|'c'|'z'){
  a.note.forEach((n,j)=>math(p,8,last.bottom[1]+48+j*22,n,{size:S.note-2,color:C.muted,width:320}));
  connect(p,ws);p.height=last.bottom[1]+40+a.note.length*22;return p;
 }
-function mobile(l:Locale){
- const S=SZ.mob,p=new Panel(l,null,0,328),keys=['q','w','c','z'] as const;
-
- let y=96;
- keys.forEach((k,i)=>{if(i){y+=34;p.line(0,y-17,328,y-17,C.line,1);}const a=lane(l,k);embed(p,a,0,y,`data-path="${k}"`);y+=a.height;});
- p.height=y+16;return p;
+function mobile(l:Locale,g:number){
+ const keys=GROUPS[g].keys;if(keys.length===1)return lane(l,keys[0]);
+ const p=new Panel(l,null,0,328);let y=0;
+ keys.forEach((k,i)=>{if(i){y+=34;p.line(0,y-17,328,y-17,C.line,1);}const a=lane(l,k);embed(p,a,0,y);y+=a.height;});
+ p.height=y;return p;
 }
-export default spec('01-weight-map',L('HCA 층 Attention의 학습 가중치','Learned weights of HCA attention'),L('X에서 시작하는 갈래 · Query, local KV, 압축 KV(C와 Z)','Branches from X · query, local KV, compression KV (C and Z)'),L('HCA 층의 Attention은 입력 X에 가중치를 곱하는 세 갈래로 시작한다. Query는 W^{DQ}와 W^{UQ}의 두 단계로 만들고, 최근 토큰의 KV는 W^{KV}_{win}으로, 압축 후보 C와 softmax 전 점수 Z는 각각 W^{KV}_{comp}와 W^Z로 만든다. 상자 폭은 열 차원의 크기 순서를 따른다.','HCA attention starts from three branches that multiply the input X by weights. The query takes two steps, W^{DQ} then W^{UQ}; recent-token KV uses W^{KV}_{win}; the compression candidate C and its pre-softmax scores Z use W^{KV}_{comp} and W^Z. Box widths follow the order of column sizes.'),(l,m)=>[m?mobile(l):desktop(l)]);
+export default spec('01-weight-map',L('HCA 층이 입력에서 만드는 세 갈래','Three branches an HCA layer builds from its input'),L('Query, local KV, 압축 후보 C와 점수 Z · 보라색이 학습하는 가중치','Query, local KV, compression candidates C and scores Z · purple = learned weights'),L('HCA 층의 Attention은 입력 X에 가중치를 곱하는 세 갈래로 시작한다. Query는 W^{DQ}와 W^{UQ}의 두 단계로 만들고, 최근 토큰의 KV는 W^{KV}_{win}으로, 압축 후보 C와 softmax 전 점수 Z는 각각 W^{KV}_{comp}와 W^Z로 만든다. 상자 폭은 열 차원의 크기 순서를 따른다.','HCA attention starts from three branches that multiply the input X by weights. The query takes two steps, W^{DQ} then W^{UQ}; recent-token KV uses W^{KV}_{win}; the compression candidate C and its pre-softmax scores Z use W^{KV}_{comp} and W^Z. Box widths follow the order of column sizes.'),(l,m)=>[0,1,2].map(g=>m?mobile(l,g):desktop(l,g)));

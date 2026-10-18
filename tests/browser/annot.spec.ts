@@ -21,10 +21,13 @@ for(const slug of slugs)for(const locale of ['ko','en'])for(const width of [1280
       // The header and every part show exactly one crop: the mobile one at 600 px and below when it exists.
       // A `whole` figure shows the whole mobile figure in its header there, and its parts show only notes.
       const whole=await fig.evaluate((f:HTMLElement)=>f.classList.contains('annot-whole'));
+      // A text header prints the title as page text: no crop, except the whole mobile figure on phones.
+      const textHead=await fig.locator('a.annot-texthead').count()>0;
+      if(textHead)await expect(fig.locator('.annot-title')).toContainText(locale==='en'?'Figure':'그림');
       for(const [k,holder] of [fig.locator('a.annot-head'),...await fig.locator('.annot-part').all()].entries()){
         const shown=[];
         for(const crop of await holder.locator('.annot-crop').all())if(await crop.isVisible())shown.push(crop);
-        expect(shown.length).toBe(whole&&k>0&&width<=600?0:1);
+        expect(shown.length).toBe(k===0&&textHead?(whole&&width<=600?1:0):whole&&k>0&&width<=600?0:1);
         if(!shown.length)continue;
         const crop=shown[0];
         await crop.scrollIntoViewIfNeeded();

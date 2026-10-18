@@ -34,10 +34,10 @@ export function headerCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolea
   const L=layoutBoxes(spec,locale,mobile);
   return {src:png(id,locale,mobile),box:[0,0,L.width,L.header+4],size:[L.width,L.height]};
 }
-// The whole figure (used on phones by <Annot whole>).
-export function wholeCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolean):Crop{
-  const L=layoutBoxes(spec,locale,mobile);
-  return {src:png(id,locale,mobile),box:[0,0,L.width,L.height],size:[L.width,L.height]};
+// The whole figure (used on phones by <Annot whole>); without its title block when the article prints the title.
+export function wholeCrop(spec:FigureSpec,id:string,locale:Locale,mobile:boolean,noHeader=false):Crop{
+  const L=layoutBoxes(spec,locale,mobile),top=noHeader?L.header+4:0;
+  return {src:png(id,locale,mobile),box:[0,top,L.width,L.height-top],size:[L.width,L.height]};
 }
 // Union of the listed panels (1-based, e.g. "1+2"), padded and clamped to the figure. "all" takes every panel of
 // the screen being cropped, for figures whose desktop and mobile versions split into different panel counts.

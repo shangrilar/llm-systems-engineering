@@ -21,22 +21,24 @@ export type Mode='bf16'|'packed';
 const total=(r:Row,m:Mode)=>r[m].main+r[m].index;
 const fmt=(v:number)=>Math.round(v).toLocaleString('en-US');
 const mb=(v:number)=>(v/1e6).toFixed(1)+' MB';
-// Logical bytes read by one decode step at N = 131,072 visible positions, all layers, BF16 (2 B per element).
-// Each layer's required cache entries are counted once; shared caches are counted again for every layer that reads
-// them. Assumes an implementation that reads only the selected entries; V3.2's reference main attention and V4.1's
-// reference Reindex score all entries and then mask, so these are not their actual accesses. Not measured on a GPU.
+// Logical bytes read by one decode step at N = 131,072 visible positions, all layers, in the deployed cache formats
+// used for storage (scales and in-entry padding included, page padding excluded). Each layer's required cache entries
+// are counted once; shared caches are counted again for every layer that reads them. The article's BF16 table uses
+// the same entry counts at BF16 sizes. Assumes an implementation that reads only the selected entries; V3.2's
+// reference main attention and V4.1's reference Reindex score all entries and then mask, so these are not their
+// actual accesses. Not measured on a GPU.
 const N=131072;
 export const READS:{key:string;name:Label;kv:number;index:number;kvExpr:string;indexExpr:string}[]=[
  {key:'mha',name:L('가상 MHA','Hypothetical MHA'),kv:N*60*128*256*2,index:0,kvExpr:'N × 3,932,160',indexExpr:''},
  {key:'v2',name:'V2',kv:60*N*576*2,index:0,kvExpr:'60 × N × 1,152',indexExpr:''},
- {key:'v32',name:'V3.2',kv:61*2048*576*2,index:61*N*128*2,kvExpr:'61 × 2,048 × 1,152',indexExpr:'61 × N × 256'},
- {key:'v4',name:'V4-Flash',kv:(21*512+20*N/128+43*128)*1024,index:21*(N/4)*256,kvExpr:'(21 × 512 + 20 × N/128 + 43 × 128) × 1,024',indexExpr:'21 × N/4 × 256'},
- {key:'v41',name:'V4.1-Flash',kv:(38*512+40*128)*1024,index:(3*N/2+N+4*16384)*256,kvExpr:'(38 × 512 + 40 × 128) × 1,024',indexExpr:'(3 × N/2 + N + 4 × 16,384) × 256'},
+ {key:'v32',name:'V3.2',kv:61*2048*656,index:61*N*132,kvExpr:'61 × 2,048 × 656',indexExpr:'61 × N × 132'},
+ {key:'v4',name:'V4-Flash',kv:(21*512+20*N/128+43*128)*584,index:21*(N/4)*68,kvExpr:'(21 × 512 + 20 × N/128 + 43 × 128) × 584',indexExpr:'21 × N/4 × 68'},
+ {key:'v41',name:'V4.1-Flash',kv:38*512*288+40*128*528,index:(3*N/2+N+4*16384)*68,kvExpr:'38 × 512 × 288 + 40 × 128 × 528',indexExpr:'(3 × N/2 + N + 4 × 16,384) × 68'},
 ];
 const gb=(v:number)=>v>=1e9?(v/1e9).toFixed(v>=1e11?0:v>=1e10?1:2)+' GB':(v/1e6).toFixed(v>=1e8?0:1)+' MB';
 
-// Two graphs share the model rows: storage on the left (B per token, deployed formats) and reads on the right
-// (B per decode step, BF16). Their units differ, so each has its own log axis. A read bar's length is the total;
+// Two graphs share the model rows: storage on the left (B per token) and reads on the right (B per decode step),
+// both in deployed cache formats. Their units differ, so each has its own log axis. A read bar's length is the total;
 // inside it, KV and search keys split the length in proportion (not on the log scale). On mobile the read graph
 // sits under the storage graph.
 const AX={store:{lo:2,hi:7,ticks:['100 B','1 kB','10 kB','100 kB','1 MB','10 MB']},read:{lo:7,hi:12,ticks:['10 MB','100 MB','1 GB','10 GB','100 GB','1 TB']}};
@@ -58,7 +60,7 @@ function graph(l:Locale,m:boolean,kind:'store'|'read',o:Opt){
  const title=kind==='store'?L('저장: 토큰당 증가량','Stored: added per token'):L('읽기: 토큰 하나 생성','Read: per generated token');
  const p=new Panel(l,title,0,W),x1=W-(m?14:24),span=x1,X=(v:number)=>span*(Math.log10(v)-ax.lo)/(ax.hi-ax.lo),bh=m?14:18,lh=m?18:22;
  const upTo=o.upTo??ROWS.length-1,rows=rowLines(l,o);
- const sub=kind==='store'?L('긴 문맥 평균 · 배포 캐시 형식','long-context average · deployed cache formats'):L('문맥 131,072토큰 · 모든 층 · BF16 환산','131,072-token context · all layers · BF16');
+ const sub=kind==='store'?L('긴 문맥 평균 · 배포 캐시 형식','long-context average · deployed cache formats'):L('문맥 131,072토큰 · 모든 층 · 배포 캐시 형식','131,072 tokens · all layers · deployed formats');
  p.text(0,96,sub,{size:m?12:15,color:C.muted,width:W});
  let y=m?120:128;
  if(kind==='read'){
@@ -96,8 +98,8 @@ function graph(l:Locale,m:boolean,kind:'store'|'read',o:Opt){
   p.parts.splice(gridAt,0,`<path d="M${x} ${top} L${x} ${y}" stroke="${C.line}" stroke-width="1" fill="none"/>`);
   p.text(x,y+(m?18:22),t,{size:m?11:14,color:C.muted,anchor:i===0?'start':i===ax.ticks.length-1?'end':'middle',width:80});});
  y+=m?44:52;
- const notes:Label[]=kind==='store'?[L('로그 눈금: 한 칸에 10배, 왼쪽 끝은 100 B입니다.','Log scale: each step is 10×; the left edge is 100 B.'),L('형식 줄의 bytes는 캐시 항목 하나의 크기이며 scale을 포함합니다.','Bytes in the format lines are per cache entry, scales included.')]
-  :[L('로그 눈금: 막대 길이는 합계, 막대 안의 칸은 KV와 검색용 key의 비율입니다.','Log scale: bar length is the total; the parts inside show the KV/search-key ratio.'),L('층마다 필요한 KV와 검색 후보 key를 한 번씩 센 양 · 실측 아님','KV and candidate search keys each layer needs, counted once · not measured')];
+ const notes:Label[]=kind==='store'?[L('로그 눈금: 한 칸에 10배, 왼쪽 끝은 100 B입니다.','Log scale: each step is 10×; the left edge is 100 B.'),L('형식 줄의 bytes는 캐시 항목 하나의 크기이며 scale을 포함합니다.','Bytes in the format lines are per cache item, scales included.')]
+  :[L('로그 눈금: 막대 길이는 합계, 막대 안의 칸은 KV와 검색용 key의 비율입니다.','Log scale: bar length is the total; the parts inside show the KV/search-key ratio.'),L('층마다 캐시 항목 1회 · scale 포함 · 페이지 패딩 제외 · 실측 아님','each layer\'s entries once · scales included · page padding excluded · not measured')];
  for(const n of notes){p.text(0,y,n,{size:m?12:14,color:C.muted,width:W});y+=wrap(tr(n),W,m?12:14).length*(m?12:14)*1.4+6;}
  p.height=y;return p;
 }
