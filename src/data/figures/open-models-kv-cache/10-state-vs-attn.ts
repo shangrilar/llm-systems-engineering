@@ -5,8 +5,8 @@ import {L,MODELS,bytes,fmt,tr} from './data';
 // the two fixed-state models. Same log axes in both panels. Kimi: MLA global KV read (24 layers, all positions)
 // crosses the KDA matrix read + write at N = state / (24 × 1,152). Qwen: QSA reads at most 2,048 positions plus
 // the tail, so its KV read stays flat; the search-key read grows; the sum of both crosses the GDN matrix
-// read + write at 229,376 and the search alone at 294,912, beyond the config maximum 262,144 (extrapolated).
-// Logical bytes from data.ts, not measured.
+// read + write at 81,920 and the search alone at 147,456, both within the config maximum 262,144.
+// Computed bytes from data.ts (deployed formats), not measured.
 const W=528,X0=70,X1=W-14,Y0=120,Y1=470,NX=[12,20],NY=[6,11];
 const X=(n:number)=>X0+(X1-X0)*(Math.log2(n)-NX[0])/(NX[1]-NX[0]);
 const Y=(v:number)=>Y1-(Y1-Y0)*(Math.log10(v)-NY[0])/(NY[1]-NY[0]);
@@ -65,7 +65,7 @@ export default {articleId:'open-models-kv-cache',figureId:'10-state-vs-attn',num
  title:L('문맥 길이에 따른 접근량: 상태 행렬과 global 층','Per-token memory access by context length: state matrices and global layers'),
  subtitle:L('출력 토큰 하나마다 · 두 패널은 같은 로그 축','per output token · both panels share the log axes'),
  captionIn:'article',screens:['desktop'],
- caption:L('보라 선은 상태 행렬을 읽고 쓰는 양으로 문맥과 무관하다. Kimi K3는 MLA 24층이 모든 위치를 읽어 31,403토큰에서 상태 쪽과 같아진다. Qwen3.8-Flash-Next는 QSA가 KV 읽기에 상한을 두고 검색용 key를 읽는 양만 늘어나며, KV와 검색의 합은 229,376토큰, 검색만은 294,912토큰에서 상태 쪽과 같아진다. 논리량이며 실측이 아니다.','The purple line is the state matrix read + write, independent of context. In Kimi K3 the 24 MLA layers read every position and match the state at 31,403 tokens. In Qwen3.8-Flash-Next QSA caps the KV read and only the search-key read grows; KV plus search matches the state at 229,376 tokens and search alone at 294,912. Logical bytes, not measured.'),
- alt:L('두 개의 로그-로그 그래프. 가로축은 문맥 4K에서 1M, 세로축은 1 MB에서 100 GB. 왼쪽 Kimi K3는 보라 수평선 868 MB와 파란 직선(MLA global KV 읽기)이 31,403토큰에서 만난다. 오른쪽 Qwen3.8-Flash-Next는 보라 수평선 226 MB, 약 50 MB의 수평선인 파란 선, 문맥 길이에 따라 상승하는 빨간 선(검색용 key 읽기), 둘의 합 점선이 있고 262,144 오른쪽은 외삽 구간이다.','Two log-log graphs, context 4K to 1M, 1 MB to 100 GB. Left, Kimi K3: a flat purple line at 868 MB meets the rising blue line (MLA global KV read) at 31,403 tokens. Right, Qwen3.8-Flash-Next: a flat purple line at 226 MB, a flat blue line near 50 MB, a rising red line (search-key read), their dashed sum, and an extrapolated region beyond 262,144.'),
+ caption:L('보라 선은 상태 행렬을 읽고 쓰는 양으로 문맥과 무관하다. Kimi K3는 MLA 24층이 모든 위치를 읽어 31,403토큰에서 상태 쪽과 같아진다. Qwen3.8-Flash-Next는 QSA가 KV 읽기에 상한을 두고 검색용 key를 읽는 양만 늘어나며, KV와 검색의 합은 81,920토큰, 검색만은 147,456토큰에서 상태 쪽과 같아진다. 계산한 양이며 실측이 아니다.','The purple line is the state matrix read + write, independent of context. In Kimi K3 the 24 MLA layers read every position and match the state at 31,403 tokens. In Qwen3.8-Flash-Next QSA caps the KV read and only the search-key read grows; KV plus search matches the state at 81,920 tokens and search alone at 147,456. Computed, not measured.'),
+ alt:L('두 개의 로그-로그 그래프. 가로축은 문맥 4K에서 1M, 세로축은 1 MB에서 100 GB. 왼쪽 Kimi K3는 보라 수평선 868 MB와 파란 직선(MLA global KV 읽기)이 31,403토큰에서 만난다. 오른쪽 Qwen3.8-Flash-Next는 보라 수평선 113 MB, 약 50 MB의 수평선인 파란 선, 문맥 길이에 따라 상승하는 빨간 선(검색용 key 읽기), 둘의 합 점선이 있고 262,144 오른쪽은 외삽 구간이다.','Two log-log graphs, context 4K to 1M, 1 MB to 100 GB. Left, Kimi K3: a flat purple line at 868 MB meets the rising blue line (MLA global KV read) at 31,403 tokens. Right, Qwen3.8-Flash-Next: a flat purple line at 113 MB, a flat blue line near 50 MB, a rising red line (search-key read), their dashed sum, and an extrapolated region beyond 262,144.'),
  sources:[{label:'Kimi K3 report · §2.1',url:'https://arxiv.org/abs/2607.24653'},{label:'Qwen3.8-Flash-Next report · §2.1.2',url:'https://arxiv.org/abs/2608.30320'}],
  panels:(l:Locale)=>[kimi(l),qwen(l)]} satisfies FigureSpec;

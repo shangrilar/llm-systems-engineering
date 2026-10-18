@@ -8,7 +8,7 @@ export {L};
 // Right: what one output token touches at 131,072 positions, as three independent bars (KV read, search-key
 // read, recurrent matrix read + write). The bars are not stacked: on a log axis a stacked part would not be
 // readable as bytes. Section guides reuse the figure with some models in focus.
-const AX={store:{lo:3,hi:6,ticks:['1 kB','10 kB','100 kB','1 MB']},access:{lo:7,hi:11,ticks:['10 MB','100 MB','1 GB','10 GB','100 GB']}};
+const AX={store:{lo:2,hi:6,ticks:['100 B','1 kB','10 kB','100 kB','1 MB']},access:{lo:7,hi:11,ticks:['10 MB','100 MB','1 GB','10 GB','100 GB']}};
 const PARTS=[{k:'kv',c:C.blue,t:L('KV 읽기','KV read')},{k:'index',c:C.red,t:L('검색용 key 읽기','search-key read')},{k:'state',c:C.purple,t:L('상태 행렬 읽기+쓰기','state matrix read + write')}] as const;
 const ROW=128,W=528;
 export type Opt={focus?:Key[];n?:number};
@@ -55,9 +55,9 @@ function graph(l:Locale,kind:'store'|'access',o:Opt){
  }
  y+=56;
  const notes:Label[]=kind==='store'
-  ?[L('로그 눈금: 한 칸에 10배. 별도 줄은 문맥과 무관하게 요청마다 드는 상태(상태 행렬 FP32).','Log scale, 10× per step. The extra line is per-request state independent of context (state matrices FP32).')]
-  :[L('로그 눈금 · KV·검색용 key BF16, 상태 행렬 FP32 · 빈 자리는 해당 항목 없음','Log scale · KV and search keys BF16, state matrices FP32 · an empty slot means the item does not apply'),
-    L('새 KV 쓰기·conv 갱신 제외, 선택한 위치만 읽는 구현을 가정한 논리량 · 실측 아님 · 외삽 = Qwen config 최대 문맥 262,144 너머','New KV writes and conv updates excluded; logical bytes assuming only selected entries are read · not measured · extrapolated = beyond Qwen’s config maximum of 262,144')];
+  ?[L('로그 눈금: 한 칸에 10배 · 배포 캐시 형식(SGLang 기본 레시피, H200). 별도 줄은 문맥과 무관하게 요청마다 드는 상태.','Log scale, 10× per step · deployed cache formats (SGLang default recipes, H200). The extra line is per-request state independent of context.')]
+  :[L('로그 눈금 · 배포 캐시 형식(SGLang 기본 레시피, H200) · 빈 자리는 해당 항목 없음','Log scale · deployed cache formats (SGLang default recipes, H200) · an empty slot means the item does not apply'),
+    L('새 KV 쓰기·conv 갱신 제외, 선택한 위치만 읽는 구현을 가정해 계산한 양 · 실측 아님 · 외삽 = Qwen config 최대 문맥 262,144 너머','New KV writes and conv updates excluded; logical bytes assuming only selected entries are read · not measured · extrapolated = beyond Qwen’s config maximum of 262,144')];
  for(const t of notes){p.text(0,y,t,{size:14,color:C.muted,width:W});y+=wrap(tr(l,t),W,14).length*20+6;}
  p.height=y;return p;
 }
@@ -74,8 +74,8 @@ export function accessFigure(id:string,title:Label,sub:Label,alt:Label):FigureSp
   captionIn:'article',caption:alt,alt,screens:['desktop'],sources:SOURCES,
   panels:(l:Locale)=>[graph(l,'access',{n:N128}),graph(l,'access',{n:N1M})]};
 }
-// The signature figure: one number per model, the KV cache added per token (BF16 for KV and search keys),
-// on a linear axis from zero so bar length reads as a ratio (the six values span about 30×). The
+// The signature figure: one number per model, the KV cache added per token (deployed cache formats),
+// on a linear axis from zero so bar length reads as a ratio (the six values span about 100×). The
 // context-independent state has another unit (B per request) and is never added to the bar.
 const SW=1104,SX0=300,SX1=856,SMAX=100e3,SROW=92;
 function signaturePanel(l:Locale,o:Opt){
@@ -87,7 +87,7 @@ function signaturePanel(l:Locale,o:Opt){
   p.text(0,y+30,tr(l,m.name),{size:19,weight:f?700:400,color:ink,width:SX0-20});
   p.text(0,y+54,`${m.layers}${l==='en'?' layers':'층'}`,{size:14,color:C.muted,width:SX0-20});
   p.raw(`<rect x="${SX0}" y="${y+12}" width="${(X(m.g)-SX0).toFixed(1)}" height="28" rx="4" fill="${C.blue}" fill-opacity="${op}"/>`);
-  p.text(X(m.g)+12,y+34,`${(m.g/1e3).toFixed(m.g<1e4?2:1)} kB/${l==='en'?'token':'토큰'}`,{size:22,weight:700,color:f?C.blue:C.muted,width:220});
+  p.text(X(m.g)+12,y+34,`${m.g<1e3?fmt(m.g)+' B':(m.g/1e3).toFixed(m.g<1e4?2:1)+' kB'}/${l==='en'?'token':'토큰'}`,{size:22,weight:700,color:f?C.blue:C.muted,width:220});
   if(m.S&&m.sKind)p.text(SX0,y+64,l==='en'?`+ fixed state per request: ${tr(l,m.sKind)} ${bytes(m.S)}`:`+ 요청당 고정 상태: ${tr(l,m.sKind)} ${bytes(m.S)}`,{size:14,color:f?(m.state?C.purple:C.orange):C.muted,width:SW-SX0});
   else p.text(SX0,y+64,L('요청당 고정 상태 없음 · 모두 문맥에 비례','no fixed state per request · all grows with context'),{size:14,color:C.muted,width:SW-SX0});
   y+=SROW;
@@ -97,11 +97,13 @@ function signaturePanel(l:Locale,o:Opt){
   p.parts.splice(gridAt,0,`<path d="M${x} ${top} L${x} ${bottom}" stroke="${C.line}" stroke-width="1" fill="none"/>`);
   p.text(x,bottom+24,`${v/1e3} kB`,{size:14,color:C.muted,anchor:'middle',width:80});});
  p.text(SX1+70,bottom+24,l==='en'?'per token':'토큰당',{size:14,color:C.muted,width:120});
- p.text(0,bottom+60,L('선형 눈금 · 긴 문맥에서 토큰 하나가 늘 때 모든 층에 더해지는 평균 증가량 · 모델 설정으로 계산, 실측 아님','linear scale · average added across all layers when a long context grows by one token · computed from model configs, not measured'),{size:14,color:C.muted,width:SW});
- p.text(0,bottom+84,L('요청당 고정 상태: 요청마다 따로 들고 문맥과 무관 · 상태 행렬 FP32, conv BF16 · SWA·local KV는 window를 채운 뒤의 값','fixed state per request: held by each request, independent of context · state matrices FP32, conv BF16 · SWA and local KV after the window fills'),{size:14,color:C.muted,width:SW});
- // The order note goes on the opening figure only; the section guides repeat the figure with a focus.
- if(!o.focus)p.text(0,bottom+108,L('모델 순서: 토큰당 KV 캐시가 큰 순 · 뒤의 모델 비교 그림도 같은 순서','model order: largest KV cache per token first · later model comparisons keep it'),{size:14,color:C.muted,width:SW});
- p.height=bottom+(o.focus?100:124);return p;
+ // Notes stack by their wrapped height, so a longer English line never runs into the next note.
+ const notes:Label[]=[L('선형 눈금 · 긴 문맥에서 토큰 하나가 늘 때 모든 층에 더해지는 평균 증가량 · 배포 캐시 형식(SGLang 기본 레시피, H200) · 모델 설정으로 계산, 실측 아님','linear scale · average added across all layers when a long context grows by one token · deployed cache formats (SGLang default recipes, H200) · computed from model configs, not measured'),
+  L('요청당 고정 상태: 요청마다 따로 들고 문맥과 무관 · 상태 행렬 Kimi FP32·Qwen BF16, conv BF16 · SWA·local KV는 window를 채운 뒤의 값','fixed state per request: held by each request, independent of context · state matrices Kimi FP32, Qwen BF16; conv BF16 · SWA and local KV after the window fills')];
+ if(!o.focus)notes.push(L('모델 순서: 토큰당 KV 캐시가 큰 순 · 뒤의 모델 비교 그림도 같은 순서','model order: largest KV cache per token first · later model comparisons keep it'));
+ let ny=bottom+60;
+ for(const t of notes){p.text(0,ny,t,{size:14,color:C.muted,width:SW});ny+=wrap(tr(l,t),SW,14).length*20+4;}
+ p.height=ny-4;return p;
 }
 export function signature(id:string,title:Label,sub:Label,alt:Label,o:Opt={}):FigureSpec{
  return{articleId:'open-models-kv-cache',figureId:id,number:'open-models-kv-cache-'+id,layout:'wide',eyebrow:numbered('open-models-kv-cache/'+id,L('모델별 KV 캐시','KV cache by model')),title,subtitle:sub,
