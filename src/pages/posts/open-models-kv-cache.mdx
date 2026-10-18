@@ -29,7 +29,7 @@ import AnnotPart from '../../components/AnnotPart.astro';
 </AnnotPart>
 </Annot>
 
-가장 작은 DeepSeek V4.1-Flash(890 B)와 가장 큰 GLM-5.3·Hy4-preview(92.6 kB)는 약 100배 차이입니다. 모두 BF16으로 저장한다고 하면 약 30배이므로, 나머지 약 3.5배는 DeepSeek의 FP4 저장에서 옵니다(원소당 bytes는 4분의 1이지만 scale이 붙어 약 3.5배입니다). GLM-5.3과 Hy4-preview처럼 골라 읽는 모델도 저장량은 클 수 있습니다. 골라 읽기는 읽는 양을 줄일 뿐 저장량은 줄이지 않기 때문입니다. Kimi K3와 Qwen3.8-Flash-Next는 토큰당 증가량이 작지만, 요청마다 각각 449 MB와 59.0 MB의 고정 상태를 따로 둡니다. MiMo-V2.6-Pro는 70층 중 60층이 최근 위치만 남기는데도 Kimi보다 두 배 가까이 큽니다. 1편에서 본 것처럼 토큰당 KV 캐시는 저장량이 문맥 길이에 비례하는 저장소를 같은 구조끼리 묶고, 각 묶음의 증가량을 더한 값입니다.
+가장 작은 DeepSeek V4.1-Flash(890 B)와 가장 큰 GLM-5.3·Hy4-preview(92.6 kB)는 약 100배 차이입니다. 모두 BF16으로 저장한다고 하면 약 30배이므로, 나머지 약 3.5배는 DeepSeek의 FP4 저장에서 옵니다(원소당 bytes는 4분의 1이지만 scale이 붙어 약 3.5배입니다). GLM-5.3과 Hy4-preview처럼 골라 읽는 모델도 저장량은 클 수 있습니다. 골라 읽기는 읽는 양을 줄일 뿐 저장량은 줄이지 않기 때문입니다. Kimi K3와 Qwen3.8-Flash-Next는 토큰당 증가량이 작지만, 요청마다 각각 449 MB와 59.0 MB의 고정 상태를 따로 둡니다. MiMo-V2.6-Pro는 70층 중 60층이 최근 위치만 남기는데도 토큰당 증가량이 Kimi보다 두 배 가까이 큽니다. 1편에서 본 것처럼 토큰당 KV 캐시는 저장량이 문맥 길이에 비례하는 저장소를 같은 구조끼리 묶고, 각 묶음의 증가량을 더한 값입니다.
 
 ```text
 토큰당 KV 캐시 = Σ (독립 저장소 수 × 저장 벡터 하나의 원소 수 × 원소당 bytes ÷ 압축 비율)
@@ -43,7 +43,7 @@ import AnnotPart from '../../components/AnnotPart.astro';
 - **긴 문맥에서의 평균 증가량**입니다. 토큰 여러 개의 KV를 하나로 합쳐 저장하는 모델은 토큰마다 저장량이 같은 폭으로 늘지는 않으므로, 고정 부분을 제외한 저장량을 토큰 수로 나누고, 문맥이 충분히 길 때 가까워지는 값을 씁니다.
 - **모델 본체 한 벌, 요청 하나** 기준입니다. 다음 여러 토큰을 함께 예측하는 MTP·draft 모듈과 이미지 입력용 vision 모듈은 제외했습니다. 같은 길이의 요청 B개가 캐시를 공유하지 않으면 전체 저장량은 B배입니다.
 - **검색용 key를 포함합니다.** 읽을 위치를 고르는 모델은 토큰이나 블록마다 작은 검색용 key를 따로 저장합니다. 이것도 문맥에 비례해 쌓이므로 함께 셉니다.
-- **정밀도**: SGLang cookbook의 모델별 레시피를 H200에서 실행할 때의 형식입니다(2026-10-19 기준). GLM-5.3·Hy4-preview는 main KV BF16과 검색용 key FP8(128 B + FP32 scale 4 B = 132 B), MiMo-V2.6-Pro·Kimi K3·Qwen3.8-Flash-Next의 KV는 BF16, DeepSeek V4.1-Flash는 1편의 형식(문맥 전체에 걸쳐 쌓이는 KV와 검색용 key는 FP4, 최근 위치의 KV는 FP8, 모두 scale 포함)입니다. scale은 낮은 정밀도로 저장한 값을 원래 크기로 되돌리는 배율입니다. linear attention의 상태 행렬은 Kimi FP32(SGLang 기본값), Qwen BF16(cookbook 레시피), conv 상태는 BF16입니다. Blackwell GPU에서는 SGLang이 GLM-5.3 같은 sparse attention 모델의 KV를 FP8로 고르므로 그 값이 더 작아집니다.
+- **정밀도**: SGLang cookbook의 모델별 레시피를 H200에서 실행할 때의 형식입니다(2026-10-19 기준). GLM-5.3·Hy4-preview는 KV BF16과 검색용 key FP8(128 B + FP32 scale 4 B = 132 B), MiMo-V2.6-Pro·Kimi K3·Qwen3.8-Flash-Next의 KV는 BF16, DeepSeek V4.1-Flash는 1편의 형식(문맥 전체에 걸쳐 쌓이는 KV와 검색용 key는 FP4, 최근 위치의 KV는 FP8, 모두 scale 포함)입니다. scale은 낮은 정밀도로 저장한 값을 원래 크기로 되돌리는 배율입니다. linear attention의 상태 행렬은 Kimi FP32(SGLang 기본값), Qwen BF16(cookbook 레시피), conv 상태는 BF16입니다. Blackwell GPU에서는 SGLang이 GLM-5.3 같은 sparse attention 모델의 KV를 FP8로 고르므로 그 값이 더 작아집니다.
 - **고정 상태**는 따로 적었습니다. linear attention 층의 상태 행렬과 conv 상태, 최근 위치(window)만 보관하는 KV가 여기에 들어갑니다. 최근 window는 문맥이 window보다 길어진 뒤의 값입니다.
 - **접근하는 양**은 토큰 하나를 만들 때 이전 문맥 상태를 읽고 쓰는 양을 저장량과 같은 형식으로 계산한 값입니다. KV 읽기, 검색용 key 읽기, 상태 행렬 읽기+쓰기를 따로 셉니다. 새 KV를 추가로 쓰는 양과 conv 등 작은 상태의 갱신은 제외했습니다. 위치를 골라 읽는 층은 고른 위치만 읽는 구현을 가정했습니다.
 - **GPU 실측값이 아니라 공개 config와 보고서로 계산한 값입니다.** 실제 GPU 메모리(HBM) 트래픽이나 시간과 다를 수 있습니다.
@@ -178,7 +178,7 @@ SWA 층의 KV는 window를 채운 뒤 더 늘지 않으므로 막대 아래 고�
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/11-swa" panels="1" yr="0.493-1" only="path:r1">
 
-**SWA로 바꾸지 않은 global 층의 폭.** MiMo는 global 층이 10개로 Kimi의 24개보다 적지만, 층 하나가 토큰 하나에 남기는 KV가 5,120 B(GQA: KV 8 head × (K 192 + V 128) × 2 B)로 Kimi의 1,152 B보다 4배 넘게 넓습니다. 그래서 토큰당 51,200 B로 Kimi의 27,648 B보다 큽니다. MLA는 Key와 Value를 직접 저장하지 않고, 둘을 만들 수 있는 512차원 공통 벡터(latent)와 모든 head가 함께 쓰는 key 64차원을 저장합니다. DeepSeek에서는 이 64차원에 위치 정보(RoPE)를 담습니다. Kimi도 이 64차원을 모든 head가 함께 쓰는 key 성분으로 점수에 더하지만, 위치에 따른 회전은 하지 않습니다(NoPE). 원리는 [1편](/posts/deepseek-kv-cache/)에서 다뤘습니다. SWA 층도 global 층과 같은 폭으로 KV를 남기므로, MiMo 60층 × 128위치 × 5,120 B = 39.3 MB에서 멈춥니다.
+**SWA로 바꾸지 않은 global 층의 폭.** MiMo는 global 층이 10개로 Kimi의 24개보다 적지만, 층 하나가 토큰 하나에 남기는 KV가 5,120 B(GQA: KV 8 head × (K 192 + V 128) × 2 B)로 Kimi의 1,152 B보다 4배 넘게 넓습니다. 그래서 토큰당 51,200 B로 Kimi의 27,648 B보다 큽니다. MLA는 Key와 Value를 직접 저장하지 않고, 둘을 만들 수 있는 512차원 공통 벡터(latent)와 모든 head가 함께 쓰는 key 64차원을 저장합니다. DeepSeek에서는 이 64차원에 위치 정보(RoPE)를 담습니다. Kimi도 이 64차원을 모든 head가 함께 쓰는 key 부분으로 두고 query의 해당 부분과 내적해 점수에 더하지만, 위치에 따른 회전은 하지 않습니다(NoPE). 원리는 [1편](/posts/deepseek-kv-cache/)에서 다뤘습니다. SWA 층도 global 층과 같은 폭으로 KV를 남기므로, MiMo 60층 × 128위치 × 5,120 B = 39.3 MB에서 멈춥니다.
 
 </AnnotPart>
 </Annot>
@@ -276,7 +276,7 @@ linear attention도 SWA처럼 그 층의 저장량에 상한을 둡니다. 다�
 | | Kimi K3 | Qwen3.8-Flash-Next |
 |---|---|---|
 | 남은 층 | MLA 24층 (출력에 gate를 곱하는 Gated MLA, KDA 3층마다 1층 + 마지막 층) | QSA 12층 (GDN 3층마다 1층) |
-| 층의 KV | latent 512 + 공유 key 64, 위치 인코딩 없음(NoPE) | GQA: query 24 head, KV 2 head × (Key 256 + Value 256) = 2,048 B |
+| 층의 KV | latent 512 + 공유 key 64, 위치 인코딩 없음(NoPE) | GQA: query 24 head, KV 2 head × (Key 256 + Value 256) × 2 B(BF16) = 2,048 B |
 | 읽는 범위 | 이전 문맥 전체 | 최대 2,048위치 + 미완성 꼬리 블록(아직 4토큰이 차지 않은 마지막 블록, 최대 3토큰) |
 | 131,072토큰에서 KV 읽기 | 3.62 GB | 50.3 MB |
 
@@ -324,9 +324,9 @@ sparse attention은 저장된 KV 가운데 검색으로 고른 위치만 읽습�
 | | GLM-5.3 · Hy4-preview (DSA) | Qwen3.8-Flash-Next (QSA) |
 |---|---|---|
 | 검색하는 층 | 78층 중 21층 (나머지는 위치 재사용) | 12층 |
-| indexer | query 32 head × 128, 모든 head가 함께 쓰는 key 1개 × 128 | query 4 head, key 1개 × 128 |
+| indexer | query 32 head × 128, 모든 head가 함께 쓰는 key 1개 × 128 | query 4 head × 128, key 1개 × 128 |
 | 고르는 단위 · 예산 | 위치 · 최대 2,048개 | 4토큰 블록 · 최대 512개 + 꼬리(최대 3위치) |
-| 검색층 하나가 채점하는 대상 | 위치 N개 | 블록 ⌊N/4⌋개 |
+| 검색층 하나가 채점하는 대상 | 위치 N개 | 완성된 블록 ⌊N/4⌋개(소수점 버림) |
 | 저장하는 검색용 key (토큰당) | 21 × 132 B (FP8, scale 포함) = 2,772 B | 12 × 128 × 2 B ÷ 4 = 768 B (BF16) |
 | 1,048,576토큰에서 KV 읽기 / 검색 | 184 MB / 2.91 GB | 50.3 MB / 805 MB (외삽) |
 
@@ -365,7 +365,7 @@ DeepSeek은 여러 토큰의 KV를 하나로 합쳐 저장하고, 만든 KV를 �
 <Annot fig="open-models-kv-cache/13-sharing" n={15} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0-0.472" only="path:r0">
 
-**토큰 묶어 저장하기.** DeepSeek V4.1-Flash에서 global KV를 만드는 층은 2, 8, 14, 20의 네 개입니다(층 번호는 0부터). 앞의 세 층은 토큰 2개의 KV를 entry 하나로 합치고, 층 20은 압축 없이 토큰마다 entry를 만듭니다(그래서 층 20의 entry 하나는 토큰 위치 하나입니다). 그래서 토큰당 entry는 0.5 × 3 + 1 = 2.5개입니다. entry 하나는 main KV 512차원(1편의 V4처럼 Key와 Value로 함께 쓰는 벡터)과 검색용 key 128차원이고, 배포 형식(FP4, scale 포함)으로 288 + 68 = 356 B입니다. 압축 여부와 별개로 40층 모두 최근 128위치의 local KV를 유지합니다. 처음 2층은 이것만 읽고, 나머지 38층은 global KV와 함께 읽습니다. 압축된 entry에 아직 포함되지 않은 최근 위치도 이 경로로 참조합니다. 그림 1의 2.7 MB는 이 local KV 전체의 저장량입니다(FP8, scale 포함).
+**토큰 묶어 저장하기.** DeepSeek V4.1-Flash에서 global KV를 만드는 층은 2, 8, 14, 20의 네 개입니다(층 번호는 0부터). 앞의 세 층은 토큰 2개의 KV를 entry 하나로 합치고, 층 20은 압축 없이 토큰마다 entry를 만듭니다(그래서 층 20의 entry 하나는 토큰 위치 하나입니다). 그래서 토큰당 entry는 0.5 × 3 + 1 = 2.5개입니다. entry 하나는 main KV 512차원과 검색용 key 128차원입니다. main KV는 MLA의 latent처럼 Key와 Value를 다시 만드는 재료가 아니라, 그 벡터 자체를 Key로도 Value로도 씁니다(1편의 V4). 배포 형식(FP4)으로 main KV는 512 × 0.5 B + scale 32 B = 288 B, 검색용 key는 128 × 0.5 B + scale 4 B = 68 B, 합쳐 356 B입니다. 압축 여부와 별개로 40층 모두 최근 128위치의 local KV를 유지합니다. 처음 2층은 이것만 읽고, 나머지 38층은 global KV와 함께 읽습니다. 압축된 entry에 아직 포함되지 않은 최근 위치도 이 경로로 참조합니다. 그림 1의 2.7 MB는 이 local KV 전체의 저장량으로, 40층 × 128위치 × 528 B(512차원 FP8 + scale 16 B)입니다.
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0.472-1" only="path:r1">
@@ -419,7 +419,7 @@ GLM-5.3, Hy4-preview: 78층 × 1,152 B + 21층 × 132 B = 92,628 B  (KV BF16, �
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/15-access" panels="2">
 
-**1,048,576토큰.** 골라 읽지 않는 층의 읽기는 문맥에 비례해 커져 MiMo 53.7 GB, Kimi 29.0 GB가 됩니다. 골라 읽는 모델은 KV 읽기가 그대로이고 검색만 커집니다(GLM-5.3·Hy4-preview 2.91 GB). DeepSeek은 KV 8.3 MB, 검색 183 MB입니다. KV는 층마다 고른 entry 512개(encoder 쪽 18층, decoder 쪽 20층) × 288 B와 40층의 local KV 128위치 × 528 B(512차원 FP8 + scale 16 B)의 합이고, 검색은 Full 4층이 모든 entry(Full 3층 × N/2 + 층 20 × N)의 검색용 key를, Reindex 4층이 후보 16,384개의 key만 읽는다고 가정한 양 × 68 B입니다.
+**1,048,576토큰.** 골라 읽지 않는 층의 읽기는 문맥에 비례해 커져 MiMo 53.7 GB, Kimi 29.0 GB가 됩니다. 골라 읽는 모델은 KV 읽기가 그대로이고 검색만 커집니다(GLM-5.3·Hy4-preview 2.91 GB). DeepSeek은 KV 8.3 MB, 검색 183 MB입니다. KV는 층마다 고른 entry 512개(encoder 쪽 18층, decoder 쪽 20층) × 288 B와 40층의 local KV 128위치 × 528 B(512차원 FP8 + scale 16 B)의 합이고, 검색은 Full 4층이 모든 entry의 검색용 key를, Reindex 4층이 후보 16,384개의 key만 읽는다고 가정해 (3 × N/2 + N + 4 × 16,384) × 68 B입니다.
 
 </AnnotPart>
 </Annot>
@@ -436,11 +436,11 @@ GLM-5.3, Hy4-preview: 78층 × 1,152 B + 21층 × 132 B = 92,628 B  (KV BF16, �
 여섯 모델 중 모든 층이 문맥 전체의 KV를 그대로 읽는 모델은 없었습니다. 새 모델이 나왔을 때 전체 파라미터와 활성 파라미터 옆에 토큰당 KV 캐시와 접근량을 함께 적어 보면, 긴 문맥에서 그 모델이 어떤 저장·접근 비용을 내는지가 보입니다. 토큰당 KV 캐시와 접근량을 구하려면 네 가지를 확인하면 됩니다.
 
 1. **층마다 이전 문맥을 무엇으로 남기나.** 최근 window, 고정 크기 상태, 위치마다 남긴 KV와 검색용 key, 압축한 entry 중 무엇인지, 그리고 여러 층이 함께 쓰는지 봅니다. 저장량이 문맥 길이에 비례하는 독립 저장소의 증가량을 더하면 토큰당 KV 캐시가 나옵니다. 여러 층이 공유하는 저장소는 한 번만 세고, 고정 상태는 따로 적습니다.
-2. **매 토큰 무엇을 읽나.** 접근량은 문맥 길이에 따라 크게 달라지므로 기준 길이(예: 131,072토큰)와 함께 적습니다. SWA는 window를, 고정 상태는 상태 전체를, 골라 읽는 층은 고른 위치를 읽습니다. 고르지 않고 전체를 읽는 global 층이 남아 있으면 그 층의 읽기량이 문맥 길이에 비례해 늘어납니다.
+2. **매 토큰 무엇을 읽고 쓰나.** 접근량은 문맥 길이에 따라 크게 달라지므로 기준 길이(예: 131,072토큰)와 함께 적습니다. SWA는 window를, 고정 상태는 상태 전체를, 골라 읽는 층은 고른 위치를 읽습니다. 고르지 않고 전체를 읽는 global 층이 남아 있으면 그 층의 읽기량이 문맥 길이에 비례해 늘어납니다.
 3. **무엇이 새 비용으로 남았나.** 고정 상태는 매 토큰 상태를 갱신하는 비용이, 골라 읽기는 위치를 찾는 검색 비용이, 토큰 방향 압축은 entry를 만드는 계산과 아직 묶이지 않은 최근 위치의 처리가 남습니다. 검색하는 층 수, 채점 대상, 후보 범위를 확인합니다.
 4. **어떤 형식으로 저장하나.** 같은 구조라도 정밀도(BF16, FP8, FP4)와 scale에 따라 bytes가 몇 배 달라집니다. 서빙 엔진이 실제로 고르는 형식을 확인합니다.
 
-이 글의 숫자는 모두 모델 설정과 캐시 형식으로 계산한 저장량과 접근량입니다. 같은 bytes가 실제 GPU에서 같은 시간이 되는지는 별개의 질문입니다.
+이 글의 저장량과 접근량은 모두 모델 설정과 캐시 형식으로 계산한 값입니다. 같은 bytes가 실제 GPU에서 같은 시간이 되는지는 별개의 질문입니다.
 
 ## 출처
 
