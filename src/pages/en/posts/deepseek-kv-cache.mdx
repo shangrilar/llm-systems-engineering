@@ -118,7 +118,7 @@ Figure 3 shows how the input X branches into three paths within an MLA layer: on
 </AnnotPart>
 <AnnotPart fig="mla-flow/01-projections" panels="3">
 
-**Shared rotary key.** One 64-dimensional K<sup>R</sup> with RoPE applied is **shared by all heads** and stored in the cache. With RoPE in the C<sup>KV</sup> path, a rotation matrix that differs by position would sit between W<sup>UK</sup> and C<sup>KV</sup>, so W<sup>UK</sup> could not be moved to the Query side in advance as in the "absorption" shown later. So the positional part gets its own path ([MLA storage article](/en/posts/model-advanced-mla-storage/)).
+**Shared rotary key.** One 64-dimensional K<sup>R</sup> with RoPE applied is **shared by all heads** and stored in the cache. Position information goes only into this K<sup>R</sup>; C<sup>KV</sup> gets no RoPE. Why the positional part is kept separate has to do with "absorption," so it is explained after absorption.
 
 </AnnotPart>
 </Annot>
@@ -128,9 +128,7 @@ What stays in the cache is **C<sup>KV</sup> (512 dimensions) and K<sup>R</sup> (
 <details>
 <summary>More: RoPE's rotation and the position difference</summary>
 
-RoPE pairs up a vector's dimensions and rotates each pair by an angle proportional to the position. When a Query at position t and a Key at position s are each rotated and then dotted, the two rotations combine into a single rotation by the difference in position. That is why the score depends on relative distance rather than absolute position.
-
-Two things follow from this property. In the figures' row-vector notation, the content Key at position s is k<sub>s</sub> = c<sub>s</sub> W<sup>UK</sup><sub>h</sub> (c<sub>s</sub> is C<sup>KV</sup> at position s). With RoPE applied, the score takes the form q R(t − s) (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> c<sub>s</sub><sup>T</sup>, where R(t − s) is the rotation matrix for the difference in position. Absorption multiplies q (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> in advance into one Q̂<sub>h</sub> used against every position's c<sub>s</sub>, but an R(t − s) that differs by position sits between them, so no single Q̂<sub>h</sub> exists. That is why the positional part that gets RoPE is kept separately as K<sup>R</sup>, and the content part gets no RoPE. V4's inverse rotation, seen later, uses the same property.
+RoPE pairs up a vector's dimensions and rotates each pair by an angle proportional to the position. When a Query at position t and a Key at position s are each rotated and then dotted, the two rotations combine into a single rotation by the difference in position. That is why the score depends on relative distance rather than absolute position. Position information thus enters the score, where Query and Key meet, as a rotation R(t − s) that differs with the position difference. V4's inverse rotation, seen later, uses the same property.
 
 </details>
 
@@ -178,6 +176,8 @@ Figure 5 computes the same content score in three ways. The three lines are not 
 The three forms produce algebraically the same content score. With finite precision and quantization, rounding error can differ slightly. All three only change the order in which the content score is computed; the positional score Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup> and the scaling by √(d<sub>k</sub> + d<sub>r</sub>) (a divisor of the score, unlike the scales stored with quantized values) stay as they are.
 
 After absorption the dot product runs over r<sub>kv</sub> (512) instead of d<sub>k</sub> (128), so computing one score actually takes more work. What absorption removes is multiplying every cached position by W<sup>UK</sup><sub>h</sub> to expand the Key, and reading that expanded Key.
+
+**Why the positional part is kept separate.** Absorption builds one Q̂<sub>h</sub> and multiplies it with C<sup>KV</sup> at every position, so nothing between the Query and C<sup>KV</sup> may change from position to position. If RoPE were applied to the content Key built from C<sup>KV</sup>, then in the figures' row-vector notation the score at position s would take the form q R(t − s) (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> c<sub>s</sub><sup>T</sup> (c<sub>s</sub> is C<sup>KV</sup> at position s). An R(t − s) that differs by position sits in between, so no single Q̂<sub>h</sub> exists. That is why MLA puts position information only into the small K<sup>R</sup> with RoPE, and uses absorption only on the content part, which has no RoPE ([MLA storage article](/en/posts/model-advanced-mla-storage/)).
 
 With the score in hand, the same can be done for how the probabilities combine the Values. The three lines of Figure 6 are again three orders of computation with the same result. In Figure 6, W<sup>O</sup><sub>h</sub> is the block of rows of Figure 4's output weight W<sup>O</sup> that belongs to head h, and Y<sub>h</sub> is head h's contribution to the final output. Adding Y<sub>h</sub> over all heads gives Figure 4's Y.
 

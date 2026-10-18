@@ -114,7 +114,7 @@ V2는 토큰당 **69,120 B**로 MHA의 약 1/57입니다.
 </AnnotPart>
 <AnnotPart fig="mla-flow/01-projections" panels="3">
 
-**공유 위치 Key.** RoPE를 적용한 64차원 K<sup>R</sup>을 하나 만들어 **모든 head가 공유**하고 캐시에 저장합니다. RoPE를 C<sup>KV</sup> 경로에 넣으면 위치마다 다른 회전 행렬이 W<sup>UK</sup>와 C<sup>KV</sup> 사이에 끼어, 뒤에서 볼 "흡수"처럼 W<sup>UK</sup>를 Query 쪽으로 미리 옮길 수 없습니다. 그래서 위치 성분은 경로를 따로 둡니다([MLA 저장 구조 글](/posts/model-advanced-mla-storage/)).
+**공유 위치 Key.** RoPE를 적용한 64차원 K<sup>R</sup>을 하나 만들어 **모든 head가 공유**하고 캐시에 저장합니다. 위치 정보는 이 K<sup>R</sup>에만 넣고, C<sup>KV</sup>에는 RoPE를 적용하지 않습니다. 위치 성분을 따로 두는 이유는 뒤의 "흡수"와 관련이 있어서, 흡수를 본 다음에 설명합니다.
 
 </AnnotPart>
 </Annot>
@@ -124,9 +124,7 @@ V2는 토큰당 **69,120 B**로 MHA의 약 1/57입니다.
 <details>
 <summary>더 알아보기: RoPE의 회전과 위치 차이</summary>
 
-RoPE는 벡터의 차원을 둘씩 짝지어, 위치에 비례하는 각도만큼 회전시킵니다. 위치 t의 Query와 위치 s의 Key를 각각 회전한 뒤 내적하면, 두 회전이 합쳐져 위치의 차이만큼의 회전 하나만 남습니다. 그래서 점수가 절대 위치가 아니라 상대 거리에 따라 달라집니다.
-
-이 성질 때문에 두 가지가 생깁니다. 그림과 같은 행벡터 표기로, 위치 s의 내용 Key는 k<sub>s</sub> = c<sub>s</sub> W<sup>UK</sup><sub>h</sub>입니다(c<sub>s</sub>는 위치 s의 C<sup>KV</sup>). 여기에 RoPE를 적용하면 점수는 q R(t − s) (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> c<sub>s</sub><sup>T</sup> 꼴이 됩니다. R(t − s)는 위치 차이만큼의 회전 행렬입니다. 흡수는 q (W<sup>UK</sup><sub>h</sub>)<sup>T</sup>를 미리 곱해 Q̂<sub>h</sub> 하나를 만들고 모든 위치의 c<sub>s</sub>와 곱하는 것인데, 그 사이에 위치마다 다른 R(t − s)가 끼어 Q̂<sub>h</sub>를 하나로 만들 수 없습니다. 그래서 RoPE를 적용하는 위치 성분은 K<sup>R</sup>로 따로 두고, 내용 성분에는 RoPE를 적용하지 않습니다. 뒤에서 볼 V4의 역회전도 같은 성질을 씁니다.
+RoPE는 벡터의 차원을 둘씩 짝지어, 위치에 비례하는 각도만큼 회전시킵니다. 위치 t의 Query와 위치 s의 Key를 각각 회전한 뒤 내적하면, 두 회전이 합쳐져 위치의 차이만큼의 회전 하나만 남습니다. 그래서 점수가 절대 위치가 아니라 상대 거리에 따라 달라집니다. 이렇게 위치 정보는 Query와 Key가 만나는 점수 계산 안에, 위치 차이마다 다른 회전 R(t − s)로 들어갑니다. 뒤에서 볼 V4의 역회전도 이 성질을 씁니다.
 
 </details>
 
@@ -174,6 +172,8 @@ RoPE는 벡터의 차원을 둘씩 짝지어, 위치에 비례하는 각도만�
 세 방식은 대수적으로 같은 내용 점수를 만듭니다. 유한 정밀도와 양자화에서는 반올림 오차가 조금 달라질 수 있습니다. 세 방식 모두 내용 점수의 계산 순서만 바꾸며, 위치 점수 Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup>와 √(d<sub>k</sub> + d<sub>r</sub>)로 나누는 scale(저장 형식의 scale과 다른, 점수를 나누는 값)은 그대로입니다.
 
 흡수 뒤의 내적은 d<sub>k</sub>(128)가 아니라 r<sub>kv</sub>(512) 차원에서 일어나므로, 점수 하나를 계산하는 양은 오히려 늘어납니다. 흡수가 없애는 것은 캐시의 모든 위치에 W<sup>UK</sup><sub>h</sub>를 곱해 Key를 펼치는 계산과, 펼친 Key를 읽는 일입니다.
+
+**위치 성분을 따로 두는 이유.** 흡수는 Q̂<sub>h</sub> 하나를 만들어 모든 위치의 C<sup>KV</sup>와 곱하는 방식이라, Query와 C<sup>KV</sup> 사이에 위치마다 달라지는 것이 없어야 합니다. C<sup>KV</sup>에서 만든 내용 Key에 RoPE를 적용하면, 그림과 같은 행벡터 표기로 위치 s의 점수가 q R(t − s) (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> c<sub>s</sub><sup>T</sup> 꼴이 됩니다(c<sub>s</sub>는 위치 s의 C<sup>KV</sup>). 위치마다 다른 R(t − s)가 사이에 끼므로 Q̂<sub>h</sub>를 하나로 만들 수 없습니다. 그래서 MLA는 위치 정보를 RoPE를 적용한 작은 K<sup>R</sup>에만 넣고, 흡수는 RoPE가 없는 내용 성분에만 씁니다([MLA 저장 구조 글](/posts/model-advanced-mla-storage/)).
 
 점수를 구했으니, 이제 같은 확률로 Value를 합치는 순서도 바꿔 보겠습니다. 그림 6의 세 줄도 같은 결과를 내는 세 계산 순서입니다. 그림 6의 W<sup>O</sup><sub>h</sub>는 그림 4의 출력 가중치 W<sup>O</sup>에서 head h에 해당하는 행 묶음이고, Y<sub>h</sub>는 head h가 최종 출력에 더하는 몫입니다. 모든 head의 Y<sub>h</sub>를 더하면 그림 4의 Y와 같습니다.
 
