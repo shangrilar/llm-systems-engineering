@@ -22,7 +22,6 @@ function panel(l:Locale){
  // Shared position axis with block brackets.
  p.text(X0-14,22,L('위치','position'),{size:14,color:C.muted,anchor:'end',width:120});
  for(let i=0;i<N;i++)p.text(cx(i)+CW/2,22,String(i),{size:15,weight:i===N-1?700:400,anchor:'middle',width:CW});
- p.text(END+12,22,L('← 현재 query','← current query'),{size:14,weight:700,width:200});
  for(let b=0;b<4;b++){const a=cx(4*b),z=b<3?cx(4*b+3)+CW:END;
   p.path(`M${a} 40 L${a} 34 L${z} 34 L${z} 40`,b<3?C.muted:C.slate,1.4,b===3);
   p.text((a+z)/2,58,b<3?(l==='en'?`block ${b}`:`블록 ${b}`):(l==='en'?'block 3 (unfinished)':'블록 3 (미완성)'),{size:13,color:b<3?C.muted:C.slate,anchor:'middle',width:z-a+20});}

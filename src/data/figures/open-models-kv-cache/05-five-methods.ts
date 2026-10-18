@@ -1,8 +1,8 @@
 import {numbered} from './numbers';
 import {Panel,C,grid,wrap,type FigureSpec,type Label,type Locale} from '@llm-systems/viz';
 import {L,tr} from './data';
-// Five ways to keep earlier context, on one 12-token example, against full attention. One row per method,
-// each wrapped in data-path="r<i>" so the article can place a note beside it. A cell is one token's KV in one
+// Five ways to keep earlier context, on one 12-token example, against full attention. One panel per method
+// (the legend sits on the first), so the article can crop each row with its note underneath. A cell is one token's KV in one
 // layer; its fill says whether it is stored and read for the next token (strong), stored but not read (light),
 // or not stored (dashed). Teaching sizes: window 4 (real 128), top-4 (real 512–2,048), 2 tokens per entry.
 const N=12,CW=40,GAP=6,X0=270,W=1104,SX=840;
@@ -17,8 +17,9 @@ function brace(p:Panel,x0:number,x1:number,y:number,t:Label,c:string=C.blue){
  p.path(`M${x0} ${y} L${x0} ${y+8} L${x1} ${y+8} L${x1} ${y}`,c,1.6);
  p.text((x0+x1)/2,y+28,t,{size:14,color:c,anchor:'middle',width:x1-x0+80});
 }
-function panel(l:Locale){
- const p=new Panel(l,null,0,W);
+function panels(l:Locale){
+ const out:Panel[]=[];
+ let p=new Panel(l,null,0,W);
  // Legend.
  const leg:[Kind,Label][]=[['read',L('저장하고 이번에 읽음','stored, read now')],['kept',L('저장만 함','stored, not read')],['gone',L('저장하지 않음','not stored')]];
  leg.forEach(([k,t],i)=>{cell(p,X0+i*230,0,30,k,'');p.text(X0+i*230+40,23,t,{size:15,width:180});});
@@ -26,8 +27,7 @@ function panel(l:Locale){
  p.text(0,48,L('가시 위치 0–11 · 현재 query는 위치 11 · 다음 토큰을 만들 때 읽는 것을 표시','visible positions 0–11 · the current query is at 11 · what is read to make the next token'),{size:14,color:C.muted,width:W});
  let y=92;
  const row=(i:number,name:Label,tag:Label,h:number,body:(y:number)=>void,store:Label,read:Label)=>{
-  p.raw(`<g data-path="r${i}">`);
-  if(i)p.line(0,y-14,W,y-14,C.line,1);
+  if(i){p=new Panel(l,null,0,W);y=14;}
   const nl=wrap(tr(l,name),200,18).length;
   p.text(0,y+26,name,{size:18,weight:700,width:200});
   // A tag may hold two fixed lines split by ' | ', so it never breaks inside a phrase.
@@ -36,8 +36,7 @@ function panel(l:Locale){
   const sl=wrap(tr(l,store),W-SX,15).length;
   p.text(SX,y+26,store,{size:15,width:W-SX});
   p.text(SX,y+30+sl*21,read,{size:15,width:W-SX});
-  p.raw('</g>');
-  y+=h;
+  p.height=y+h-24;out.push(p);
  };
  const nums=Array.from({length:N},(_,i)=>String(i));
  row(0,L('full attention','Full attention'),L('비교 기준','reference'),112,y=>{
@@ -74,7 +73,7 @@ function panel(l:Locale){
   p.text((cx(0)+cx(N-1)+CW)/2,y+93,L('자기 KV 없음 · 층 A의 12칸을 읽음','no own KV · reads layer A’s 12 cells'),{size:14,color:C.slate,anchor:'middle',width:520});
   p.path(`M${cx(N-1)+CW+18} ${y+23} L${cx(N-1)+CW+18} ${y+87} L${cx(N-1)+CW+4} ${y+87}`,C.blue,2,false,true);
  },L('저장: 두 층이 12칸 한 벌 공유','stored: two layers share one set of 12'),L('읽기: 층마다 12칸, 합계 24칸','read: 12 cells in each layer, 24 in total'));
- p.height=y-10;return p;
+ return out;
 }
 export default {articleId:'open-models-kv-cache',figureId:'05-five-methods',number:'open-models-kv-cache-05-five-methods',layout:'wide',eyebrow:numbered('open-models-kv-cache/05-five-methods',L('다섯 방법','Five methods')),
  title:L('이전 문맥을 남기고 읽는 다섯 방법','Five ways to keep and read earlier context'),
@@ -82,4 +81,4 @@ export default {articleId:'open-models-kv-cache',figureId:'05-five-methods',numb
  captionIn:'article',screens:['desktop'],
  caption:L('full attention과 다섯 방법을 같은 12토큰 예시로 비교한다. 칸은 한 층에서 토큰 하나의 KV이며(압축 줄은 토큰 2개를 합친 entry), 진한 칸은 다음 토큰을 만들 때 읽는 KV, 옅은 칸은 저장만 한 KV, 점선 칸은 저장하지 않은 위치다. 가시 위치는 0–11, 현재 query는 위치 11이다. window 4, top-4, 토큰 2개 묶음은 교육용 크기다.','Full attention and five methods on the same 12-token example. A cell is one token’s KV in one layer; strong cells are read for the next token, light cells are stored only, dashed cells are not stored. Positions 0–11 are visible and the query is at 11. Window 4, top-4 and 2-token entries are teaching sizes.'),
  alt:L('여섯 줄. full attention은 12칸을 모두 저장하고 읽는다. SWA는 최근 4칸만 저장하고 읽는다. linear attention은 개별 KV를 남기지 않고 4×4 상태 S 하나를 고쳐 쓴다. sparse attention은 12칸과 검색용 key 12개를 저장하고 key를 채점해 4칸만 읽는다. 토큰 방향 압축은 토큰 2개씩 entry 6개로 저장한다. KV 층간 공유는 층 A만 12칸을 저장하고 층 B는 그것을 읽는다.','Six rows. Full attention stores and reads all 12 cells. SWA stores and reads only the last 4. Linear attention keeps no per-token KV and rewrites one 4×4 state S. Sparse selection stores 12 cells and 12 search keys and reads 4 cells picked by scoring the keys. Compression stores 6 entries of 2 tokens. Cross-layer sharing stores 12 cells in layer A only, and layer B reads them.'),
- sources:[],panels:(l:Locale)=>[panel(l)]} satisfies FigureSpec;
+ sources:[],panels:(l:Locale)=>panels(l)} satisfies FigureSpec;

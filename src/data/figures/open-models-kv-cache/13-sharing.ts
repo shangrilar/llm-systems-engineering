@@ -2,7 +2,7 @@ import {numbered} from './numbers';
 import {Panel,C,math,type FigureSpec,type Label,type Locale} from '@llm-systems/viz';
 import {L} from './data';
 import {LW as W,X0,cx,stack,type Role} from './drawing';
-// Fewer stored rows and fewer stores. r0: DeepSeek V4.1-Flash compresses along tokens in its four KV-making
+// Packing tokens together and sharing stores. r0: DeepSeek V4.1-Flash compresses along tokens in its four KV-making
 // layers (compress_ratios: 2 in encoder layers 2, 8, 14; 1 in decoder layer 20). r1: DeepSeek shares the KV
 // itself (kv_source_layer_ids [2, 8, 14, 20], index_source_layer_ids adds 24, 28, 32, 36; candidate_source_layer_id
 // 20). Layers 20–27 are the real arrangement; other layers repeat the pattern. GLM-5.3's selection reuse, which
@@ -12,7 +12,7 @@ function panel(l:Locale){
  let y=0;
  // r0: compression along tokens.
  p.raw('<g data-path="r0">');
- p.text(0,30,L('저장 행 줄이기','Fewer stored rows'),{size:19,weight:700,width:W});
+ p.text(0,30,L('토큰 묶어 저장하기','Packing tokens together'),{size:19,weight:700,width:W});
  p.text(0,56,L('DeepSeek V4.1-Flash · global KV를 만드는 네 층의 압축률','DeepSeek V4.1-Flash · compression ratio of the four layers that make global KV'),{size:15,color:C.muted,width:W});
  const tx=(i:number)=>X0+i*58;
  p.text(X0-14,112,L('토큰','tokens'),{size:14,color:C.muted,anchor:'end',width:200});
@@ -53,7 +53,7 @@ function panel(l:Locale){
  p.height=y2;return p;
 }
 export default {articleId:'open-models-kv-cache',figureId:'13-sharing',number:'open-models-kv-cache-13-sharing',layout:'wide',eyebrow:numbered('open-models-kv-cache/13-sharing',L('토큰 압축과 KV 공유','Token compression and KV sharing')),
- title:L('저장 행과 저장소 수 줄이기','Fewer stored rows, fewer stores'),
+ title:L('토큰을 묶어 저장하고 KV를 나눠 쓰기','Packing tokens and sharing KV'),
  subtitle:L('묶어 저장하기 · KV 자체 나누기','store entries · share the KV itself'),
  captionIn:'article',screens:['desktop'],
  caption:L('DeepSeek V4.1-Flash는 global KV를 만드는 네 층 중 앞 세 층에서 토큰 2개씩을 묶고, 층 20은 압축 없이 토큰마다 entry를 만든다. DeepSeek은 층 20이 만든 global KV를 뒤 층이 그대로 읽고, Reindex 층은 층 20이 만든 후보 pool 안에서 자기 query로 다시 고른다. local KV는 모든 층이 따로 만든다. 실선은 저장소를 읽는 흐름, 점선은 고른 위치의 전달이다.','DeepSeek V4.1-Flash merges pairs of tokens in layers 2, 8, and 14, while layer 20 stores one entry per token without compression. In DeepSeek later layers read the KV made by layer 20. Solid lines read a store; dashed lines pass selected positions.'),

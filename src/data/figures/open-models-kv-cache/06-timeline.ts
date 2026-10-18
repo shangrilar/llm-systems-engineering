@@ -30,7 +30,7 @@ function panel(l:Locale){
   p.text(tx2,ys[1],e.when,{size:13,color:C.ink,anchor:e.anchor,width:320});
   p.text(tx2,ys[2],e.how,{size:13,color:C.muted,anchor:e.anchor,width:320});
  }
- p.height=AY+80+40;return p;
+ p.height=AY+80+72;return p;
 }
 export default {articleId:'open-models-kv-cache',figureId:'06-timeline',number:'open-models-kv-cache-06-timeline',layout:'wide',eyebrow:numbered('open-models-kv-cache/06-timeline',L('모델 구성','Model makeup')),
  title:L('여섯 모델이 나온 시기','When the six models appeared'),

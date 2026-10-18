@@ -31,7 +31,7 @@ function kimi(l:Locale){
  const nx=m.state/(24*1152);
  dot(p,nx,m.state,fmt(nx),10,26);
  p.text(X0+8,Y(m.state)-10,L(`상태 행렬 읽기+쓰기 ${bytes(m.state)}`,`state matrix read + write ${bytes(m.state)}`),{size:14,weight:700,color:C.purple,width:300});
- p.text(X(2**18)+20,Y(m.kv(2**18))+34,L('MLA global KV 읽기','MLA global KV read'),{size:14,weight:700,color:C.blue,width:200});
+ p.text(X(2**17)-6,Y(m.kv(2**17))-12,L('MLA global KV 읽기','MLA global KV read'),{size:14,weight:700,color:C.blue,anchor:'end',width:200});
  p.text(X0+8,Y1-12,L('검색 없음 · MLA 24층이 모든 위치를 읽음','no search · 24 MLA layers read every position'),{size:13,color:C.muted,width:W});
  p.height=Y1+60;return p;
 }

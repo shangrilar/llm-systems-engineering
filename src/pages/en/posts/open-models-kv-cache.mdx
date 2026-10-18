@@ -43,13 +43,13 @@ The compression ratio is how many tokens' KV is merged into one stored vector, 1
 <details>
 <summary>More detail: how this article counts "KV cache per token" and "memory access"</summary>
 
-- **Average growth in a long context.** In models that pack several tokens into one entry, storage does not grow by the same amount at every token. We take the storage without its fixed part, divide by the number of tokens, and use the value this approaches once the context is long enough.
+- **Average growth in a long context.** In models that merge the KV of several tokens and store it as one, storage does not grow by the same amount at every token. We take the storage without its fixed part, divide by the number of tokens, and use the value this approaches once the context is long enough.
 - **One copy of the model body, one request.** MTP, draft, and vision modules are excluded. B requests of the same length that do not share cache need B times the storage.
 - **Search keys are included.** A search key is the small key an indexer scores to rank candidate positions. Models that pick positions to read store one per token or per block. These keys also build up in proportion to context, so they are counted.
-- **Precision.** The formats SGLang uses when each model's default recipe runs on H200 with no precision flag (cookbook as of 2026-10-19). GLM-5.3 and Hy4-preview: main KV in BF16 and search keys in FP8 (128 B + a 4 B FP32 scale = 132 B). MiMo-V2.6-Pro, Kimi K3 and Qwen3.8-Flash-Next: KV in BF16. DeepSeek V4.1-Flash: Part 1's formats (main KV and search keys in FP4, local KV in FP8, scales included). Recurrent state matrices are FP32 for Kimi (the SGLang default) and BF16 for Qwen (the cookbook recipes); conv states are BF16. On Blackwell GPUs SGLang picks FP8 KV for DSA models, which would make GLM-5.3 smaller.
-- **Fixed state** is listed separately. Its size is fixed, while its contents change at every token. It covers the state matrices and conv states of linear attention layers and the SWA or local KV that keeps only a recent window. Window values assume the context is already longer than the window.
+- **Precision.** The formats SGLang uses when each model's default recipe runs on H200 with no precision flag (cookbook as of 2026-10-19). GLM-5.3 and Hy4-preview: main KV in BF16 and search keys in FP8 (128 B + a 4 B FP32 scale = 132 B). MiMo-V2.6-Pro, Kimi K3 and Qwen3.8-Flash-Next: KV in BF16. DeepSeek V4.1-Flash: Part 1's formats (the KV that builds up over the whole context and its search keys in FP4, the KV of recent positions in FP8, scales included). A scale is a factor that brings values stored at low precision back to their original size. The state matrices of linear attention are FP32 for Kimi (the SGLang default) and BF16 for Qwen (the cookbook recipes); conv states are BF16. On Blackwell GPUs SGLang picks FP8 KV for sparse attention models such as GLM-5.3, which would make their values smaller.
+- **Fixed state** is listed separately. Its size is fixed, while its contents change at every token. It covers the state matrices and conv states of linear attention layers and the KV that keeps only recent positions (a window). Window values assume the context is already longer than the window.
 - **Memory access** is the earlier-context state read and written while generating one token, computed in the same formats as storage; a read and a write of the same bytes count twice. KV reads, search-key reads, and state-matrix reads plus writes are counted separately. Writing the new token's KV and updating small states such as conv are excluded. Layers that select positions are assumed to read only the selected positions.
-- **These are values computed from public configs and reports, not GPU measurements.** Real HBM traffic and time can differ.
+- **These are values computed from public configs and reports, not GPU measurements.** Real GPU memory (HBM) traffic and time can differ.
 
 </details>
 
@@ -76,32 +76,32 @@ With everything in BF16, the largest and smallest values differ by about 30× (9
 Every one of the six models departs from plain full attention in at least some layers. Full attention keeps one KV cell for every earlier token and reads all of them for each new token. Figure 2 compares five ways to reduce this on the same 12-position example. One cell is one token's KV in one layer; positions 0–11 are visible and the current query is at position 11. Each row shows what is stored and what is read when the next token is generated.
 
 <Annot fig="open-models-kv-cache/05-five-methods" n={2} layout="stack" textHead>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0-0.216" only="path:r0">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1">
 
 **Full attention.** The reference. All 12 cells, including the current position, are stored and all are read. Storage and reads both grow in proportion to context length.
 
 </AnnotPart>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0.216-0.349" only="path:r1">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="2">
 
 **SWA** (sliding window attention). Only the KV inside the recent window, current position included, is kept and read. Storage and reads both stop at the window size. Positions outside the window cannot be referenced directly in this layer.
 
 </AnnotPart>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0.349-0.537" only="path:r2">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="3">
 
 **Linear attention.** Instead of keeping past tokens one by one, a fixed-size state S is rewritten at every token to summarize them. KDA and GDN, used by two models in this article, belong to this family. S stays the same size as the context grows, but its contents are read and updated at every token. No per-token KV is kept, so a specific position cannot be referenced directly. SSMs such as Mamba also keep a fixed-size state, but update it differently.
 
 </AnnotPart>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0.537-0.689" only="path:r3">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="4">
 
 **Sparse attention.** In this article, this means picking positions to read by search, or reusing an earlier layer's pick. (SWA is also sparse attention in the broad sense, but we treat it separately.) The KV for every position stays stored. An indexer scores small **search keys** (also called indexer keys), and the KV is read only at the selected positions. KV reads cover only the picked positions, but storage does not shrink, and the amount of search keys scored grows in proportion to context.
 
 </AnnotPart>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0.689-0.850" only="path:r4">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="5">
 
-**Compression along tokens.** The KV of several neighboring tokens is stored as one entry. Packing 2 tokens into one halves the slope at which storage grows. In exchange, the packed tokens can no longer be read one by one. It also adds new costs: a compression step runs each time an entry is built, and the design has to decide how to read recent tokens whose block is not yet full. Designs handle this differently; in this article, DeepSeek keeps the original KV of recent positions as a separate local KV and reads that. This is different from methods like GQA and MLA, which shrink the KV width of a single token (the feature dimension).
+**Compression along tokens.** The KV of several neighboring tokens is merged and stored as one vector. This one compressed vector is called an **entry**. Packing 2 tokens into one halves the slope at which storage grows. In exchange, the packed tokens can no longer be read one by one. It also adds new costs: a compression step runs each time an entry is built, and the design has to decide how to read recent tokens whose block is not yet full. Designs handle this differently; in this article, DeepSeek keeps the original KV of recent positions as a separate local KV and reads that. This is different from methods like GQA and MLA, which shrink the KV width of a single token (the feature dimension).
 
 </AnnotPart>
-<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="1" yr="0.850-1" only="path:r5">
+<AnnotPart fig="open-models-kv-cache/05-five-methods" panels="6">
 
 **Cross-layer KV sharing.** KV built by one layer is read by several layers. For otherwise identical stores, fewer independent stores mean proportionally less storage. But each layer reads the shared KV separately with its own query, so sharing alone does not cut reads.
 
@@ -127,8 +127,6 @@ Six models are compared: GLM-5.3, Hy4-preview, MiMo-V2.6-Pro, Kimi K3, Qwen3.8-F
 <Annot fig="open-models-kv-cache/06-timeline" n={3} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/06-timeline" panels="all">
 
-Each dot marks the day the weights appeared on Hugging Face (as reported).
-
 Models released close together still chose different methods. Qwen3.8-Flash-Next, released in late August, mixes linear attention with sparse attention, while GLM-5.3 and Hy4-preview, from the same week, use sparse attention with selection reuse.
 
 </AnnotPart>
@@ -144,6 +142,8 @@ In this article, a **global layer** is a layer that keeps KV for the whole conte
 | Kimi K3 | | ● KDA | | | | MLA |
 | Qwen3.8-Flash-Next | | ● GDN | ● QSA | | | none |
 | DeepSeek V4.1-Flash | ● | | ● | ● | ● | none |
+
+DSA (DeepSeek Sparse Attention) is the method seen in Part 1's V3.2, and QSA is Qwen's block-level sparse attention. Both are covered in the sparse attention section.
 
 None of the six models reads the full context's KV in every layer at every step. MiMo and Kimi keep full-context KV in only some layers, while GLM-5.3, Hy4-preview, and Qwen read selectively from the KV they keep. Among these six, only DeepSeek uses compression along tokens and cross-layer KV sharing. Qwen's QSA also groups 4 tokens, but only for its search keys; the KV that attention reads stays per token. "None" does not mean some positions are always left out even in short contexts. When the context is shorter than the selection budget, a selecting layer reads everything too.
 
@@ -176,7 +176,7 @@ The per-token growth comes from the stores that build up KV across the whole con
 <Annot fig="open-models-kv-cache/11-swa" n={6} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/11-swa" panels="1" yr="0-0.493" only="path:r0">
 
-**How the window moves.** When a new token arrives, the window shifts by one, and the KV of the position that leaves the window is dropped in that layer. Information from distant positions is passed along through the layers or referenced directly by a global layer. MiMo's SWA layers also have a per-head sink bias, but it is a learned parameter, not state each request keeps.
+**How the window moves.** When a new token arrives, the window shifts by one, and the KV of the position that leaves the window is dropped in that layer. Information from distant positions is passed along through the layers or referenced directly by a global layer. MiMo's SWA layers also have a per-head sink bias (a learned value added to the softmax denominator), but it is a learned parameter, not state each request keeps.
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/11-swa" panels="1" yr="0.493-1" only="path:r1">
@@ -192,7 +192,7 @@ The MiMo report gives no separate figures for KV or attention efficiency. It des
 
 ## Summarizing into a fixed state with linear attention
 
-Like SWA, linear attention caps a layer's storage. But instead of keeping recent positions, it summarizes the whole past context into a fixed-size state. Kimi K3 replaces 69 of its 93 layers with KDA (Kimi Delta Attention), and Qwen3.8-Flash-Next replaces 36 of its 48 layers with GDN (Gated DeltaNet). In both, the state is one fixed-size matrix per head, and referencing specific positions again is left to the global layers that remain. Below we look at how the state is written and read, how large it is, and how the memory touched per token changes with context. Figure 7 locates the two models.
+Like SWA, linear attention caps a layer's storage. But instead of keeping recent positions, it summarizes the whole past context into a fixed-size state. Kimi K3 replaces 69 of its 93 layers with KDA (Kimi Delta Attention), and Qwen3.8-Flash-Next replaces 36 of its 48 layers with GDN (Gated DeltaNet). In both, the state is one fixed-size matrix per head, and referencing specific positions again is left to the global layers that remain. Figure 7 locates the two models.
 
 <Annot fig="open-models-kv-cache/01-guide-state" n={7} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/01-guide-state" panels="all">
@@ -289,7 +289,7 @@ The two families also behave differently in prefill, where the input is processe
 
 ## Reading selected positions with sparse attention
 
-This section covers sparse attention, which reads only the positions picked by search from the stored KV. It also includes reusing an earlier layer's pick. A small search key is kept separately, a learned indexer picks the positions that look relevant to the current token, and only the KV at those positions is read. DSA in DeepSeek V3.2, covered in Part 1, is the standard example. GLM-5.3 and Hy4-preview use DSA almost unchanged, and Qwen3.8-Flash-Next uses QSA, which picks by blocks. DeepSeek V4.1-Flash also picks from its compressed entries. Figure 11 locates the four models.
+Sparse attention reads only the positions picked by search from the stored KV. Reusing an earlier layer's pick is included here too. A small search key is kept separately, a learned indexer picks the positions that look relevant to the current token, and only the KV at those positions is read. DSA in DeepSeek V3.2, covered in Part 1, is the standard example. GLM-5.3 and Hy4-preview use DSA almost unchanged, and Qwen3.8-Flash-Next uses QSA, which picks by blocks. DeepSeek V4.1-Flash also picks from its compressed entries. Figure 11 locates the four models.
 
 <Annot fig="open-models-kv-cache/03-guide-sparse" n={11} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/03-guide-sparse" panels="all">
@@ -370,7 +370,7 @@ DeepSeek packs tokens to store fewer rows and lets several layers read the KV it
 <Annot fig="open-models-kv-cache/13-sharing" n={15} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0-0.472" only="path:r0">
 
-**Packing tokens together.** In DeepSeek V4.1-Flash, four layers build global KV: 2, 8, 14, and 20 (layers numbered from 0). As in Part 1, one stored unit made by compression is called an **entry**. The first three merge the KV of 2 tokens into one entry, and layer 20 makes one entry per token without compression. That gives 0.5 × 3 + 1 = 2.5 entries per token. One entry is 512 dimensions of main KV plus 128 of search key, 288 + 68 = 356 B in the deployed format (FP4, scales included). Separately from compression, all 40 layers keep local KV for the last 128 positions. The first 2 layers read only this, and the other 38 read it together with global KV. Recent positions not yet included in a compressed entry are also referenced this way. The 2.7 MB in Figure 1 is the storage of all this local KV (FP8, scales included).
+**Packing tokens together.** In DeepSeek V4.1-Flash, four layers build global KV: 2, 8, 14, and 20 (layers numbered from 0). The first three merge the KV of 2 tokens into one entry, and layer 20 makes one entry per token without compression. That gives 0.5 × 3 + 1 = 2.5 entries per token. One entry is 512 dimensions of main KV plus 128 of search key, 288 + 68 = 356 B in the deployed format (FP4, scales included). Separately from compression, all 40 layers keep local KV for the last 128 positions. The first 2 layers read only this, and the other 38 read it together with global KV. Recent positions not yet included in a compressed entry are also referenced this way. The 2.7 MB in Figure 1 is the storage of all this local KV (FP8, scales included).
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0.472-1" only="path:r1">
