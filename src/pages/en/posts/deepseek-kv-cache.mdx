@@ -41,7 +41,7 @@ First, here are the numbers for five models in one figure. All bars use a **log 
 </AnnotPart>
 </Annot>
 
-The format and bytes are listed under each bar. The bytes in a format line are the size of one item stored in one layer; the bold number combines them over the layers and the compression ratio into a per-token value. Each generation's section works this out. The scale in a format line is a factor that brings values stored at low precision back to their original size.
+The format and bytes are listed under each bar. The bytes in a format line are the size of one item stored in one layer; the bold number combines them over the layers and the compression ratio into a per-token value. The section on each version shows how this is calculated. The scale in a format line is a factor that brings values stored at low precision back to their original size.
 
 A few things stand out. On the storage side, V3.2 is smaller than V2, but only because it stores in FP8. At the same precision, V3.2 is actually larger, because it also stores the search keys used to pick positions. V4 drops by more than an order of magnitude, and V4.1 reaches 890 B. Under V4 and V4.1, an orange line adds a local KV (SWA) that is kept separately: the KV of only the last 128 positions. By the end of this article, you will see why these values come out the way they do.
 
