@@ -57,7 +57,7 @@ function qwen(l:Locale){
  p.text(X(2**17),Y(m.kv(2**16))+24,L(`QSA KV 읽기 ≈ ${bytes(m.kv(2**16))}`,`QSA KV read ≈ ${bytes(m.kv(2**16))}`),{size:14,weight:700,color:C.blue,width:200});
  p.text(X(2**17),Y(m.kv(2**16))+44,L('(꼬리 최대 3토큰 추가)','(+ up to 3 tail tokens)'),{size:12,color:C.blue,width:200});
  p.text(X(2**15)+6,Y(m.index(2**15))+28,L('검색용 key 읽기','search-key read'),{size:14,weight:700,color:C.red,width:200});
- p.text(X(2**14),Y(m.kv(2**14)+m.index(2**14))-12,L('KV + 검색용 key','KV + search keys'),{size:13,color:C.ink,anchor:'end',width:200});
+ p.text(X0+8,Y(28e6),L('점선 = KV + 검색용 key','dotted = KV + search keys'),{size:13,color:C.ink,width:200});
  p.text(X0,Y1+72,L('교차점은 4토큰 블록 경계 기준 · 꼬리가 있으면 조금 달라짐','crossings at 4-token block boundaries · slightly different with a tail'),{size:12,color:C.muted,width:W});
  p.height=Y1+84;return p;
 }
