@@ -7,7 +7,14 @@ import {layoutBoxes} from '@llm-systems/viz';
 const dirs=['src/pages/posts','src/pages/en/posts'];
 const uses=(file:string)=>{
   const s=readFileSync(file,'utf8');
-  return [...s.matchAll(/<AnnotPart fig="([^"]+)" panels="([^"]+)"(?: xr="([^"]+)")?>/g)].map(m=>({fig:m[1],panels:m[2],xr:m[3]}));
+  return [...s.matchAll(/<AnnotPart fig="([^"]+)" panels="([^"]+)"(?: xr="([^"]+)")?(?: yr="([^"]+)")?(?: only="([^"]+)")?>/g)].map(m=>({fig:m[1],panels:m[2],xr:m[3],yr:m[4],only:m[5]}));
+};
+// Routed flow diagrams are slow to lay out and one figure has several parts, so count its panels once per screen.
+const counts=new Map<string,number>();
+const panelCount=(spec:Parameters<typeof layoutBoxes>[0],locale:'ko'|'en',mobile:boolean)=>{
+  const k=`${spec.articleId}/${spec.figureId}/${locale}/${mobile}`;
+  if(!counts.has(k))counts.set(k,layoutBoxes(spec,locale,mobile).panels.length);
+  return counts.get(k)!;
 };
 describe('annot figures',()=>{
   const files=dirs.flatMap(d=>readdirSync(d).filter(f=>f.endsWith('.mdx')).map(f=>join(d,f)));
@@ -19,11 +26,11 @@ describe('annot figures',()=>{
       expect(existsSync(path),path).toBe(true);
       const spec=(await import('../'+path)).default;
       for(const locale of ['ko','en'] as const)for(const mobile of [false,true]){
-        const n=layoutBoxes(spec,locale,mobile).panels.length;
+        const n=panelCount(spec,locale,mobile);
         if(u.panels!=='all')for(const i of u.panels.split('+').map(Number))expect(i>=1&&i<=n,`${u.fig} panel ${i}`).toBe(true);
       }
     }
-  });
+  },60_000);
   it('keeps every part on its parent figure',()=>{
     for(const file of withAnnot){
       const s=readFileSync(file,'utf8');

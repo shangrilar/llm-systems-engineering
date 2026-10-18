@@ -2,18 +2,20 @@
 // A figure cut into regions, each with its explanation beside or under it (see AnnotPart).
 // layout: "cols" (regions side by side, notes under), "rows" (note beside each region),
 // "stack" (note under each full-width region), "side" (one region, notes beside it).
+// whole: on phones, show the whole mobile figure once and only the notes of each part. For one-panel diagrams cut
+// into steps with xr/yr, whose mobile version is laid out differently and cannot be cut the same way.
 import {localeFromPath} from '../i18n/index';
-import {figureSpec,headerCrop,cropStyle,hasMobile} from './annot';
+import {figureSpec,headerCrop,wholeCrop,cropStyle,hasMobile} from './annot';
 import {tr} from '@llm-systems/viz';
-interface Props{fig:string;n:number;layout:'cols'|'rows'|'stack'|'side'}
-const {fig,n,layout}=Astro.props;
+interface Props{fig:string;n:number;layout:'cols'|'rows'|'stack'|'side';whole?:boolean}
+const {fig,n,layout,whole=false}=Astro.props;
 const locale=localeFromPath(Astro.url.pathname);
 const spec=await figureSpec(fig),alt=tr(spec.alt,locale);
-const desk=headerCrop(spec,fig,locale,false),mob=hasMobile(spec)?headerCrop(spec,fig,locale,true):null;
+const desk=headerCrop(spec,fig,locale,false),mob=hasMobile(spec)?(whole?wholeCrop(spec,fig,locale,true):headerCrop(spec,fig,locale,true)):null;
 const d=cropStyle(desk),m=mob&&cropStyle(mob,true);
 const full=desk.src;
 ---
-<figure class={`annot annot-${layout}`} id={`figure-${n}`} data-figure-id={fig}>
+<figure class={`annot annot-${layout}${whole&&mob?' annot-whole':''}`} id={`figure-${n}`} data-figure-id={fig}>
   <a class="annot-head" href={full} aria-label={locale==='en'?`Open full-size figure ${n}: ${tr(spec.title,'en')}`:`그림 ${n} 원본 열기: ${tr(spec.title,'ko')}`}>
     <div class={`annot-crop${mob?' annot-desktop':''}`} style={d.wrap}><img src={desk.src} style={d.img} alt={alt} loading="lazy" decoding="async" /></div>
     {mob&&m&&<div class="annot-crop annot-mobile" style={m.wrap}><img src={mob.src} style={m.img} alt={alt} loading="lazy" decoding="async" /></div>}
@@ -42,5 +44,5 @@ const full=desk.src;
     .annot-rows .annot-part,.annot-side .annot-part{display:block}
     .annot-note{margin-top:10px}
   }
-  @media (max-width:600px){.annot-desktop{display:none}.annot-mobile{display:block}}
+  @media (max-width:600px){.annot-desktop{display:none}.annot-mobile{display:block}.annot-whole .annot-part .annot-crop{display:none}}
 </style>
