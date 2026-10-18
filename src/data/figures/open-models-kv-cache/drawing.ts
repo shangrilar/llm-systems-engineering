@@ -57,7 +57,7 @@ function graph(l:Locale,kind:'store'|'access',o:Opt){
  const notes:Label[]=kind==='store'
   ?[L('로그 눈금: 한 칸에 10배 · 배포 캐시 형식(SGLang 기본 레시피, H200). 별도 줄은 문맥과 무관하게 요청마다 드는 상태.','Log scale, 10× per step · deployed cache formats (SGLang default recipes, H200). The extra line is per-request state independent of context.')]
   :[L('로그 눈금 · 배포 캐시 형식(SGLang 기본 레시피, H200) · 빈 자리는 해당 항목 없음','Log scale · deployed cache formats (SGLang default recipes, H200) · an empty slot means the item does not apply'),
-    L('새 KV 쓰기·conv 갱신 제외, 선택한 위치만 읽는 구현을 가정해 계산한 양 · 실측 아님 · 외삽 = Qwen config 최대 문맥 262,144 너머','New KV writes and conv updates excluded; logical bytes assuming only selected entries are read · not measured · extrapolated = beyond Qwen’s config maximum of 262,144')];
+    L('새 KV 쓰기·conv 갱신 제외, 선택한 위치(Reindex는 후보의 검색용 key)만 읽는 구현을 가정해 계산한 양 · 실측 아님 · 외삽 = Qwen config 최대 문맥 262,144 너머','New KV writes and conv updates excluded; computed assuming only selected entries (for Reindex, the candidates’ search keys) are read · not measured · extrapolated = beyond Qwen’s config maximum of 262,144')];
  for(const t of notes){p.text(0,y,t,{size:14,color:C.muted,width:W});y+=wrap(tr(l,t),W,14).length*20+6;}
  p.height=y;return p;
 }
