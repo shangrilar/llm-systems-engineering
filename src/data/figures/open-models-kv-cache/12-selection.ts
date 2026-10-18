@@ -36,7 +36,7 @@ function panel(l:Locale){
  for(let i=0;i<N;i++){const s=DSA.includes(i);
   if(s)p.rect(cx(i)+3,y+64,CW-6,28,C.paper,C.red,6);
   p.text(cx(i)+CW/2,y+84,String(TOK[i]),{size:14,weight:s?700:400,color:s?C.red:C.muted,anchor:'middle',width:CW});}
- rowLabel(p,y+128,L('읽는 main KV','main KV read'));
+ rowLabel(p,y+128,L('읽는 KV','KV read'));
  kv(p,y+108,i=>DSA.includes(i));
  p.raw('</g>');
  y+=164;
@@ -53,7 +53,7 @@ function panel(l:Locale){
   if(s)p.rect(a+3,y+64,z-a-6,28,C.paper,C.red,6);
   p.text((a+z)/2,y+84,String(QB[b]),{size:14,weight:s?700:400,color:s?C.red:C.muted,anchor:'middle',width:z-a});}
  p.text((cx(12)+END)/2,y+84,L('채점 안 함','not scored'),{size:13,color:C.slate,anchor:'middle',width:END-cx(12)});
- rowLabel(p,y+128,L('읽는 main KV','main KV read'));
+ rowLabel(p,y+128,L('읽는 KV','KV read'));
  kv(p,y+108,i=>i>=8);
  p.text(cx(0),y+168,L('raw key 4개 평균 → RMSNorm → 블록 첫 위치의 RoPE → 채점 · 점선 = 블록이 찰 때까지 보관하는 꼬리 raw key','mean of 4 raw keys → RMSNorm → RoPE at the block start → score · dashed = tail raw keys kept until the block fills'),{size:13,color:C.muted,width:END-cx(0)});
  p.raw('</g>');

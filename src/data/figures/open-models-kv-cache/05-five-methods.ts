@@ -42,7 +42,7 @@ function panels(l:Locale){
  row(0,L('full attention','Full attention'),L('비교 기준','reference'),112,y=>{
   nums.forEach((t,i)=>cell(p,cx(i),y+6,CW,'read',t));brace(p,cx(0),cx(N-1)+CW,y+46,L('12칸 모두 읽음','all 12 read'));
  },L('저장: 12칸, 문맥에 비례','stored: 12 cells, grows with context'),L('읽기: 12칸, 문맥에 비례','read: 12 cells, grows with context'));
- row(1,'SWA',L('최근 window만 유지 | 예시 4 · 실제 128','recent window only | example 4 · real 128'),112,y=>{
+ row(1,'SWA',L('최근 window만 유지 | 예시 4 · 실제 모델 128','recent window only | example 4 · real models 128'),112,y=>{
   nums.forEach((t,i)=>cell(p,cx(i),y+6,CW,i>=8?'read':'gone',t));brace(p,cx(8),cx(N-1)+CW,y+46,L('window 4칸','window: 4'));
  },L('저장: 최근 4칸에서 멈춤','stored: stops at the last 4'),L('읽기: 4칸','read: 4 cells'));
  row(2,L('linear attention','Linear attention'),L('고정 크기 상태로 요약','summarized in a fixed-size state'),158,y=>{
@@ -63,7 +63,7 @@ function panels(l:Locale){
   // Original token axis on top; each entry is one cell centred under the two tokens it merges.
   nums.forEach((t,i)=>{p.rect(cx(i)+4,y+2,CW-8,20,C.grayFill,C.slate,4);p.text(cx(i)+CW/2,y+17,t,{size:12,color:C.slate,anchor:'middle',width:CW});});
   for(let e=0;e<N/2;e++){const m=(cx(2*e)+cx(2*e+1)+CW)/2;cell(p,m-CW/2,y+32,CW,'read','');p.text(m,y+55,`${2*e}–${2*e+1}`,{size:11,color:C.paper,anchor:'middle',width:CW});}
-  brace(p,cx(0),cx(N-1)+CW,y+72,L('entry 6개 · 칸 하나 = 토큰 2개를 합친 entry','6 entries · one cell = an entry merging 2 tokens'));
+  brace(p,cx(0),cx(N-1)+CW,y+72,L('entry 6개 · 위 회색 칸은 원래 토큰 위치','6 entries · grey cells above mark the original tokens'));
  },L('저장: 6 entry, 증가 기울기 1/2','stored: 6 entries, half the slope'),L('읽기: 6 entry','read: 6 entries'));
  row(5,L('KV 층간 공유','Cross-layer KV sharing'),L('한 층의 KV를 여러 층이 읽기','one layer’s KV read by several'),170,y=>{
   p.text(X0-10,y+29,L('층 A','layer A'),{size:14,weight:700,anchor:'end',width:56});

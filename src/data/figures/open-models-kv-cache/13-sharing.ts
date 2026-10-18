@@ -54,7 +54,7 @@ function panel(l:Locale){
 }
 export default {articleId:'open-models-kv-cache',figureId:'13-sharing',number:'open-models-kv-cache-13-sharing',layout:'wide',eyebrow:numbered('open-models-kv-cache/13-sharing',L('토큰 압축과 KV 공유','Token compression and KV sharing')),
  title:L('토큰을 묶어 저장하고 KV를 나눠 쓰기','Packing tokens and sharing KV'),
- subtitle:L('묶어 저장하기 · KV 자체 나누기','store entries · share the KV itself'),
+ subtitle:L('토큰을 묶어 저장하기 · 같은 KV를 여러 층이 읽기','pack tokens into entries · several layers read the same KV'),
  captionIn:'article',screens:['desktop'],
  caption:L('DeepSeek V4.1-Flash는 global KV를 만드는 네 층 중 앞 세 층에서 토큰 2개씩을 묶고, 층 20은 압축 없이 토큰마다 entry를 만든다. DeepSeek은 층 20이 만든 global KV를 뒤 층이 그대로 읽고, Reindex 층은 층 20이 만든 후보 pool 안에서 자기 query로 다시 고른다. local KV는 모든 층이 따로 만든다. 실선은 저장소를 읽는 흐름, 점선은 고른 위치의 전달이다.','DeepSeek V4.1-Flash merges pairs of tokens in layers 2, 8, and 14, while layer 20 stores one entry per token without compression. In DeepSeek later layers read the KV made by layer 20. Solid lines read a store; dashed lines pass selected positions.'),
  alt:L('두 줄. 첫 줄은 토큰 8개가 층 2·8·14에서 entry 4개로, 층 20에서 entry 8개로 저장되고 토큰당 entry 2.5개, 890 B가 되는 계산이다. 둘째 줄은 DeepSeek 층 20–27로, 층 20만 해당 global KV와 검색용 key를 저장하고 나머지 층은 그 KV를 읽으며, 층 24는 층 20의 후보 안에서 다시 검색하고 나머지는 선택을 재사용한다.','Two rows. First: 8 tokens stored as 4 entries in layers 2, 8, 14 and 8 entries in layer 20, giving 2.5 entries and 890 B per token. Second: DeepSeek layers 20–27, where only layer 20 stores KV and search keys and the others read that KV; layer 24 re-searches within layer 20’s candidates and the rest reuse selections.'),

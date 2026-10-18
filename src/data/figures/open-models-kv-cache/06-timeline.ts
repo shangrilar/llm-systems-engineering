@@ -10,8 +10,8 @@ type E={name:string;m:number;d:number;sure:boolean;when:Label;how:Label;h:number
 const EV:E[]=[
  {name:'Kimi K3',m:7,d:27,sure:true,when:'7.27',how:L('KDA 고정 상태 + MLA','KDA state + MLA'),h:-80,anchor:'middle'},
  {name:'Qwen3.8-Flash-Next',m:8,d:26,sure:true,when:'8.26',how:L('GDN 고정 상태 + QSA','GDN state + QSA'),h:80,anchor:'end'},
- {name:'Hy4-preview',m:8,d:28,sure:true,when:'8.28',how:L('DSA + 선택 위치 공유','DSA + shared selection'),h:-80,anchor:'end'},
- {name:'GLM-5.3',m:8,d:29,sure:true,when:'8.29',how:L('DSA + 선택 위치 공유','DSA + shared selection'),h:150,anchor:'start'},
+ {name:'Hy4-preview',m:8,d:28,sure:true,when:'8.28',how:L('DSA + 선택 위치 재사용','DSA + reused selection'),h:-80,anchor:'end'},
+ {name:'GLM-5.3',m:8,d:29,sure:true,when:'8.29',how:L('DSA + 선택 위치 재사용','DSA + reused selection'),h:150,anchor:'start'},
  {name:'DeepSeek V4.1-Flash',m:9,d:10,sure:true,when:'9.10',how:L('압축 · KV 층간 공유 · SWA','compression · cross-layer KV · SWA'),h:-80,anchor:'start'},
  {name:'MiMo-V2.6-Pro',m:9,d:22,sure:true,when:'9.22',how:L('SWA + global 10층','SWA + 10 global layers'),h:80,anchor:'start'}];
 function panel(l:Locale){
