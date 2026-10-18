@@ -49,10 +49,9 @@ A few things stand out. On the storage side, V3.2 is smaller than V2, but only b
 <summary>More detail: how this article counts "KV cache per token"</summary>
 
 - **Average growth in a long context.** Compressed models need 4 or 128 tokens before one compressed KV appears, so the same amount is not added at every token. We take the total cache (without the local KV below) divided by the number of tokens once the context is long enough.
-- **One copy of the model body, one request.** B requests of the same length that do not share cache need B times the storage. Storage per GPU has to be worked out separately, depending on whether tensor parallelism splits or replicates the cache. The MTP module (an auxiliary module that predicts several next tokens together) is excluded.
+- **One copy of the model body, one request.** When several requests run at once, each keeps its own cache, so multiply by the number of requests. Storage per GPU has to be worked out separately, depending on whether tensor parallelism splits or replicates the cache. The MTP module (an auxiliary module that predicts several next tokens together) is excluded.
 - **Search keys are included.** A search key is the small key an indexer scores to rank candidate positions; the flow diagrams label it "indexer key." From V3.2 on, models store these keys separately to pick positions to read. They also build up in proportion to context, so they are counted.
-- **Storage uses the deployed cache formats chosen for this article, page padding included.** Serving engines (vLLM, SGLang and others) reserve cache in fixed-size pages, so there is unused space in partly filled pages and space added to round sizes to a set multiple (page padding). It can vary by engine and options.
-- **The local KV cache that keeps only recent positions is listed separately.** Once the last 128 positions are filled it stops growing, so it is not part of the per-token growth. The local KV values in the figure are the data size of the last 128 positions, excluding spare page space and intermediate compression state.
+- **The local KV cache that keeps only recent positions is listed separately.** Once the last 128 positions are filled it stops growing, so it is not part of the per-token growth. The local KV values in the figure are the data size of the last 128 positions, excluding intermediate compression state.
 - **These values are computed from model configs and cache formats, not measured on GPUs.**
 - **The hypothetical MHA** is a reference that assumes the same size as V2 (60 layers, 128 heads, 128 dimensions per head) with every head's Key and Value stored. No such model exists, and it is not meant to be an MHA model of equal quality.
 
@@ -310,7 +309,7 @@ V3.2: 61 layers × (656 + 132) B = 48,068 B  (about 1/82 of MHA)
 
 ### Looking at reads
 
-What DSA cuts is what one decode step **reads**. The right chart of Figure 7 shows what all layers read to generate one token (one decode step) in a 128K context. Each bar is colored in proportion to the KV read by attention (blue) and the search keys read to pick positions (red). Each cache item a layer references is counted once. A cache shared by several layers is counted again for each layer that reads it, but it is not counted twice because of multiple heads in the same layer or the two roles of Key and Value. SWA, scales and padding inside a cache item are included; page alignment padding, reading the same values more than once and writes of the new cache are excluded.
+What DSA cuts is what one decode step **reads**. The right chart of Figure 7 shows what all layers read to generate one token (one decode step) in a 128K context. Each bar is colored in proportion to the KV read by attention (blue) and the search keys read to pick positions (red). Each cache item a layer references is counted once. A cache shared by several layers is counted again for each layer that reads it, but it is not counted twice because of multiple heads in the same layer or the two roles of Key and Value. SWA, scales and padding inside a cache item are included; reading the same values more than once and writes of the new cache are excluded.
 
 This value assumes that only the selected KV and the candidate search keys are read, and computes each cache item's size in the same deployed cache format as storage. It is a computed amount, not actual memory traffic. The reads if everything were stored in BF16 are collected in the box at the end of this section.
 
@@ -349,7 +348,7 @@ V4 uses **compression along tokens**: it merges the KV of several tokens and sto
 <Annot fig="deepseek-kv-cache/03-guide-v4" n={11} layout="cols" textHead>
 <AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="1">
 
-V4-Flash uses about **3,563 B** per token. The local KV that keeps recent positions is listed separately in orange.
+V4-Flash uses about **3,514 B** per token. The local KV that keeps recent positions is listed separately in orange.
 
 </AnnotPart>
 <AnnotPart fig="deepseek-kv-cache/03-guide-v4" panels="2">
@@ -518,8 +517,7 @@ On structure alone, even if everything were stored in BF16, that is 21 × 640 ×
 The deployed format stores main KV entries mostly in FP8 and search keys in FP4. The format used in this article is 584 B per main KV entry and 68 B per search key.
 
 ```text
-V4-Flash: 21 layers × (584 + 68) B ÷ 4 + 20 layers × 584 B ÷ 128 ≈ 3,514 B
-          with page alignment padding ≈ 3,563 B  (about 1/1,104 of MHA)
+V4-Flash: 21 layers × (584 + 68) B ÷ 4 + 20 layers × 584 B ÷ 128 ≈ 3,514 B  (about 1/1,119 of MHA)
 ```
 
 <details>
@@ -530,13 +528,9 @@ Main KV entry: 448 non-RoPE dims × 1 B (FP8 E4M3) + 64 RoPE dims × 2 B (BF16)
                + one UE8M0 scale per 64 channels, 1 B × 7 + padding 1 B = 584 B
 Search key:    128 dims × 0.5 B (FP4 E2M1)
                + one UE8M0 scale per 32 channels, 1 B × 4 = 68 B
-Page (256 tokens): CSA KV 64 entries × 584 B = 37,376 B → aligned to 576 B units: 37,440 B
-                   HCA KV 2 entries × 584 B = 1,168 B → 1,728 B
-                   CSA search keys 64 × 68 B = 4,352 B (no padding)
-Per token: (21 × (37,440 + 4,352) + 20 × 1,728) ÷ 256 ≈ 3,563 B
 ```
 
-In the format names, the numbers after E and M are the exponent and mantissa bits, and UE8M0 is an 8-bit scale that only represents powers of two. This calculation applies pages of 256 original tokens and the alignment rules. Alignment padding is the empty space left when each page's storage is rounded up to a multiple of 576 B. Page padding can vary with the engine's page settings.
+In the format names, the numbers after E and M are the exponent and mantissa bits, and UE8M0 is an 8-bit scale that only represents powers of two.
 
 </details>
 
@@ -718,7 +712,7 @@ Putting the five models together again, each generation cut a different factor.
 | Hypothetical MHA | baseline | N/A (baseline) | 3,932,160 B (BF16 assumed) |
 | V2 | MLA | width of the stored vector | 69,120 B (BF16) |
 | V3.2 | DSA, FP8 KV | positions read (storage grows structurally) | 48,068 B |
-| V4-Flash | CSA and HCA, shared K = V | compression along tokens (4 or 128 into one) | 3,563 B |
+| V4-Flash | CSA and HCA, shared K = V | compression along tokens (4 or 128 into one) | 3,514 B |
 | V4.1-Flash | CSA2, FP4 KV (CED cuts prefill compute) | layers that store global KV | 890 B |
 
 Precision also went down from generation to generation. Going from BF16 to FP8 and then FP4 roughly halved storage, and then halved it again, even for the same structure.
@@ -741,4 +735,4 @@ Finally, storage falling to 1/4,400 does not make decode 4,400 times faster. Rea
 - V4 and V4.1: SGLang's DeepSeek-V4 kernel formats and memory pool (V4 584 B with page alignment, V4.1 FP4 288 B, search keys 68 B). Formats can differ by engine and options. V2 can also be deployed with an FP8 KV option, and for V4 there is also a TensorRT-LLM path that stores even RoPE in FP8. https://github.com/sgl-project/sglang/blob/main/python/sglang/kernels/ops/attention/dsv4/kv_layout.py · https://github.com/sgl-project/sglang/blob/main/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
 
 **Read calculations**
-- An amount computed by taking, once each, the KV each layer uses for attention and the search keys needed to pick positions, in the same deployed cache formats as storage. Scales and padding inside a cache item are included; page alignment padding is excluded. The BF16 values in the box apply BF16 sizes to the same item counts. The main attention in the V3.2 reference code and Reindex in the V4.1 reference code compute all scores and then apply a mask, so this differs from that code's actual access.
+- An amount computed by taking, once each, the KV each layer uses for attention and the search keys needed to pick positions, in the same deployed cache formats as storage. Scales and padding inside a cache item are included. The BF16 values in the box apply BF16 sizes to the same item counts. The main attention in the V3.2 reference code and Reindex in the V4.1 reference code compute all scores and then apply a mask, so this differs from that code's actual access.

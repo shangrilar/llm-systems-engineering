@@ -5,15 +5,15 @@ export const L=(ko:string,en:string):Label=>[ko,en];
 // Long-context KV cache growth per original token, g = lim M(N)/N, for one copy of the model body.
 // "packed" is the cache format of public serving code: FlashMLA (V3.2, commit ba89a34) and SGLang's DeepSeek-V4
 // kernels (kv_layout.py: v4 = 448 FP8 + 64 BF16 + 7 UE8M0 scales + 1 pad = 584 B; v41_fp4 = 256 + 32 E4M3 scales
-// = 288 B; v41 = 512 FP8 + 16 UE8M0 = 528 B; FP4 indexer key 64 + 4 UE8M0 = 68 B). V4 includes SGLang's page
-// padding (256-token pages: 64 CSA entries → 37,440 B, 2 HCA entries → 1,728 B). "bf16" is kept for the text only.
+// = 288 B; v41 = 512 FP8 + 16 UE8M0 = 528 B; FP4 indexer key 64 + 4 UE8M0 = 68 B). Page padding
+// is not included. "bf16" is kept for the text only.
 // The article works out each value in its calculation sections and lists these sources.
 export interface Row {key:string;name:Label;layers:number;format:Label;bf16:{main:number;index:number};packed:{main:number;index:number;assumed?:boolean};swa?:{bf16:number;packed:number}}
 export const ROWS:Row[]=[
  {key:'mha',name:L('가상 MHA','Hypothetical MHA'),layers:60,format:L('BF16 가정 · 비교 기준','assumed BF16 · reference'),bf16:{main:60*128*256*2,index:0},packed:{main:60*128*256*2,index:0}},
  {key:'v2',name:'V2',layers:60,format:'BF16',bf16:{main:60*576*2,index:0},packed:{main:60*576*2,index:0}},
  {key:'v32',name:'V3.2',layers:61,format:L('KV FP8·RoPE BF16: 656 B · 검색용 key FP8: 132 B','KV FP8, RoPE BF16: 656 B · search key FP8: 132 B'),bf16:{main:61*576*2,index:61*128*2},packed:{main:61*656,index:61*132}},
- {key:'v4',name:'V4-Flash',layers:43,format:L('KV FP8·RoPE BF16: 584 B · 검색용 key FP4: 68 B · 페이지 패딩 포함','KV FP8, RoPE BF16: 584 B · search key FP4: 68 B · page padding included'),bf16:{main:21*1024/4+20*1024/128,index:21*256/4},packed:{main:21*37440/256+20*1728/256,index:21*4352/256},
+ {key:'v4',name:'V4-Flash',layers:43,format:L('KV FP8·RoPE BF16: 584 B · 검색용 key FP4: 68 B','KV FP8, RoPE BF16: 584 B · search key FP4: 68 B'),bf16:{main:21*1024/4+20*1024/128,index:21*256/4},packed:{main:21*584/4+20*584/128,index:21*68/4},
   swa:{bf16:43*128*1024,packed:43*128*584}},
  {key:'v41',name:'V4.1-Flash',layers:40,format:L('KV FP4: 288 B · 검색용 key FP4: 68 B','KV FP4: 288 B · search key FP4: 68 B'),bf16:{main:2.5*1024,index:2.5*256},packed:{main:2.5*288,index:2.5*68},swa:{bf16:40*128*1024,packed:40*128*528}},
 ];
@@ -22,7 +22,7 @@ const total=(r:Row,m:Mode)=>r[m].main+r[m].index;
 const fmt=(v:number)=>Math.round(v).toLocaleString('en-US');
 const mb=(v:number)=>(v/1e6).toFixed(1)+' MB';
 // Logical bytes read by one decode step at N = 131,072 visible positions, all layers, in the deployed cache formats
-// used for storage (scales and in-entry padding included, page padding excluded). Each layer's required cache entries
+// used for storage (scales and in-entry padding included). Each layer's required cache entries
 // are counted once; shared caches are counted again for every layer that reads them. The article's BF16 table uses
 // the same entry counts at BF16 sizes. Assumes an implementation that reads only the selected entries; V3.2's
 // reference main attention and V4.1's reference Reindex score all entries and then mask, so these are not their
@@ -99,7 +99,7 @@ function graph(l:Locale,m:boolean,kind:'store'|'read',o:Opt){
   p.text(x,y+(m?18:22),t,{size:m?11:14,color:C.muted,anchor:i===0?'start':i===ax.ticks.length-1?'end':'middle',width:80});});
  y+=m?44:52;
  const notes:Label[]=kind==='store'?[L('로그 눈금: 한 칸에 10배, 왼쪽 끝은 100 B입니다.','Log scale: each step is 10×; the left edge is 100 B.'),L('형식 줄의 bytes는 캐시 항목 하나의 크기이며 scale을 포함합니다.','Bytes in the format lines are per cache item, scales included.')]
-  :[L('로그 눈금: 막대 길이는 합계, 막대 안의 칸은 KV와 검색용 key의 비율입니다.','Log scale: bar length is the total; the parts inside show the KV/search-key ratio.'),L('층마다 캐시 항목 1회 · scale 포함 · 페이지 패딩 제외 · 실측 아님','each layer\'s entries once · scales included · page padding excluded · not measured')];
+  :[L('로그 눈금: 막대 길이는 합계, 막대 안의 칸은 KV와 검색용 key의 비율입니다.','Log scale: bar length is the total; the parts inside show the KV/search-key ratio.'),L('층마다 캐시 항목 1회 · scale 포함 · 실측 아님','each layer\'s entries once · scales included · not measured')];
  for(const n of notes){p.text(0,y,n,{size:m?12:14,color:C.muted,width:W});y+=wrap(tr(n),W,m?12:14).length*(m?12:14)*1.4+6;}
  p.height=y;return p;
 }
