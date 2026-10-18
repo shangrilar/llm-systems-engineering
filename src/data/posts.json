@@ -2453,7 +2453,7 @@
         "description": "GLM-5.3, Hy4-preview, MiMo-V2.6-Pro, Kimi K3, Qwen3.8-Flash-Next, and DeepSeek V4.1-Flash compared by one yardstick, KV cache per token, along with the five methods behind the differences and the costs those methods leave behind.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "53d6f11dbd263e792fd3f0e0e5d1c4a450c6793ec57c256ccaa7eeb8c2bd0156",
+        "sourceRevision": "0a592640c18524ce08e5a72415135930630a6151dac1921d0c49f4716b775c4d",
         "reviewNote": "2026-10-18: English draft reviewed against the final Korean draft in two Codex rounds (2026-10-15); release edits (closing sentence removed) applied to both; section, figure, note and caption order compared."
       }
     }

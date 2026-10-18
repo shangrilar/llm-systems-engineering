@@ -8,7 +8,7 @@ export {L};
 // Right: what one output token touches at 131,072 positions, as three independent bars (KV read, search-key
 // read, recurrent matrix read + write). The bars are not stacked: on a log axis a stacked part would not be
 // readable as bytes. Section guides reuse the figure with some models in focus.
-const AX={store:{lo:2,hi:6,ticks:['100 B','1 kB','10 kB','100 kB','1 MB']},access:{lo:7,hi:11,ticks:['10 MB','100 MB','1 GB','10 GB','100 GB']}};
+const AX={store:{lo:2,hi:6,ticks:['100 B','1 kB','10 kB','100 kB','1 MB']},access:{lo:6,hi:11,ticks:['1 MB','10 MB','100 MB','1 GB','10 GB','100 GB']}};
 const PARTS=[{k:'kv',c:C.blue,t:L('KV 읽기','KV read')},{k:'index',c:C.red,t:L('검색용 key 읽기','search-key read')},{k:'state',c:C.purple,t:L('상태 행렬 읽기+쓰기','state matrix read + write')}] as const;
 const ROW=128,W=528;
 export type Opt={focus?:Key[];n?:number};
