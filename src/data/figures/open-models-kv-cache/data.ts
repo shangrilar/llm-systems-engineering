@@ -2,7 +2,7 @@ import type {Label} from '@llm-systems/viz';
 export const L=(ko:string,en:string):Label=>[ko,en];
 
 // Long-context cost of the six models in their deployed cache formats: what SGLang selects with each model's
-// cookbook recipe on H200 when no precision flag is passed (checked 2026-10-19). GLM-5.3 and Hy4-preview: MLA KV
+// cookbook recipe on Hopper (H100/H200) when no precision flag is passed (checked 2026-10-19). GLM-5.3 and Hy4-preview: MLA KV
 // BF16 and the DSA indexer cache FP8 (128 B + one FP32 scale = 132 B per token, as in the first feature's V3.2).
 // MiMo-V2.6-Pro and Kimi K3: KV BF16 (engine default); Kimi's KDA state FP32 (SGLang default). Qwen3.8-Flash-Next:
 // KV and QSA keys BF16, GDN state BF16 (every cookbook recipe passes --mamba-ssm-dtype bfloat16). DeepSeek

@@ -31,7 +31,7 @@ function panel(l:Locale){
   p.text(X1+14,e.y-2,name,{size:15,weight:700,color:COL[e.m.key],width:W-X1-14});
   p.text(X1+14,e.y+16,bytes(f(e.m,N1M))+ext,{size:13,color:C.muted,width:W-X1-14});
  }
- p.text(X0,Y1+84,L('요청 하나 = 문맥 N × 토큰당 KV 캐시 + 고정 상태 · 배포 캐시 형식(SGLang 기본 레시피, H200) · 가중치·작업 버퍼 제외 · 옅은 선 = config 최대 문맥 너머 외삽','one request = N × KV cache per token + fixed state · deployed cache formats (SGLang default recipes, H200) · weights and work buffers excluded · faint = beyond the config maximum'),{size:13,color:C.muted,width:W-X0});
+ p.text(X0,Y1+84,L('요청 하나 = 문맥 N × 토큰당 KV 캐시 + 고정 상태 · 배포 캐시 형식(SGLang 기본 레시피, Hopper H100·H200) · 가중치·작업 버퍼 제외 · 옅은 선 = config 최대 문맥 너머 외삽','one request = N × KV cache per token + fixed state · deployed cache formats (SGLang default recipes, Hopper H100/H200) · weights and work buffers excluded · faint = beyond the config maximum'),{size:13,color:C.muted,width:W-X0});
  p.height=Y1+100;return p;
 }
 export default {articleId:'open-models-kv-cache',figureId:'14-request',number:'open-models-kv-cache-14-request',layout:'wide',eyebrow:numbered('open-models-kv-cache/14-request',L('여섯 모델 비교','Six models')),
