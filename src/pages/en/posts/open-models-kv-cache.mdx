@@ -24,12 +24,12 @@ This number tells you how much **storage** grows with context. The bytes **read*
 
 **Precision differences.** Only DeepSeek stores its KV in FP4, so the gaps between bars mix differences in structure with differences in precision. To compare structure alone, compute as if every KV and search key were stored in BF16. Those values are collected in the box below.
 
-**The line under each bar.** Fixed state that each request holds regardless of context length: the KV of layers that keep only recent positions (a window), or the state of linear attention layers, which summarize past context in a fixed-size matrix. Both come up in the next section. It is measured in bytes per request, so it is not added to the per-token bars.
+**The line under each bar.** Fixed state that each request holds regardless of context length (for recent-position KV, once the window has filled): the KV of layers that keep only recent positions (a window), or the state of linear attention layers, which summarize past context in a fixed-size matrix. Both come up in the next section. It is measured in bytes per request, so it is not added to the per-token bars.
 
 </AnnotPart>
 </Annot>
 
-The smallest value, DeepSeek V4.1-Flash at 890 B, and the largest, GLM-5.3 and Hy4-preview at 92.6 kB, are about 100× apart. If everything were stored in BF16 the gap would be about 30×, so the remaining factor of about 3.5 comes from DeepSeek's FP4 storage. Models that read selectively, like GLM-5.3 and Hy4-preview, can still store a lot, because selecting what to read cuts reads, not storage. Kimi K3 and Qwen3.8-Flash-Next add little per token, but each request also holds a separate fixed-size state, 449 MB for Kimi and 59.0 MB for Qwen. MiMo-V2.6-Pro keeps only recent positions in 60 of its 70 layers, yet it is close to twice Kimi's value. By the end of this article, you will see where these differences come from. As in Part 1, the KV cache per token is found by taking the independent KV stores, each a separately stored set of entries whose size grows in proportion to context length, grouping them by structure, and adding up each group's growth.
+The smallest value, DeepSeek V4.1-Flash at 890 B, and the largest, GLM-5.3 and Hy4-preview at 92.6 kB, are about 100× apart. If everything were stored in BF16 the gap would be about 30×, so the remaining factor of about 3.5 comes from DeepSeek's FP4 storage (a quarter of the bytes per element, about 3.5× once scales are added). Models that read selectively, like GLM-5.3 and Hy4-preview, can still store a lot, because selecting what to read cuts reads, not storage. Kimi K3 and Qwen3.8-Flash-Next add little per token, but each request also holds a separate fixed-size state, 449 MB for Kimi and 59.0 MB for Qwen. MiMo-V2.6-Pro keeps only recent positions in 60 of its 70 layers, yet it is close to twice Kimi's value. As in Part 1, the KV cache per token is found by taking the independent KV stores, each a separately stored set of entries whose size grows in proportion to context length, grouping them by structure, and adding up each group's growth.
 
 ```text
 KV cache per token = Σ ( number of independent stores
@@ -38,13 +38,13 @@ KV cache per token = Σ ( number of independent stores
                          ÷ compression ratio )
 ```
 
-The compression ratio is how many tokens' KV is merged into one stored vector, 1 without compression. For example, each global layer of MiMo-V2.6-Pro stores 8 heads × (192 + 128) = 2,560 elements of Key and Value per token, so 10 layers × 2,560 × 2 B (BF16) = 51,200 B. A layer that stores its own KV is one independent store. The sum runs over store types, and a store shared by several layers is counted once. Across the six models, different terms of this formula are reduced. Units in this article are decimal (1 kB = 1,000 B, 1 GB = 10⁹ B), while context lengths use 1K = 1,024 tokens and 1M = 1,048,576 tokens.
+The compression ratio is how many tokens' KV is merged into one stored vector, 1 without compression. For example, each of MiMo-V2.6-Pro's 10 full attention layers stores a Key (192 dimensions) and a Value (128 dimensions) for each of its 8 KV heads per token. Taken as one vector that is 8 × (192 + 128) = 2,560 elements, so 10 layers × 2,560 × 2 B (BF16) = 51,200 B. A layer that stores its own KV is one independent store. The sum runs over store types, and a store shared by several layers is counted once. Across the six models, different terms of this formula are reduced. Units in this article are decimal (1 kB = 1,000 B, 1 GB = 10⁹ B), while context lengths use 1K = 1,024 tokens and 1M = 1,048,576 tokens.
 
 <details>
 <summary>More detail: how this article counts "KV cache per token" and "memory access"</summary>
 
 - **Average growth in a long context.** In models that merge the KV of several tokens and store it as one, storage does not grow by the same amount at every token. We take the storage without its fixed part, divide by the number of tokens, and use the value this approaches once the context is long enough.
-- **One copy of the model body, one request.** MTP, draft, and vision modules are excluded. B requests of the same length that do not share cache need B times the storage.
+- **One copy of the model body, one request.** MTP and draft modules, which predict several next tokens together, and vision modules for image input are excluded. B requests of the same length that do not share cache need B times the storage.
 - **Search keys are included.** A search key is the small key an indexer scores to rank candidate positions. Models that pick positions to read store one per token or per block. These keys also build up in proportion to context, so they are counted.
 - **Precision.** The formats SGLang uses when each model's default recipe runs on H200 with no precision flag (cookbook as of 2026-10-19). GLM-5.3 and Hy4-preview: main KV in BF16 and search keys in FP8 (128 B + a 4 B FP32 scale = 132 B). MiMo-V2.6-Pro, Kimi K3 and Qwen3.8-Flash-Next: KV in BF16. DeepSeek V4.1-Flash: Part 1's formats (the KV that builds up over the whole context and its search keys in FP4, the KV of recent positions in FP8, scales included). A scale is a factor that brings values stored at low precision back to their original size. The state matrices of linear attention are FP32 for Kimi (the SGLang default) and BF16 for Qwen (the cookbook recipes); conv states are BF16. On Blackwell GPUs SGLang picks FP8 KV for sparse attention models such as GLM-5.3, which would make their values smaller.
 - **Fixed state** is listed separately. Its size is fixed, while its contents change at every token. It covers the state matrices and conv states of linear attention layers and the KV that keeps only recent positions (a window). Window values assume the context is already longer than the window.
@@ -93,7 +93,7 @@ Every one of the six models departs from plain full attention in at least some l
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/05-five-methods" panels="4">
 
-**Sparse attention.** In this article, this means picking positions to read by search, or reusing an earlier layer's pick. (SWA is also sparse attention in the broad sense, but we treat it separately.) The KV for every position stays stored. An indexer scores small **search keys** (also called indexer keys), and the KV is read only at the selected positions. KV reads cover only the picked positions, but storage does not shrink, and the amount of search keys scored grows in proportion to context.
+**Sparse attention.** In this article, this means picking positions to read by search, or reusing an earlier layer's pick. (SWA is also sparse attention in the broad sense, but we treat it separately.) The KV for every position stays stored. Small **search keys** (also called indexer keys) are stored per position, a small search query made from the current token scores them, and the KV is read only at the selected positions. Layers that reuse an earlier pick receive only the picked positions, with no search keys. KV reads cover only the picked positions, but storage does not shrink, and the amount of search keys scored grows in proportion to context.
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/05-five-methods" panels="5">
@@ -154,7 +154,7 @@ Laying the table out as actual layers gives Figure 4.
 
 **Repeating patterns.** GLM-5.3 and Hy4-preview make their first few layers all search layers, then place a search layer every 4 layers. The two models have the same layer count, the same KV per layer and the same number of search layers (21), so their storage and access are the same; only the positions of their search layers differ slightly. MiMo places one global layer every 7–8 layers. Kimi repeats 3 KDA layers followed by 1 MLA layer (its last layer is MLA too), and Qwen repeats 3 GDN layers followed by 1 QSA layer.
 
-**Independent stores.** The number of global KV stores that grow with context: 10 for MiMo, 12 for Qwen, 24 for Kimi, and 78 each for GLM-5.3 and Hy4-preview. In DeepSeek, only 4 layers build global KV, and the other 34 share it. The number of stores alone does not set the cost. How wide each store is and how it is read matter just as much.
+**Independent stores.** The number of global KV stores that grow with context: 10 for MiMo, 12 for Qwen, 24 for Kimi, and 78 each for GLM-5.3 and Hy4-preview. In DeepSeek, only 4 layers build global KV (3 of them as entries that pack 2 tokens), the other 34 share it, and the first 2 layers use SWA only. The number of stores alone does not set the cost. How wide each store is and how it is read matter just as much.
 
 </AnnotPart>
 </Annot>
@@ -176,17 +176,17 @@ The per-token growth comes from the stores that build up KV across the whole con
 <Annot fig="open-models-kv-cache/11-swa" n={6} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/11-swa" panels="1" yr="0-0.493" only="path:r0">
 
-**How the window moves.** When a new token arrives, the window shifts by one, and the KV of the position that leaves the window is dropped in that layer. Information from distant positions is passed along through the layers or referenced directly by a global layer. MiMo's SWA layers also have a per-head sink bias (a learned value added to the softmax denominator), but it is a learned parameter, not state each request keeps.
+**How the window moves.** When a new token arrives, the window shifts by one, and the KV of the position that leaves the window is dropped in that layer. Information from distant positions survives in the outputs of earlier layers that read those positions and is passed on to the next layer, or is referenced directly by a global layer. MiMo's SWA layers also have a per-head sink bias (a learned value added to the softmax denominator), but it is a learned parameter, not state each request keeps.
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/11-swa" panels="1" yr="0.493-1" only="path:r1">
 
-**Width of the global layers that remain.** MiMo has 10 global layers, fewer than Kimi's 24, but each one keeps 5,120 B per token (GQA: 8 KV heads × (K 192 + V 128) × 2 B), more than 4× Kimi's 1,152 B. That makes MiMo's 51,200 B per token larger than Kimi's 27,648 B. MLA does not store Key and Value directly; it stores one 512-dimensional shared vector (the latent) from which both can be built, plus a 64-dimensional positional key shared by all heads. Part 1 covers how it works. SWA layers keep KV at the same width as global layers, so MiMo's 60 layers × 128 positions × 5,120 B stop at 39.3 MB.
+**Width of the global layers not turned into SWA.** MiMo has 10 global layers, fewer than Kimi's 24, but each one keeps 5,120 B per token (GQA: 8 KV heads × (K 192 + V 128) × 2 B), more than 4× Kimi's 1,152 B. That makes MiMo's 51,200 B per token larger than Kimi's 27,648 B. MLA does not store Key and Value directly; it stores one 512-dimensional shared vector (the latent) from which both can be built, plus a 64-dimensional key shared by all heads. In DeepSeek these 64 dimensions carry position (RoPE), but Kimi uses no positional encoding (NoPE). Part 1 covers how it works. SWA layers keep KV at the same width as global layers, so MiMo's 60 layers × 128 positions × 5,120 B stop at 39.3 MB.
 
 </AnnotPart>
 </Annot>
 
-MiMo's 60 SWA layers stop at 39.3 MB once the context passes 128 tokens. Only the 10 global layers grow with context. The fixed part and the context-proportional part are equal at 768 tokens, and at 1,048,576 tokens about 99.93% of the storage comes from the 10 global layers. The KV width of the remaining global layers matters just as much as the number of those layers. Shrinking along the feature dimension (GQA, MLA) is covered in the [MQA and GQA](/en/posts/model-advanced-mqa-gqa/) and [MLA storage](/en/posts/model-advanced-mla-storage/) articles.
+MiMo's 60 SWA layers stop at 39.3 MB once the context passes 128 tokens. Only the 10 global layers grow with context. The fixed part and the context-proportional part are equal at 768 tokens (60 layers × 128 positions ÷ 10 layers), and at 1,048,576 tokens about 99.93% of the storage comes from the 10 global layers. The KV width of the remaining global layers matters just as much as the number of those layers. Shrinking along the feature dimension (GQA, MLA) is covered in the [MQA and GQA](/en/posts/model-advanced-mqa-gqa/) and [MLA storage](/en/posts/model-advanced-mla-storage/) articles.
 
 The MiMo report gives no separate figures for KV or attention efficiency. It describes a training benefit instead. With context parallelism, which splits the context across GPUs, an SWA layer only needs to exchange the KV inside its window, so per-layer communication is bounded by the window size rather than the context length.
 
@@ -263,7 +263,7 @@ Now let us see how much is read and written in the state matrices and the remain
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/10-state-vs-attn" panels="2">
 
-**Qwen3.8-Flash-Next.** The remaining 12 layers also select with QSA, so KV reads stop at 12 layers × 2,048 positions × 2,048 B ≈ 50 MB, and only search-key reads grow with context. At the config maximum of 262,144 tokens the three items are 113 MB of state, 201 MB of search, and 50 MB of KV. KV plus search equals the state side at about 81,920 tokens, and search alone at about 147,456 (at 4-token block boundaries); beyond that they exceed it.
+**Qwen3.8-Flash-Next.** The remaining 12 layers also select with QSA, so KV reads stop at 12 layers × 2,048 positions × 2,048 B ≈ 50 MB, and only search-key reads grow with context. A search key is 128 × 2 B = 256 B per 4-token block and all 12 layers read every block, so at N tokens that is 12 × N/4 × 256 B. At the config maximum of 262,144 tokens the three items are 113 MB of state, 201 MB of search, and 50 MB of KV. KV plus search equals the state side at about 81,920 tokens, and search alone at about 147,456 (at 4-token block boundaries); beyond that they exceed it.
 
 </AnnotPart>
 </Annot>
@@ -278,7 +278,7 @@ A fixed state keeps no per-token KV, so the KV of a specific position cannot be 
 
 | | Kimi K3 | Qwen3.8-Flash-Next |
 |---|---|---|
-| Remaining layers | 24 Gated MLA layers (1 after every 3 KDA layers, plus the last layer) | 12 QSA layers (1 after every 3 GDN layers) |
+| Remaining layers | 24 MLA layers (Gated MLA, which multiplies its output by a gate; 1 after every 3 KDA layers, plus the last layer) | 12 QSA layers (1 after every 3 GDN layers) |
 | KV per layer | latent 512 + shared key 64, no positional encoding (NoPE) | GQA: 24 query heads, 2 KV heads × 256 |
 | Range read | the entire earlier context | up to 2,048 positions + tail block |
 | KV read at 131,072 tokens | 3.62 GB | 50.3 MB |
@@ -289,7 +289,7 @@ The two families also behave differently in prefill, where the input is processe
 
 ## Reading selected positions with sparse attention
 
-Sparse attention reads only the positions picked by search from the stored KV. Reusing an earlier layer's pick is included here too. A small search key is kept separately, a learned indexer picks the positions that look relevant to the current token, and only the KV at those positions is read. Each indexer head takes the dot product of its query with the search keys; weighting the heads and adding them gives one score per position. DSA in DeepSeek V3.2, covered in Part 1, is the standard example. GLM-5.3 and Hy4-preview use DSA almost unchanged, and Qwen3.8-Flash-Next uses QSA, which picks by blocks. DeepSeek V4.1-Flash also picks from its compressed entries. Figure 11 locates the four models.
+Sparse attention reads only the positions picked by search from the stored KV. Reusing an earlier layer's pick is included here too. A small search key is kept separately, a learned indexer picks the positions that look relevant to the current token, and only the KV at those positions is read. The indexer makes its own small search query, separate from attention; each indexer head takes the dot product of that query with the search keys; weighting the heads and adding them gives one score per position. DSA in DeepSeek V3.2, covered in Part 1, is the standard example. GLM-5.3 and Hy4-preview use DSA almost unchanged, and Qwen3.8-Flash-Next uses QSA, which picks by blocks. DeepSeek V4.1-Flash also picks from its compressed entries. Figure 11 locates the four models.
 
 <Annot fig="open-models-kv-cache/03-guide-sparse" n={11} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/03-guide-sparse" panels="all">
@@ -335,7 +335,7 @@ The table below sets the two schemes' real configurations side by side with thei
 | Search keys stored (per token) | 21 × 132 B (FP8, scale included) = 2,772 B | 12 × 128 × 2 B ÷ 4 = 768 B (BF16) |
 | KV read / search at 1,048,576 tokens | 184 MB / 2.91 GB | 50.3 MB / 805 MB (extrapolated) |
 
-The last row is the heart of sparse attention. KV reads are capped by the selection budget, but search-key reads grow in proportion to context. At 1,048,576 tokens, GLM-5.3 and Hy4-preview read 184 MB of KV and about 16× that, 2.91 GB, for search. A search key is much smaller than the KV (132 B per layer and position), but every earlier position is scanned each time.
+The last row is the heart of sparse attention. KV reads are capped by the selection budget (the most positions read at once), but search-key reads grow in proportion to context. At 1,048,576 tokens, GLM-5.3 and Hy4-preview read 78 layers × 2,048 positions × 1,152 B = 184 MB of KV and about 16× that, 2.91 GB, for search. A search key is much smaller than the KV (132 B per layer and position), but every earlier position is scanned each time.
 
 So each model cut the search cost in a different place.
 
@@ -370,12 +370,12 @@ DeepSeek packs tokens to store fewer rows and lets several layers read the KV it
 <Annot fig="open-models-kv-cache/13-sharing" n={15} layout="stack" textHead>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0-0.472" only="path:r0">
 
-**Packing tokens together.** In DeepSeek V4.1-Flash, four layers build global KV: 2, 8, 14, and 20 (layers numbered from 0). The first three merge the KV of 2 tokens into one entry, and layer 20 makes one entry per token without compression. That gives 0.5 × 3 + 1 = 2.5 entries per token. One entry is 512 dimensions of main KV plus 128 of search key, 288 + 68 = 356 B in the deployed format (FP4, scales included). Separately from compression, all 40 layers keep local KV for the last 128 positions. The first 2 layers read only this, and the other 38 read it together with global KV. Recent positions not yet included in a compressed entry are also referenced this way. The 2.7 MB in Figure 1 is the storage of all this local KV (FP8, scales included).
+**Packing tokens together.** In DeepSeek V4.1-Flash, four layers build global KV: 2, 8, 14, and 20 (layers numbered from 0). The first three merge the KV of 2 tokens into one entry, and layer 20 makes one entry per token without compression (so one of layer 20's entries is one token position). That gives 0.5 × 3 + 1 = 2.5 entries per token. One entry is 512 dimensions of main KV plus 128 of search key, 288 + 68 = 356 B in the deployed format (FP4, scales included). Separately from compression, all 40 layers keep local KV for the last 128 positions. The first 2 layers read only this, and the other 38 read it together with global KV. Recent positions not yet included in a compressed entry are also referenced this way. The 2.7 MB in Figure 1 is the storage of all this local KV (FP8, scales included).
 
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/13-sharing" panels="1" yr="0.472-1" only="path:r1">
 
-**Sharing the KV itself.** V4.1-Flash's 40 layers split into the first 20 (encoder) and the last 20 (decoder), Part 1's CED. A layer that builds new global KV and picks for itself is called a **Full** layer; layers 2, 8, 14 and 20 are Full. The KV of layers 2, 8 and 14 is read by the encoder layers up to the next Full layer, and the global KV that layer 20 builds is read as is by the decoder layers after it. The Reindex layers (24, 28, 32, 36) rescore layer 20's search keys with their own queries, but pick only within the candidate pool layer 20 built. The candidate pool is not layer 20's final selection (512 entries); it holds up to 2,048 search blocks of 8 consecutive positions (separate from the storage compression), 16,384 positions. Reuse layers use an earlier layer's pick as is. Every layer computes attention separately with its own query and its own local KV.
+**Sharing the KV itself.** V4.1-Flash's 40 layers split into the first 20 (encoder) and the last 20 (decoder), Part 1's CED. A layer that builds new global KV and searches the whole context itself is called a **Full** layer (not the same as full attention, which reads every position); layers 2, 8, 14 and 20 are Full. The KV of layers 2, 8 and 14 is read by the encoder layers up to the next Full layer, and the global KV that layer 20 builds is read as is by the decoder layers after it. The Reindex layers (24, 28, 32, 36) rescore layer 20's search keys with their own queries, but pick only within the candidate pool layer 20 built. The candidate pool is not layer 20's final selection (512 entries); it holds up to 2,048 search blocks of 8 consecutive positions (separate from the storage compression), 16,384 positions. Reuse layers use an earlier layer's pick as is. Every layer computes attention separately with its own attention query and its own local KV.
 
 </AnnotPart>
 </Annot>
@@ -424,7 +424,7 @@ Next is the memory touched to generate one token. The model order is the same, a
 </AnnotPart>
 <AnnotPart fig="open-models-kv-cache/15-access" panels="2">
 
-**1,048,576 tokens.** Reads in layers that do not select grow with context, to 53.7 GB for MiMo and 29.0 GB for Kimi. In selecting models KV reads stay the same and only search grows (2.91 GB for GLM-5.3 and Hy4-preview). DeepSeek reads 8.3 MB of KV and 183 MB for search.
+**1,048,576 tokens.** Reads in layers that do not select grow with context, to 53.7 GB for MiMo and 29.0 GB for Kimi. In selecting models KV reads stay the same and only search grows (2.91 GB for GLM-5.3 and Hy4-preview). DeepSeek reads 8.3 MB of KV and 183 MB for search. The KV is 512 picked entries per layer (18 encoder-side layers and 20 decoder-side layers) × 288 B plus 128 local KV positions in all 40 layers × 528 B; the search is the 4 Full layers reading every entry's search key and the 4 Reindex layers reading the 16,384 candidates' keys, × 68 B.
 
 </AnnotPart>
 </Annot>
@@ -438,7 +438,7 @@ Taken together, the two figures show how storage and access differ.
 
 ## Summary: what to check in a new model
 
-Among the six models, none reads the full context's KV as is in every layer. When a new model comes out, writing its KV cache per token next to its total and active parameters shows what it pays for long contexts. Four checks are enough to get the numbers.
+Among the six models, none reads the full context's KV as is in every layer. When a new model comes out, writing its KV cache per token next to its total and active parameters shows what storage and access costs it pays for long contexts. Four checks are enough to get the KV cache per token and the access.
 
 1. **What each layer keeps of the earlier context.** A recent window, a fixed-size state, KV and search keys kept per position, or compressed entries, and whether several layers share them. Adding up the growth of the independent stores whose size is proportional to context length gives the KV cache per token. Stores shared by several layers are counted once, and fixed state is listed separately.
 2. **What is read for each token.** SWA reads its window, a fixed state is read in full, and selecting layers read the picked positions. If a global layer remains that reads everything without selecting, its reads grow in proportion to context length.
