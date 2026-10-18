@@ -42,7 +42,7 @@ function panels(l:Locale){
  row(0,L('full attention','Full attention'),L('비교 기준','reference'),112,y=>{
   nums.forEach((t,i)=>cell(p,cx(i),y+6,CW,'read',t));brace(p,cx(0),cx(N-1)+CW,y+46,L('12칸 모두 읽음','all 12 read'));
  },L('저장: 12칸, 문맥에 비례','stored: 12 cells, grows with context'),L('읽기: 12칸, 문맥에 비례','read: 12 cells, grows with context'));
- row(1,'SWA',L('최근 window만 유지 | 예시 4 · 실제 모델 128','recent window only | example 4 · real models 128'),112,y=>{
+ row(1,'SWA',L('최근 window만 유지 | 예시 4 · MiMo·DeepSeek 128','recent window only | example 4 · MiMo, DeepSeek 128'),112,y=>{
   nums.forEach((t,i)=>cell(p,cx(i),y+6,CW,i>=8?'read':'gone',t));brace(p,cx(8),cx(N-1)+CW,y+46,L('window 4칸','window: 4'));
  },L('저장: 최근 4칸에서 멈춤','stored: stops at the last 4'),L('읽기: 4칸','read: 4 cells'));
  row(2,L('linear attention','Linear attention'),L('고정 크기 상태로 요약','summarized in a fixed-size state'),158,y=>{
