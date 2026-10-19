@@ -9,7 +9,7 @@ export default {
  panels(locale:Locale){return [false,true].map(other=>{const p=new Panel(locale,other?['입력 B가 만든 계수','Coefficients from input B']:['입력 A가 만든 계수','Coefficients from input A'],1070);
  p.box(20,105,480,115,other?'Δ = 2 · B = [0.25, 0.5]':'Δ = 1 · B = [1, 0.5]',other?'C = [1, 0]':'C = [1, 1]','blue');
  p.box(20,270,230,105,['이전 상태','Old state'],'[2, 1]','teal');p.box(290,270,210,105,['현재 입력','Current input'],'u = 2','blue');p.arrow(135,385,135,420,C.purple);p.arrow(395,385,395,420,C.orange);
- p.box(20,435,230,115,'Ā',other?'× [0.25, 0.64]':'× [0.5, 0.8]','purple');p.box(290,435,210,115,'B̄ = ΔB',other?'× [0.5, 1]':'× [1, 0.5]','orange');p.arrow(135,560,135,600,C.purple);p.arrow(395,560,395,600,C.orange);
+ p.box(20,435,230,115,'diag(Ā)',other?'⊙ [0.25, 0.64]':'⊙ [0.5, 0.8]','purple');p.box(290,435,210,115,'B̄ = ΔB',other?'u × [0.5, 1]':'u × [1, 0.5]','orange');p.arrow(135,560,135,600,C.purple);p.arrow(395,560,395,600,C.orange);
  matrix(p,20,615,[other?[.5,.64]:[1,.8]],{cellWidth:105,cellHeight:60,gap:10,tone:'purple'});matrix(p,290,615,[other?[1,2]:[2,1]],{cellWidth:100,cellHeight:60,gap:10,tone:'orange'});
  connector(p,[135,685],[230,735],{via:[[135,735]],tone:'purple'});connector(p,[395,685],[290,735],{via:[[395,735]],tone:'orange'});p.circle(260,735,22,C.paper,C.teal);p.text(260,743,'+',{size:28,anchor:'middle',width:40});p.arrow(260,770,260,805,C.teal);p.box(100,820,320,95,['새 상태','New state'],other?'[1.5, 2.64]':'[3, 1.8]','teal');p.arrow(260,925,260,955,C.purple);p.box(20,970,480,90,other?'C · [1, 0] → y = 1.5':'C · [1, 1] → y = 4.8','','blue');return p;});}
 } satisfies FigureSpec;

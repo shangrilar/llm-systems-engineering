@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-sparse-indexer',figureId:'02-generation-selection',number:'ma-05-02',
  eyebrow:['그림 2 · 생성에 따른 변화','Figure 2 · Across generation steps'],
  title:['다음 토큰에서는 읽을 위치도 달라질 수 있습니다','The next token can read different positions'],
- subtitle:['p₆ → p₇ · 같은 층의 캐시에 새 위치 추가','p₆ → p₇ · Append one position to the same layer cache'],
+ subtitle:['p₆ → p₇ · 같은 층의 캐시에 새 위치 추가 · 보관 7 → 8위치, 읽기 3 → 3위치','p₆ → p₇ · Append one position to the same layer cache · Stored 7 → 8 positions, read 3 → 3'],
  captionIn:'article',caption:['기존 Key와 KV를 유지하고 새 위치를 추가한다. Query가 바뀌면서 선택 점수와 선택 위치가 달라진다.','Existing keys and KV are retained; one new position is appended. A new query changes scores and selected positions.'],
  alt:['p6에서는 후보0…6을 q6=[0,1]로 평가해1,3,6을 선택한다. p7의 Key와 KV를 추가한 뒤 q7=[1,0]으로 후보0…7을 평가하면0,4,7을 선택한다. p6의 미래 위치7은 후보에 없다.','At p6, q6=[0,1] scores positions0–6 and selects1,3,6. After adding p7 keys and KV, q7=[1,0] scores positions0–7 and selects0,4,7. Future position7 is absent from p6 candidates.'],sources:[],
  panels(locale:Locale){return [6,7].map(t=>{

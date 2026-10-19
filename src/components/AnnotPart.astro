@@ -1,0 +1,18 @@
+---
+// One region of an <Annot> figure (panels "1", "2", or "1+2") with its note as children.
+import {localeFromPath} from '../i18n/index';
+import {figureSpec,panelCrop,cropStyle,hasMobile} from './annot';
+interface Props{fig:string;panels:string;xr?:string}
+const {fig,panels,xr}=Astro.props;
+const locale=localeFromPath(Astro.url.pathname);
+const spec=await figureSpec(fig);
+const desk=panelCrop(spec,fig,locale,false,panels,xr),mob=hasMobile(spec)?panelCrop(spec,fig,locale,true,panels):null;
+const d=cropStyle(desk),m=mob&&cropStyle(mob,true);
+---
+<div class="annot-part" data-panels={panels} style={`--cw:${Math.round(desk.box[2]*1016/1200)}px`}>
+  <div>
+    <div class={`annot-crop${mob?' annot-desktop':''}`} style={d.wrap}><img src={desk.src} style={d.img} alt="" aria-hidden="true" loading="lazy" decoding="async" /></div>
+    {mob&&m&&<div class="annot-crop annot-mobile" style={m.wrap}><img src={mob.src} style={m.img} alt="" aria-hidden="true" loading="lazy" decoding="async" /></div>}
+  </div>
+  <div class="annot-note"><slot /></div>
+</div>

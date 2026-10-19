@@ -16,7 +16,7 @@ Let us briefly revisit the computation from the [Core Attention article](https:/
 
 A row of Q is the Query vector of a token gathering information, and a row of K is the Key vector of a token it can attend to. Their dot product gives one score between tokens. Computing these scores through matrix multiplication QKᵀ produces **a T × T score matrix S, with rows corresponding to Query tokens and columns to Key tokens**.
 
-[![Multiplying Q by the transpose of K produces a T × T score matrix. Scaling, masking, and row-wise Softmax produce probabilities P. Multiplying P by V produces a T × dₕ output.](/images/attention-memory-and-softmax/en/01-attention-flow.png)](/images/attention-memory-and-softmax/en/01-attention-flow.png)
+[![Multiplying Q by the transpose of K produces a T × T score matrix. Scaling, masking, and row-wise Softmax produce probabilities P. Multiplying P by V produces a T × dₕ output.](/images/attention-memory-and-softmax/en/01-attention-flow.png?v=90d39b880363)](/images/attention-memory-and-softmax/en/01-attention-flow.png?v=90d39b880363)
 
 The second stage in Figure 1 divides the scores by √dₕ to adjust their scale and masks positions that cannot be attended to. Here we use a causal mask, so each token can attend only to itself and earlier tokens. Setting scores for future tokens to −∞ makes their Softmax probabilities zero.
 

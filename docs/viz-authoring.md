@@ -77,3 +77,34 @@ CLI는 설정 하나만 받는다. 타입 검사 → 네 가지 출력 생성 �
 모든 공개 그림은 이 모듈의 설정에서 생성한다. 이전 연재별 생성기에서 옮긴 그림은 원래 좌표를 유지한 `p.el(...)` 형태이며, 수정할 때 해당 부분을 공통 도형으로 바꾼다.
 
 `npm run check`는 `public/images`의 모든 SVG·PNG에 대응하는 설정이 있는지, 각 SVG가 현재 설정의 출력과 같은지 확인한다. 테마나 그림 틀을 바꾸면 영향을 받는 그림을 다시 생성해야 검사를 통과한다.
+
+## 그림 조각 옆 설명 (Annot)
+
+그림 안에 긴 해설을 넣는 대신, 그림을 패널 단위로 잘라 각 조각 옆이나 아래에 본문 설명을 붙일 수 있다. 그림 설정은 그대로 두고 MDX에서 다음처럼 쓴다.
+
+```mdx
+import Annot from '../../components/Annot.astro';
+import AnnotPart from '../../components/AnnotPart.astro';
+
+<Annot fig="model-advanced-ced/01-ed-and-ced-paths" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="1">
+
+**A. 전통 ED.** …
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ced/01-ed-and-ced-paths" panels="2">
+
+**B. CED.** …
+
+</AnnotPart>
+</Annot>
+```
+
+- `layout`: `cols`(조각을 나란히, 설명은 아래), `rows`(조각마다 옆에 설명), `stack`(넓은 조각 아래 설명), `side`(조각 하나, 옆에 설명).
+- `panels`: 1부터 센 패널 번호. `1+2`처럼 묶을 수 있다. `xr="0-0.5"`는 데스크톱에서 그 영역의 가로 일부만 보인다(오른쪽이 빈 넓은 패널).
+- 자르는 좌표는 `layoutBoxes()`(`packages/viz/src/frame.ts`)가 그림을 만드는 것과 같은 배치 계산에서 빌드할 때 구한다. 따로 측정하거나 좌표를 적지 않으므로 그림을 다시 만들어도 어긋나지 않는다. 데스크톱 조각은 그림 전체를 1016px에 놓았을 때의 배율을 넘지 않는다.
+- 머리(번호·제목·부제)는 조각 위에 한 번 보이며 원본 PNG로 연결된다. 그림 번호는 이미지 안 eyebrow에 그대로 둔다.
+- 600px 이하에서는 모바일 PNG에서 같은 패널을 잘라 쓰고 설명을 아래로 쌓는다. 모바일 변형이 없는 그림(`screens:['desktop']`)은 데스크톱 조각을 그대로 줄인다.
+- 옮긴 설명은 그림 설정의 `captionIn:'article'`로 이미지에서 빼고, 그림 안의 긴 설명 상자도 지운다. 오해를 막는 짧은 문구(예: "허용 범위 ≠ 희소 선택")는 그림에 남긴다.
+- `tests/annot.test.ts`가 그림·패널 번호의 유효성과 한·영 분할의 일치를 검사하고, `npm run check`는 `<Annot fig>`가 글의 `figureIds`에 있는지 확인한다.
+- `viz:build`는 이미지 폴더의 `renders.json`에 SVG와 그 SVG에서 렌더한 PNG의 해시를 기록한다. `npm run check`는 기록이 있는 PNG가 현재 SVG에서 나왔는지 확인하고, `<Annot>`에 쓰는 그림은 기록이 반드시 있어야 한다(같은 크기의 오래된 PNG로 잘못 잘리는 것을 막는다). `tests/browser/annot.spec.ts`는 한·영 1280px·390px에서 조각 이미지가 로드되고 조각이 이미지 밖으로 벗어나지 않는지 확인한다.

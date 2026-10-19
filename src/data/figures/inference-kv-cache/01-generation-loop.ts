@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 1","Figure 1"],
   title:["선택한 출력이 다음 입력이 됩니다","The selected output becomes the next input"],
-  subtitle:["p0 p1 p2로 시작해, 방금 선택한 토큰을 입력 문맥에 붙이며 생성을 이어 갑니다.","Starting from p0 p1 p2, append each selected token to the input context and continue generating."],
+  subtitle:["p0 p1 p2로 시작해, 방금 선택한 토큰을 입력 문맥에 붙이며 생성을 이어 갑니다. 입력 문맥은 참조 범위이며, 매번 무엇을 다시 계산하는지는 그림 2·3에서 봅니다.","Starting from p0 p1 p2, append each selected token to the input context and continue generating. The context is what can be referenced; what is recomputed each time is shown in Figures 2 and 3."],
   alt:["입력 문맥 p0 p1 p2로 x0를 선택하고, x0를 문맥에 추가해 x1을 선택하며, x1을 추가해 x2를 선택합니다. 각 출력에서 다음 입력의 같은 토큰으로 화살표가 연결됩니다.","Context p0 p1 p2 selects x0. Appending x0 enables selection of x1, and appending x1 enables selection of x2. Each output connects directly to the same token in the next input."],
   caption:["다음에 입력할 토큰은 현재 토큰을 선택한 뒤에 정해집니다.","The next input token is known only after the current token is chosen."],
   sources:[],

@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 2","Figure 2"],
   title:["Router: expert 선택과 가중치 계산","Router: select experts and compute weights"],
-  subtitle:["토큰 1 · d = 8 · expert 수 = 4 · Top-2","Token 1 · d = 8 · 4 experts · Top-2"],
+  subtitle:["토큰 1 · d = 8 · expert 수 = 4 · Top-2 · 점수는 설명용 예시","Token 1 · d = 8 · 4 experts · Top-2 · Illustrative scores"],
   alt:["토큰 1의 d차원 벡터에 8 곱하기 4 라우터 가중치를 곱해 네 점수 [1,0,2,-1]을 얻는다. E1과 E3을 선택하고 Softmax로 약 0.269와 0.731의 가중치를 구한다.","An 8-by-4 router projection gives token 1 four scores [1,0,2,-1]. E1 and E3 are selected, then Softmax assigns weights of approximately 0.269 and 0.731."],
   caption:["설명용 점수입니다. 이 예시에서는 Top-2로 선택한 점수에 Softmax를 적용합니다.","Illustrative scores. This example applies Softmax to the Top-2 selected scores."],
   sources:[],

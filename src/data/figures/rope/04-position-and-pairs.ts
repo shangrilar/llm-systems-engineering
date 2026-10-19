@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 4","Figure 4"],
   title:["위치별 회전각, 성분 쌍별 회전 속도","Position sets the angle; each component pair has its own rate"],
-  subtitle:["α = 위치 p × 회전 속도 θ · 각 성분 쌍에 적용","α = position p × rate θ · applied to each component pair"],
+  subtitle:["α = 위치 p × 회전 속도 θ · 각 성분 쌍에 적용 · 색 = Head 1 안의 성분 쌍","α = position p × rate θ · applied to each component pair · Color = component pair within head 1"],
   alt:["같은 4차원 입력 [1,1,1,-1]을 위치 0,1,2에서 회전한다. 첫 쌍은 한 칸당 30도, 둘째 쌍은 한 칸당 10도로 회전한다. 색은 head가 아닌 성분 쌍을 구분한다.","Rotate the same four-component input [1,1,1,-1] at positions 0,1,2. The first pair rotates 30 degrees per position and the second 10. Colors distinguish component pairs, not heads."],
   caption:["회전각은 설명용입니다. 실제 모델의 주파수 설정을 나타내지 않습니다.","Angles are illustrative, not a real model’s frequency settings."],
   sources:[],

@@ -22,7 +22,7 @@ In the forward pass of the basic Transformer decoder we are discussing, **Attent
 
 Before looking inside MLP, we will examine **matrix multiplication**, which it uses. Multiplying a token vector, written as a row, by a learned weight matrix produces a new vector. If the input has d dimensions and the weight matrix has shape d × m, the output has m dimensions. Here, m is the intermediate dimension used inside MLP. The figure uses a small example with d = 4 and m = 8.
 
-[![A four-dimensional input vector is multiplied by a 4-by-8 weight matrix to produce an eight-dimensional output. The third weight column and output component are highlighted, with the sum of four pairwise products shown.](/images/attention-and-mlp/en/02-matrix-multiply.png)](/images/attention-and-mlp/en/02-matrix-multiply.png)
+[![A four-dimensional input vector is multiplied by a 4-by-8 weight matrix to produce an eight-dimensional output. The third weight column and output component are highlighted, with the sum of four pairwise products shown.](/images/attention-and-mlp/en/02-matrix-multiply.png?v=7dcf3fcd9dc1)](/images/attention-and-mlp/en/02-matrix-multiply.png?v=7dcf3fcd9dc1)
 
 Each output component is **computed using the input vector and one column of the weight matrix.** Multiply corresponding values, then add all the products. For example, if the input is `[1, 2, −1, 0]` and the third column is `[2, −1, −0.5, 1]`, the third output is `1 × 2 + 2 × (−1) + (−1) × (−0.5) + 0 × 1 = 0.5`. Repeating this for all eight columns produces eight output components. Each column combines the input components with a different set of weights.
 
@@ -52,7 +52,7 @@ SiLU is an activation function that multiplies each input value by its sigmoid. 
 
 We can understand the Gate as **adjusting how much of each value from the Up path is passed on**. From the same input, Up computes the values to adjust, and Gate computes their multipliers. These multipliers are computed from the current input rather than being fixed constants, so they change with the input. The figure below zooms in on four components of the intermediate vector.
 
-[![Multiplying Up values [2, −1, 3, 0.5] by post-SiLU Gate values [0.1, 1.5, 0, 2] component by component gives [0.2, −1.5, 0, 1]. Bars use the same scale to compare changes in each component's magnitude.](/images/attention-and-mlp/en/05-gate-effect.png)](/images/attention-and-mlp/en/05-gate-effect.png)
+[![Multiplying Up values [2, −1, 3, 0.5] by post-SiLU Gate values [0.1, 1.5, 0, 2] component by component gives [0.2, −1.5, 0, 1]. Bars use the same scale to compare changes in each component's magnitude.](/images/attention-and-mlp/en/05-gate-effect.png?v=e0bb0163a2c1)](/images/attention-and-mlp/en/05-gate-effect.png?v=e0bb0163a2c1)
 
 The first component shrinks to `2 × 0.1 = 0.2`, while the second grows in absolute magnitude to `−1 × 1.5 = −1.5`. The third becomes zero, and the fourth grows to `0.5 × 2 = 1`. The Gate values shown are after SiLU. **SwiGLU's Gate values are not restricted to the range from 0 to 1.** They can exceed 1 or be negative, so a multiplier that can reduce or increase a value and change its sign is a more accurate description than an on/off switch.
 

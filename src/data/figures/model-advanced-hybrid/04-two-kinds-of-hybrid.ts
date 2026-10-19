@@ -11,15 +11,15 @@ export default {
   const w=mobile?520:1104,p=new Panel(locale,([['A. 상태 + KV','A. State + KV'],['B. 읽기 범위','B. Read range'],['C. 압축·선택 방식','C. Compression and selection']] as Label[])[i],i===0?(mobile?860:550):(mobile?480:450),w);
   const x1=mobile?20:160,x2=mobile?290:690,bw=mobile?210:260,cy=132;
   const names:Label[][]=[[['상태 갱신','State update'],['KV 참조','KV access']],['SWA','Global'],['CSA','HCA']];
-  p.token(x1,cy,names[i][0],bw,i===0?'teal':'orange',65);p.token(x2,cy,names[i][1],bw,'purple',65);
+  p.token(x1,cy,names[i][0],bw,'gray',65);p.token(x2,cy,names[i][1],bw,'gray',65);
   p.text(w/2,cy+43,'+',{size:30,anchor:'middle',width:50});
   const c1=x1+bw/2,c2=x2+bw/2;
   if(i===0)grid(p,c1-32,226,2,2,{cell:28,gap:6,tone:()=> 'teal'});
-  else for(let r=0;r<(i===1?3:4);r++)p.rect(c1-48,218+r*19,96,13,r%2===0||i===1?C.orangeFill:C.grayFill,r%2===0||i===1?C.orange:C.line,3);
-  for(let r=0;r<(i===2?1:6);r++)p.rect(c2-48,218+r*19,96,13,C.purpleFill,C.purple,3);
+  else for(let r=0;r<(i===1?3:4);r++)p.rect(c1-48,218+r*19,96,13,i===1?C.tealFill:r%2===0?C.orangeFill:C.grayFill,i===1?C.teal:r%2===0?C.orange:C.line,3);
+  for(let r=0;r<(i===2?1:6);r++)p.rect(c2-48,218+r*19,96,13,C.tealFill,C.teal,3);
   const labels:Label[][]=[[['고정 크기 상태','Fixed-size state'],['위치별 기억','Position-indexed memory']],[['최근 KV','Recent KV'],['전체 문맥 KV','Full-context KV']],[['압축 후 일부 선택','Compress, then select'],['강하게 압축','Compress more heavily']]];
-  p.text(c1,370,labels[i][0],{size:23,weight:600,anchor:'middle',width:bw+10,color:i===0?C.teal:C.orange});
-  p.text(c2,370,labels[i][1],{size:23,weight:600,anchor:'middle',width:bw+10,color:C.purple});
+  p.text(c1,370,labels[i][0],{size:23,weight:600,anchor:'middle',width:bw+10,color:i===2?C.orange:C.teal});
+  p.text(c2,370,labels[i][1],{size:23,weight:600,anchor:'middle',width:bw+10,color:C.teal});
   if(i===0){
    const cases=[['Kimi K3','KDA + MLA'],['Qwen3.8¹','GDN + Global'],['GLM-5.3-Flash','KDA + Sparse'],['Qwen3.8-Flash-Next','GDN + QSA']];
    cases.forEach(([model,mix],j)=>{

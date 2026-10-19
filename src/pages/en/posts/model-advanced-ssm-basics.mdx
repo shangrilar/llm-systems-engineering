@@ -6,6 +6,9 @@ description: "Compare state updates in Linear Attention and SSMs, then use small
 date: 2026-09-28
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 The Linear Attention family covered through [the previous article](/en/posts/model-advanced-gdn-kda/) writes past information into a fixed-size state and reads that state with the current Query. An SSM (State Space Model) also carries past information forward in a state. How does it differ from what we have already learned?
 
 We will connect the two approaches through <strong>the operations that retain state, write new information, and read an output</strong>. We will first examine an SSM with fixed coefficients, then calculate a small state vector to see how past inputs continue to contribute. Mamba, the subject of the next article, makes these coefficients depend on the current input.
@@ -22,7 +25,18 @@ The linear SSM considered here chooses to express these two influences with matr
 
 An SSM also adds a new contribution to the previous state, then reads an output from the updated state. The fixed-coefficient SSM we will examine specifies this process with three operations. <strong><math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> transforms the previous state, <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> turns the current input into a contribution to write, and C reads an output from the state.</strong> Figure 1 aligns the two approaches in the same order.
 
-<a href="/images/model-advanced-ssm-basics/en/01-state-through-time.png?v=e49f960ca9ac" id="figure-1"><picture><source width="720" height="2896" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/01-state-through-time-mobile.png?v=1b7be1fdbe51" /><img width="2400" height="2362" src="/images/model-advanced-ssm-basics/en/01-state-through-time.png?v=e49f960ca9ac" alt="Both panels process the old state, add current information, form the new state and read an output. Basic linear attention retains the old state, adds a key-value outer product and reads with the current query. A fixed SSM transforms the old state with Abar, adds Bbar times input, and reads with fixed C." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/01-state-through-time" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="1">
+
+**Linear attention.** Writes to the state with feature-mapped keys and values and reads it with the query. Denominator normalization is omitted.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="2">
+
+**SSM.** Retention (Ā), writing (B̄), and reading (C) sit in the same places. The direct output term is omitted, and fixed coefficients mean they are not regenerated per input during inference. The figure maps concepts; it does not compare state shapes or storage.
+
+</AnnotPart>
+</Annot>
 
 Basic Linear Attention leaves the previous state unchanged before adding a new Key–Value contribution. In the SSM, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> acts on the previous state before new information is added. Depending on its values, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> can reduce state components or mix them. Our small example will use different coefficients for the individual components.
 
@@ -38,9 +52,9 @@ Consider processing one input channel in a layer. Let u be the input value in th
 
 Suppose the previous state is [2, 1] and the current input u is 2. We retain 0.5 times the first state component and 0.8 times the second. We write 1 times the input into the first component and 0.5 times the input into the second. Finally, we read the output by summing the two state components.
 
-<a href="/images/model-advanced-ssm-basics/en/02-one-update.png?v=48b86c97e3bc" id="figure-2"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/02-one-update-mobile.png?v=7385386d3a00" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/en/02-one-update.png?v=48b86c97e3bc" alt="Retaining [2,1] at rates [0.5,0.8] gives [1,0.8]. Writing input2 with [1,0.5] gives [2,1]. Add them to get [3,1.8], then read with [1,1] for output4.8." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ssm-basics/en/02-one-update.png?v=7d117d0db1e7" id="figure-2"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/02-one-update-mobile.png?v=c6db37dabf89" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/en/02-one-update.png?v=7d117d0db1e7" alt="Retaining [2,1] at rates [0.5,0.8] gives [1,0.8]. Writing input2 with [1,0.5] gives [2,1]. Add them to get [3,1.8], then read with [1,1] for output4.8." loading="lazy" /></picture></a>
 
-First, apply <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>. Multiplying the components of [2, 1] by 0.5 and 0.8 gives [1, 0.8]. This is the past contribution retained at this step. In this example, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> is a 2×2 matrix with diagonal entries 0.5 and 0.8 and zeros elsewhere. The figure’s “× [0.5, 0.8]” is a compact way of showing this diagonal matrix acting on each component.
+First, apply <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>. Multiplying the components of [2, 1] by 0.5 and 0.8 gives [1, 0.8]. This is the past contribution retained at this step. In this example, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> is a 2×2 matrix with diagonal entries 0.5 and 0.8 and zeros elsewhere. In the figure, diag(Ā) = [0.5, 0.8] lists this matrix’s diagonal entries, and ⊙ means multiplying them with the old state component by component.
 
 Next, apply <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>. <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> is a column vector with components 1 and 0.5, so multiplying it by the scalar input 2 gives [2, 1]. <strong>One current input is written into several state components at different scales.</strong> Adding this to the retained [1, 0.8] produces the new state [3, 1.8].
 
@@ -52,7 +66,7 @@ To see how long an input’s influence lasts, provide one nonzero input and set 
 
 Start from [0, 0] and provide input 2 at position p₀. Using <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> from the previous section gives the first state h₁=[2, 1]. Set the inputs at p₁ and p₂ to 0 and repeatedly apply the same <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>. Each bar in Figure 3 shows <strong>one component of the same state vector changing over time</strong>, not one token.
 
-<a href="/images/model-advanced-ssm-basics/en/03-retention-through-time.png?v=6358cf765c83" id="figure-3"><picture><source width="720" height="2072" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/03-retention-through-time-mobile.png?v=83e1112b4546" /><img width="2400" height="1752" src="/images/model-advanced-ssm-basics/en/03-retention-through-time.png?v=6358cf765c83" alt="The first state component halves:2,1,0.5. The second retains0.8 each step:1,0.8,0.64." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ssm-basics/en/03-retention-through-time.png?v=58e7cae5dd33" id="figure-3"><picture><source width="720" height="2168" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/03-retention-through-time-mobile.png?v=42fc468f2d0e" /><img width="2400" height="1816" src="/images/model-advanced-ssm-basics/en/03-retention-through-time.png?v=58e7cae5dd33" alt="The first state component halves:2,1,0.5. The second retains0.8 each step:1,0.8,0.64." loading="lazy" /></picture></a>
 
 The first component is multiplied by 0.5 at each step: 2 → 1 → 0.5. The second is multiplied by 0.8: 1 → 0.8 → 0.64. Both contributions came from the same input 2, but its influence lasts longer in the second component. With C=[1, 1], the outputs are 3, 1.8, and 1.14.
 
@@ -66,7 +80,18 @@ So far, <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>, <math><
 
 Figure 4 processes two inputs starting from the same previous state [2, 1]. Both cases retain [1, 0.8] through <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math> and use the same <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math> and C.
 
-<a href="/images/model-advanced-ssm-basics/en/04-fixed-coefficients.png?v=147cee297194" id="figure-4"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/en/04-fixed-coefficients-mobile.png?v=35c804e55876" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/en/04-fixed-coefficients.png?v=147cee297194" alt="Inputs2 and−2 both retain [1,0.8] using rates [0.5,0.8]. The same writing coefficients [1,0.5] yield [2,1] or [−2,−1]. New states are [3,1.8] or [−1,−0.2], read by the same C as4.8 or−1.2." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/04-fixed-coefficients" n={4} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="1">
+
+**Input u = 2.** The old state [2, 1] is scaled by diag(Ā), u × B̄ is added to give [3, 1.8], and C reads 4.8.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="2">
+
+**Input u = −2.** The input and new state differ, but Ā, B̄, and C stay the same. Fixed here means the coefficients are not regenerated per input during inference, not that training cannot change them.
+
+</AnnotPart>
+</Annot>
 
 Input 2 adds [2, 1], producing [3, 1.8]. Input −2 adds [−2, −1], producing [−1, −0.2]. Reading with C=[1, 1] gives 4.8 and −1.2, respectively.
 

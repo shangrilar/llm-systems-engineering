@@ -10,13 +10,13 @@ export default {
  panels(locale:Locale){return [false,true].map(kv=>{
   const p=new Panel(locale,kv?['B. 토큰별 KV','B. Per-token KV']:['A. 고정 크기 상태','A. Fixed-size state'],870);
   p.text(85,120,['입력','Input'],{anchor:'middle',width:150,weight:600});
-  p.text(352,120,kv?['처리 후 보관한 KV','KV retained after p₃']:['같은 상태의 시간별 모습','One state over time'],{anchor:'middle',width:270,weight:600,color:kv?C.purple:C.teal});
-  if(kv){p.rect(246,156,218,645,C.purpleFill,C.purple);p.text(300,193,'K',{anchor:'middle',width:80,color:C.purple});p.text(405,193,'V',{anchor:'middle',width:80,color:C.purple});}
+  p.text(352,120,kv?['처리 후 보관한 KV','KV retained after p₃']:['같은 상태의 시간별 모습','One state over time'],{anchor:'middle',width:270,weight:600,color:C.teal});
+  if(kv){p.rect(246,156,218,645,C.tealFill,C.teal);p.text(300,193,'K',{anchor:'middle',width:80,color:C.teal});p.text(405,193,'V',{anchor:'middle',width:80,color:C.teal});}
   for(let i=0;i<4;i++){
    const y=226+i*150;
    p.token(30,y,`p${['₀','₁','₂','₃'][i]}`,110,'blue',54);
-   p.arrow(151,y+27,kv?258:293,y+27,kv?C.purple:C.teal);
-   if(kv){p.token(269,y,`k${['₀','₁','₂','₃'][i]}`,66,'purple',54);p.token(369,y,`v${['₀','₁','₂','₃'][i]}`,66,'purple',54);}
+   p.arrow(151,y+27,kv?258:293,y+27,C.teal);
+   if(kv){p.token(269,y,`k${['₀','₁','₂','₃'][i]}`,66,'teal',54);p.token(369,y,`v${['₀','₁','₂','₃'][i]}`,66,'teal',54);}
    else{
     matrix(p,304,y-12,[[`a${['₁','₂','₃','₄'][i]}`,`b${['₁','₂','₃','₄'][i]}`],[`c${['₁','₂','₃','₄'][i]}`,`d${['₁','₂','₃','₄'][i]}`]],{cellWidth:48,cellHeight:35,gap:6,size:21,tone:'teal'});
     p.text(430,y+28,`S${['₁','₂','₃','₄'][i]}`,{size:23,width:65,color:C.teal});

@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-sparse-indexer',figureId:'03-indexer-window',number:'ma-05-03',
  eyebrow:['그림 3 · Indexer + Window','Figure 3 · Indexer + window'],
  title:['최근 위치는 포함하고, 선택한 위치를 더합니다','Keep recent positions and add selected positions'],
- subtitle:['현재 p₇ · Window 3 + Top-3 · 압축 없는 교육용 예시','Current p₇ · Window 3 + Top-3 · Uncompressed teaching example'],
+ subtitle:['현재 p₇ · Window 3 + Top-3 · 압축 없는 교육용 예시 · 두 규칙의 위치를 같은 KV 캐시에서 합침','Current p₇ · Window 3 + Top-3 · Uncompressed teaching example · Positions from both rules are merged within one KV cache'],
  captionIn:'article',caption:['window의5,6,7과 indexer의0,4,7을 합쳐0,4,5,6,7의 KV를 한 번씩 읽는다. DeepSeek-V4 CSA의 압축된 선택 대상은 다음 편에서 구분한다.','Union window5,6,7 with indexer0,4,7 to read KV0,4,5,6,7 once each. DeepSeek-V4 CSA selects compressed entries, covered separately in the next article.'],
  alt:['현재 위치7에서 window는5,6,7을 항상 포함하고 indexer는0,4,7을 선택한다. 겹치는7을 한 번만 포함한0,4,5,6,7의 원래 KV를 본 Query와 Attention에 사용한다.','At position7, the window includes5,6,7 and the indexer selects0,4,7. Original KV at0,4,5,6,7 enters main attention with the query, counting overlapping7 once.'],
  sources:[{label:'DeepSeek-V4 reference, window plus selected compressed entries; this figure omits compression',url:'https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/blob/main/inference/model.py'}],

@@ -16,7 +16,7 @@ export default {
    };
    status(100,'Global main KV + Indexer K',i===0?['새 생성 · E → Main KV → Indexer K','NEW · E → Main KV → Indexer K']:['재사용 · 앞 Full 층에서','REUSE · From the Full layer'],i>0,'teal');
    if(i<2)p.arrow(260,230,260,270,C.teal,i>0);
-   p.box(20,280,480,125,i===2?['Indexer 계산 생략','Skip indexer computation']:['층별 h → Indexer Q → 점수','Layer h → Indexer Q → Scores'],i===0?['전체 인과적 범위에서 선택','Search the full causal range']:i===1?['공유 후보 pool 안에서 재선택','Reselect within the shared candidate pool']:['Indexer Q · 점수 · Top-K 생략','No indexer Q, scoring or Top-K'],i===2?'gray':'purple');
+   p.box(20,280,480,125,i===2?['Indexer 계산 생략','Skip indexer computation']:['층별 h → Indexer Q → 점수','Layer h → Indexer Q → Scores'],i===0?['전체 인과적 범위에서 선택','Search the full causal range']:i===1?['공유 후보 pool {p0, p1, p3, …}에서 재선택','Reselect within the shared pool {p0, p1, p3, …}']:['Indexer Q · 점수 · Top-K 생략','No indexer Q, scoring or Top-K'],i===2?'gray':'purple');
    if(i<2)p.arrow(260,415,260,455,C.purple);
    status(465,i===0?'Top-2 [p0, p3]':'Top-2 [p1, p3]',i===2?['재사용 · 최근 Full / Reindex 목록','REUSE · Latest Full / Reindex list']:['새 선택 목록 · KV 값이 아닌 위치','NEW position IDs, not KV values'],i===2,'purple');
    p.path('M260 595 V620 H385 V635',C.purple,2.5,i===2,true);

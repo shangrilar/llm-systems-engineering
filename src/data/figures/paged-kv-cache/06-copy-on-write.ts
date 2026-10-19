@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 6","Figure 6"],
   title:["쓰기가 필요할 때 공유 블록 분리하기","Splitting a shared block when a write is needed"],
-  subtitle:["공유 중인 마지막 블록에 새 KV를 써야 할 때, 그 블록만 복사합니다.","When new KV must be written to a shared tail block, only that block is copied."],
+  subtitle:["공유 중인 마지막 블록에 새 KV를 써야 할 때, 그 블록만 복사합니다. 테이블 갱신: 응답 1은 L1 → P2, 응답 2는 L1 → P1 그대로.","When new KV must be written to a shared tail block, only that block is copied. Tables: response 1 maps L1 → P2; response 2 keeps L1 → P1."],
   alt:["첫 상태에서 두 응답은 p0부터 p3까지 든 P0와 p4, p5가 든 부분 블록 P1을 공유한다. 응답 1의 새 입력 a0를 처리하면서 공유 꼬리 블록에 KV를 써야 하므로 P2를 배정해 p4와 p5만 복사하고 a0의 KV를 추가한다. 응답 2는 이제 혼자 참조하는 원래 P1에 b0의 KV를 추가한다. P0는 계속 공유되고 총 세 물리 블록을 쓴다.","Initially, both responses share full block P0 with p0 through p3 and partial tail P1 with p4 and p5. Processing a0 for response 1 requires a write to the shared tail, so P2 is allocated, p4 and p5 are copied, and the KV for a0 is appended. Response 2 then appends the KV for b0 to the original P1, which it now references exclusively. P0 stays shared and only three physical blocks are used."],
   caption:["새 KV를 쓸 마지막 공유 블록만 분리하고, 가득 찬 첫 블록은 계속 공유합니다.","Only the last shared block that needs new KV is split; the full first block remains shared."],
   sources:[],

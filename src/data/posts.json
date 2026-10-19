@@ -114,7 +114,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images.",
-        "sourceRevision": "8a125b80f05e118e0ece5ab3603c88915de97f937e3fbf05893cb3d4135e0c4c"
+        "sourceRevision": "8d00020a02f1e92dab4a43b036c21f6aea0a99a70b61549fc19d5c7c264d6702"
       }
     }
   },
@@ -143,7 +143,7 @@
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "4867b88b84bd2b21fb753da918819bca9bc891bbd0d602ae39003588dc445b75",
+        "sourceRevision": "479caaf774a8815e9a761236d057d88d942933b8894985c10ec9c7c8f45be08b",
         "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -174,7 +174,7 @@
         "description": "Follow Core Attention within each head through QKᵀ, scaling, a causal mask, Softmax, and a weighted sum of Value vectors.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b45ca41b7d44946c5d2dfd9535274344ded5393d6cae1a492d646d64b7d6ba64",
+        "sourceRevision": "d892d83b565f1804a9ffffdd319e2d348f32d916a10cd7869894186e7aa4da3f",
         "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -206,7 +206,7 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "72c33d1243a58724cc9424f3dd47e0e1fc5812858d9c813de9d6704bb905bfc1",
+        "sourceRevision": "b8927aa1e94c67967c7d8edcffc913c38e79ca5868bf809e5cb49f149e55b338",
         "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
@@ -235,7 +235,7 @@
         "title": "MoE: Choosing Which MLPs to Use for Each Token",
         "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
         "published": true,
-        "sourceRevision": "d9835a1ad30b691e26154f714044340e2dc6f3a0c175e58bca3757d9d41628c6",
+        "sourceRevision": "718b6922af4b2af53fa2e4ce263913877f6fabf60df4637f784469b352eb14ad",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and captions for figures 3–4 were newly written in both languages from the article text."
       }
@@ -265,7 +265,7 @@
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
         "published": true,
-        "sourceRevision": "8cffdfff1a23c044e049c0df8c3cdd1fff40dc59c0b842ed2c502c607b9805fa",
+        "sourceRevision": "cc44f9e0239ba389aceadb098fc156c3f8016c88057eb2581b34bded56ccec41",
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the existing note became a caption, and captions for figures 1–3 were newly written in both languages from the article text."
       }
@@ -297,7 +297,7 @@
         "description": "Use MHA as a baseline to compare KV sharing in MQA and GQA, and examine how they reduce storage while preserving per-query outputs and what trade-offs follow.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "0e2f097b7855c9ebfb81128f4510e8a76075f205576077d64899b19f905c1558",
+        "sourceRevision": "4528af4b25be19f1102cae1a51ddd2d55b757f65d2c83b9c404017a5e89b40c6",
         "reviewNote": "2026-09-27: Compared all six sections and five figure descriptions with the Korean source. Same token/head/component distinctions, projections, KV sharing, 64/32/16 storage counts, and qualified quality/runtime claims. Both bodies use MathML subscripts; existing localized figures retain their shared geometry and illustrative inputs."
       }
     }
@@ -542,7 +542,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged.",
-        "sourceRevision": "aad025d1a8e8bd6441bc4edd8f108227826abda014095f4ec0eb25e41aa556a5"
+        "sourceRevision": "beb95677b3caa2b0e6f283fa9c1552f730cc06dca9663cf30c15c413c44a723a"
       }
     }
   },
@@ -1167,7 +1167,7 @@
         "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "df6abc2f410f0d362d6c3b62054a0a92f0ea5eb84de56630f528d48df5a82fc2",
+        "sourceRevision": "e77ce7e7344b9151897107505a33754f702f9df47a1155e542bbf59a7ac1089a",
         "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
@@ -1260,7 +1260,7 @@
         "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "db9ec5066eac77e6d774e6e5c18483bfb8bb1b8233c265f84fe9d624fe39d09e",
+        "sourceRevision": "6be8a9564fb01b98218e29ee30bcb098f99f1478e3179867896e5ae16edda67c",
         "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages. Figure 2 was redrawn with shared primitives (cells, curve)."
       }
     }
@@ -1353,7 +1353,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "2026-09-27: Compared all five sections, paragraph flow, two equations, head-output table, four figure alt texts, numerical examples and source links with the approved Korean article. Shared positional keys, head-specific projections, row-vector notation, RoPE separation and teaching-only storage comparisons agree. All four bilingual figures reviewed independently of the source revision.",
-        "sourceRevision": "716f63c87d0d7effc12ac0b56d4d2c35894174046c50f87cb8984c7888303db4"
+        "sourceRevision": "5b9677b2d6c2cfa82f4d7e3761b79bf3fa7386cd5449da03299d16ede74cba92"
       }
     }
   },
@@ -1440,7 +1440,7 @@
         "description": "Follow how the current query reads a latent KV cache, and see why moving the key projection to the query and the value projection after the weighted sum preserves the result.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "3c77011035cd1162fd6544913d0c3bebe4e329c849d4fb529e41ae69e7416e1d",
+        "sourceRevision": "e197076d84d94c15c9a18dc3f9eb3ac4834df24f261c764e69745de658605115",
         "reviewNote": "2026-09-27: Compared all six sections, RoPE subsection, four figures and numerical examples. Preserved row-vector notation, content/position score addition, key/value reassociation, fixed-weight absorption, normalization boundaries, and qualified runtime claims."
       }
     }
@@ -1470,7 +1470,7 @@
         "description": "Start with sliding window attention as a form of sparse attention, trace fixed connection patterns and information flow through layers, and distinguish the read range from KV cache storage.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "550b4c5ad1a3929ab3d0aacc22cb01353a657c5f9dd918cb06bfefb977e2404e",
+        "sourceRevision": "207c2d0fcdcfd68a56ced7a9e3526cd05b194f8866b6b002eb15bf13d8ccb294",
         "reviewNote": "2026-09-27: Compared all five sections and four figures against Korean. Preserved window boundaries, read sets, 36/21 connection counts, layer-depth paths, receptive-field limits, layer-specific cache retention and qualified runtime claims."
       }
     }
@@ -1529,7 +1529,7 @@
         "description": "Trace how an index query and keys select KV positions, how selection changes during generation, and how a sliding window combines with selection, while distinguishing reading cost from cache storage.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "5f76ff555f0fba10e1e814a218ab16e13e3106c3f0c0e79011315cd985a280b8",
+        "sourceRevision": "02c54f7db5b0e49d57b3392ecd900790e587a109b3cf4e21f89031b61a9a03c2",
         "reviewNote": "2026-09-27: Compared all four sections and three figures with Korean. Preserved index/main QKV separation, dot-product scores, p6-to-p7 candidate sets, cache retention, window overlap rules, and qualified cost and quality trade-offs. Removed the final compression section in both languages as requested."
       }
     }
@@ -1705,7 +1705,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Paragraph-by-paragraph Korean/English review; four bilingual figures, projection arithmetic, causal summary timing, overlapping recent entries, and storage/read counts checked on 2026-09-27.",
-        "sourceRevision": "b3e09b69bd8932188dfc428717ee58f0e09b84ee3f83bf8393c01a3322859701"
+        "sourceRevision": "d03e5c42bdde2a86be733121e55cb34e1222cb592dedefc348131a664c4603d4"
       }
     }
   },
@@ -1736,7 +1736,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "Compared revised introduction and Key/Query write-read explanation with Korean; retained the reviewed numerical examples, equations, and five bilingual figures.",
-        "sourceRevision": "ecb2398131fab2dacedc4858dbce82122dc6c1f081724c4a2a91b7caceb86073"
+        "sourceRevision": "963b0c41ba3c26cc8cc7a6d65f62e66e050379acdb986e709507d83aeb3d35d4"
       }
     }
   },
@@ -1766,7 +1766,7 @@
         "published": true,
         "translationStatus": "reviewed",
         "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved.",
-        "sourceRevision": "975e486770a6ef223853166bbf9cb22ccea2e100664436c869ee644187f32b23"
+        "sourceRevision": "f781d7f6676dd1e2a34aefdfd8b23749845ee4dc5c64dc896bbb8393145b64c8"
       }
     }
   },
@@ -1992,7 +1992,7 @@
         "description": "Understand why softmax is replaced with independent feature maps, then follow outer-product writes, Query reads, and normalization by the sum of scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "62a10565ec3f7ba764401578d73a54969f0965f4c51f99c0092c15d5e512cd7f",
+        "sourceRevision": "25f3171dbe77d131842af467f0fa2ec2c4fef4b8cc7adb4ff30ba17f39d02e3f",
         "reviewNote": "Reviewed all nine sections, six equations, examples and six bilingual figures; clarified outer-product write/read scales, exact accumulation, and the transition to delta updates."
       }
     }
@@ -2022,7 +2022,7 @@
         "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "36c674c7d9c8147e899bc2b1c8ccff25482a5120a43270f1a7501758399dec05",
+        "sourceRevision": "07749c7ecab3ba34bb452705417cf4ea5d79b1b58b47e69c038996753ff833f3",
         "reviewNote": "2026-09-29: Removed the continuous-time discretization section and its corresponding English text; reviewed the transition from the update equations to the expanded recurrence."
       }
     }
@@ -2055,7 +2055,7 @@
         "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b43a46b3eac72b1ca7acd516fecb33652977197c392dd91b62aa8145ca0f5633",
+        "sourceRevision": "5580f1847e216fa18a7026f882f7e80177c03cb76ec9c2fb3726a453df44a282",
         "reviewNote": "2026-09-29: Reviewed matching purpose-first explanations of Delta, negative A, input-dependent B/C, two new visual examples, figure order and preserved discretization discussion."
       }
     }
@@ -2087,7 +2087,7 @@
         "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "10dd968bf15268e3063097a138d7303465b66ff42d910f9fc1772670106ed7dd",
+        "sourceRevision": "f53d6610969273ce51a6853bc6b4c386cec5595d6f8a7134e9def6acad245728",
         "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
       }
     }
@@ -2118,7 +2118,7 @@
         "description": "Trace reading, bypass mixing, and writing from the same input, then examine why mHC constrains repeated mixing and what the wider residual path costs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b765dae85b075e5f359aacf8693f9113346e9e4e68018d31abab1312cd13d8cd",
+        "sourceRevision": "e64717543575738de90d8eeb35271c8ff02f2f4bd0af5b8210b1a04a54bd955d",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2147,7 +2147,7 @@
         "description": "Follow one numerical example through branch normalization, componentwise read gates, and branchwise scalar writes in Gated Residual.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "54900acfda8c0001d9ee84baa540e05515e003ddac26648df3cc02a6ab6b2ef2",
+        "sourceRevision": "7e6a9801594d125bb8ae76a740ad4013fd8bb458640c5ca125cc94e9f4b4ab8a",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2178,7 +2178,7 @@
         "description": "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "9effde5fdfd74345a1c40e718ab7f3aebb004e779f083835d02a1efc59e860fa",
+        "sourceRevision": "36943238a0a5245573c724b31455c9ccf7baa3d4512677feff89c88edfc3763e",
         "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
       }
     }
@@ -2208,7 +2208,7 @@
         "description": "Compare KV storage across six layers, follow a new token as its Keys and Values are reused by the next layer, and examine the trade-off between storage and computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "6c0fb2d13b367b5eb76be6b8a3e77dcd6279e7817b2d1484705a8edbd3cb79ea",
+        "sourceRevision": "8194ea10f57261b17e2439c718d1139525d4835acf1eaa7d5cf2ce8636c99e9b",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
@@ -2239,7 +2239,7 @@
         "description": "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "45c2509545311056cfac18ed63284c2c62e77f68ad0558ceb5bc2b75b853e19a",
+        "sourceRevision": "233e3eacb2ab3a4fd063a8d438cb0d26e511cb2a4de3c028326999caf190c68b",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }
@@ -2271,7 +2271,7 @@
         "description": "Compare generation paths and the sources of global and local KV, then connect sparse selection, three reuse modes, sequence compression, and prefill replay.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a925c740dcd2cf63a20ec5ba2622f776c766965177a2c1f6c9f2cee17aab3352",
+        "sourceRevision": "a4481df7966527902b11564851b520f11b4ad1b50d69ff5a1a3ed79949d1da90",
         "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
       }
     }

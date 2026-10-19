@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {C,Panel,compose,markerId,tr,wrap,type FigureSpec,type Locale} from '../src/index';
+import {C,Panel,compose,layoutBoxes,markerId,tr,wrap,type FigureSpec,type Locale} from '../src/index';
 
 const spec=(layout?:'wide'):FigureSpec=>({
   articleId:'test',figureId:'01-sample',number:'0-1',layout,
@@ -53,5 +53,18 @@ describe('compose',()=>{
   // Locks the exact SVG bytes so refactors cannot silently change published figures.
   it('keeps the SVG output stable',()=>{
     for(const locale of ['ko','en'] as Locale[])for(const mobile of [false,true])expect(compose(spec(),locale,mobile).svg).toMatchSnapshot(`${locale}-${mobile?'mobile':'desktop'}`);
+  });
+});
+
+describe('layoutBoxes',()=>{
+  it('matches the panel placement and height that compose writes',()=>{
+    for(const layout of [undefined,'wide'] as const)for(const mobile of [false,true]){
+      const s=spec(layout),{svg,height}=compose(s,'ko',mobile),L=layoutBoxes(s,'ko',mobile);
+      expect(L.height).toBe(height);
+      const placed=[...svg.matchAll(/<g transform="translate\(([\d.]+) ([\d.]+)\) scale\(([\d.]+)\)" data-panel="(\d+)">/g)];
+      expect(placed.length).toBe(L.panels.length);
+      placed.forEach((m,i)=>{expect(+m[1]).toBeCloseTo(L.panels[i].x,6);expect(+m[2]).toBeCloseTo(L.panels[i].y,6);});
+      expect(L.header).toBeLessThan(L.panels[0].y);
+    }
   });
 });

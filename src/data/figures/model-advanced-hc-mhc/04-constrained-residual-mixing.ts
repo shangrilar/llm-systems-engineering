@@ -2,7 +2,7 @@ import {Panel,C,matrix,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-hc-mhc',figureId:'04-constrained-residual-mixing',number:'ma-13-04',eyebrow:['그림 5','Figure 5'],
  title:['mHC는 섞는 양에 제약을 둡니다','mHC constrains how streams are mixed'],
- subtitle:['우회 혼합 H_res만 확대 · 앞 그림과 같은 교육용 행렬','Zoom into bypass H_res · Same illustrative matrix as before'],captionIn:'article',
+ subtitle:['우회 혼합 H_res만 확대 · 앞 그림과 같은 교육용 행렬 · 제약을 정확히 만족하는 교육용 H','Zoom into bypass H_res · Same illustrative matrix as before · A teaching H that meets the constraints exactly'],captionIn:'article',
  caption:['비음수·행 합 1은 각 출력을 입력값의 볼록 조합으로 만들며, 열 합 1은 stream 사이 합을 보존한다. mHC는 양수화와 반복 행열 정규화로 이 제약에 근접하도록 한다. 유한 반복 오차가 있으며 H_pre/F/H_post 경로와 전체 block 출력에 대한 범위 보장은 아니다.','Nonnegative unit row sums make each output a convex combination; unit column sums preserve the sum across streams. mHC approaches these constraints through positive entries and iterative row/column normalization. Finite iterations leave numerical error. These bounds do not cover H_pre/F/H_post or the full block output.'],
  alt:['[2,0]을 섞으면 [1.6,.4]가 되어 두 값 모두0~2 안에 있고 합2가 유지된다. H_res [[.8,.2],[.2,.8]]의 행·열 합은1이며 원점수에서 양수화와 반복 정규화로 만든다.','Mixing [2,0] gives [1.6,.4], both within0–2 and summing to2. H_res=[[.8,.2],[.2,.8]] has unit row and column sums, obtained from positive scores by iterative normalization.'],
  sources:[{label:'mHC §4.1–4.2',url:'https://arxiv.org/html/2512.24880v1#S4.SS2'}],

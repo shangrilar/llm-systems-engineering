@@ -6,6 +6,9 @@ description: "Linear Attention과 상태 갱신 구조를 비교하고, SSM의 �
 date: 2026-09-28
 ---
 
+import Annot from '../../components/Annot.astro';
+import AnnotPart from '../../components/AnnotPart.astro';
+
 [앞선 글](/posts/model-advanced-gdn-kda/)까지 살펴본 Linear Attention 계열은 과거 정보를 고정 크기 상태에 기록하고, 현재 Query로 그 상태를 읽었습니다. SSM(State Space Model, 상태 공간 모델)도 과거 정보를 상태에 담아 다음 입력으로 이어갑니다. 그렇다면 이미 배운 방식과 무엇이 다를까요?
 
 이번 글에서는 <strong>상태를 유지하고, 새 정보를 기록하고, 출력을 읽는 연산</strong>을 기준으로 두 방식을 연결하겠습니다. 먼저 고정 계수 SSM의 기본 구조를 살펴보고, 작은 상태 벡터를 계산하며 과거 입력의 영향이 어떻게 남는지 확인하겠습니다. 다음 글의 Mamba는 이 구조에서 사용하는 계수를 현재 입력에 따라 바꿉니다.
@@ -22,7 +25,18 @@ SSM은 다른 출발점에서 같은 상태 기반 구조에 도달합니다. <s
 
 SSM도 이전 상태에 새 정보의 기여를 더하고, 갱신한 상태에서 출력을 읽습니다. 다만 이번에 살펴볼 고정 계수 SSM은 세 가지 연산으로 이 과정을 정합니다. <strong><math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>는 이전 상태를 변화시키고, <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>는 현재 입력을 상태에 기록할 값으로 바꾸며, C는 상태에서 출력을 읽습니다.</strong> 그림 1은 두 방식을 같은 순서에 놓은 것입니다.
 
-<a href="/images/model-advanced-ssm-basics/01-state-through-time.png?v=38057fa28b33" id="figure-1"><picture><source width="720" height="2782" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/01-state-through-time-mobile.png?v=d2fa5ec76559" /><img width="2400" height="2362" src="/images/model-advanced-ssm-basics/01-state-through-time.png?v=38057fa28b33" alt="두 패널 모두 이전 상태 처리, 이번 정보 더하기, 새 상태, 출력 읽기의 같은 순서다. 기본 Linear Attention은 이전 상태를 그대로 두고 Key와 Value의 외적을 더한 뒤 현재 Query로 읽는다. 고정 계수 SSM은 Abar로 이전 상태를 변화시키고 Bbar로 변환한 입력을 더한 뒤 고정 C로 읽는다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/01-state-through-time" n={1} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="1">
+
+**Linear attention.** 특징 변환한 Key와 Value로 상태에 쓰고, Query로 읽습니다. 분모 정규화는 생략했습니다.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/01-state-through-time" panels="2">
+
+**SSM.** 같은 자리에 유지(Ā), 기록(B̄), 읽기(C)가 대응합니다. 직접 출력 항은 생략했고, 고정 계수는 추론 중 입력마다 새로 만들지 않는다는 뜻입니다. 이 그림은 개념의 대응이며 상태의 모양이나 저장량을 비교하지 않습니다.
+
+</AnnotPart>
+</Annot>
 
 기본 Linear Attention은 이전 상태를 그대로 두고 새 Key–Value 기여를 더합니다. 반면 SSM에서는 새 정보를 더하기 전에 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>가 이전 상태에 작용합니다. <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>를 어떻게 정하느냐에 따라 이전 상태의 성분을 줄이거나 서로 섞을 수 있습니다. 이 글의 작은 예시에서는 각 성분에 서로 다른 계수를 곱하는 경우를 사용하겠습니다.
 
@@ -38,9 +52,9 @@ SSM도 이전 상태에 새 정보의 기여를 더하고, 갱신한 상태에�
 
 이전 상태가 [2, 1]이고 현재 입력 u가 2라고 하겠습니다. 이전 상태의 첫 성분에는 0.5, 둘째 성분에는 0.8을 곱해 남깁니다. 입력은 첫 상태 성분에 1배, 둘째 성분에 0.5배를 기록합니다. 마지막에는 상태의 두 성분을 더해 출력을 읽겠습니다.
 
-<a href="/images/model-advanced-ssm-basics/02-one-update.png?v=34cadd408504" id="figure-2"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/02-one-update-mobile.png?v=bd9dd8cbe3e5" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/02-one-update.png?v=34cadd408504" alt="이전 상태2,1에 각각0.5,0.8을 곱해1,0.8을 남긴다. 입력2에 Bbar의1,0.5를 곱해2,1을 기록한다. 합친 새 상태3,1.8에 C의1,1을 곱해 더하면 출력4.8이다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ssm-basics/02-one-update.png?v=76c68580a1e8" id="figure-2"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/02-one-update-mobile.png?v=3d3b0a8661bc" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/02-one-update.png?v=76c68580a1e8" alt="이전 상태2,1에 각각0.5,0.8을 곱해1,0.8을 남긴다. 입력2에 Bbar의1,0.5를 곱해2,1을 기록한다. 합친 새 상태3,1.8에 C의1,1을 곱해 더하면 출력4.8이다." loading="lazy" /></picture></a>
 
-먼저 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>를 적용합니다. 이전 상태 [2, 1]의 각 성분에 0.5와 0.8을 곱하면 [1, 0.8]이 됩니다. 이것이 이번 단계에 남길 과거의 기여입니다. 이 예시의 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>는 대각선에 0.5와 0.8이 있고 나머지는 0인 2×2 행렬입니다. 그림의 ‘× [0.5, 0.8]’은 이 대각 행렬이 각 성분에 작용하는 모습을 간단하게 표시한 것입니다.
+먼저 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>를 적용합니다. 이전 상태 [2, 1]의 각 성분에 0.5와 0.8을 곱하면 [1, 0.8]이 됩니다. 이것이 이번 단계에 남길 과거의 기여입니다. 이 예시의 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>는 대각선에 0.5와 0.8이 있고 나머지는 0인 2×2 행렬입니다. 그림의 diag(Ā) = [0.5, 0.8]은 이 행렬의 대각 성분이고, ⊙는 이전 상태와 성분끼리 곱한다는 뜻입니다.
 
 다음으로 <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>를 적용합니다. <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>는 두 성분이 1과 0.5인 열벡터이므로, 스칼라 입력 2를 곱하면 [2, 1]이 됩니다. <strong>현재 입력 하나가 상태의 여러 성분에 서로 다른 크기로 기록됩니다.</strong> 이를 남겨 둔 [1, 0.8]과 더하면 새 상태는 [3, 1.8]입니다.
 
@@ -53,7 +67,7 @@ SSM도 이전 상태에 새 정보의 기여를 더하고, 갱신한 상태에�
 
 초기 상태를 [0, 0]으로 두고 위치 p₀에서 입력 2를 넣겠습니다. 앞 절의 <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>를 사용하면 첫 상태 h₁은 [2, 1]입니다. 이후 위치 p₁과 p₂의 입력은 모두 0으로 두고, 같은 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>를 반복 적용합니다. 그림 3의 각 막대는 토큰 하나가 아니라 <strong>동일한 상태 벡터의 한 성분이 시간에 따라 변하는 모습</strong>입니다.
 
-<a href="/images/model-advanced-ssm-basics/03-retention-through-time.png?v=0cfe48940f65" id="figure-3"><picture><source width="720" height="2072" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/03-retention-through-time-mobile.png?v=187946a41707" /><img width="2400" height="1752" src="/images/model-advanced-ssm-basics/03-retention-through-time.png?v=0cfe48940f65" alt="두 상태 성분을 세로로 비교한다. 첫 성분은 매번0.5배로2,1,0.5가 되고 둘째는0.8배로1,0.8,0.64가 된다. " loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ssm-basics/03-retention-through-time.png?v=fa58f06ee4aa" id="figure-3"><picture><source width="720" height="2120" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/03-retention-through-time-mobile.png?v=bdebac2d197c" /><img width="2400" height="1816" src="/images/model-advanced-ssm-basics/03-retention-through-time.png?v=fa58f06ee4aa" alt="두 상태 성분을 세로로 비교한다. 첫 성분은 매번0.5배로2,1,0.5가 되고 둘째는0.8배로1,0.8,0.64가 된다. " loading="lazy" /></picture></a>
 
 첫 성분은 매 단계 0.5배가 되어 2 → 1 → 0.5로 줄어듭니다. 둘째 성분은 매 단계 0.8배가 되어 1 → 0.8 → 0.64로 줄어듭니다. 같은 입력 2가 만든 두 기여지만, 둘째 성분에는 그 영향이 상대적으로 오래 남습니다. C=[1, 1]로 읽는다면 각 단계의 출력은 3, 1.8, 1.14입니다.
 
@@ -67,7 +81,18 @@ SSM도 이전 상태에 새 정보의 기여를 더하고, 갱신한 상태에�
 
 그림 4는 같은 이전 상태 [2, 1]에서 두 입력을 처리합니다. 양쪽 모두 <math><mover accent="true"><mi>A</mi><mo>¯</mo></mover></math>로 [1, 0.8]을 남기고, 같은 <math><mover accent="true"><mi>B</mi><mo>¯</mo></mover></math>와 C를 사용합니다.
 
-<a href="/images/model-advanced-ssm-basics/04-fixed-coefficients.png?v=6d405081d1d5" id="figure-4"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ssm-basics/04-fixed-coefficients-mobile.png?v=cb897c383546" /><img width="2400" height="1996" src="/images/model-advanced-ssm-basics/04-fixed-coefficients.png?v=6d405081d1d5" alt="입력2와 입력-2를 비교한다. 두 경우 모두 Abar의0.5,0.8로 이전 상태를1,0.8로 남기고 Bbar의1,0.5를 쓴다. 기록값은2,1과-2,-1로 달라지며 새 상태는3,1.8과-1,-0.2다. 같은 C로 읽으면4.8과-1.2다." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-ssm-basics/04-fixed-coefficients" n={4} layout="cols">
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="1">
+
+**입력 u = 2.** 이전 상태 [2, 1]을 diag(Ā)로 줄이고 u × B̄를 더해 [3, 1.8]을 얻고, C로 읽어 4.8을 냅니다.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-ssm-basics/04-fixed-coefficients" panels="2">
+
+**입력 u = −2.** 입력과 새 상태는 달라지지만 Ā, B̄, C는 그대로입니다. 여기서 고정은 추론 중 입력마다 계수를 새로 만들지 않는다는 뜻이며, 학습 중에도 변하지 않는다는 뜻은 아닙니다.
+
+</AnnotPart>
+</Annot>
 
 입력이 2이면 [2, 1]을 더해 새 상태 [3, 1.8]을 만듭니다. 입력이 −2이면 [−2, −1]을 더하므로 새 상태는 [−1, −0.2]입니다. C=[1, 1]로 읽은 출력은 각각 4.8과 −1.2입니다.
 

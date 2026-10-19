@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 6","Figure 6"],
   title:["위치가 반영되면 Attention 점수도 달라집니다","Position information changes Attention scores"],
-  subtitle:["T = 3 · dh = 4 · 점수는 √dh = 2로 나눈 값","T = 3 · dh = 4 · scores are divided by √dh = 2"],
+  subtitle:["T = 3 · dh = 4 · 점수는 √dh = 2로 나눈 값 · 토큰 1·2·3 = 위치 0·1·2","T = 3 · dh = 4 · scores are divided by √dh = 2 · Tokens 1, 2, 3 = positions 0, 1, 2"],
   alt:["이전 편 Q/K를 그대로 사용한다. 위치에 따라 두 성분 쌍을 회전하고 스케일링한 점수를 전후 비교한다. 대각선은 같고 비대각선은 달라진다. 마스크, Softmax, PV로 이어진다.","Reuse the previous article’s Q and K. Rotate two component pairs by position and compare scaled scores. Diagonal entries stay the same and off-diagonal entries change, followed by masking, Softmax and PV."],
   caption:["한 칸당 회전각 30° / 10°는 설명용입니다. 소수는 셋째 자리까지 반올림했습니다.","Illustrative rates: 30° / 10° per position. Decimals are rounded to three places."],
   sources:[],

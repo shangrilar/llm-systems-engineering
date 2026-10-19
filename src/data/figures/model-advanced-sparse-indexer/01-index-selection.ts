@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-sparse-indexer',figureId:'01-index-selection',number:'ma-05-01',
  eyebrow:['그림 1 · 선택과 Attention','Figure 1 · Selection and attention'],
  title:['선택용 Q·K로 고르고, 본 Q·K·V로 읽습니다','Select with index Q·K; read with main Q·K·V'],
- subtitle:['현재 p₇ · Top-3 · 교육용 내적 예시','Current p₇ · Top-3 · Illustrative dot products'],
+ subtitle:['현재 p₇ · Top-3 · 교육용 내적 예시 · A가 고른 위치 ID [0, 4, 7]로 B에서 KV를 읽음(가중치 아님)','Current p₇ · Top-3 · Illustrative dot products · B reads KV at the position IDs [0, 4, 7] chosen in A (not weights)'],
  captionIn:'article',caption:['선택 점수는 위치 선택에만 쓰고, 본 Attention은 별도의 Q·K·V로 계산한다.','Index scores select positions; main attention uses its own Q, K and V.'],
  alt:['현재 입력에서 별도 투영으로 선택용 Query와 본 Query를 만든다. 위치별 선택용 Key와의 내적으로 점수를 구하고 상위 위치 0,4,7을 고른다. 본 Attention은 해당 위치의 별도 Key와 Value만 읽는다.','Separate projections produce an index query and a main query. Dot products with per-position index keys select positions 0,4,7. Main attention reads its own keys and values at those positions.'],
  sources:[{label:'DeepSeek-V3.2 reference implementation',url:'https://huggingface.co/deepseek-ai/DeepSeek-V3.2/blob/main/inference/model.py'}],
@@ -18,7 +18,7 @@ export default {
  const scores=[.9,.2,.3,.1,.8,.4,.5,.7];
  scores.forEach((s,i)=>{const y=399+i*48;const hit=[0,4,7].includes(i);a.text(12,y+29,`p${i}`,{size:23,width:42});a.token(62,y,`[${s.toFixed(1)}, ${[.2,.9,.1,.7,.3,.4,.8,.5][i]}]`,190,'purple',38);a.arrow(263,y+19,304,y+19,C.muted);a.token(325,y,s.toFixed(1),165,hit?'orange':'gray',38);});
  a.arrow(260,798,260,835,C.orange);a.text(285,826,'Top-3',{size:22,color:C.orange,width:155});
- a.token(75,856,['위치 [0, 4, 7]','Positions [0, 4, 7]'],370,'orange',60);
+ a.token(75,856,['B에서 읽을 위치 [0, 4, 7]','Positions read in B: [0, 4, 7]'],370,'orange',60);
  const b=new Panel(locale,['B. 선택한 KV로 Attention','B. Attend to selected KV'],1030);
  b.token(120,80,['현재 입력 h₇','Current input h₇'],280,'gray',50);
  b.arrow(260,138,260,180,C.blue);b.text(280,165,'W_Q',{size:23,color:C.blue,width:150});

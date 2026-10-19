@@ -5,7 +5,7 @@ export default {
   eyebrow:['그림 2 · 먼 위치 보충하기','Figure 2 · Add distant reads'],
   title:['가까운 위치와 지정한 먼 위치를 함께 읽습니다','Read nearby and designated distant positions'],
   subtitle:['교육용 causal pattern · 모든 연결은 j ≤ i · window 3은 현재 위치 포함','Teaching causal patterns · Every connection has j ≤ i · Window 3 includes the current position'],
-  caption:['초록은 local 범위, 보라는 추가로 읽는 먼 위치입니다. 겹친 위치는 한 번만 셉니다. 두 규칙 모두 미래를 읽지 않으며, 양방향 encoder의 global mask를 복제한 그림이 아닙니다. 내용으로 고르는 방식은 다음 편에서 다룹니다.','Teal marks local positions; purple marks additional distant reads. Overlapping positions count only once. Neither rule reads the future; these are not copies of a bidirectional encoder’s global mask. Content-based selection comes in the next article.'],
+  captionIn:'article',caption:['초록은 local 범위, 보라는 추가로 읽는 먼 위치입니다. 겹친 위치는 한 번만 셉니다. 두 규칙 모두 미래를 읽지 않으며, 양방향 encoder의 global mask를 복제한 그림이 아닙니다. 내용으로 고르는 방식은 다음 편에서 다룹니다.','Teal marks local positions; purple marks additional distant reads. Overlapping positions count only once. Neither rule reads the future; these are not copies of a bidirectional encoder’s global mask. Content-based selection comes in the next article.'],
   alt:['8×8 causal 마스크 두 개. A는 현재 포함 local 3과 anchor 0을 결합한다. B는 local 3과 4의 배수 위치를 결합한다. 현재 행 7의 읽기 집합은 A={0,5,6,7}, B={0,4,5,6,7}이며, 중복은 한 번만 센다.','Two 8×8 causal masks. A combines local 3, including the current position, with anchor 0. B combines local 3 with positions divisible by 4. At row 7 the read sets are A={0,5,6,7} and B={0,4,5,6,7}, with overlaps counted once.'],
   sources:[{label:'Longformer §3.1, sparse/local/global background',url:'https://arxiv.org/html/2004.05150v2#S3.SS1'}],
   panels(locale:Locale){

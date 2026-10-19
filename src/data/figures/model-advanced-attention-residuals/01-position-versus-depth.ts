@@ -21,7 +21,7 @@ export default {
  b.box(55,500,410,92,['현재 층이 읽을 가중합','Weighted input for this sublayer'],'h₃ = α₀e + α₁f₁ + α₂f₂','blue');
  b.arrow(260,602,260,640,C.blue);b.token(155,652,'F₃ → f₃',210,'orange',62);
  b.text(260,760,['계산 후 f₃를 새 source로 추가','After computing, add f₃ as a new source'],{size:22,anchor:'middle',width:490});
- b.text(260,803,['선택하는 축: 토큰 위치 → 깊이','Selection axis: token position → depth'],{size:22,anchor:'middle',width:490});
+ b.text(260,803,['이 그림의 선택 축: sublayer 깊이','Selection axis here: sublayer depth'],{size:22,anchor:'middle',width:490});
  return [a,b];
  }
 } satisfies FigureSpec;

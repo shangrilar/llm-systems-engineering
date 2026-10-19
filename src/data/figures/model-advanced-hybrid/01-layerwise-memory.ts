@@ -15,9 +15,9 @@ export default {
    if(!mobile)p.text(ox+140,38,names[model],{size:26,weight:600,anchor:'middle',width:330});
    for(let l=1;l<=6;l++){
     const y=130+(6-l)*92,isA=model===0||(model===2&&l%3===0);
-    p.token(ox,y,`${isA?'A':'R'}${l}`,lw,isA?'purple':'teal',62);
+    p.token(ox,y,`${isA?'A':'R'}${l}`,lw,'gray',62);
     p.line(ox+lw+8,y+31,cx-12,y+31,C.muted,2,true);
-    if(isA){for(let r=0;r<4;r++)for(let c=0;c<2;c++)p.rect(cx+c*30,y+9+r*13,24,9,C.purpleFill,C.purple,2);}
+    if(isA){for(let r=0;r<4;r++)for(let c=0;c<2;c++)p.rect(cx+c*30,y+9+r*13,24,9,C.tealFill,C.teal,2);}
     else grid(p,cx,y+7,2,2,{cell:22,gap:7,tone:()=> 'teal'});
     if(l<6)p.arrow(mid,y-8,mid,y-23,C.blue);
    }

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
 import {chromium} from 'playwright';
 import {compose,type FigureSpec} from './frame';
 import {tr,type Locale} from './text';
@@ -40,6 +41,7 @@ export async function buildFigure(spec:FigureSpec,{root,qaDir,source,outDir=path
         return {bounds,overlaps,containers};
       });
       await page.screenshot({path:file.replace(/\.svg$/,'.png')});
+      await recordRender(folder,name,result.svg,await fs.readFile(file.replace(/\.svg$/,'.png')));
       records.push({locale,mobile,...result,svg:undefined,path:path.relative(root,file),...issues});
     }
   }finally{await browser.close();}
@@ -48,4 +50,15 @@ export async function buildFigure(spec:FigureSpec,{root,qaDir,source,outDir=path
   await fs.writeFile(path.join(qaDir,spec.number+'.json'),JSON.stringify(report,null,2)+'\n');
   const errors=records.filter(r=>r.bounds.length||r.overlaps.length||r.containers.length);
   return {figure:spec.number,rendered:records.length,errors};
+}
+
+// `renders.json` in each image folder pairs every SVG with the PNG rendered from it, so a check can tell a
+// stale PNG from a current one even when their sizes match (article crops depend on the PNG matching the SVG).
+const sha=(b:string|Buffer)=>createHash('sha256').update(b).digest('hex');
+async function recordRender(folder:string,name:string,svg:string,png:Buffer){
+  const file=path.join(folder,'renders.json');
+  const all:Record<string,{svg:string;png:string}>=JSON.parse(await fs.readFile(file,'utf8').catch(()=>'{}'));
+  all[name]={svg:sha(svg),png:sha(png)};
+  const sorted=Object.fromEntries(Object.keys(all).sort().map(k=>[k,all[k]]));
+  await fs.writeFile(file,JSON.stringify(sorted,null,1)+'\n');
 }
