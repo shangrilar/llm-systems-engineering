@@ -171,7 +171,7 @@ RoPE는 벡터의 차원을 둘씩 짝지어, 위치에 비례하는 각도만�
 
 세 방식은 대수적으로 같은 내용 점수를 만듭니다. 유한 정밀도와 양자화에서는 반올림 오차가 조금 달라질 수 있습니다. 세 방식 모두 내용 점수의 계산 순서만 바꾸며, 위치 점수 Q<sup>R</sup><sub>h</sub> (K<sup>R</sup>)<sup>T</sup>와 √(d<sub>k</sub> + d<sub>r</sub>)로 나누는 scale(저장 형식의 scale과 다른, 점수를 나누는 값)은 그대로입니다.
 
-흡수 뒤의 내적은 d<sub>k</sub>(128)가 아니라 r<sub>kv</sub>(512) 차원에서 일어나므로, 점수 하나를 계산하는 양은 오히려 늘어납니다. 흡수가 없애는 것은 캐시의 모든 위치에 W<sup>UK</sup><sub>h</sub>를 곱해 Key를 펼치는 계산과, 펼친 Key를 읽는 일입니다.
+흡수하면 위치마다 하는 내적은 d<sub>k</sub>(128)가 아니라 r<sub>kv</sub>(512) 차원이 되어 4배 길어집니다. 대신 캐시의 모든 위치에 W<sup>UK</sup><sub>h</sub>를 곱해 Key를 펼치는 계산(위치마다 512×128 곱)과 펼친 Key를 읽는 일이 사라지고, Query 쪽에서 W<sup>UK</sup><sub>h</sub>를 한 번 곱하기만 하면 됩니다. Query가 하나뿐인 decode에서는 이 차이가 커서 흡수가 유리합니다. Query가 많은 prefill에서는 한 번 펼친 Key를 모든 Query가 함께 쓰므로, 펼쳐서 계산하는 쪽이 나을 수 있습니다.
 
 **위치 성분을 따로 두는 이유.** 흡수는 Q̂<sub>h</sub> 하나를 만들어 모든 위치의 C<sup>KV</sup>와 곱하는 방식이라, Query와 C<sup>KV</sup> 사이에 위치마다 달라지는 것이 없어야 합니다. C<sup>KV</sup>에서 만든 내용 Key에 RoPE를 적용하면, 그림과 같은 행벡터 표기로 위치 s의 점수가 q R(t − s) (W<sup>UK</sup><sub>h</sub>)<sup>T</sup> c<sub>s</sub><sup>T</sup> 꼴이 됩니다(c<sub>s</sub>는 위치 s의 C<sup>KV</sup>). 위치마다 다른 R(t − s)가 사이에 끼므로 Q̂<sub>h</sub>를 하나로 만들 수 없습니다. 그래서 MLA는 위치 정보를 RoPE를 적용한 작은 K<sup>R</sup>에만 넣고, 흡수는 RoPE가 없는 내용 성분에만 씁니다([MLA 저장 구조 글](/posts/model-advanced-mla-storage/)).
 
