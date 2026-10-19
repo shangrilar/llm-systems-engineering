@@ -1,0 +1,22 @@
+{
+ "01-weight-map": {
+  "svg": "01efad1242d728fbf74262bc14c7d0aa7701f26b5fbe4ccb87e53b03b6487b74",
+  "png": "9d196c040fdf37a72f884a02ccc6359e8c8bc3c18a342c023536f65b1e7b489e"
+ },
+ "01-weight-map-mobile": {
+  "svg": "43610b604fe3715e23c7f8aed66428908f6abf791d466911247432d9695ed000",
+  "png": "130b8446d9dc4c327eb0b3daa96e36caf6c4a57af367c9167a2ea77b0f66880f"
+ },
+ "02-compression": {
+  "svg": "383829788fabb26a2b84dfc1faea5a2d0ff10167332b103a5abfcc063e630fb4",
+  "png": "a3fac8c1c52a92645b55d3d0947c5d56c1142445fa4ee97151b0a23980ee0ac2"
+ },
+ "03-visible-entries": {
+  "svg": "741d19bac8217dba99887ccace668292fd24f2f4473954907de117ff24fb8c3c",
+  "png": "19f447aaec983ff94f63f254b072c58599b58ac500a0ca507f93d0f9e1aafe95"
+ },
+ "04-attention": {
+  "svg": "61d8be778054a4e76af6f39f4231ec3ff1a689b6700833bd60cee73baa24e7d9",
+  "png": "08c166b843609cb3347169565c75a42e4c2c2efdf777b5121070fed931ac8871"
+ }
+}
