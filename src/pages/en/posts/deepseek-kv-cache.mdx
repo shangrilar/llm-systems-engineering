@@ -201,7 +201,7 @@ With the score in hand, the same can be done for how the probabilities combine t
 
 Swapping the order of the weighted sum and the matrix multiplication gives the same result. This way, a decode step completes its computation while **reading only C<sup>KV</sup> and K<sup>R</sup> from the cache**. The derivation of absorption is traced with a small example in the [MLA computation article](/en/posts/model-advanced-mla-computation/).
 
-### Working out V2's number
+### Calculating V2's KV cache
 
 Now V2's number follows. Each layer stores 512 dimensions of C<sup>KV</sup> and 64 of K<sup>R</sup>.
 
@@ -290,7 +290,7 @@ Adding M to the score makes the probability of unpicked positions zero after sof
 
 The figure only expresses the result with a mask. Whether a real kernel reads only the picked positions depends on the implementation. The reads in this article assume an implementation that reads only the KV of the 2,048 picked positions.
 
-### Working out V3.2's number
+### Calculating V3.2's KV cache
 
 Start with the structure alone. What is stored is MLA's 576 dimensions plus a 128-dimensional search key, 704 dimensions in all. If everything were stored in BF16, that would be 61 layers × 704 × 2 B = 85,888 B, 22% more than V3 (70,272 B). **DSA is not a technique for reducing storage.** Unpicked positions are not removed from the cache either, because the next token may pick different positions.
 
@@ -508,7 +508,7 @@ HCA compresses 128×, so there are few entries and reading them all is fine. CSA
 </AnnotPart>
 </Annot>
 
-### Working out V4-Flash's number
+### Calculating V4-Flash's KV cache
 
 CSA layers store a 512-dimensional main KV entry and a 128-dimensional search key every 4 tokens, and HCA layers store a 512-dimensional main KV entry every 128 tokens.
 
@@ -687,7 +687,7 @@ Replay is also an approximation. Computing the hidden state at the first positio
 
 This way of running is described in the report; the public reference code reviewed here does not implement it separately. CED is covered in more detail in the [CED article](/en/posts/model-advanced-ced/).
 
-### Working out V4.1-Flash's number
+### Calculating V4.1-Flash's KV cache
 
 Four layers store global KV. The 3 encoder Full layers store one entry every 2 tokens, and the 1 decoder Full layer stores one entry per token. One entry is 512 dimensions of main KV plus 128 of search key.
 
