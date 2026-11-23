@@ -20,7 +20,6 @@ date: 2026-09-19
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/01-growing-pressure.png"><img src="/images/inference-preemption/01-growing-pressure.png" alt="네 블록에 A와 B의 KV가 각각 7칸씩 들어 있습니다. 각 요청이 다음 입력을 처리하면 마지막 빈칸이 채워져 KV가 8개가 됩니다. 그다음 위치 8의 입력에는 새 블록이 필요하지만 가용 블록은 없습니다." /></a>
-  <figcaption>그림 1. 기존 블록의 남은 칸까지 채우면, 다음 입력을 처리할 새 블록이 필요합니다.</figcaption>
 </figure>
 
 그림 1에서 두 요청이 다음 입력을 한 번씩 처리하면 KV가 각각 8개가 됩니다. 이 시점에는 네 블록의 모든 칸이 차 있습니다. A가 그다음 위치 8의 입력을 처리하려면 세 번째 블록이 필요하지만, 풀에는 배정할 블록이 없습니다. B도 생성을 더 이어 가려면 같은 문제를 만나게 됩니다. 위치 번호는 0부터 세므로, 위치 8의 KV는 아홉 번째 KV입니다.
@@ -37,7 +36,6 @@ B를 다음 배치에서 제외하면 이번 실행에 처리할 토큰 수는 �
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/02-reclaim-blocks.png"><img src="/images/inference-preemption/02-reclaim-blocks.png" alt="B의 실행만 보류하면 A와 B의 블록이 그대로 남아 가용 블록은 0개입니다. B의 독점 블록 P2와 P3를 반환하면 두 블록이 비고, A가 P2를 배정받아 위치 8의 KV를 기록하면 가용 블록은 하나가 됩니다. B는 토큰 이력을 보존한 채 재개를 기다립니다." /></a>
-  <figcaption>그림 2. B의 KV 블록을 반환하면 A가 새 블록을 받아 생성을 이어 갈 수 있습니다.</figcaption>
 </figure>
 
 그림 2의 첫 장면에서는 B의 실행만 보류해 가용 블록이 여전히 0개입니다. 다음 장면에서 B가 독점하던 P2와 P3를 반환하면 가용 블록이 2개가 됩니다. 엔진은 이 중 P2를 A에 배정하고 A의 블록 테이블에 연결합니다. A가 다음 입력을 처리하면 P2의 첫 칸에 위치 8의 KV가 기록됩니다. A는 이제 KV 9개를 블록 3개에 보관하고, P3 하나가 가용 블록으로 남습니다.
@@ -58,7 +56,6 @@ B를 다음 배치에서 제외하면 이번 실행에 처리할 토큰 수는 �
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/03-recompute-state.png"><img src="/images/inference-preemption/03-recompute-state.png" alt="B의 토큰 이력 p0부터 p6, x0, x1은 중단 중에도 보존됩니다. GPU KV를 반환한 뒤 공간을 확보하면 이 아홉 토큰을 고정 입력으로 모델에 넣습니다. 기존 KV 8개를 복구하고 x1의 KV를 새로 계산하며, 새 출력 x2만 사용자에게 전달합니다." /></a>
-  <figcaption>그림 3. 보존한 토큰 이력으로 KV를 다시 만들고, 이미 전달한 출력 다음부터 생성을 이어 갑니다.</figcaption>
 </figure>
 
 그림 3의 가운데에서 B의 GPU KV는 없지만, 토큰 이력과 이미 전달한 x0, x1은 그대로 남아 있습니다. 엔진이 B를 다시 실행하기로 정하고 충분한 공간을 확보하면, 보존한 9개 토큰을 모델의 입력으로 넣습니다. 이 예시에서는 재사용할 캐시가 없으므로 전체 이력을 함께 처리합니다.
@@ -79,7 +76,6 @@ B가 x1까지 전달하고 KV 8개를 두 블록에 가지고 있던 시점으�
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/04-swap-state.png"><img src="/images/inference-preemption/04-swap-state.png" alt="B의 KV 8개를 GPU에서 CPU로 복사한 뒤 GPU 블록 두 개를 반환합니다. 나중에 GPU 공간을 확보하면 KV 8개를 두 블록에 복원합니다. 보존한 마지막 출력 x1을 처리할 세 번째 블록을 배정해 KV를 9개로 늘리고 새 x2를 전달합니다." /></a>
-  <figcaption>그림 4. 계산한 KV 값을 다른 메모리에 보관했다가 GPU로 복원하고, 다음 입력의 계산을 이어 갑니다.</figcaption>
 </figure>
 
 그림 4의 가운데에서는 B의 GPU 블록이 반환되어 있지만 CPU에는 KV 8개가 남아 있습니다. B의 토큰 이력과 요청 상태도 계속 보존합니다. 나중에 B를 재개할 공간을 확보하면 GPU 블록을 다시 배정하고, 보관한 KV를 그곳으로 가져옵니다. 새로 받은 블록의 위치가 이전과 달라도, 블록 테이블이 현재 저장 위치를 가리키면 됩니다.
@@ -105,7 +101,6 @@ KV를 복원한 뒤에도 x1을 처리하는 계산은 필요합니다. 저장�
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/05-output-gap.png"><img src="/images/inference-preemption/05-output-gap.png" alt="A와 B가 생성하던 중 B가 중단해 두 블록을 반환합니다. A는 한 블록을 추가해 KV를 9개에서 12개까지 늘리고 완료합니다. 이후 B가 세 블록을 받아 KV를 재계산하고 새 출력 x2와 x3를 이어 전달합니다. B의 x1과 x2 사이에는 대기와 복구로 인한 긴 출력 간격이 생깁니다." /></a>
-  <figcaption>그림 5. B의 공간을 회수해 A를 진행시키는 동안, B의 다음 출력에는 대기와 복구 시간이 더해집니다.</figcaption>
 </figure>
 
 그림 5의 아래쪽은 사용자가 받는 B의 출력입니다. x1까지 받은 뒤 B가 기다리고 KV를 재계산하는 동안에는 새 출력이 없습니다. 재계산이 끝나 x2를 선택·전달한 다음에야 생성이 다시 이어집니다. 사용자에게는 x1과 x2 사이의 긴 간격으로 나타납니다. [vLLM의 Preemption 문서](https://docs.vllm.ai/en/latest/configuration/optimization/#preemption)에서도 중단과 재계산이 요청의 지연을 늘릴 수 있음을 설명합니다.

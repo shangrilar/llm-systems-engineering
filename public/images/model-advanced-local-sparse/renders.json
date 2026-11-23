@@ -1,0 +1,34 @@
+{
+ "01-read-window": {
+  "svg": "444725b7c21c209867b9a36923c4e3249e7587f03e1c21777c9b1a9b5e956fc7",
+  "png": "01ae98769d0f58dfab82511667f15700c7c9ca2aa4e9dfa0761e1accab851e7a"
+ },
+ "01-read-window-mobile": {
+  "svg": "671312d2cef7b57d2c1cd98dce1da12f11fa7b8a1ede3b300fcc9452684b4c85",
+  "png": "7a84b5e094660d62b4526071d7ebd1ef4b5a77bc0c862a26ee6a8ac3006ab5a6"
+ },
+ "02-local-and-landmarks": {
+  "svg": "90cd38e79ba1d348d3190bd3bb84f971ed37d1ccf52cdca8809ad44f376c429f",
+  "png": "e110269551e075018bf97e98ddd9ada0421f0da0c17bac7c124815f355cb3b40"
+ },
+ "02-local-and-landmarks-mobile": {
+  "svg": "98a5041421055ddc74dcbe14ae3f83dcb3edef7cbd074eabaddc5e6f5ae606b8",
+  "png": "10bdd2c9c96c330c3c9ed7145f1ce776d51be2ca00ffc3ea8205914e183d1b4a"
+ },
+ "03-depth-propagation": {
+  "svg": "e41ce842d2aae59dfc9af9baa7e811108023844ed0661587ba38b5ad4a72df53",
+  "png": "ee087f5510c44cea8cabda2dda0e2a7b6ce08811c80307eda2afab721eb479c1"
+ },
+ "03-depth-propagation-mobile": {
+  "svg": "03b4ceadc11a0d53ceb2e3283114eb12d08c6525f9769b9dd472f09e83939c5e",
+  "png": "bea9b891a39d8e75b06043f7593a9b189820dcfabca6a6be95c8457ed23e42a2"
+ },
+ "04-read-versus-retain": {
+  "svg": "c02f8953a10eb94408e8c63ef61f6ebd7203310186c767806486d44d03f319e0",
+  "png": "810296fa48d413d2017fbe57d24a3bf44af1b35ba17f2726ab0b3c1f11ae4f52"
+ },
+ "04-read-versus-retain-mobile": {
+  "svg": "0ad8934ce8fc662c895cb38cb87d2cd3a35232beca445bac3cc765d73d1f1dc6",
+  "png": "9dacf6446962672f453427309e89915ec5e4c247d7d0af8730bf62af82657d83"
+ }
+}

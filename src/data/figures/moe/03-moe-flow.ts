@@ -1,0 +1,137 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"moe",figureId:"03-moe-flow",number:"03-moe-flow",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 3","Figure 3"],
+  title:["Router에서 Combine까지","From Router to Combine"],
+  subtitle:["토큰 3개 · expert 4개 · 토큰마다 Top-2 · expert별로 모았다가 토큰별로 합칩니다.","3 tokens · 4 experts · Top-2 per token · group by expert, then combine by token"],
+  alt:["Router가 각 토큰의 expert 두 개와 가중치를 정한다. Dispatch에서 E1은 토큰 1과 3, E2는 토큰 2, E3은 세 토큰을 받으며 E4는 입력이 없다. 각 expert는 토큰별로 MLP를 적용한다. Combine은 같은 토큰의 두 expert 출력을 가중합하고 원래 순서의 세 d차원 출력을 만든다.","The router selects two experts and weights per token. Dispatch groups tokens 1 and 3 for E1, token 2 for E2, all three for E3, and none for E4. Each expert applies its MLP per token. Combine takes a weighted sum of the two expert outputs for each original token, producing three d-dimensional outputs in their original order."],
+  caption:["Dispatch는 토큰을 expert별로 모으고, Combine은 같은 토큰의 두 expert 출력을 가중합해 원래 순서로 되돌립니다.", "Dispatch groups tokens by expert; Combine takes a weighted sum of each token’s two expert outputs and restores the original order."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,1311,1104,[48,205]);
+    p.el("rect",{x:48,y:205,width:1104,height:110,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:80,y:251,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"start"},["입력 X (3 × d)","Input X (3 × d)"]);
+    p.el('text',{x:80,y:288,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},"d = 8");
+    p.el("rect",{x:430,y:236,width:190,height:54,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:525,y:260,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"x₁");
+    p.el('text',{x:525,y:281,fill:C.blue,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el("rect",{x:660,y:236,width:190,height:54,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:755,y:260,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"x₂");
+    p.el('text',{x:755,y:281,fill:C.teal,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el("rect",{x:890,y:236,width:190,height:54,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:985,y:260,fill:C.purple,"font-size":25,"font-weight":600,"text-anchor":"middle"},"x₃");
+    p.el('text',{x:985,y:281,fill:C.purple,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el("path",{d:"M172,327 L172,461",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    p.el("path",{d:"M458,327 L458,461",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    p.el('text',{x:191,y:385,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"start"},["선택·가중치 계산용","For routing and weights"]);
+    p.el('text',{x:477,y:385,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"start"},["expert에 보낼 입력","Input for experts"]);
+    p.el("rect",{x:48,y:475,width:246,height:670,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:171,y:518,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Router");
+    p.el('text',{x:171,y:557,fill:C.muted,"font-size":18,"font-weight":400,"text-anchor":"middle"},["선택 + 가중치","Selection + weights"]);
+    p.el("path",{d:"M62,583 L280,583",fill:"none",stroke:C.line,"stroke-width":2});
+    p.el("rect",{x:334,y:475,width:246,height:670,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:518,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Dispatch");
+    p.el('text',{x:457,y:557,fill:C.muted,"font-size":18,"font-weight":400,"text-anchor":"middle"},["expert별 입력 묶기","Group inputs by expert"]);
+    p.el("path",{d:"M348,583 L566,583",fill:"none",stroke:C.line,"stroke-width":2});
+    p.el("rect",{x:620,y:475,width:246,height:670,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:518,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},["Expert 계산","Expert compute"]);
+    p.el('text',{x:743,y:557,fill:C.muted,"font-size":18,"font-weight":400,"text-anchor":"middle"},["토큰별 MLP 적용","Apply MLP per token"]);
+    p.el("path",{d:"M634,583 L852,583",fill:"none",stroke:C.line,"stroke-width":2});
+    p.el("rect",{x:906,y:475,width:246,height:670,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:1029,y:518,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"middle"},"Combine");
+    p.el('text',{x:1029,y:557,fill:C.muted,"font-size":18,"font-weight":400,"text-anchor":"middle"},["원래 토큰별 가중합","Weight and sum per token"]);
+    p.el("path",{d:"M920,583 L1138,583",fill:"none",stroke:C.line,"stroke-width":2});
+    p.el("path",{d:"M297,567 L331,567",fill:"none",stroke:C.blue,"stroke-width":2,"marker-end":markerUrl(C.blue)});
+    p.el("path",{d:"M583,567 L617,567",fill:"none",stroke:C.blue,"stroke-width":2,"marker-end":markerUrl(C.blue)});
+    p.el("path",{d:"M869,567 L903,567",fill:"none",stroke:C.blue,"stroke-width":2,"marker-end":markerUrl(C.blue)});
+    p.el('text',{x:314,y:600,fill:C.blue,"font-size":17,"font-weight":600,"text-anchor":"middle"},"IDs");
+    p.el("rect",{x:65,y:612,width:212,height:148,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:171,y:646,fill:C.blue,"font-size":23,"font-weight":600,"text-anchor":"middle"},["x₁ · 토큰 1","x₁ · Token 1"]);
+    p.el('text',{x:171,y:692,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E1: 0.27");
+    p.el('text',{x:171,y:729,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E3: 0.73");
+    p.el("rect",{x:65,y:790,width:212,height:148,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:171,y:824,fill:C.teal,"font-size":23,"font-weight":600,"text-anchor":"middle"},["x₂ · 토큰 2","x₂ · Token 2"]);
+    p.el('text',{x:171,y:870,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E2: 0.73");
+    p.el('text',{x:171,y:907,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E3: 0.27");
+    p.el("rect",{x:65,y:968,width:212,height:148,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:171,y:1002,fill:C.purple,"font-size":23,"font-weight":600,"text-anchor":"middle"},["x₃ · 토큰 3","x₃ · Token 3"]);
+    p.el('text',{x:171,y:1048,fill:C.purple,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E1: 0.88");
+    p.el('text',{x:171,y:1085,fill:C.purple,"font-size":25,"font-weight":600,"text-anchor":"middle"},"E3: 0.12");
+    p.el("rect",{x:350,y:612,width:214,height:120,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:642,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 1");
+    p.el("rect",{x:636,y:612,width:214,height:120,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:642,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 1");
+    p.el("rect",{x:370.5,y:665,width:84,height:39,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:412.5,y:692.5,fill:C.blue,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₁");
+    p.el("rect",{x:656.5,y:665,width:84,height:39,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:698.5,y:692.5,fill:C.blue,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₁(x₁)");
+    p.el("rect",{x:459.5,y:665,width:84,height:39,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:501.5,y:692.5,fill:C.purple,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₃");
+    p.el("rect",{x:745.5,y:665,width:84,height:39,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:787.5,y:692.5,fill:C.purple,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₁(x₃)");
+    p.el("path",{d:"M585,684 L615,684",fill:"none",stroke:C.slate,"stroke-width":1.8,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:350,y:758,width:214,height:102,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:788,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 2");
+    p.el("rect",{x:636,y:758,width:214,height:102,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:788,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 2");
+    p.el("rect",{x:415,y:811,width:84,height:39,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:838.5,fill:C.teal,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₂");
+    p.el("rect",{x:701,y:811,width:84,height:39,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:838.5,fill:C.teal,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₂(x₂)");
+    p.el("path",{d:"M585,830 L615,830",fill:"none",stroke:C.slate,"stroke-width":1.8,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:350,y:888,width:214,height:120,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:918,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 3");
+    p.el("rect",{x:636,y:888,width:214,height:120,rx:14,fill:C.paper,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:918,fill:C.ink,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 3");
+    p.el("rect",{x:362,y:941,width:60,height:39,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:392,y:968.5,fill:C.blue,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₁");
+    p.el("rect",{x:648,y:941,width:60,height:39,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:678,y:968.5,fill:C.blue,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₃(x₁)");
+    p.el("rect",{x:427,y:941,width:60,height:39,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:968.5,fill:C.teal,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₂");
+    p.el("rect",{x:713,y:941,width:60,height:39,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:968.5,fill:C.teal,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₃(x₂)");
+    p.el("rect",{x:492,y:941,width:60,height:39,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:522,y:968.5,fill:C.purple,"font-size":23,"font-weight":600,"text-anchor":"middle"},"x₃");
+    p.el("rect",{x:778,y:941,width:60,height:39,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:808,y:968.5,fill:C.purple,"font-size":18,"font-weight":600,"text-anchor":"middle"},"E₃(x₃)");
+    p.el("path",{d:"M585,960 L615,960",fill:"none",stroke:C.slate,"stroke-width":1.8,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:350,y:1038,width:214,height:78,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:457,y:1068,fill:C.gray,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 4");
+    p.el("rect",{x:636,y:1038,width:214,height:78,rx:14,fill:C.grayFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:743,y:1068,fill:C.gray,"font-size":22,"font-weight":600,"text-anchor":"middle"},"Expert 4");
+    p.el('text',{x:457,y:1098,fill:C.gray,"font-size":21,"font-weight":400,"text-anchor":"middle"},["입력 없음","No input"]);
+    p.el('text',{x:743,y:1098,fill:C.gray,"font-size":21,"font-weight":400,"text-anchor":"middle"},["계산 없음","Not evaluated"]);
+    p.el("rect",{x:922,y:612,width:214,height:148,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:1029,y:643,fill:C.blue,"font-size":22,"font-weight":600,"text-anchor":"middle"},["y₁ (d차원)","y₁ (d dimensions)"]);
+    p.el('text',{x:1029,y:690,fill:C.blue,"font-size":22,"font-weight":600,"text-anchor":"middle"},"0.27 E₁(x₁)");
+    p.el('text',{x:1029,y:727,fill:C.blue,"font-size":22,"font-weight":600,"text-anchor":"middle"},"+0.73 E₃(x₁)");
+    p.el("rect",{x:922,y:790,width:214,height:148,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:1029,y:821,fill:C.teal,"font-size":22,"font-weight":600,"text-anchor":"middle"},["y₂ (d차원)","y₂ (d dimensions)"]);
+    p.el('text',{x:1029,y:868,fill:C.teal,"font-size":22,"font-weight":600,"text-anchor":"middle"},"0.73 E₂(x₂)");
+    p.el('text',{x:1029,y:905,fill:C.teal,"font-size":22,"font-weight":600,"text-anchor":"middle"},"+0.27 E₃(x₂)");
+    p.el("rect",{x:922,y:968,width:214,height:148,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:1029,y:999,fill:C.purple,"font-size":22,"font-weight":600,"text-anchor":"middle"},["y₃ (d차원)","y₃ (d dimensions)"]);
+    p.el('text',{x:1029,y:1046,fill:C.purple,"font-size":22,"font-weight":600,"text-anchor":"middle"},"0.88 E₁(x₃)");
+    p.el('text',{x:1029,y:1083,fill:C.purple,"font-size":22,"font-weight":600,"text-anchor":"middle"},"+0.12 E₃(x₃)");
+    p.el("path",{d:"M172,1156 V1210 H995 V1156",fill:"none",stroke:C.teal,"stroke-width":2.5,"stroke-dasharray":"8 6","marker-end":markerUrl(C.teal)});
+    p.el('text',{x:583,y:1250,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},["Router의 가중치 → Combine","Router weights → Combine"]);
+    p.el("path",{d:"M1070,1156 L1070,1320",fill:"none",stroke:C.slate,"stroke-width":2.5,"marker-end":markerUrl(C.slate)});
+    p.el("rect",{x:48,y:1335,width:1104,height:110,rx:14,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:80,y:1380,fill:C.ink,"font-size":27,"font-weight":600,"text-anchor":"start"},["출력 Y (3 × d)","Output Y (3 × d)"]);
+    p.el('text',{x:80,y:1417,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["원래 토큰 순서","Original token order"]);
+    p.el("rect",{x:430,y:1366,width:190,height:54,rx:14,fill:C.blueFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:525,y:1390,fill:C.blue,"font-size":25,"font-weight":600,"text-anchor":"middle"},"y₁");
+    p.el('text',{x:525,y:1411,fill:C.blue,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el("rect",{x:660,y:1366,width:190,height:54,rx:14,fill:C.tealFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:755,y:1390,fill:C.teal,"font-size":25,"font-weight":600,"text-anchor":"middle"},"y₂");
+    p.el('text',{x:755,y:1411,fill:C.teal,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el("rect",{x:890,y:1366,width:190,height:54,rx:14,fill:C.purpleFill,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:985,y:1390,fill:C.purple,"font-size":25,"font-weight":600,"text-anchor":"middle"},"y₃");
+    p.el('text',{x:985,y:1411,fill:C.purple,"font-size":18,"font-weight":400,"text-anchor":"middle"},["d차원","d dimensions"]);
+    p.el('text',{x:600,y:1500,fill:C.ink,"font-size":25,"font-weight":600,"text-anchor":"middle"},["색은 토큰을 구분합니다. 같은 토큰의 expert 결과끼리만 가중합합니다.","Colors identify tokens. Only expert results for the same token are summed."]);
+    return [p];
+  },
+} satisfies FigureSpec;

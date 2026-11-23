@@ -1,0 +1,136 @@
+import {C,Panel,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"prefill-and-decode",figureId:"02-compute-and-context",number:"02-compute-and-context",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 2","Figure 2"],
+  title:["처리하는 토큰 수와 참조하는 문맥 길이는 다릅니다","Tokens processed and context length are different"],
+  subtitle:["캐시가 있으면 과거 위치의 토큰별 연산을 반복하지 않아도, Attention은 과거 K/V를 읽습니다.","With a cache, past token-wise work is skipped, but attention still reads past K/V."],
+  alt:["Prefill은 p0 p1 p2 p3 네 위치를 처리하므로 토큰별 Projection과 MLP의 행은 네 개입니다. Decode는 새 x0 한 위치를 처리하므로 한 행입니다. Prefill의 Attention 참조는 네 행 네 열의 causal 삼각형이고, Decode의 x0 Q는 p0 p1 p2 p3 x0 다섯 위치의 K와 V를 참조합니다. T는 이번 처리 위치 수이고 L은 현재 위치를 포함한 참조 문맥 길이입니다.","Prefill processes four positions p0 p1 p2 p3, giving four rows for token-wise projection and MLP operations. Decode processes only the new x0, giving one row. Prefill attention follows a causal triangle with four rows and four columns; the decode query at x0 reads K and V at five positions p0 p1 p2 p3 x0. T is the number of positions processed now; L is context length including the current position."],
+  caption:["Decode는 한 위치만 처리하지만, 그 위치의 Q는 문맥 전체의 K·V를 참조합니다.","Decode processes one position, but its Q attends to K and V across the whole context."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,1054,1104,[48,206]);
+    p.el('text',{x:48,y:223,fill:C.blue,"font-size":29,"font-weight":700,"text-anchor":"start"},"Prefill");
+    p.el('text',{x:650,y:223,fill:C.orange,"font-size":29,"font-weight":700,"text-anchor":"start"},"Decode");
+    p.el('text',{x:48,y:265,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"start"},["새로 처리할 입력","Input positions to process"]);
+    p.el('text',{x:650,y:265,fill:C.muted,"font-size":24,"font-weight":400,"text-anchor":"start"},["새로 처리할 입력","Input positions to process"]);
+    p.el("rect",{x:48,y:289,width:80,height:57,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:88,y:326,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"middle"},"p0");
+    p.el("rect",{x:140,y:289,width:80,height:57,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:180,y:326,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"middle"},"p1");
+    p.el("rect",{x:232,y:289,width:80,height:57,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:272,y:326,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"middle"},"p2");
+    p.el("rect",{x:324,y:289,width:80,height:57,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:364,y:326,fill:C.blue,"font-size":25,"font-weight":700,"text-anchor":"middle"},"p3");
+    p.el("rect",{x:650,y:289,width:80,height:57,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:690,y:326,fill:C.orange,"font-size":25,"font-weight":700,"text-anchor":"middle"},"x0");
+    p.el('text',{x:420,y:326,fill:C.blue,"font-size":28,"font-weight":700,"text-anchor":"start"},"T = 4");
+    p.el('text',{x:805,y:326,fill:C.orange,"font-size":28,"font-weight":700,"text-anchor":"start"},"T = 1");
+    p.el('text',{x:48,y:408,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"start"},["토큰별 연산의 행 수","Rows in token-wise operations"]);
+    p.el('text',{x:48,y:449,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["Projection · MLP 등","Projection · MLP, etc."]);
+    p.el('text',{x:84,y:507,fill:C.blue,"font-size":23,"font-weight":700,"text-anchor":"middle"},"p0");
+    p.el("rect",{x:132,y:476,width:348,height:40,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el("path",{d:"M190,476 V516",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M248,476 V516",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M306,476 V516",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M364,476 V516",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M422,476 V516",stroke:C.blue,"stroke-width":1});
+    p.el('text',{x:84,y:556,fill:C.blue,"font-size":23,"font-weight":700,"text-anchor":"middle"},"p1");
+    p.el("rect",{x:132,y:525,width:348,height:40,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el("path",{d:"M190,525 V565",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M248,525 V565",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M306,525 V565",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M364,525 V565",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M422,525 V565",stroke:C.blue,"stroke-width":1});
+    p.el('text',{x:84,y:605,fill:C.blue,"font-size":23,"font-weight":700,"text-anchor":"middle"},"p2");
+    p.el("rect",{x:132,y:574,width:348,height:40,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el("path",{d:"M190,574 V614",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M248,574 V614",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M306,574 V614",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M364,574 V614",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M422,574 V614",stroke:C.blue,"stroke-width":1});
+    p.el('text',{x:84,y:654,fill:C.blue,"font-size":23,"font-weight":700,"text-anchor":"middle"},"p3");
+    p.el("rect",{x:132,y:623,width:348,height:40,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el("path",{d:"M190,623 V663",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M248,623 V663",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M306,623 V663",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M364,623 V663",stroke:C.blue,"stroke-width":1});
+    p.el("path",{d:"M422,623 V663",stroke:C.blue,"stroke-width":1});
+    p.el('text',{x:306,y:715,fill:C.blue,"font-size":23,"font-weight":400,"text-anchor":"middle"},["각 행에 같은 가중치 적용","Same weights for each row"]);
+    p.el('text',{x:686,y:507,fill:C.orange,"font-size":23,"font-weight":700,"text-anchor":"middle"},"x0");
+    p.el("rect",{x:734,y:476,width:348,height:40,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el("path",{d:"M792,476 V516",stroke:C.orange,"stroke-width":1});
+    p.el("path",{d:"M850,476 V516",stroke:C.orange,"stroke-width":1});
+    p.el("path",{d:"M908,476 V516",stroke:C.orange,"stroke-width":1});
+    p.el("path",{d:"M966,476 V516",stroke:C.orange,"stroke-width":1});
+    p.el("path",{d:"M1024,476 V516",stroke:C.orange,"stroke-width":1});
+    p.el('text',{x:908,y:715,fill:C.orange,"font-size":23,"font-weight":400,"text-anchor":"middle"},["각 행에 같은 가중치 적용","Same weights for each row"]);
+    p.el("path",{d:"M48,749 H1152",stroke:C.line});
+    p.el('text',{x:48,y:798,fill:C.ink,"font-size":27,"font-weight":700,"text-anchor":"start"},["Attention이 참조하는 위치","Positions read by attention"]);
+    p.el('text',{x:48,y:842,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["행: 이번 Q · 열: 참조할 K/V 위치","Rows: current Q · columns: K/V positions"]);
+    p.el('text',{x:158,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p0");
+    p.el('text',{x:231,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p1");
+    p.el('text',{x:304,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p2");
+    p.el('text',{x:377,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p3");
+    p.el('text',{x:104,y:945,fill:C.blue,"font-size":22,"font-weight":700,"text-anchor":"end"},"p0");
+    p.el("rect",{x:126,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:158,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:199,y:909,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:231,y:943,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el("rect",{x:272,y:909,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:304,y:943,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el("rect",{x:345,y:909,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:377,y:943,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el('text',{x:104,y:1002,fill:C.blue,"font-size":22,"font-weight":700,"text-anchor":"end"},"p1");
+    p.el("rect",{x:126,y:966,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:158,y:1000,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:199,y:966,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:231,y:1000,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:272,y:966,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:304,y:1000,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el("rect",{x:345,y:966,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:377,y:1000,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el('text',{x:104,y:1059,fill:C.blue,"font-size":22,"font-weight":700,"text-anchor":"end"},"p2");
+    p.el("rect",{x:126,y:1023,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:158,y:1057,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:199,y:1023,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:231,y:1057,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:272,y:1023,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:304,y:1057,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:345,y:1023,width:64,height:49,rx:10,fill:C.surface,stroke:C.line,"stroke-width":1.5});
+    p.el('text',{x:377,y:1057,fill:C.muted,"font-size":20,"font-weight":400,"text-anchor":"middle"},"×");
+    p.el('text',{x:104,y:1116,fill:C.blue,"font-size":22,"font-weight":700,"text-anchor":"end"},"p3");
+    p.el("rect",{x:126,y:1080,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:158,y:1114,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:199,y:1080,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:231,y:1114,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:272,y:1080,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:304,y:1114,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:345,y:1080,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:377,y:1114,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el('text',{x:126,y:1178,fill:C.blue,"font-size":26,"font-weight":700,"text-anchor":"start"},"T = 4   ·   L = 4");
+    p.el('text',{x:762,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p0");
+    p.el('text',{x:835,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p1");
+    p.el('text',{x:908,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p2");
+    p.el('text',{x:981,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"p3");
+    p.el('text',{x:1054,y:889,fill:C.teal,"font-size":22,"font-weight":700,"text-anchor":"middle"},"x0");
+    p.el('text',{x:708,y:945,fill:C.orange,"font-size":22,"font-weight":700,"text-anchor":"end"},"x0");
+    p.el("rect",{x:730,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:762,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:803,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:835,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:876,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:908,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:949,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:981,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el("rect",{x:1022,y:909,width:64,height:49,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:1054,y:943,fill:C.teal,"font-size":20,"font-weight":400,"text-anchor":"middle"},"●");
+    p.el('text',{x:730,y:1178,fill:C.orange,"font-size":26,"font-weight":700,"text-anchor":"start"},"T = 1   ·   L = 5");
+    p.el('text',{x:650,y:1026,fill:C.teal,"font-size":23,"font-weight":400,"text-anchor":"start"},["현재 x0의 K/V도 참조","Read current x0’s K/V too"]);
+    p.el('text',{x:650,y:1070,fill:C.muted,"font-size":22,"font-weight":400,"text-anchor":"start"},["L 증가 → Attention 계산·읽기 증가","L grows → more attention work and reads"]);
+    p.el('text',{x:650,y:1132,fill:C.muted,"font-size":22,"font-weight":400,"text-anchor":"start"},["● 참조   × 미래 위치: 참조하지 않음","● Read   × Future position: not read"]);
+    p.el('text',{x:48,y:1245,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["T: 이번에 처리하는 위치 수 · L: 현재 위치를 포함한 참조 문맥 길이","T: positions processed now · L: context length, including the current position"]);
+    return [p];
+  },
+} satisfies FigureSpec;

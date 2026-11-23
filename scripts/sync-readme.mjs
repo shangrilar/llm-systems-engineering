@@ -24,13 +24,13 @@ for (const locale of ['ko', 'en']) {
     .filter(article => article?.published)
     .map(article => `- [${article.title}](${base}${prefix}/posts/${article.slug}/)`)
     .join('\n');
-  const text = `# LLM Systems Engineering
+  const text = `# ${config.title}
 
 ${korean ? '[English](README.md) | **한국어**' : '**English** | [한국어](README.ko.md)'}
 
 ${korean
-  ? '모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 LLM 시스템 엔지니어링 가이드입니다.'
-  : 'An illustrated guide to LLM systems engineering: model internals, GPU execution, and performance, explained step by step.'}
+  ? '모델 내부 구조, GPU 실행, 성능과 최적화를 그림과 함께 단계적으로 배우는 AI 시스템 엔지니어링 가이드입니다.'
+  : 'An illustrated guide to AI systems engineering: model internals, GPU execution, and performance, explained step by step.'}
 
 ${korean
   ? '현재 모델과 GPU의 기초를 다루는 글을 제공합니다. 학습 로드맵은 기초 → 추론 → 학습(Pretraining·SFT) → RL 기반 Post-training으로 이어집니다.'
@@ -40,11 +40,17 @@ ${korean
   ? '[한국어 글 읽기](' + base + '/) · [영어 글 읽기](' + base + '/en/)\n\n한국어와 영어로 제공합니다. 아래 목차에서 개별 글과 그림을 읽을 수 있습니다.'
   : '[Read in English](' + base + '/en/) · [한국어로 읽기](' + base + '/)\n\nAvailable in English and Korean. Browse the articles and diagrams below.'}
 
-${startingPoints ? `## ${korean ? '여기서 시작하세요' : 'Start here'}\n\n${startingPoints}\n\n` : ''}## ${korean ? '전체 글 목록' : 'All articles'}
+${startingPoints ? `## ${korean ? '여기서 시작하세요' : 'Start here'}\n\n${startingPoints}\n\n` : ''}## ${korean ? 'RunPod 추천 링크와 실험 지원' : 'RunPod referral link and experiment support'}
+
+${korean
+  ? '[제 RunPod 추천 링크](https://runpod.io?ref=6jviazkz)로 새로 가입하고 플랫폼에서 10달러 이상 사용하면 가입자도 추가 크레딧을 받을 수 있습니다. 저도 추천 보상으로 크레딧을 받을 수 있으며, 이 크레딧은 이 가이드의 GPU 실험을 이어 가는 데 큰 도움이 됩니다. 혜택과 적용 조건은 [RunPod 공식 안내](https://www.runpod.io/referral-and-affiliate-program)를 참고해 주세요.'
+  : 'New users who sign up through [my RunPod referral link](https://runpod.io?ref=6jviazkz) and spend at least $10 on the platform can receive bonus credits. I can also earn referral credits, which help me continue the GPU experiments for this guide. See [RunPod’s official program](https://www.runpod.io/referral-and-affiliate-program) for rewards and eligibility conditions.'}
+
+## ${korean ? '전체 글 목록' : 'All articles'}
 
 ${articles || (korean ? '첫 글을 준비하고 있습니다.' : 'The first article is in preparation.')}
 `;
   writeFileSync(korean ? 'README.ko.md' : 'README.md', text);
 }
 
-writeFileSync('README.en.md', '# LLM Systems Engineering\n\nThe English guide is now the [main README](README.md).\n\n[Read articles in English](' + base + '/en/) · [한국어](README.ko.md)\n');
+writeFileSync('README.en.md', '# ' + config.title + '\n\nThe English guide is now the [main README](README.md).\n\n[Read articles in English](' + base + '/en/) · [한국어](README.ko.md)\n');

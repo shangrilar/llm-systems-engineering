@@ -22,7 +22,6 @@ Generation does not end after a single model execution. It repeatedly selects th
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/en/01-batch-composition.png"><img src="/images/batching-and-scheduling/en/01-batch-composition.png" alt="A and B are already decoding when A finishes in execution 1 and C arrives. Static batching waits for B to finish in execution 3 before adding C in execution 4. Continuous batching includes B's Decode and C's Prefill together from execution 2." /></a>
-  <figcaption>Figure 1. Static batching and continuous batching</figcaption>
 </figure>
 
 Figure 1 shows an example that executes at most two requests together. A and B are already in Decode, and C arrives just after A finishes in execution 1. With static batching, only B remains in executions 2 and 3. C starts in execution 4, after B also finishes.
@@ -41,7 +40,6 @@ A newly arrived request first enters the **waiting queue**, a list of requests w
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/en/02-scheduling-cycle.png"><img src="/images/batching-and-scheduling/en/02-scheduling-cycle.png" alt="Execution results show that A has finished while B continues generating. A's KV space is released and B is retained. Of the waiting requests C and D, C is considered first and admitted if the required computation and KV space fit. The next batch contains B's Decode and C's Prefill, and its results feed into the next decision." /></a>
-  <figcaption>Figure 2. Incorporating execution results and forming the next batch</figcaption>
 </figure>
 
 Let us walk through Figure 2 in order.
@@ -69,7 +67,6 @@ The scheduler can count these tokens because it knows each request's current sta
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/en/03-work-and-state.png"><img src="/images/batching-and-scheduling/en/03-work-and-state.png" alt="B retains KV for 6 existing positions and processes 1 new input, growing its KV to 7 positions. C processes 6 inputs and creates KV for 6 positions. The 7 tokens processed fit within the budget of 8, and the actual KV retained afterward occupies 13 positions, within the capacity of 24." /></a>
-  <figcaption>Figure 3. Tokens processed now and KV retained after execution</figcaption>
 </figure>
 
 The upper bar in Figure 3 shows the 7 tokens processed now. We do not count B's 6 previously processed positions again because their K/V is already cached. B's Attention does, however, read the earlier KV. The token budget counts newly processed positions; it does not fully represent KV reads and Attention computation, which vary with context length. This is why equal token counts do not always mean equal execution times.
@@ -106,7 +103,6 @@ Figure 4 uses the same B and C whose KV requirements we calculated earlier. The 
 
 <figure class="article-figure">
   <a href="/images/batching-and-scheduling/en/04-reserved-memory.png"><img src="/images/batching-and-scheduling/en/04-reserved-memory.png" alt="Of the KV capacity of 24 positions, 20 are reserved for B. B currently stores actual KV for 6 positions, leaving 14 reserved but unused. Only 4 positions can be allocated to a new request, so C, which needs KV space for 6 positions, cannot join. The actual KV that B and C would store after execution totals 13 positions." /></a>
-  <figcaption>Figure 4. A request waits because of reserved space even though actual KV requirements fit within capacity</figcaption>
 </figure>
 
 At the top of the figure, B stores actual KV in 6 positions. The 14 hatched positions are reserved for B but not yet used. Together, these 20 positions belong to B, leaving only `24 − 20 = 4` free positions that can be allocated to another request.

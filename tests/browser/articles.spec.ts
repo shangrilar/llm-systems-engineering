@@ -16,7 +16,7 @@ for(const locale of ['ko','en'])
     await expect(page.locator('article header')).not.toContainText(locale==='ko'?'초안':'Draft');
     await expect(page.locator('article header')).not.toContainText('Translation awaiting review');
     const picture=page.locator('.prose img');
-    await expect(picture).toHaveAttribute('src',new RegExp(`venn${locale==='en'?'-en':''}\\.png$`));
+    await expect(picture).toHaveAttribute('src',new RegExp(`${locale==='en'?'/en/':'/'}model-hardware-workload-venn\\.png$`));
     for(const width of [360,768,1280]){
       await page.setViewportSize({width,height:900});
       const selector=page.getByRole('combobox');

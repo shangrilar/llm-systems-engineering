@@ -6,7 +6,7 @@ export const postUrl = (locale: Locale, slug: string) =>
   `${home(locale)}posts/${slug}/`;
 export const shell = {
   ko: {
-    description: "모델, 하드웨어, 워크로드로 배우는 LLM 시스템 엔지니어링.",
+    description: "모델, 하드웨어, 워크로드로 배우는 AI 시스템 엔지니어링.",
     skip: "본문으로 건너뛰기",
     nav: "주 메뉴",
     language: "언어 선택",
@@ -23,7 +23,7 @@ export const shell = {
   },
   en: {
     description:
-      "Learn LLM systems engineering through models, hardware and workloads.",
+      "Learn AI systems engineering through models, hardware and workloads.",
     skip: "Skip to content",
     nav: "Main navigation",
     language: "Select language",

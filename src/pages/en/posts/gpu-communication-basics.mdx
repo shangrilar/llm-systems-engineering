@@ -6,13 +6,13 @@ description: "Prepare communication participants and buffers, connect CPU send/r
 date: 2026-09-17
 ---
 
-The [previous article](https://llm-systems-engineering.pages.dev/en/posts/multi-gpu-execution/) explored how multiple GPUs can hold a larger model, reduce processing time, or increase throughput. When computation is split across GPUs, one GPU may need a result produced by another. Where should the data be prepared, who requests the transfer, and when can computation on the receiving side begin?
+The [previous article](https://ai-systems-engineering.com/en/posts/multi-gpu-execution/) explored how multiple GPUs can hold a larger model, reduce processing time, or increase throughput. When computation is split across GPUs, one GPU may need a result produced by another. Where should the data be prepared, who requests the transfer, and when can computation on the receiving side begin?
 
 This article follows **a value produced on one GPU as another GPU receives it and uses it in the next computation**. We first prepare the communication participants and space for the data. We then submit computation and send/receive operations, and examine how execution order connects the two GPUs. Finally, we look at performing independent computation during communication and at when the same memory can be written with the next values.
 
 The example is simple. Computation A on GPU 0 produces `x = [1, 2, 3, 4]`. Computation B on GPU 1 doubles each element of the received x to obtain `y = [2, 4, 6, 8]`. In this article, A produces the values to transfer, and B uses them.
 
-Recall the execution model from [How the CPU and GPU Execute Work Together](https://llm-systems-engineering.pages.dev/en/posts/cpu-gpu-work-execution/). CPU code requests GPU work, and the GPU executes the submitted operations. Operations submitted to the same stream proceed in order, and **the CPU call finishes at a different point from the GPU operation**. We will now connect this execution flow across two GPUs.
+Recall the execution model from [How the CPU and GPU Execute Work Together](https://ai-systems-engineering.com/en/posts/cpu-gpu-work-execution/). CPU code requests GPU work, and the GPU executes the submitted operations. Operations submitted to the same stream proceed in order, and **the CPU call finishes at a different point from the GPU operation**. We will now connect this execution flow across two GPUs.
 
 ## Choosing the GPUs That Participate in Communication
 
@@ -133,4 +133,4 @@ There are also times when the CPU needs to check completion. For example, before
 
 If the CPU needs to read the actual values of y, one more step is required. Even after B finishes, y is still in GPU memory. As discussed earlier, we must copy the result to CPU memory and ensure that copy completes. Waiting for completion and moving data are separate operations.
 
-During repeated execution, we can keep the prepared communication group and buffers, reusing each buffer for the next operation after its last use finishes. This article connected CPU preparation and submission, send/receive and computation across two GPUs, and reuse after the last use. In [SMs and Copy Engines in GPU Communication](https://llm-systems-engineering.pages.dev/en/posts/gpu-communication-engines/), we will look beneath these communication calls at **which execution devices move the data and which connections it travels over**.
+During repeated execution, we can keep the prepared communication group and buffers, reusing each buffer for the next operation after its last use finishes. This article connected CPU preparation and submission, send/receive and computation across two GPUs, and reuse after the last use. In [SMs and Copy Engines in GPU Communication](https://ai-systems-engineering.com/en/posts/gpu-communication-engines/), we will look beneath these communication calls at **which execution devices move the data and which connections it travels over**.

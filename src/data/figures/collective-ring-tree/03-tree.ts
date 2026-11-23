@@ -1,0 +1,111 @@
+import {C,Panel,markerUrl,type FigureSpec,type Locale} from '@llm-systems/viz';
+// Ported from the published SVG with its original geometry; replace parts with shared primitives when editing.
+export default {
+  articleId:"collective-ring-tree",figureId:"03-tree",number:"03-tree",
+  layout:'wide',screens:['desktop'],
+  eyebrow:["그림 3","Figure 3"],
+  title:["Tree: 모아서 더하고 다시 펼치기","Tree: reduce, then broadcast"],
+  subtitle:["화살표 하나가 배열 전체를 전달합니다. 상자는 전달 후의 값, 옅은 선은 트리 연결입니다.","Each arrow carries a whole array. Boxes show values after transfer; faint lines show tree edges."],
+  alt:["같은 트리 배치를 네 번 보여줍니다. 두 단계로 GPU 0에 합산하고, 화살표를 뒤집어 두 단계로 모든 GPU에 배포합니다.","Four panels keep the same tree layout: two reduction steps to GPU 0, followed by two broadcast steps along reversed edges."],
+  caption:["두 단계로 GPU 0에 합산하고, 화살표를 뒤집어 두 단계로 모든 GPU에 배포합니다.","Two steps sum into GPU 0; with the arrows reversed, two more steps distribute the result to every GPU."],
+  sources:[],
+  panels(locale:Locale){
+    const p=new Panel(locale,null,2247,1104,[48,196]);
+    p.el('text',{x:48,y:204,fill:C.ink,"font-size":26,"font-weight":700,"text-anchor":"start"},["시작: Ring과 같은 네 입력 배열","Start: the same four input arrays as the ring"]);
+    p.el("rect",{x:48,y:225,width:264,height:126,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:66,y:255,fill:C.blue,"font-size":24,"font-weight":700,"text-anchor":"start"},"GPU 0");
+    p.el('text',{x:66,y:292,fill:C.ink,"font-size":20,"font-weight":400,"text-anchor":"start"},"[1, 2, 3, 4]");
+    p.el('text',{x:66,y:330,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"start"},["전체 배열 전달","Send the whole array"]);
+    p.el("rect",{x:328,y:225,width:264,height:126,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:346,y:255,fill:C.teal,"font-size":24,"font-weight":700,"text-anchor":"start"},"GPU 1");
+    p.el('text',{x:346,y:292,fill:C.ink,"font-size":20,"font-weight":400,"text-anchor":"start"},"[10, 20, 30, 40]");
+    p.el('text',{x:346,y:330,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"start"},["전체 배열 전달","Send the whole array"]);
+    p.el("rect",{x:608,y:225,width:264,height:126,rx:10,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:626,y:255,fill:C.purple,"font-size":24,"font-weight":700,"text-anchor":"start"},"GPU 2");
+    p.el('text',{x:626,y:292,fill:C.ink,"font-size":20,"font-weight":400,"text-anchor":"start"},"[100, 200, 300, 400]");
+    p.el('text',{x:626,y:330,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"start"},["전체 배열 전달","Send the whole array"]);
+    p.el("rect",{x:888,y:225,width:264,height:126,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:906,y:255,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"start"},"GPU 3");
+    p.el('text',{x:906,y:292,fill:C.ink,"font-size":20,"font-weight":400,"text-anchor":"start"},"[1000, 2000, 3000, 4000]");
+    p.el('text',{x:906,y:330,fill:C.muted,"font-size":19,"font-weight":400,"text-anchor":"start"},["전체 배열 전달","Send the whole array"]);
+    p.el('text',{x:48,y:434,fill:C.ink,"font-size":28,"font-weight":700,"text-anchor":"start"},["1단계 · 아래에서 두 곳으로 합산","Step 1 · reduce in two places"]);
+    p.el("path",{d:"M450,570 L330,624",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M750,570 L870,624",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M910,748 L910,791",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M330,624 L450,570",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M910,791 L910,748",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:426,y:458,width:348,height:106,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:600,y:492,fill:C.blue,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 0 · root");
+    p.el('text',{x:600,y:534,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[11, 22, 33, 44]");
+    p.el("rect",{x:116,y:631,width:348,height:106,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:290,y:665,fill:C.teal,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 1");
+    p.el('text',{x:290,y:707,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[10, 20, 30, 40]");
+    p.el("rect",{x:736,y:631,width:348,height:106,rx:10,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:910,y:665,fill:C.purple,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 2");
+    p.el('text',{x:910,y:707,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1100, 2200, 3300, 4400]");
+    p.el("rect",{x:736,y:799,width:348,height:106,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:910,y:833,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 3");
+    p.el('text',{x:910,y:875,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1000, 2000, 3000, 4000]");
+    p.el('text',{x:80,y:826,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},"1 → 0, 3 → 2");
+    p.el('text',{x:80,y:858.2,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["두 전달과 합산을 동시에","Both transfers reduce in parallel"]);
+    p.el('text',{x:48,y:944,fill:C.ink,"font-size":28,"font-weight":700,"text-anchor":"start"},["2단계 · GPU 0에 전체 합 완성","Step 2 · complete the sum on GPU 0"]);
+    p.el("path",{d:"M450,1080 L330,1134",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M750,1080 L870,1134",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M910,1258 L910,1301",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M870,1134 L750,1080",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:426,y:968,width:348,height:106,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:600,y:1002,fill:C.blue,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 0 · root");
+    p.el('text',{x:600,y:1044,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:116,y:1141,width:348,height:106,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:290,y:1175,fill:C.teal,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 1");
+    p.el('text',{x:290,y:1217,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[10, 20, 30, 40]");
+    p.el("rect",{x:736,y:1141,width:348,height:106,rx:10,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:910,y:1175,fill:C.purple,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 2");
+    p.el('text',{x:910,y:1217,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1100, 2200, 3300, 4400]");
+    p.el("rect",{x:736,y:1309,width:348,height:106,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:910,y:1343,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 3");
+    p.el('text',{x:910,y:1385,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1000, 2000, 3000, 4000]");
+    p.el('text',{x:80,y:1336,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},"2 → 0");
+    p.el('text',{x:80,y:1368.2,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["부분합끼리 더하기","Add the two partial sums"]);
+    p.el('text',{x:48,y:1454,fill:C.ink,"font-size":28,"font-weight":700,"text-anchor":"start"},["3단계 · GPU 0에서 GPU 2로 배포","Step 3 · broadcast from GPU 0 to GPU 2"]);
+    p.el("path",{d:"M450,1590 L330,1644",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M750,1590 L870,1644",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M910,1768 L910,1811",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M750,1590 L870,1644",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:426,y:1478,width:348,height:106,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:600,y:1512,fill:C.blue,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 0 · root");
+    p.el('text',{x:600,y:1554,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:116,y:1651,width:348,height:106,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:290,y:1685,fill:C.teal,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 1");
+    p.el('text',{x:290,y:1727,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[10, 20, 30, 40]");
+    p.el("rect",{x:736,y:1651,width:348,height:106,rx:10,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:910,y:1685,fill:C.purple,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 2");
+    p.el('text',{x:910,y:1727,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:736,y:1819,width:348,height:106,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:910,y:1853,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 3");
+    p.el('text',{x:910,y:1895,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1000, 2000, 3000, 4000]");
+    p.el('text',{x:80,y:1846,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},"0 → 2");
+    p.el('text',{x:80,y:1878.2,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["완성된 배열을 복사","Copy the completed array"]);
+    p.el('text',{x:48,y:1964,fill:C.ink,"font-size":28,"font-weight":700,"text-anchor":"start"},["4단계 · GPU 1과 GPU 3에도 배포","Step 4 · broadcast to GPUs 1 and 3"]);
+    p.el("path",{d:"M450,2100 L330,2154",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M750,2100 L870,2154",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M910,2278 L910,2321",stroke:C.line,"stroke-width":2.5});
+    p.el("path",{d:"M450,2100 L330,2154",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("path",{d:"M910,2278 L910,2321",stroke:C.muted,"stroke-width":2.5,fill:"none","marker-end":markerUrl(C.muted)});
+    p.el("rect",{x:426,y:1988,width:348,height:106,rx:10,fill:C.blueFill,stroke:C.blue,"stroke-width":1.5});
+    p.el('text',{x:600,y:2022,fill:C.blue,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 0 · root");
+    p.el('text',{x:600,y:2064,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:116,y:2161,width:348,height:106,rx:10,fill:C.tealFill,stroke:C.teal,"stroke-width":1.5});
+    p.el('text',{x:290,y:2195,fill:C.teal,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 1");
+    p.el('text',{x:290,y:2237,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:736,y:2161,width:348,height:106,rx:10,fill:C.purpleFill,stroke:C.purple,"stroke-width":1.5});
+    p.el('text',{x:910,y:2195,fill:C.purple,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 2");
+    p.el('text',{x:910,y:2237,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el("rect",{x:736,y:2329,width:348,height:106,rx:10,fill:C.orangeFill,stroke:C.orange,"stroke-width":1.5});
+    p.el('text',{x:910,y:2363,fill:C.orange,"font-size":24,"font-weight":700,"text-anchor":"middle"},"GPU 3");
+    p.el('text',{x:910,y:2405,fill:C.ink,"font-size":21,"font-weight":700,"text-anchor":"middle"},"[1111, 2222, 3333, 4444]");
+    p.el('text',{x:80,y:2356,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},"0 → 1, 2 → 3");
+    p.el('text',{x:80,y:2388.2,fill:C.muted,"font-size":23,"font-weight":400,"text-anchor":"start"},["다시 더하지 않고 복사","Copy without adding again"]);
+    return [p];
+  },
+} satisfies FigureSpec;

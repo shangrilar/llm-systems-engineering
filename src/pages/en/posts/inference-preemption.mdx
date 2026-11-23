@@ -20,7 +20,6 @@ Initially, A and B each have KV for 7 positions. Each request has 8 allocated sl
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/en/01-growing-pressure.png"><img src="/images/inference-preemption/en/01-growing-pressure.png" alt="Four blocks hold 7 KV positions each for A and B. Processing each request's next input fills its last empty slot, bringing its KV to 8 positions. The following input at position 8 needs a new block, but no free blocks remain." /></a>
-  <figcaption>Figure 1. Once the remaining slots in existing blocks are filled, the next input needs a new block.</figcaption>
 </figure>
 
 In Figure 1, processing one more input for each request brings both to 8 KV positions. Every slot in the four blocks is now full. A needs a third block to process its following input at position 8, but none is available in the pool. B faces the same problem if it continues generating. Since positions are numbered from 0, the KV at position 8 is the ninth KV position.
@@ -37,7 +36,6 @@ Excluding B from the next batch reduces the number of tokens processed in that e
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/en/02-reclaim-blocks.png"><img src="/images/inference-preemption/en/02-reclaim-blocks.png" alt="Merely skipping B's execution leaves both A's and B's blocks in place, with 0 free blocks. Releasing B's exclusive blocks P2 and P3 frees two blocks. A then receives P2 and writes KV for position 8, leaving one free block. B retains its token history while waiting to resume." /></a>
-  <figcaption>Figure 2. Releasing B's KV blocks lets A receive a new block and continue generating.</figcaption>
 </figure>
 
 The first scene in Figure 2 skips only B's execution, so the free-block count remains 0. In the next scene, releasing P2 and P3, which B exclusively owned, raises that count to 2. The engine allocates P2 to A and connects it in A's block table. When A processes its next input, KV for position 8 is written into P2's first slot. A now stores 9 KV positions in 3 blocks, leaving P3 as the one free block.
@@ -58,7 +56,6 @@ Its token history now contains 9 tokens: the 7 input tokens plus outputs x0 and 
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/en/03-recompute-state.png"><img src="/images/inference-preemption/en/03-recompute-state.png" alt="B retains its token history, p0 through p6, x0, and x1, while paused. After releasing GPU KV and securing space again, the engine feeds these nine fixed tokens into the model. It rebuilds the previous 8 KV positions, computes x1's KV for the first time, and delivers only the new output x2 to the user." /></a>
-  <figcaption>Figure 3. Retained token history rebuilds KV so generation can continue after the outputs already delivered.</figcaption>
 </figure>
 
 In the middle of Figure 3, B has no GPU KV, but its token history and the already delivered x0 and x1 remain unchanged. Once the engine decides to run B again and secures enough space, it feeds the 9 retained tokens into the model. This example has no reusable cache, so the entire history is processed together.
@@ -79,7 +76,6 @@ Return to the point where B had delivered x1 and held 8 KV positions in two bloc
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/en/04-swap-state.png"><img src="/images/inference-preemption/en/04-swap-state.png" alt="The engine copies B's 8 KV positions from GPU to CPU, then releases the two GPU blocks. Once GPU space is available later, it restores those 8 KV positions into two blocks. It allocates a third block to process the retained last output x1, bringing KV to 9 positions and delivering a new x2." /></a>
-  <figcaption>Figure 4. Computed KV is stored outside the GPU, restored to the GPU, and then used to process the next input.</figcaption>
 </figure>
 
 In the middle of Figure 4, B's GPU blocks have been released, but its 8 KV positions remain in CPU memory. Its token history and request state are also retained. When enough space is available to resume B, the engine allocates GPU blocks again and brings the stored KV into them. The newly assigned blocks can be at different locations from before, as long as the block table points to the current storage locations.
@@ -105,7 +101,6 @@ In this example, A grows from 9 to 12 KV positions and then finishes generating.
 
 <figure class="article-figure">
   <a href="/images/inference-preemption/en/05-output-gap.png"><img src="/images/inference-preemption/en/05-output-gap.png" alt="While A and B are generating, B pauses and releases two blocks. A adds one block, grows from 9 to 12 KV positions, and completes. B then receives three blocks, recomputes KV, and continues delivering new outputs x2 and x3. Waiting and recovery create a long gap between B's x1 and x2." /></a>
-  <figcaption>Figure 5. Reclaiming B's space lets A progress, while waiting and recovery delay B's next output.</figcaption>
 </figure>
 
 The bottom of Figure 5 shows B's outputs as received by the user. After x1, no new output arrives while B waits and recomputes KV. Generation continues only after recomputation finishes and x2 is selected and delivered. The user experiences a long gap between x1 and x2. The [vLLM preemption documentation](https://docs.vllm.ai/en/latest/configuration/optimization/#preemption) also explains that pausing and recomputation can increase request latency.

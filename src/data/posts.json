@@ -5,7 +5,9 @@
     "track": "shared",
     "category": null,
     "date": "2026-09-08",
-    "figureIds": [],
+    "figureIds": [
+      "llm-systems-engineering-introduction/model-hardware-workload-venn"
+    ],
     "locales": {
       "ko": {
         "slug": "llm-systems-engineering-introduction",
@@ -18,9 +20,9 @@
         "title": "LLM Systems Engineering: Connecting Models, Hardware, and Workloads",
         "description": "An introduction to understanding execution systems through models, hardware, and workloads, and the learning path for this series.",
         "published": true,
-        "sourceRevision": "b3f1b2506896514548f7496768ffed12f808c159dd49f85d45c54861fd87e5f4",
+        "sourceRevision": "f498ab209ce9b7e46baa98ca59f5bf51f512b092ba1e44a5ac01ef17aaaede78",
         "translationStatus": "reviewed",
-        "reviewNote": "Korean and English bodies compared for publication on 2026-09-08; model, hardware, workload definitions and learning roadmap match."
+        "reviewNote": "Korean and English bodies compared for publication on 2026-09-08; model, hardware, workload definitions and learning roadmap match. Figures ported to @llm-systems/viz on 2026-09-26: the Venn diagram was redrawn with the same labels in each language and a caption."
       }
     }
   },
@@ -30,7 +32,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "embedding-to-lm-head/01-model-overview",
+      "embedding-to-lm-head/02-tokenizer",
+      "embedding-to-lm-head/03-embedding-lookup",
+      "embedding-to-lm-head/04-decoder-shape",
+      "embedding-to-lm-head/05-lm-head"
+    ],
     "locales": {
       "ko": {
         "slug": "embedding-to-lm-head",
@@ -43,9 +51,9 @@
         "title": "The Structure of an LLM: From the Embedding Layer to the LM Head",
         "description": "Follow text through token IDs, vectors, and vocabulary scores, and explore the roles of the embedding layer, decoder blocks, and LM Head.",
         "published": true,
-        "sourceRevision": "13f934401570aff874f35212651c6709fefb84d80502338155890d96d65e51b7",
+        "sourceRevision": "0e3078525694149d1dca3b9588786ee79059b9e6bcc41e96b5b12e430b27e008",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values."
+        "reviewNote": "Compared Korean and English text section by section on 2026-09-09. Token IDs, dimensions, lookup order, context explanation, and logits semantics match; five English figures share the Korean geometry and illustrative values. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -55,7 +63,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "residual-and-rmsnorm/01-residual-stream",
+      "residual-and-rmsnorm/02-residual-addition",
+      "residual-and-rmsnorm/03-rmsnorm",
+      "residual-and-rmsnorm/04-final-rmsnorm"
+    ],
     "locales": {
       "ko": {
         "slug": "residual-and-rmsnorm",
@@ -68,9 +81,9 @@
         "title": "The Flow Through a Decoder Block: Residual Connections and RMSNorm",
         "description": "Explore a decoder block around its residual stream, then follow vector addition and RMSNorm across each token’s d components.",
         "published": true,
-        "sourceRevision": "02ab2806526191bd8e8cec365ba8992522c36b40a2af55af555dd273c7059940",
+        "sourceRevision": "c779015658ab9acc709d8722441b6e4c477994d93eaf5c6815c227cfd53b0efb",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples."
+        "reviewNote": "Compared all four sections and figure descriptions with the Korean source on 2026-09-09. Residual paths, dimensions, RMS/epsilon/gamma explanations and final normalization agree. English figures preserve the Korean geometry and numerical examples. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -80,7 +93,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "attention-and-mlp/01-token-information",
+      "attention-and-mlp/02-matrix-multiply",
+      "attention-and-mlp/03-basic-mlp",
+      "attention-and-mlp/04-gated-mlp",
+      "attention-and-mlp/05-gate-effect"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-and-mlp",
@@ -94,8 +113,8 @@
         "description": "Compare Attention and MLP, then explore matrix multiplication and the computations inside basic and gated MLPs.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1.",
-        "sourceRevision": "68a848973732657619e166c9431edb1aaf5e88ccfbf4f5d695d5cf8985f2034a"
+        "reviewNote": "Compared all five sections, examples, symbols, alt text, and the closing paragraph with the approved Korean source on 2026-09-09. All five English figures retain the Korean geometry and numerical values, including the latest wording and deletions in Figure 1. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images.",
+        "sourceRevision": "8d00020a02f1e92dab4a43b036c21f6aea0a99a70b61549fc19d5c7c264d6702"
       }
     }
   },
@@ -105,7 +124,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "attention-projections/01-attention-overview",
+      "attention-projections/02-qkv-projections",
+      "attention-projections/03-head-segments",
+      "attention-projections/04-output-projection"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-projections",
@@ -119,8 +143,8 @@
         "description": "Explore Q, K and V projections, the organization of multiple heads, and how the output projection combines head results for the same token.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09828dbd7128e18d922ce8e0df9bffaa8b12920a50918c265aeb332b8a2c31f4",
-        "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected."
+        "sourceRevision": "479caaf774a8815e9a761236d057d88d942933b8894985c10ec9c7c8f45be08b",
+        "reviewNote": "Compared all four sections, symbols, dimensions, emphasis, figure alt text and the closing paragraph with the approved Korean source on 2026-09-09. Token independence, full-input projections and head mixing match. All four English figures preserve the Korean geometry and example dimensions; both language versions were visually inspected. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -130,7 +154,13 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-09",
-    "figureIds": [],
+    "figureIds": [
+      "core-attention/01-headwise-flow",
+      "core-attention/02-scores-and-scale",
+      "core-attention/03-causal-mask",
+      "core-attention/04-softmax",
+      "core-attention/05-weighted-values"
+    ],
     "locales": {
       "ko": {
         "slug": "core-attention",
@@ -144,8 +174,8 @@
         "description": "Follow Core Attention within each head through QKᵀ, scaling, a causal mask, Softmax, and a weighted sum of Value vectors.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a79dd82e7ca1b6357bdf83af8960878d09e7430a91244ad4bfb19cd5de6102e2",
-        "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately."
+        "sourceRevision": "d892d83b565f1804a9ffffdd319e2d348f32d916a10cd7869894186e7aa4da3f",
+        "reviewNote": "Compared all five sections, numerical examples, dimensions, inline formulas, emphasis, alt text and the closing paragraph with the approved Korean source on 2026-09-09. Matching-head computation, causal masking, row-wise Softmax and Value aggregation agree. English figures share the Korean geometry and illustrative values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -155,7 +185,14 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "rope/01-why-position",
+      "rope/02-rope-location",
+      "rope/03-pair-rotation",
+      "rope/04-position-and-pairs",
+      "rope/05-relative-position",
+      "rope/06-attention-scores"
+    ],
     "locales": {
       "ko": {
         "slug": "rope",
@@ -169,8 +206,8 @@
         "description": "Explore how RoPE rotates the components of Q and K by token position and how relative positions affect Attention scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "953b5c665dc4c3bd6307ad40920c0307e375883f38bcaf908f9007c3297904d3",
-        "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately."
+        "sourceRevision": "b8927aa1e94c67967c7d8edcffc913c38e79ca5868bf809e5cb49f149e55b338",
+        "reviewNote": "Compared all six sections, paragraphs, emphasis, examples, dimensions, alt text, and three MathML equations against the approved Korean source on 2026-09-10. Token-wise rotation, causal-mask scope, illustrative versus base frequencies, relative positions, and score changes agree. Both figure languages share geometry and numerical values; final visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions moved into the images."
       }
     }
   },
@@ -180,7 +217,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "moe/01-dense-and-moe",
+      "moe/02-router",
+      "moe/03-moe-flow",
+      "moe/04-shared-and-routed"
+    ],
     "locales": {
       "ko": {
         "slug": "moe",
@@ -193,9 +235,9 @@
         "title": "MoE: Choosing Which MLPs to Use for Each Token",
         "description": "Compare dense MLPs and MoE, then follow routing, dispatch, expert computation, combination, and the shared expert path.",
         "published": true,
-        "sourceRevision": "b87efab8b3c84c8d04ad189d65bb6955349ee184a13e8de802f497407f248e50",
+        "sourceRevision": "718b6922af4b2af53fa2e4ce263913877f6fabf60df4637f784469b352eb14ad",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately."
+        "reviewNote": "Compared all four sections, paragraphs, emphasis, example values, dimensions, alt text and the closing paragraph with the approved Korean source on 2026-09-10. The deleted Mixtral paragraph remains removed. Parameter storage, token-wise routing, weighted combination and shared versus routed experts agree. Four English figures retain Korean geometry and numerical values; web visual review is recorded separately. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and captions for figures 3–4 were newly written in both languages from the article text."
       }
     }
   },
@@ -205,7 +247,12 @@
     "track": "shared",
     "category": "model",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "model-summary/01-model-and-block",
+      "model-summary/02-attention-connected",
+      "model-summary/03-mlp-and-moe",
+      "model-summary/04-token-dependencies"
+    ],
     "locales": {
       "ko": {
         "slug": "model-summary",
@@ -218,9 +265,40 @@
         "title": "Revisiting the Flow Through the Model",
         "description": "Connect the components from Embedding to the LM Head, review Attention and MLP or MoE, and identify where information is combined across tokens.",
         "published": true,
-        "sourceRevision": "58f01751db0a6941297478f1e7acfd8266a30b0438a0d4ba727a38c300f2b0df",
+        "sourceRevision": "cc44f9e0239ba389aceadb098fc156c3f8016c88057eb2581b34bded56ccec41",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
+        "reviewNote": "Compared all four sections, 17 paragraphs, emphasis, dimensions, symbols and alt text against the approved Korean source on 2026-09-10. Residual paths, MHA shapes, RoPE placement, masking before Softmax, gated MLP and MoE paths, and token dependencies agree. The revised third heading is retained. Four English figures preserve Korean geometry; web visual review is recorded separately. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the existing note became a caption, and captions for figures 1–3 were newly written in both languages from the article text."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-mqa-gqa",
+    "order": 9.1,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mqa-gqa/00-attention-head-comparison",
+      "model-advanced-mqa-gqa/01-mha-per-head",
+      "model-advanced-mqa-gqa/02-mqa-different-outputs",
+      "model-advanced-mqa-gqa/03-gqa-groups",
+      "model-advanced-mqa-gqa/04-kv-storage-axis"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mqa-gqa",
+        "title": "MQA와 GQA: 여러 Query가 KV를 공유하기",
+        "description": "MHA의 계산을 기준으로 MQA와 GQA의 KV 공유 방식을 비교하고, Query별 출력은 유지하면서 저장량을 줄이는 원리와 절충을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mqa-gqa",
+        "title": "MQA and GQA: Sharing KV Across Queries",
+        "description": "Use MHA as a baseline to compare KV sharing in MQA and GQA, and examine how they reduce storage while preserving per-query outputs and what trade-offs follow.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "4528af4b25be19f1102cae1a51ddd2d55b757f65d2c83b9c404017a5e89b40c6",
+        "reviewNote": "2026-09-27: Compared all six sections and five figure descriptions with the Korean source. Same token/head/component distinctions, projections, KV sharing, 64/32/16 storage counts, and qualified quality/runtime claims. Both bodies use MathML subscripts; existing localized figures retain their shared geometry and illustrative inputs."
       }
     }
   },
@@ -230,7 +308,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "cpu-and-gpu/01-parallel-computation",
+      "cpu-and-gpu/02-cpu-gpu-architecture",
+      "cpu-and-gpu/03-host-device-flow",
+      "cpu-and-gpu/04-feeding-compute"
+    ],
     "locales": {
       "ko": {
         "slug": "cpu-and-gpu",
@@ -243,9 +326,9 @@
         "title": "CPU and GPU: Two Devices That Execute Model Computation",
         "description": "Explore why GPUs are used, how CPU and GPU designs differ, how host and device work together, and why compute units need a supply of data.",
         "published": true,
-        "sourceRevision": "5fae6d32a85fe1dfedc43b40f47441df92138ab46bd0bb080cb078af74c57dd7",
+        "sourceRevision": "45bac92df4258b3a230c19400e76aeaa41e87684c9a5dea9ee7c34ad41ae057d",
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision."
+        "reviewNote": "Compared all four sections, 17 paragraphs, 17 emphasized passages, numerical examples, alt text and source links against the approved Korean source on 2026-09-10. The requested deletion and revised Host and completion wording are preserved. Four English figures share Korean geometry and the latest figure 3 and 4 edits; static assets were compared separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; existing notes became captions, and the caption for figure 4 was newly written in both languages from the article text."
       }
     }
   },
@@ -255,7 +338,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-10",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-architecture/01-gpu-and-sm",
+      "gpu-architecture/02-memory-spaces",
+      "gpu-architecture/03-read-compute-write",
+      "gpu-architecture/04-capacity-bandwidth-latency"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-architecture",
@@ -269,8 +357,8 @@
         "description": "Explore SMs, CUDA Cores, Tensor Cores, and GPU memory, then connect capacity, bandwidth, and access latency to running a model.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision.",
-        "sourceRevision": "e33bc047ae6ed1f1fc1f080c2c56da928c160079484f59c2a027fad9ee7840c7"
+        "reviewNote": "Compared all four sections, 28 prose paragraphs, six memory-table rows, emphasis, example values, alt text, and source links against the approved Korean source on 2026-09-10. The B200 148-SM capacity calculations, shared L1/shared-memory allocation, developer control, and bandwidth versus access latency distinctions agree. All four English figures preserve Korean geometry and values; static assets were reviewed separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text.",
+        "sourceRevision": "88fd0a3c78f5b308863a04f651425e35f64607d4b6a2b94540a19db9b036e6a4"
       }
     }
   },
@@ -280,7 +368,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-11",
-    "figureIds": [],
+    "figureIds": [
+      "model-operation-parallelism/01-elementwise",
+      "model-operation-parallelism/02-reduction",
+      "model-operation-parallelism/03-matmul",
+      "model-operation-parallelism/04-output-elements"
+    ],
     "locales": {
       "ko": {
         "slug": "model-operation-parallelism",
@@ -294,8 +387,8 @@
         "description": "Compare element-wise operations, reductions, and matrix multiplication through independent output elements and the inputs and computation needed for each result.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "3d43cd04de5398e3cfbee0834c7ce334a907f5dad6ebc37ba38579297f49d9e5",
-        "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision."
+        "sourceRevision": "d3505f44830c6f272e4eb5f817f2bca61f5664f2b7ff198000dea872ee7727f2",
+        "reviewNote": "Compared all four sections, 21 prose paragraphs, 16 emphasized passages, numerical examples, dimensions, inline calculations, and alt text against the approved Korean source on 2026-09-11. Requested deletions are preserved. Independent output elements, partial-sum dependencies, K-axis accumulation, and shared inputs agree. Four English figures preserve Korean shapes, coordinates, and numerical labels; static assets are compared separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -305,7 +398,15 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-11",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-execution-and-warp-scheduling/01-common-procedure",
+      "gpu-execution-and-warp-scheduling/02-indexed-executions",
+      "gpu-execution-and-warp-scheduling/03-blocks-and-indices",
+      "gpu-execution-and-warp-scheduling/04-blocks-on-sms",
+      "gpu-execution-and-warp-scheduling/05-warps-and-threads",
+      "gpu-execution-and-warp-scheduling/06-ready-warps",
+      "gpu-execution-and-warp-scheduling/07-latency-hiding"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-execution-and-warp-scheduling",
@@ -319,8 +420,8 @@
         "description": "Start with a common computation procedure and indexed executions, then explore threads, blocks, grids, SM assignment, warp scheduling, and latency hiding.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "e5ad48e8a8ec40e2d33d73dbc5a2c3863bc38040bfa6e54ecf7b123772316773",
-        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
+        "sourceRevision": "1df1fffdc0ca3cc5c01a20f7486b0a5a23134301f66c65ad6d283f45641ba67e",
+        "reviewNote": "2026-09-12: Korean and English compared across 7 sections, 44 paragraphs, 34 emphases, examples and source links; all 7 figure pairs checked for matching geometry, numbers and translated labels. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -330,7 +431,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "cpu-gpu-work-execution/01-host-code-and-device-work",
+      "cpu-gpu-work-execution/02-enqueue-and-execute",
+      "cpu-gpu-work-execution/03-host-waits-for-result",
+      "cpu-gpu-work-execution/04-stream-event-dependency"
+    ],
     "locales": {
       "ko": {
         "slug": "cpu-gpu-work-execution",
@@ -343,9 +449,9 @@
         "title": "How the CPU and GPU Execute Work Together",
         "description": "Distinguish CPU requests from GPU execution, then use buffers, streams, and events to explain data preparation, completion waits, and execution order.",
         "published": true,
-        "sourceRevision": "a66f25291a3abe26f77ddbf8badd89b9b9d62b8df7ca125f8112f22a4847ace8",
+        "sourceRevision": "9d927d4ebda707e2be33c2ea199da162c8e6571e9b75adfd06053ec89175430c",
         "translationStatus": "reviewed",
-        "reviewNote": "2026-09-17: Compared all six sections, paragraph order, emphasis, the x/u/y array example, two illustrative code blocks and their comments, the stream-order sketch, source links and four image alt texts against the approved Korean manuscript. Both languages preserve the distinction between submission and completion, allocation and copying, CPU waits and GPU dependencies, and conditional concurrency. CUDA syntax is not assumed. All four figure pairs retain shared geometry and colors with selected English font sizes; static SVG/PNG assets are reviewed separately from the body revision."
+        "reviewNote": "2026-09-17: Compared all six sections, paragraph order, emphasis, the x/u/y array example, two illustrative code blocks and their comments, the stream-order sketch, source links and four image alt texts against the approved Korean manuscript. Both languages preserve the distinction between submission and completion, allocation and copying, CPU waits and GPU dependencies, and conditional concurrency. CUDA syntax is not assumed. All four figure pairs retain shared geometry and colors with selected English font sizes; static SVG/PNG assets are reviewed separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -355,7 +461,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-arithmetic-intensity-and-fusion/01-compute-and-memory",
+      "gpu-arithmetic-intensity-and-fusion/02-arithmetic-intensity-roofline",
+      "gpu-arithmetic-intensity-and-fusion/03-reduce-and-overlap",
+      "gpu-arithmetic-intensity-and-fusion/04-elementwise-fusion"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-arithmetic-intensity-and-fusion",
@@ -369,8 +480,8 @@
         "description": "Connect memory and compute bottlenecks through arithmetic intensity and Roofline, then explore reduced data movement, concurrent progress, and element-wise kernel fusion.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "80b0ce3cf3761f1da7f3a0ec7cfabb45533901afc6dc0acd98e30ad25d9a7dbb",
-        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged."
+        "sourceRevision": "6b5960867d1d3bf0f35f46fe9a5bee3eeaaa66380fa56f4b2fcf990bc7baec9d",
+        "reviewNote": "2026-09-12: Compared 4 sections, 35 paragraphs, 18 emphasized passages, all numerical examples, formulas, source links and alt text against the approved Korean source. Four figure pairs preserve geometry and numerical labels; English labels and all eight PNGs visually reviewed. Kernel boundaries, global memory, HBM/L2 caching and register reuse are aligned. Static assets are compared separately from the body revision. 2026-09-17: Compared the updated transition paragraph in both languages after inserting the CPU/GPU execution article. Existing article content and figures otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -380,7 +491,13 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "matmul-tiling-and-data-reuse/01-shared-inputs",
+      "matmul-tiling-and-data-reuse/02-shared-memory-reuse",
+      "matmul-tiling-and-data-reuse/03-register-reuse",
+      "matmul-tiling-and-data-reuse/04-tile-resource-tradeoff",
+      "matmul-tiling-and-data-reuse/05-pipelined-tiles"
+    ],
     "locales": {
       "ko": {
         "slug": "matmul-tiling-and-data-reuse",
@@ -394,8 +511,8 @@
         "description": "Explore input reuse in shared memory and registers, the relationship between tile size and resource usage, and how data movement can overlap with computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision. 2026-09-20 follow-up: The shared-memory bandwidth row became a structural estimate for B300, and the Korean and English revisions were compared paragraph by paragraph. The A100 SRAM and HBM example from the FlashAttention paper, the 32-bank by 4-byte structure, the 148 SM and 2,032 MHz device query, the 38.5 TB/s aggregate, the 260 GB/s per SM and the 4.8x HBM ratio agree, as do the four emphasized passages and the caveat that the value is neither an official specification nor a measurement. Figures and alt text are unchanged.",
-        "sourceRevision": "89b5a9e108f05fc353ceaee4b56596a6868e3eb6aaa2248b30fd91d7e6391d5b"
+        "reviewNote": "Compared all five sections, paragraph flow, emphasis, matrix indices, numerical assumptions, source links and alt text with the approved Korean manuscript on 2026-09-12. Both versions preserve the two-part introduction, revised headings, B300 capacity versus illustrative shared-memory bandwidth distinction, register reuse, resource tradeoffs and buffer dependencies. All five English figures retain the Korean shapes and coordinates; all ten images were visually reviewed. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. Figure 2 was redrawn with shared primitives (grid, outline). 2026-09-20 follow-up: The shared-memory bandwidth row became a structural estimate for B300, and the Korean and English revisions were compared paragraph by paragraph. The A100 SRAM and HBM example from the FlashAttention paper, the 32-bank by 4-byte structure, the 148 SM and 2,032 MHz device query, the 38.5 TB/s aggregate, the 260 GB/s per SM and the 4.8x HBM ratio agree, as do the four emphasized passages and the caveat that the value is neither an official specification nor a measurement. Figures and alt text are unchanged.",
+        "sourceRevision": "1893996bd27595e3b1282ea6070036b0fb7227d75934b50c77c37b2df27247d2"
       }
     }
   },
@@ -405,7 +522,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-12",
-    "figureIds": [],
+    "figureIds": [
+      "attention-memory-and-softmax/01-attention-flow",
+      "attention-memory-and-softmax/02-intermediate-memory",
+      "attention-memory-and-softmax/03-tile-dependency",
+      "attention-memory-and-softmax/04-softmax-row-dependency"
+    ],
     "locales": {
       "ko": {
         "slug": "attention-memory-and-softmax",
@@ -419,8 +541,8 @@
         "description": "Examine the cost of storing and rereading large score and probability matrices, and why a subset of scores cannot determine final Softmax probabilities.",
         "published": true,
         "translationStatus": "reviewed",
-        "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision.",
-        "sourceRevision": "ab932002440150ee7616b3a9df2069711ef54faf6621210a72a1671898c7f520"
+        "reviewNote": "Compared all four sections, paragraph order, emphasis, shapes, token indices, numerical examples, links and alt text with the approved Korean manuscript on 2026-09-12. The latest wording edits are preserved. Kernel boundaries, cached global memory accesses, completed score dot products versus unknown row denominators, and the 50% versus 25% or 6% distinction agree. Four English figures preserve the Korean shapes and coordinates; font sizes were adjusted for two long labels. Static assets are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged.",
+        "sourceRevision": "beb95677b3caa2b0e6f283fa9c1552f730cc06dca9663cf30c15c413c44a723a"
       }
     }
   },
@@ -430,7 +552,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-13",
-    "figureIds": [],
+    "figureIds": [
+      "online-softmax/01-stable-softmax",
+      "online-softmax/02-max-and-exp-sum",
+      "online-softmax/03-online-update"
+    ],
     "locales": {
       "ko": {
         "slug": "online-softmax",
@@ -444,8 +570,8 @@
         "description": "Explore why stable softmax subtracts the maximum, how the maximum and exponential sum work together, and how online softmax updates them with each new chunk of scores.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "e0189766beb9bfa83fd781e3386720a534031c48b965d94cf7aaa6f4dea99a20",
-        "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared."
+        "sourceRevision": "c340f3447fc5948af23a9e491a1e9029256762084aaee19f1c91047b9a4ec8dc",
+        "reviewNote": "2026-09-13: Compared all 3 sections, 3 subsections, 24 paragraphs, 16 emphasized passages, 3 figure pairs, inline numerical expressions, the rescaling equation, links and alt text with the approved Korean manuscript. Both versions preserve finite-score numerical stability, the shared maximum reference, unchanged and increasing maxima, and the distinction between normalization statistics and probability output. All six PNGs visually reviewed; English figures preserve geometry and colors with selected font-size adjustments. Static PNG/SVG assets checked separately from the body revision. The unchanged rescaling identity uses native MathML on two lines for mobile readability; both language versions were compared. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -455,7 +581,21 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-14",
-    "figureIds": [],
+    "figureIds": [
+      "flash-attention/01-value-before-normalization",
+      "flash-attention/02-rescale-both-accumulators",
+      "flash-attention/03-step-01",
+      "flash-attention/03-step-02",
+      "flash-attention/03-step-03",
+      "flash-attention/03-step-04",
+      "flash-attention/03-step-05",
+      "flash-attention/03-step-06",
+      "flash-attention/03-step-07",
+      "flash-attention/03-step-08",
+      "flash-attention/03-step-09",
+      "flash-attention/03-tiled-online-attention",
+      "flash-attention/04-memory-traffic"
+    ],
     "locales": {
       "ko": {
         "slug": "flash-attention",
@@ -469,8 +609,8 @@
         "description": "Explore joint accumulation of the Value weighted sum and exponential sum, then follow FlashAttention-2 tiles to complete the output and reduce memory traffic from large intermediate matrices.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09365bfd5f6be2e199a1d3331b9fde3b2d9a5afa26bbf5b5aed858e6279b784c",
-        "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision."
+        "sourceRevision": "acc8617894b62c8ab4d6000250f71749a829cab934c75d67651b3f97cf0f5bec",
+        "reviewNote": "2026-09-14: Compared all 4 sections and 5 subsections, paragraph flow, emphasis, inline expressions, numerical examples, source links, alt text and nine step labels against the Korean manuscript. Both versions distinguish FA1 per-tile normalization from FA2 final normalization. Four figure pairs and all nine step pairs preserve geometry, inputs and output values; English font sizes adjusted for longer labels. SVG/PNG files and shared step metadata are checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -480,7 +620,10 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-14",
-    "figureIds": [],
+    "figureIds": [
+      "model-performance-and-bottlenecks/01-shifting-bottlenecks",
+      "model-performance-and-bottlenecks/02-beyond-one-gpu"
+    ],
     "locales": {
       "ko": {
         "slug": "model-performance-and-bottlenecks",
@@ -494,8 +637,8 @@
         "description": "Explore how improving one operation affects whole-model execution time, why optimization requires repeated bottleneck measurements, and when performance goals or memory capacity call for more resources.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "53dde7d6931960a9724ab3bf0acf1117e2c892b9fd1e244fe796795de8241c1e",
-        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged."
+        "sourceRevision": "741f8f4e32a2737abba23e4c3df7ca9b0124c5a81cf8b57a6027e9bf745c0fe9",
+        "reviewNote": "2026-09-14: Compared all 3 sections, 2 subsections, 21 paragraphs, 13 emphasized passages, 3 inline expressions, source links, alt text and 2 figure pairs with the approved Korean manuscript. Both versions preserve the single-forward-pass scope, illustrative non-overlapping times, Amdahl's 40ms limit, bottleneck changes, overlapping computation and data movement, input-dependent weight reuse, and distinct latency, throughput and capacity goals. All four PNGs visually reviewed; eight static SVG/PNG assets match approved sources and were checked separately from the body revision. Both languages share figure geometry and colors. Follow-up review: the Amdahl paragraph now distinguishes its original parallel-execution context from general operation optimization. Both languages state the 40ms lower bound only while attention alone is improved and link Hill and Marty (2008) for the general formulation. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -505,7 +648,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-14",
-    "figureIds": [],
+    "figureIds": [
+      "multi-gpu-execution/01-gpus-and-interconnect",
+      "multi-gpu-execution/02-three-goals",
+      "multi-gpu-execution/03-communication-and-waiting"
+    ],
     "locales": {
       "ko": {
         "slug": "multi-gpu-execution",
@@ -519,8 +666,8 @@
         "description": "Explore compute and memory across GPUs, distinguish capacity, latency, and throughput goals, and examine how communication and synchronization-related waiting affect total execution time.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b7748e3aec3ef7ef81d68d95be8d6bd6cd9b18281038ff356cd416a6d7a439ff",
-        "reviewNote": "2026-09-14: Compared all 4 sections, 5 subsections, 27 paragraphs, 15 emphasized passages, 2 inline expressions, source links, alt text and 3 figure pairs with the Korean manuscript. Both versions preserve capacity, latency and throughput goals; separate GPU memories; concatenation versus partial sums; communication volume and frequency; and the 100ms, 60ms and 80ms timelines. The introduction highlights communication and waiting alongside local memory traffic and computation. The uneven split connects synchronization to possible waiting without adding the overlapping 40ms twice. All six PNGs visually reviewed. Twelve static SVG/PNG assets match source bytes and were checked separately from the body revision; all three pairs preserve geometry and colors. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged. 2026-09-17: Compared both updated transition passages: communication execution comes before collective operations; the next article link now leads to communication basics."
+        "sourceRevision": "65bfc6594de494edb2e94249196ba6a8d53312fd42f50c7741f75b79594b4e17",
+        "reviewNote": "2026-09-14: Compared all 4 sections, 5 subsections, 27 paragraphs, 15 emphasized passages, 2 inline expressions, source links, alt text and 3 figure pairs with the Korean manuscript. Both versions preserve capacity, latency and throughput goals; separate GPU memories; concatenation versus partial sums; communication volume and frequency; and the 100ms, 60ms and 80ms timelines. The introduction highlights communication and waiting alongside local memory traffic and computation. The uneven split connects synchronization to possible waiting without adding the overlapping 40ms twice. All six PNGs visually reviewed. Twelve static SVG/PNG assets match source bytes and were checked separately from the body revision; all three pairs preserve geometry and colors. 2026-09-17: Series labels in Korean and English static figures advanced by one after insertion of the new fifth hardware article; geometry and content unchanged. 2026-09-17: Compared both updated transition passages: communication execution comes before collective operations; the next article link now leads to communication basics. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -530,7 +677,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-communication-basics/01-peers-and-buffers",
+      "gpu-communication-basics/02-send-receive-execution",
+      "gpu-communication-basics/03-communication-and-independent-work",
+      "gpu-communication-basics/04-buffer-reuse"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-communication-basics",
@@ -543,9 +695,9 @@
         "title": "Transferring Data Between GPUs",
         "description": "Prepare communication participants and buffers, connect CPU send/receive submission to GPU execution, and explain overlapping independent computation and safe buffer reuse.",
         "published": true,
-        "sourceRevision": "811b93fc0f792e7229f9ce3df11e58c2725a9aaecc273d034164b54bf98b7756",
+        "sourceRevision": "b87d138cd04bdf628c76f35debe9392cbddadaa73acc64a032968978cf0c8a41",
         "translationStatus": "reviewed",
-        "reviewNote": " 2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged."
+        "reviewNote": "2026-09-17: Compared all six sections, paragraph flow, emphasis, three illustrative code blocks, source links and four image alt texts against the Korean manuscript. Both languages preserve rank versus device identity, process versus stream, matching send/receive, submission versus completion, conditional overlap and last-use buffer lifetimes. The x/y values and four float32 elements (16 bytes) agree. All eight PNG figures visually reviewed and all SVG text bounds checked; English figure 2 completion labels use separate rows to avoid overlap. Static SVG/PNG assets reviewed separately from the body revision. 2026-09-17: Compared the Korean and English closing transition updated to link the next article by title. 2026-09-18: Replaced episode-number references with matching topic/title links or earlier-discussion wording in both languages; surrounding technical content is unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -555,7 +707,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-communication-engines/01-call-and-transfer",
+      "gpu-communication-engines/02-sm-and-copy-engine",
+      "gpu-communication-engines/03-communication-and-compute"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-communication-engines",
@@ -569,8 +725,8 @@
         "description": "Distinguish the devices and connections used for GPU communication, and examine how resource contention with computation affects overall completion time.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "b684f02bbeebed69ea6ae9a65d9348bbd721f2bdafa3e3590d141afcf8bad70c",
-        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 11 emphasized passages, API names, seven source/continuation links, three image alt texts and all three figure pairs against the approved Korean manuscript. Both languages distinguish CPU submission from transfer, SM and CE execution from NVLink/PCIe connectivity, supported CE copies from generic send/receive, independent C on GPU 0, equal communication times and conditional overall improvement. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
+        "sourceRevision": "2937b789dcf4e7111dad0c0ba6546323f425d922f1c8cb8107f11ec54bccade4",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 11 emphasized passages, API names, seven source/continuation links, three image alt texts and all three figure pairs against the approved Korean manuscript. Both languages distinguish CPU submission from transfer, SM and CE execution from NVLink/PCIe connectivity, supported CE copies from generic send/receive, independent C on GPU 0, equal communication times and conditional overall improvement. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. Figure 3 had no generator and was redrawn with the shared timeline primitive. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -580,7 +736,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-17",
-    "figureIds": [],
+    "figureIds": [
+      "gpu-network-data-path/01-host-memory-staging",
+      "gpu-network-data-path/02-direct-gpu-memory",
+      "gpu-network-data-path/03-cpu-proxy"
+    ],
     "locales": {
       "ko": {
         "slug": "gpu-network-data-path",
@@ -594,8 +754,8 @@
         "description": "Explore transfer paths that reduce intermediate copies through CPU memory and the CPU role in helping network communication progress.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "8d11ae1f926f6dd7afc605304d73f03eae52cd72ee7df80529a972cfdadf2667",
-        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision."
+        "sourceRevision": "19c404eca4d545278d64f4c76e740134939e409a16286bb7ca8c5bd33908b759",
+        "reviewNote": "2026-09-17: Compared all three sections, paragraph order, 18 emphasized passages, x values, seven source/continuation links, the three-step proxy sequence, three image alt texts and all three figure pairs. Both languages preserve CPU-memory staging versus CPU-thread copying, RDMA versus GPUDirect RDMA, device support conditions, NCCL-created ordinary helper threads and their proxy role on behalf of GPU communication, data movement versus control, and transfer versus B completion. All six PNGs visually reviewed; SVG text bounds and overlaps checked. Static assets checked separately from the body revision. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text. 2026-10-04: Updated the same production-domain URLs in Korean and English; prose, code, equations, and figures unchanged."
       }
     }
   },
@@ -605,7 +765,13 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "collective-communication-basics/basics-01-requests",
+      "collective-communication-basics/basics-02-broadcast",
+      "collective-communication-basics/basics-03-scatter",
+      "collective-communication-basics/basics-04-gather",
+      "collective-communication-basics/basics-05-reduce"
+    ],
     "locales": {
       "ko": {
         "slug": "collective-communication-basics",
@@ -619,8 +785,8 @@
         "description": "Compare Send/Recv with collectives, then follow the inputs and outputs of Broadcast, Scatter, Gather, and Reduce.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "2eeccc30fee8cb9b3c3a7f40295091b339e1e5a141d6f2ee2d33886c068c84fb",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "77a18c7047b9151b450ca062b2c011880d90aa526d756f75345051afc0ffc7a6",
+        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -630,7 +796,12 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "collective-communication-combinations/combinations-01-all-gather",
+      "collective-communication-combinations/combinations-02-all-reduce",
+      "collective-communication-combinations/combinations-03-reduce-scatter",
+      "collective-communication-combinations/combinations-04-all-to-all"
+    ],
     "locales": {
       "ko": {
         "slug": "collective-communication-combinations",
@@ -644,8 +815,8 @@
         "description": "Understand All-Gather, All-Reduce, Reduce-Scatter, and All-to-All through the data and output placement needed by the next computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "ca1ede742595bf358d686ea6e820c7fa8bc35402a2a0091da722fcfb4c266944",
-        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval."
+        "sourceRevision": "a8689bcefd24701cba5d7a5a7a7c3f47829e62ee80ccc962d1f9a62bf84c6c83",
+        "reviewNote": "2026-09-18: Compared Korean and English paragraph flow, headings, emphasized claims, numerical examples, equations, scope conditions, links and figure labels. All figure pairs visually inspected; text bounds and overlaps checked. Static SVG/PNG assets reviewed separately from the body revision. This records authoring review, not final user approval. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -655,7 +826,25 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "collective-ring-tree/01-ring-reduce-scatter",
+      "collective-ring-tree/01-step-0",
+      "collective-ring-tree/01-step-1",
+      "collective-ring-tree/01-step-2",
+      "collective-ring-tree/01-step-3",
+      "collective-ring-tree/02-ring-all-gather",
+      "collective-ring-tree/02-step-0",
+      "collective-ring-tree/02-step-1",
+      "collective-ring-tree/02-step-2",
+      "collective-ring-tree/02-step-3",
+      "collective-ring-tree/03-step-0",
+      "collective-ring-tree/03-step-1",
+      "collective-ring-tree/03-step-2",
+      "collective-ring-tree/03-step-3",
+      "collective-ring-tree/03-step-4",
+      "collective-ring-tree/03-tree",
+      "collective-ring-tree/04-logical-physical"
+    ],
     "locales": {
       "ko": {
         "slug": "collective-ring-tree",
@@ -669,8 +858,8 @@
         "description": "Follow Ring and Tree implementations of the same All-Reduce result, and relate communication time to steps, data volume, and physical links.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "c42561ec82e668afcb786cde90192b0bf4a748ca34800f89f57a41f841ba99d9",
-        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article."
+        "sourceRevision": "27723ab563cd46a9580fda7a5b455d88be997135139b141533ee92564c65367a",
+        "reviewNote": "2026-09-19: Compared Korean and English full-vector Ring explanations, fixed A/B/C/D positions, accumulation equations, final Reduce-Scatter ownership, and All-Gather missing-result semantics. All 16 revised interactive frames visually reviewed; frame text bounds and overlaps checked. Tree figures unchanged. This records authoring review, not final user approval. Release scope: the closing Korean/English sentence previews parallelism without linking to an unpublished article. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -680,7 +869,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "data-parallelism/01-replicas",
+      "data-parallelism/02-gradients",
+      "data-parallelism/03-throughput"
+    ],
     "locales": {
       "ko": {
         "slug": "data-parallelism",
@@ -694,8 +887,8 @@
         "description": "Replicate a model across GPUs, distribute inputs, and distinguish inference request distribution from training gradient synchronization.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a3ff26d6012c0ee95b637b6e414b2b058e2cb527fc34cd3d9002ac95998fda60",
-        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+        "sourceRevision": "4c4e84a84b7a1332a58642df9954db7fbbccb202ff219a5f7ac434ac0c8a7b8a",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -705,7 +898,23 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "tensor-parallelism/01-step-0",
+      "tensor-parallelism/01-step-1",
+      "tensor-parallelism/01-step-2",
+      "tensor-parallelism/02-step-0",
+      "tensor-parallelism/02-step-1",
+      "tensor-parallelism/02-step-2",
+      "tensor-parallelism/03-step-0",
+      "tensor-parallelism/03-step-1",
+      "tensor-parallelism/03-step-2",
+      "tensor-parallelism/04-step-0",
+      "tensor-parallelism/04-step-1",
+      "tensor-parallelism/04-step-2",
+      "tensor-parallelism/05-step-0",
+      "tensor-parallelism/05-step-1",
+      "tensor-parallelism/05-step-2"
+    ],
     "locales": {
       "ko": {
         "slug": "tensor-parallelism",
@@ -719,8 +928,8 @@
         "description": "Partition weight matrices by columns and rows, then connect these partitions in FFN and attention to avoid intermediate communication.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "7eb1dc51b23cc9af52c4a389b2cc76b2f24d889731cb264b44d87a31dd41a605",
-        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked."
+        "sourceRevision": "22e98640cbdd6527089fdabb22ff50b5f7818552b5590a7fc4a444de2546d660",
+        "reviewNote": "2026-09-19: Compared Korean and English prose, examples, scope, headings, links and all figure labels. DP throughput revision retained; TP follows five matrix figures and the updated activation explanation. Static bilingual SVGs and player data reviewed separately from the body revision; numerical reconstruction and text layout checked. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -730,7 +939,16 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "sequence-parallelism/sp-01-step-0",
+      "sequence-parallelism/sp-02-step-0",
+      "sequence-parallelism/sp-03-step-0",
+      "sequence-parallelism/sp-03-step-1",
+      "sequence-parallelism/sp-03-step-2",
+      "sequence-parallelism/sp-03-step-3",
+      "sequence-parallelism/sp-03-step-4",
+      "sequence-parallelism/sp-04-step-0"
+    ],
     "locales": {
       "ko": {
         "slug": "sequence-parallelism",
@@ -744,8 +962,8 @@
         "description": "Reduce activation duplication between TP regions, and alternate between token and feature partitioning to compute a Transformer layer.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "aea836906e42d4c32bc29699e3cae2879fb5593c4b44d669f619946cc5589f8f",
-        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+        "sourceRevision": "27646d380a20449dec1d8d8d590d5c66aa2f5a91cdf8acb2601c9f5d43a6a488",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -755,7 +973,22 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "context-parallelism/cp-01-step-0",
+      "context-parallelism/cp-02-step-0",
+      "context-parallelism/cp-03-step-0",
+      "context-parallelism/cp-03-step-1",
+      "context-parallelism/cp-03-step-2",
+      "context-parallelism/cp-03-step-3",
+      "context-parallelism/cp-03-step-4",
+      "context-parallelism/cp-04-step-0",
+      "context-parallelism/cp-04-step-1",
+      "context-parallelism/cp-04-step-2",
+      "context-parallelism/cp-04-step-3",
+      "context-parallelism/cp-04-step-4",
+      "context-parallelism/cp-05-step-0",
+      "context-parallelism/cp-05-step-1"
+    ],
     "locales": {
       "ko": {
         "slug": "context-parallelism",
@@ -769,8 +1002,8 @@
         "description": "Compare CP with SP, then follow how Ring and Ulysses connect information across GPUs to complete attention.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "f5b2626fe288d41920a2dd7562dc49300ae3cb7e94573a406e8506cf365c62b3",
-        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication."
+        "sourceRevision": "96e261d6abf9d78338a7510d08a65e8b3dbe4541624a3586fdd04ca4d9644059",
+        "reviewNote": "Korean and English prose compared paragraph by paragraph; all 22 figure states share geometry and numerical examples. Bilingual figures and web interactions checked before publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -780,7 +1013,20 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "pipeline-parallelism/pp-01-step-0",
+      "pipeline-parallelism/pp-01-step-1",
+      "pipeline-parallelism/pp-01-step-2",
+      "pipeline-parallelism/pp-02-step-0",
+      "pipeline-parallelism/pp-03-step-0",
+      "pipeline-parallelism/pp-03-step-1",
+      "pipeline-parallelism/pp-03-step-2",
+      "pipeline-parallelism/pp-03-step-3",
+      "pipeline-parallelism/pp-03-step-4",
+      "pipeline-parallelism/pp-03-step-5",
+      "pipeline-parallelism/pp-03-step-6",
+      "pipeline-parallelism/pp-batch-wait"
+    ],
     "locales": {
       "ko": {
         "slug": "pipeline-parallelism",
@@ -794,8 +1040,8 @@
         "description": "Place model layers across GPUs, then split the same batch into microbatches to overlap computation for different inputs.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "a1b5fa6b4cd2bd6af09426061632f01044cc92c4c93098979b89f36ea6c25958",
-        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages."
+        "sourceRevision": "de69726b7888a262a30d58bcd264c3e3468c01398d4d09c954d3a0a408b5b27e",
+        "reviewNote": "2026-09-19: Compared five Korean/English sections and four figures. Added the whole-batch waiting problem before microbatching; checked both new SVGs visually. The existing three figures and later explanations are unchanged apart from figure numbering. Static SVGs reviewed separately from the body revision. Release: removed the matching final link sentence to the unpublished EP article in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -805,7 +1051,21 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "expert-parallelism/ep-01-step-0",
+      "expert-parallelism/ep-02-step-0",
+      "expert-parallelism/ep-02-step-1",
+      "expert-parallelism/ep-02-step-2",
+      "expert-parallelism/ep-02-step-3",
+      "expert-parallelism/ep-02-step-4",
+      "expert-parallelism/ep-02-step-5",
+      "expert-parallelism/ep-03-step-0",
+      "expert-parallelism/ep-03-step-1",
+      "expert-parallelism/ep-03-step-2",
+      "expert-parallelism/ep-03-step-3",
+      "expert-parallelism/ep-03-step-4",
+      "expert-parallelism/ep-04-step-0"
+    ],
     "locales": {
       "ko": {
         "slug": "expert-parallelism",
@@ -819,8 +1079,8 @@
         "description": "Use DP for attention and EP for experts on the same GPUs, then follow tokens as they fan out to experts and return to their original positions.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "dae9ee6cb44745f1df399df9e51a83d606b1bd5b1bad14f5db3373f24889d3eb",
-        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks."
+        "sourceRevision": "d7c92f8ac3a8491a3c8c7cc59dfddd8e687ef37430e3f85e21d9a56cd50d8fa5",
+        "reviewNote": "2026-09-19: Compared four Korean/English sections and unchanged four figures (13 states per language). Removed the redundant final section, moved the memory qualification to expert placement, and retained a short closing paragraph. Same-GPU DP/EP scope, token routing/return, Top-2 combination and load counts reviewed. User authorized EP publication after final checks. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -830,7 +1090,11 @@
     "track": "shared",
     "category": "hardware",
     "date": "2026-09-18",
-    "figureIds": [],
+    "figureIds": [
+      "choosing-parallelism/01-make-it-fit",
+      "choosing-parallelism/02-replicate-the-group",
+      "choosing-parallelism/03-balance-shards-and-replicas"
+    ],
     "locales": {
       "ko": {
         "slug": "choosing-parallelism",
@@ -844,8 +1108,8 @@
         "description": "First partition the model so the workload can run, then replicate that configuration and adjust GPU placement for latency and throughput.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "9cbfabbba6f35ddbba023c5fabf47daa6f1750e797748001ef0ead262c18032f",
-        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval."
+        "sourceRevision": "3544b47de1fdcad3995a7399615ab448c4e858272f3d6c22e8e1cdaa1c91650c",
+        "reviewNote": "2026-09-20: Compared all three Korean/English sections after trimming repeated introductions, source restatements and qualifications. Moved SP/CP to the memory section; preserved group replication, batching and latency/throughput criteria. All three bilingual figure pairs remain unchanged from c8633da, including the reviewed arrow spacing. Authoring review, not final user approval. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -855,7 +1119,11 @@
     "track": "shared",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-and-training/01-execution",
+      "inference-and-training/02-request-lifecycle",
+      "inference-and-training/03-memory-state"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-and-training",
@@ -869,8 +1137,8 @@
         "description": "Compare training on prepared data with inference responding to newly arriving requests, then follow the execution flow from token generation and weight updates to request management.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "662badda207767d01586d311b05a495a573f7d3b4b46af1e56289d3f83110773",
-        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
+        "sourceRevision": "59925f730dda0f366e54e29c6bc2bd45a21a6566987f9aaa74b3c1530b7e9b96",
+        "reviewNote": "Compared all five sections, paragraph flow, table, examples, emphasis, alt text, and the three bilingual figure pairs with the reviewed Korean source. Prepared-data versus online-request framing, token generation versus weight updates, GPU memory states, and engine request management agree. For this standalone release, links to the unpublished KV-cache and Prefill/Decode articles are replaced with equivalent future-reading guidance in both languages. The user approved publication on 2026-09-19; static figure assets were verified separately from the prose revision. 2026-09-20: Restored the two matching Korean/English KV-cache article links for its publication; body and figures otherwise unchanged. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -880,7 +1148,12 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-kv-cache/01-generation-loop",
+      "inference-kv-cache/02-recomputation",
+      "inference-kv-cache/03-kv-reuse",
+      "inference-kv-cache/04-kv-boundary"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-kv-cache",
@@ -894,8 +1167,8 @@
         "description": "Follow repeated token generation to see why computation repeats, how the KV cache reuses it, and where output-token selection differs from KV computation.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "09efe1ff063d558d3d9e6ed9f07556fea491f100f85957c78d64d49959f576fc",
-        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged."
+        "sourceRevision": "e77ce7e7344b9151897107505a33754f702f9df47a1155e542bbf59a7ac1089a",
+        "reviewNote": "2026-09-20: Final bilingual content and four figure pairs reviewed. Same reviewed generation, recomputation, reuse and KV-boundary sequence. Standalone publication changes only the matching closing link into future-reading guidance for the unpublished Prefill/Decode article. User authorized publication after final verification. 2026-09-20: Restored the matching Prefill and Decode title link for publication; all other content and figures unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes and article text."
       }
     }
   },
@@ -905,7 +1178,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "prefill-and-decode/01-prefill-decode-flow",
+      "prefill-and-decode/02-compute-and-context",
+      "prefill-and-decode/03-weight-reuse",
+      "prefill-and-decode/04-prefill-decode-roofline",
+      "prefill-and-decode/05-request-kv-reads"
+    ],
     "locales": {
       "ko": {
         "slug": "prefill-and-decode",
@@ -919,8 +1198,8 @@
         "description": "Compare Prefill, which processes input tokens together, with Decode, which processes one new token at a time, and examine how token count and weight reuse change GPU bottlenecks.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "85bba6124e7ed26f8a73441ef8e9b1ba18ccfa44f542066d4034c11f4ce5bd98",
-        "reviewNote": "2026-09-20: Previously reviewed bilingual prose and five figure pairs preserved. Matching final-paragraph links to the newly published Batching and Scheduling article restored in both languages."
+        "sourceRevision": "b928155081393f885013898aa90f19bf0c5f83ef43d576982e41cb5e262853ac",
+        "reviewNote": "2026-09-20: Previously reviewed bilingual prose and five figure pairs preserved. Matching final-paragraph links to the newly published Batching and Scheduling article restored in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions newly written in both languages from the figure notes, and the short article figcaptions were removed because captions are now inside the images."
       }
     }
   },
@@ -930,7 +1209,12 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "batching-and-scheduling/01-batch-composition",
+      "batching-and-scheduling/02-scheduling-cycle",
+      "batching-and-scheduling/03-work-and-state",
+      "batching-and-scheduling/04-reserved-memory"
+    ],
     "locales": {
       "ko": {
         "slug": "batching-and-scheduling",
@@ -944,8 +1228,8 @@
         "description": "Explore the limits of static batching, how batch membership changes between executions, how to check computation and KV space requirements, and why unused reservations make requests wait.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "1a42dc507af561026546262c901a2019b887a26d8e695772f2994a76c8a25974",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved. The closing PagedAttention follow-up is now a link in both languages after publication of that article; paragraph content otherwise unchanged."
+        "sourceRevision": "e30593e1e040cc945905cd97f0bb805e306b9cc9dcb961213c2d010f9cb9f18b",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved. The closing PagedAttention follow-up is now a link in both languages after publication of that article; paragraph content otherwise unchanged. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; captions written from the figure notes and short article figcaptions (removed from the pages)."
       }
     }
   },
@@ -955,7 +1239,14 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "paged-kv-cache/01-needed-blocks",
+      "paged-kv-cache/02-logical-physical",
+      "paged-kv-cache/03-growing-blocks",
+      "paged-kv-cache/04-paged-attention-read",
+      "paged-kv-cache/05-shared-prefix",
+      "paged-kv-cache/06-copy-on-write"
+    ],
     "locales": {
       "ko": {
         "slug": "paged-kv-cache",
@@ -969,8 +1260,8 @@
         "description": "Allocate KV blocks as needed and compute attention over scattered KV. Learn how block sharing and copy-on-write reduce storage when generating multiple responses from the same input.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "293a58d0f97ed3ea4b1f37cceb8e51ac1fbb580217a93eebc03874a694a3e1cb",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication."
+        "sourceRevision": "6be8a9564fb01b98218e29ee30bcb098f99f1478e3179867896e5ae16edda67c",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the next-article link was restored in both languages for the preemption publication. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages. Figure 2 was redrawn with shared primitives (cells, curve)."
       }
     }
   },
@@ -980,7 +1271,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-preemption/01-growing-pressure",
+      "inference-preemption/02-reclaim-blocks",
+      "inference-preemption/03-recompute-state",
+      "inference-preemption/04-swap-state",
+      "inference-preemption/05-output-gap"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-preemption",
@@ -994,8 +1291,8 @@
         "description": "When KV space runs out during generation, pause some requests to reclaim blocks, then resume them from retained token history or KV. Explore how this process delays output.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "ef51239e06954c8ed9a10ff182508fd1ddbcd9731ceafd856f8ff35bb9c72c84",
-        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the follow-up metrics link is restored in both languages."
+        "sourceRevision": "89dfe4c5f6256d44c91f82defa6779f00e081f503d761c828ba6a85239a482aa",
+        "reviewNote": "2026-09-20: Existing reviewed translation preserved; the follow-up metrics link is restored in both languages. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages."
       }
     }
   },
@@ -1005,7 +1302,13 @@
     "track": "inference",
     "category": "workload",
     "date": "2026-09-19",
-    "figureIds": [],
+    "figureIds": [
+      "inference-metrics/01-request-latency",
+      "inference-metrics/02-counting-throughput",
+      "inference-metrics/03-average-and-gaps",
+      "inference-metrics/04-request-latency-distribution",
+      "inference-metrics/05-goodput-targets"
+    ],
     "locales": {
       "ko": {
         "slug": "inference-metrics",
@@ -1019,8 +1322,1264 @@
         "description": "Measure one request's waits and overall server throughput, examine output gaps and request latencies hidden by averages, then connect them to goodput: throughput that meets latency targets.",
         "published": true,
         "translationStatus": "reviewed",
-        "sourceRevision": "d90e732759c82e694fd01d1d29a48d998505faf6f5c4f583b6e53ab279851872",
-        "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed."
+        "sourceRevision": "a2a2753f1ac973e344f2d7c4a81f3ec43bd9e21414073f899c6aeeb320f7ecbc",
+        "reviewNote": "2026-09-20: Korean and English compared across six sections and five figures: client receipt boundaries, N-1 intervals, throughput window, average versus gaps, nearest-rank percentiles, goodput and attainment, and load conditions. Bilingual figures visually reviewed. Figures ported to @llm-systems/viz on 2026-09-26: ko/en figure text carried over unchanged from the reviewed SVGs; the reviewed article figcaptions became the in-image captions and were removed from the pages."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-mla-storage",
+    "order": 9.2,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mla-storage/01-latent-projections",
+      "model-advanced-mla-storage/02-cache-contents",
+      "model-advanced-mla-storage/03-content-and-position",
+      "model-advanced-mla-storage/04-cache-growth"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mla-storage",
+        "title": "MLA의 저장 구조: KV를 작은 잠재 벡터로 표현하기",
+        "description": "공동 잠재 벡터로 헤드별 Key·Value를 표현하는 원리와 별도로 저장하는 위치용 Key를 살펴보고, 헤드 간 공유 범위와 KV 캐시 저장량을 계산합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mla-storage",
+        "title": "MLA storage: Representing KV with a small latent vector",
+        "description": "Explore how a joint latent vector represents head-specific keys and values, why a positional key is stored separately, what is shared across heads, and how KV cache storage grows.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-09-27: Compared all five sections, paragraph flow, two equations, head-output table, four figure alt texts, numerical examples and source links with the approved Korean article. Shared positional keys, head-specific projections, row-vector notation, RoPE separation and teaching-only storage comparisons agree. All four bilingual figures reviewed independently of the source revision.",
+        "sourceRevision": "5b9677b2d6c2cfa82f4d7e3761b79bf3fa7386cd5449da03299d16ede74cba92"
+      }
+    }
+  },
+  {
+    "articleId": "rl-01",
+    "order": 101,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-01/01-role-mapping",
+      "rl-01/02-token-actions-response-reward"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-token-actions",
+        "title": "토큰 생성은 어떻게 강화학습의 행동이 되는가",
+        "description": "미로에서 이동을 고르는 일과 LLM이 다음 토큰을 고르는 일을 비교하고, 여러 토큰으로 만든 응답에 보상이 붙는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-token-actions",
+        "title": "How Token Generation Becomes an Action in Reinforcement Learning",
+        "description": "Compare choosing a move in a maze with an LLM choosing its next token, then follow how a response made of many tokens receives a reward.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "afb43c8053f31ee94efcb8bb329219115e15641b3a7b469191df74022cada45b",
+        "reviewNote": "Korean and English text, examples and both figures reviewed. Rechecked unchanged English after fixing five Korean emphasis delimiters; the meaning is unchanged. Removed image footer captions in both languages; diagram content and translation unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "rl-02",
+    "order": 102,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-02/00-token-probabilities",
+      "rl-02/01-advantage-meets-logprob",
+      "rl-02/02-ratio-clipping",
+      "rl-02/03-old-current-reference"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-reward-to-update",
+        "title": "보상은 어떻게 토큰의 생성 확률을 바꾸는가",
+        "description": "보상에서 구한 어드밴티지와 토큰의 로그확률을 연결한 뒤, 이전 데이터의 재사용을 위한 확률비와 clipping, 기준 정책을 유지하는 KL을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-reward-to-update",
+        "title": "How Rewards Change Token Generation Probabilities",
+        "description": "Connect advantages computed from rewards with token log-probabilities, then explore probability ratios and clipping for reusing data, and KL regularization for staying close to a reference policy.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a99fba97e22fdde40ecc5b50bedc0148eb0503d5d308d205d247961990e51831",
+        "reviewNote": "Release preparation: Korean and English paragraphs, four figure examples and labels, log-probability derivative, clipped-objective branches, and model comparison roles reviewed together. Removed image footer captions in both languages; diagram content and translation unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-mla-computation",
+    "order": 9.3,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-mla-computation/00-query-path",
+      "model-advanced-mla-computation/01-expanded-reference",
+      "model-advanced-mla-computation/02-key-absorption",
+      "model-advanced-mla-computation/03-value-absorption"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mla-computation",
+        "title": "MLA의 계산: KV를 펼치지 않고 Attention하기",
+        "description": "현재 Query로 잠재 KV 캐시를 읽는 과정을 살펴보고, Key 투영을 Query 쪽으로, Value 투영을 가중합 뒤로 옮겨 같은 결과를 얻는 원리를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mla-computation",
+        "title": "MLA Computation: Attention Without Expanding KV",
+        "description": "Follow how the current query reads a latent KV cache, and see why moving the key projection to the query and the value projection after the weighted sum preserves the result.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "e197076d84d94c15c9a18dc3f9eb3ac4834df24f261c764e69745de658605115",
+        "reviewNote": "2026-09-27: Compared all six sections, RoPE subsection, four figures and numerical examples. Preserved row-vector notation, content/position score addition, key/value reassociation, fixed-weight absorption, normalization boundaries, and qualified runtime claims."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-local-sparse",
+    "order": 9.4,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-local-sparse/01-read-window",
+      "model-advanced-local-sparse/02-local-and-landmarks",
+      "model-advanced-local-sparse/03-depth-propagation",
+      "model-advanced-local-sparse/04-read-versus-retain"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-local-sparse",
+        "title": "Local과 Sparse Attention: 읽을 토큰 범위 줄이기",
+        "description": "Sparse Attention의 한 종류인 Sliding Window Attention부터 시작해, 고정된 연결 패턴과 층을 통한 정보 전달을 살펴보고 읽는 범위와 KV 캐시 보관량을 구별합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-local-sparse",
+        "title": "Local and Sparse Attention: Reading Fewer Token Positions",
+        "description": "Start with sliding window attention as a form of sparse attention, trace fixed connection patterns and information flow through layers, and distinguish the read range from KV cache storage.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "207c2d0fcdcfd68a56ced7a9e3526cd05b194f8866b6b002eb15bf13d8ccb294",
+        "reviewNote": "2026-09-27: Compared all five sections and four figures against Korean. Preserved window boundaries, read sets, 36/21 connection counts, layer-depth paths, receptive-field limits, layer-specific cache retention and qualified runtime claims."
+      }
+    }
+  },
+  {
+    "articleId": "rl-03",
+    "order": 103,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-03/02-group-relative-advantage",
+      "rl-03/01-critic-return",
+      "rl-03/03-compute-and-group-readiness",
+      "rl-03/04-single-rollout-baselines"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-critic-and-groups",
+        "title": "그룹 비교와 Critic으로 어드밴티지 구하기",
+        "description": "같은 질문의 응답을 비교하는 GRPO에서 시작해 critic의 예측과 어드밴티지 계산을 살펴보고, SAO와 FlashREINFORCE의 개별 rollout 학습으로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-critic-and-groups",
+        "title": "Computing Advantages with Groups and Critics",
+        "description": "Start with GRPO comparisons within a prompt, examine critic predictions and advantages, then connect them to single-rollout learning in SAO and FlashREINFORCE.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "0bc6999d526bfd268ee7f6d1acaef6447470337e93db7f800d9149fa4170059a",
+        "reviewNote": "2026-09-27: P 표기 통일, critic return 예시 단순화, 그룹 의존성 도식 및 SAO/FlashREINFORCE 비교 그림과 한영 본문 대조. Critic V=0.2,0.6,0.4와 A/TD/GAE 계산 한영 동기화. Removed image footer captions in both languages; diagram content and translation unchanged."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-sparse-indexer",
+    "order": 9.5,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-sparse-indexer/01-index-selection",
+      "model-advanced-sparse-indexer/02-generation-selection",
+      "model-advanced-sparse-indexer/03-indexer-window"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-sparse-indexer",
+        "title": "Sparse Attention의 Indexer: 내용에 따라 읽을 위치 고르기",
+        "description": "선택용 Query와 Key로 읽을 KV 위치를 고르는 원리를 살펴보고, 생성에 따른 선택 변화와 sliding window의 결합, 읽는 비용과 캐시 보관량을 구별합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-sparse-indexer",
+        "title": "Sparse Attention Indexers: Choosing Positions by Content",
+        "description": "Trace how an index query and keys select KV positions, how selection changes during generation, and how a sliding window combines with selection, while distinguishing reading cost from cache storage.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "02c54f7db5b0e49d57b3392ecd900790e587a109b3cf4e21f89031b61a9a03c2",
+        "reviewNote": "2026-09-27: Compared all four sections and three figures with Korean. Preserved index/main QKV separation, dot-product scores, p6-to-p7 candidate sets, cache retention, window overlap rules, and qualified cost and quality trade-offs. Removed the final compression section in both languages as requested."
+      }
+    }
+  },
+  {
+    "articleId": "rl-04",
+    "order": 104,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-04/01-student-visited-contexts",
+      "rl-04/02-teacher-token-signal",
+      "rl-04/04-forward-reverse-kl",
+      "rl-04/03-additive-task-teacher-signals"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-on-policy-distillation",
+        "title": "교사의 확률에서 학습 신호 얻기: OPD",
+        "description": "학생이 생성한 문맥에서 교사의 토큰 확률을 읽고, 그 차이를 토큰별 학습 신호로 바꾸는 on-policy distillation과 Miles의 결합 방식을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-on-policy-distillation",
+        "title": "Learning from a Teacher’s Probabilities: OPD",
+        "description": "Explore on-policy distillation, which reads a teacher’s token probabilities in student-generated contexts and turns the differences into token-level learning signals, and how Miles combines those signals.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "19dbda544091cf263b112c151617285c37c9807d0e1203fd216a85a6770d07ea",
+        "reviewNote": "2026-09-27: Korean and English prose, four figures, KL formulas and numerical examples compared; footer captions removed in both languages."
+      }
+    }
+  },
+  {
+    "articleId": "rl-18",
+    "order": 105,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-27",
+    "figureIds": [
+      "rl-18/01-specialists-to-student",
+      "rl-18/02-starting-policy-and-feedback",
+      "rl-18/03-opd-before-after-rl",
+      "rl-18/04-multiple-teachers-and-prefixes"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-training-strategy",
+        "title": "RL과 OPD를 조합하는 학습 전략",
+        "description": "DeepSeek V4의 전문 모델 학습과 OPD 통합에서 출발해, RL의 출발 정책을 준비하는 역할과 MiMo MOPD²의 교사·문맥 선택을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-training-strategy",
+        "title": "Combining RL and OPD in a Training Strategy",
+        "description": "Starting with DeepSeek V4’s specialist training and OPD integration, we examine how to prepare a starting policy for RL and how MiMo MOPD² chooses teachers and contexts.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "043fd33898f8785138a66c7857854e908fe6e1bce363e16932c4a7888244350a",
+        "reviewNote": "2026-09-27: Compared five bilingual sections, four figures and source claims; synchronized turn examples and removed obsolete evaluation-box reference. Checked desktop/mobile figure outputs."
+      }
+    }
+  },
+  {
+    "articleId": "rl-05",
+    "order": 106,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-05/01-system-data-weight-loop",
+      "rl-05/02-trajectory-contract-readiness",
+      "rl-05/03-gpu-placement"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-system-architecture",
+        "title": "LLM RL 시스템은 어떻게 연결되는가",
+        "description": "경험을 생성해 학습기로 보내고, 새 가중치를 추론기로 돌려보내는 두 흐름을 따라 LLM RL 시스템의 역할과 데이터, GPU 배치를 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-system-architecture",
+        "title": "How an LLM RL System Fits Together",
+        "description": "Follow generated experience to the learner and updated weights back to the inference engine to understand the roles, data, and GPU placement in an LLM RL system.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5670efdc286643ed374691407fd46e2b4cdd6f7e4372c9135f29ab2660c26876",
+        "reviewNote": "Aligned closing paragraph with the combined TITO/R3 next article."
+      }
+    }
+  },
+  {
+    "articleId": "rl-06",
+    "order": 107,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-06/01-token-identity",
+      "rl-06/02-routing-replay"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-token-context",
+        "title": "생성 기록을 학습으로 이어가기: TITO와 R3",
+        "description": "TITO로 실제 토큰 ID를 보존하고, R3로 생성 당시 선택한 MoE 전문가를 학습에서도 사용하는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-token-context",
+        "title": "Carrying Generation Records into Training: TITO and R3",
+        "description": "Preserve actual token IDs with TITO and reuse the MoE experts selected during generation with R3.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "beedfa804a1d5519c4d97593451d1f3b4104cf80827ca7afb3c32396bb9ef7c6",
+        "reviewNote": "Aligned bilingual TITO/R3 consolidation and series references for the 16-article sequence."
+      }
+    }
+  },
+  {
+    "articleId": "rl-09",
+    "order": 108,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-09/01-precision-placements",
+      "rl-09/02-quantization-conventions"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-quantized-training",
+        "title": "RL에서 양자화를 사용하는 방법",
+        "description": "생성 비용을 줄이는 양자화가 학습과 추론의 계산을 어떻게 바꾸는지, BF16 학습·FP8 추론과 공통 양자화의 두 구성으로 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-quantized-training",
+        "title": "Using Quantization in RL",
+        "description": "See how quantization reduces generation costs and changes training and inference computation, through shared quantization and BF16 training with FP8 inference.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "9dfa7b5187cc85f40094c9ec9b2ea6b747fc9cf0b27dd8a8ffbf5c270cd49d56",
+        "reviewNote": "Reviewed all four sections, two figures, rounding examples, shared-first order, and Miles v0.1 support boundaries against the Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-token-compression",
+    "order": 9.6,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-token-compression/01-compression-axes",
+      "model-advanced-token-compression/02-weighted-summary",
+      "model-advanced-token-compression/03-causal-summary-and-local",
+      "model-advanced-token-compression/04-compress-and-select"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-token-compression",
+        "title": "토큰 축 압축: 여러 위치의 KV를 요약해서 읽기",
+        "description": "내용 투영과 점수 투영으로 요약 벡터를 만드는 과정을 따라가고, 완성된 요약과 최근 위치별 KV를 함께 읽는 이유 및 인덱서와의 결합을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-token-compression",
+        "title": "Token-Axis Compression: Reading Summaries of Multiple KV Positions",
+        "description": "Trace how content and score projections build summary vectors, why completed summaries are read alongside recent per-token KV, and how compression combines with an indexer.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Paragraph-by-paragraph Korean/English review; four bilingual figures, projection arithmetic, causal summary timing, overlapping recent entries, and storage/read counts checked on 2026-09-27.",
+        "sourceRevision": "d03e5c42bdde2a86be733121e55cb34e1222cb592dedefc348131a664c4603d4"
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-delta-rule",
+    "order": 9.8,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-delta-rule/00-write-and-read",
+      "model-advanced-delta-rule/01-add-versus-revise",
+      "model-advanced-delta-rule/02-read-correct-write",
+      "model-advanced-delta-rule/03-strength-and-interference",
+      "model-advanced-delta-rule/04-other-queries"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-delta-rule",
+        "title": "델타 규칙: 새 Value에 맞춰 상태의 연결 수정하기",
+        "description": "KV를 기록하는 목적에서 출발해 단순 누적과 델타 규칙을 비교하고, Key로 기존 값을 확인하는 과정과 Query로 출력을 읽는 과정의 차이를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-delta-rule",
+        "title": "The Delta Rule: Revising State Associations Toward a New Value",
+        "description": "Start from the purpose of writing KV associations, compare additive accumulation with the delta rule, and distinguish checking the old value with a Key from reading an output with a Query.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "Compared revised introduction and Key/Query write-read explanation with Korean; retained the reviewed numerical examples, equations, and five bilingual figures.",
+        "sourceRevision": "963b0c41ba3c26cc8cc7a6d65f62e66e050379acdb986e709507d83aeb3d35d4"
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-gdn-kda",
+    "order": 9.9,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-gdn-kda/00-why-retention",
+      "model-advanced-gdn-kda/01-decay-then-correct",
+      "model-advanced-gdn-kda/02-component-retention",
+      "model-advanced-gdn-kda/03-state-versus-output-gates"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-gdn-kda",
+        "title": "GDN과 KDA: 기존 상태의 유지와 델타 보정",
+        "description": "기존 상태를 남기는 유지율과 새 Value에 맞추는 보정 강도를 구분하고, GDN의 상태 갱신에서 KDA의 성분별 유지율과 입력에 따른 조절값 계산까지 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-gdn-kda",
+        "title": "GDN and KDA: Retaining State and Applying Delta Corrections",
+        "description": "Distinguish retention of the old state from correction toward a new Value, then follow GDN updates through KDA’s component-wise retention and input-dependent control values.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-09-29: Reviewed bilingual inline MathML macron corrections and plain-language image alt text; explanations and numerical examples preserved.",
+        "sourceRevision": "f781d7f6676dd1e2a34aefdfd8b23749845ee4dc5c64dc896bbb8393145b64c8"
+      }
+    }
+  },
+  {
+    "articleId": "rl-08",
+    "order": 109,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-08/01-sampling-distribution",
+      "rl-08/02-policy-engine-differences",
+      "rl-08/03-correction-and-alignment"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-probability-mismatch",
+        "title": "생성 확률과 학습 확률이 달라지는 이유",
+        "description": "계산 순서에 따른 차이를 줄이는 방법을 살펴보고, 남은 엔진 차이와 모델 버전 차이를 확률비로 다루는 원리를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-probability-mismatch",
+        "title": "Why Generation and Training Probabilities Differ",
+        "description": "Explore how to reduce differences caused by computation order, then use probability ratios to account for remaining engine and model-version differences.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "14bc8a25a67bb94686d7cf295008cbead39939ca14f7455463e8d894c23ff894",
+        "reviewNote": "Reviewed four sections and three bilingual figures against the Korean source, including rounding, alignment scope, engine/version differences, TIS and PPO clipping. Score Centering excluded."
+      }
+    }
+  },
+  {
+    "articleId": "rl-10",
+    "order": 110,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-10/01-sync-async-timeline",
+      "rl-10/02-training-and-deployment",
+      "rl-10/03-staleness-lifecycle",
+      "rl-10/04-buffer-fifo-filters"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-async-staleness",
+        "title": "비동기 RL과 오래된 데이터",
+        "description": "생성과 학습을 겹치는 비동기 RL에서 배포 버전이 어떻게 바뀌고, 생성 중이거나 버퍼에 쌓인 경험을 언제 제외하는지 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-async-staleness",
+        "title": "Asynchronous RL and Stale Data",
+        "description": "See how published rollout versions advance in asynchronous RL, and when to exclude experience that ages during generation or while waiting in a buffer.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3c802ea700500486c78316c5ac03efe2ef5f968c732f952de4df553d7453cb67",
+        "reviewNote": "Korean and English paragraphs, four figures, examples, terminology, alt text, and source scope reviewed on 2026-09-28."
+      }
+    }
+  },
+  {
+    "articleId": "rl-11",
+    "order": 111,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-11/01-prefix-cache-routing",
+      "rl-11/02-batching-kv-capacity",
+      "rl-11/03-draft-verify-mtp"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-rollout-inference",
+        "title": "RL 롤아웃의 추론 최적화",
+        "description": "공유 prefix의 KV 재사용, 길이가 다른 요청의 배치, speculative decoding과 MTP를 통해 RL 생성 비용을 줄이는 위치와 조건을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-rollout-inference",
+        "title": "Inference Optimization for RL Rollouts",
+        "description": "Explore where and under what conditions shared-prefix KV reuse, batching variable-length requests, speculative decoding, and MTP reduce RL generation costs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "48aa32239103ea72de4483eb27c297b83de80cba376509b615208094a3cb09ff",
+        "reviewNote": "Reviewed Korean and English prose, all three figures, numerical examples, and NeMo RL source measurements for release."
+      }
+    }
+  },
+  {
+    "articleId": "rl-12",
+    "order": 112,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-12/01-program-resource-lifetimes",
+      "rl-12/02-program-pause-restore",
+      "rl-12/03-inference-tool-resources"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-program-scheduling",
+        "title": "에이전트 전체를 보고 스케줄링하기",
+        "description": "모델 호출과 도구 실행을 잇는 프로그램의 상태를 추적하고, KV 보존과 재계산 사이에서 실행·일시중지·재배치를 결정하는 방법을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-program-scheduling",
+        "title": "Scheduling the Whole Agent Program",
+        "description": "Track the state of programs that connect model calls and tool execution, and examine how execution, pausing, and reassignment balance KV retention against recomputation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "6ad32aae3f3b2c1b6a912d688245dcaad138b43c3e8215d3aeea7290e1c47b03",
+        "reviewNote": "Reviewed five bilingual sections and three figures against ThunderAgent and DSec, including Pause/Restore versus KV offloading and independent tool-resource lifetimes."
+      }
+    }
+  },
+  {
+    "articleId": "rl-15",
+    "order": 113,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-25",
+    "figureIds": [
+      "rl-15/01-reshard-and-buckets",
+      "rl-15/02-weight-transfer-paths",
+      "rl-15/03-policy-version-transition"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-weight-sync",
+        "title": "새 가중치를 추론 엔진으로 전달하기",
+        "description": "학습기와 추론기의 가중치 분할을 맞추고, 전송 경로를 선택하고, 일관된 새 정책으로 생성을 재개하는 과정을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-weight-sync",
+        "title": "Delivering New Weights to the Inference Engine",
+        "description": "We examine how to reconcile the learner's and inference engine's weight partitions, choose a transfer path, and resume generation with a consistent new policy.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5293d2bc407ae9a6a27e4e0a0fd25c1d9c9b1986a341eb052cf6bbe9e6479697",
+        "reviewNote": "Refined the three-stage weight-sync explanation, transfer selection conditions, and requantization example in both languages. Reviewed all figure variants."
+      }
+    }
+  },
+  {
+    "articleId": "rl-19",
+    "order": 114,
+    "track": "rl",
+    "category": null,
+    "date": "2026-09-28",
+    "figureIds": [
+      "rl-01/01-role-mapping",
+      "rl-01/02-token-actions-response-reward",
+      "rl-02/00-token-probabilities",
+      "rl-02/01-advantage-meets-logprob",
+      "rl-02/03-old-current-reference",
+      "rl-03/02-group-relative-advantage",
+      "rl-03/01-critic-return",
+      "rl-04/01-student-visited-contexts",
+      "rl-04/02-teacher-token-signal",
+      "rl-18/02-starting-policy-and-feedback",
+      "rl-18/01-specialists-to-student",
+      "rl-18/03-opd-before-after-rl",
+      "rl-18/04-multiple-teachers-and-prefixes",
+      "rl-05/01-system-data-weight-loop",
+      "rl-06/01-token-identity",
+      "rl-06/02-routing-replay",
+      "rl-09/02-quantization-conventions",
+      "rl-08/02-policy-engine-differences",
+      "rl-10/01-sync-async-timeline",
+      "rl-10/03-staleness-lifecycle",
+      "rl-11/01-prefix-cache-routing",
+      "rl-12/01-program-resource-lifetimes",
+      "rl-15/03-policy-version-transition"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "rl-summary",
+        "title": "LLM RL 총정리: 토큰의 선택에서 시스템의 순환까지",
+        "description": "13편의 핵심 그림을 따라, 토큰 확률을 바꾸는 학습부터 경험과 가중치가 오가는 시스템까지 30분 흐름으로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "rl-summary",
+        "title": "LLM RL in Review: From Token Choices to the System Loop",
+        "description": "Follow the key figures from thirteen articles in a 30-minute walkthrough, from learning that changes token probabilities to the system that moves experience and weights.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "1ed8e5c9f41df3e41e4f9a01ac8e4b15af3209ded1d01f13a827fafbb5fc642e",
+        "reviewNote": "Compared all eleven sections, twenty-three reused figures and alt text against Korean. Reviewed policy-gradient, critic, OPD, MOPD2 and systems explanations; original figure numbering retained."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-linear-attention",
+    "order": 9.7,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-27",
+    "figureIds": [
+      "model-advanced-linear-attention/00-state-overview",
+      "model-advanced-linear-attention/00b-associative-computation",
+      "model-advanced-linear-attention/01-outer-product",
+      "model-advanced-linear-attention/02-state-accumulation",
+      "model-advanced-linear-attention/03-read-state",
+      "model-advanced-linear-attention/04-normalization-and-memory"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-linear-attention",
+        "title": "Linear Attention: KV를 고정 크기 상태에 누적하기",
+        "description": "Softmax 대신 독립적인 특징 변환을 사용하는 이유부터, 외적으로 상태에 쓰고 Query로 읽는 과정과 점수 합을 이용한 정규화까지 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-linear-attention",
+        "title": "Linear Attention: Accumulating KV in a Fixed-Size State",
+        "description": "Understand why softmax is replaced with independent feature maps, then follow outer-product writes, Query reads, and normalization by the sum of scores.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "25f3171dbe77d131842af467f0fa2ec2c4fef4b8cc7adb4ff30ba17f39d02e3f",
+        "reviewNote": "Reviewed all nine sections, six equations, examples and six bilingual figures; clarified outer-product write/read scales, exact accumulation, and the transition to delta updates."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-ssm-basics",
+    "order": 9.91,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-ssm-basics/01-state-through-time",
+      "model-advanced-ssm-basics/02-one-update",
+      "model-advanced-ssm-basics/03-retention-through-time",
+      "model-advanced-ssm-basics/04-fixed-coefficients"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ssm-basics",
+        "title": "SSM: 이전 상태와 새 입력으로 문맥을 이어가기",
+        "description": "Linear Attention과 상태 갱신 구조를 비교하고, SSM의 유지·기록·읽기 연산과 과거 입력의 영향이 남는 과정을 작은 수치 예시로 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ssm-basics",
+        "title": "SSMs: Carrying Context Through State and New Inputs",
+        "description": "Compare state updates in Linear Attention and SSMs, then use small numerical examples to trace retention, writing, reading, and the lingering influence of past inputs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "07749c7ecab3ba34bb452705417cf4ea5d79b1b58b47e69c038996753ff833f3",
+        "reviewNote": "2026-09-29: Removed the continuous-time discretization section and its corresponding English text; reviewed the transition from the update equations to the expanded recurrence."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-mamba-selective",
+    "order": 9.92,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-mamba-selective/01-why-selection",
+      "model-advanced-mamba-selective/06-delta-retention",
+      "model-advanced-mamba-selective/07-write-components",
+      "model-advanced-mamba-selective/02-input-coefficients",
+      "model-advanced-mamba-selective/03-selective-update",
+      "model-advanced-mamba-selective/04-mamba-block",
+      "model-advanced-mamba-selective/05-delta-versus-input"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-mamba-selective",
+        "title": "Mamba: 입력에 따라 무엇을 기억할지 조절하기",
+        "description": "입력에서 유지·기록·읽기 계수를 만드는 선택적 SSM의 계산과 Mamba 블록을 살펴보고, GDN·KDA의 델타 보정과 비교합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-mamba-selective",
+        "title": "Mamba: Choosing What to Remember Based on the Input",
+        "description": "Trace selective SSM coefficients for retention, writing, and reading, locate that computation within a Mamba block, and compare it with delta corrections in GDN and KDA.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "5580f1847e216fa18a7026f882f7e80177c03cb76ec9c2fb3726a453df44a282",
+        "reviewNote": "2026-09-29: Reviewed matching purpose-first explanations of Delta, negative A, input-dependent B/C, two new visual examples, figure order and preserved discretization discussion."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-hybrid",
+    "order": 9.93,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-hybrid/00-two-memory-forms",
+      "model-advanced-hybrid/01-layerwise-memory",
+      "model-advanced-hybrid/02-quality-comparison",
+      "model-advanced-hybrid/03-fixed-state-growing-kv",
+      "model-advanced-hybrid/04-two-kinds-of-hybrid",
+      "model-advanced-hybrid/02-one-token-two-memories"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-hybrid",
+        "title": "하이브리드 모델: 상태와 Attention을 함께 쓰기",
+        "description": "고정 크기 상태와 위치별 KV를 함께 사용하는 이유, 품질과 저장량의 절충을 살펴보고 한 토큰이 두 종류의 층을 지나는 과정을 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-hybrid",
+        "title": "Hybrid Models: Using State and Attention Together",
+        "description": "Explore why models combine fixed-size state with position-indexed KV, the quality and storage trade-offs, and how one token passes through both types of layers.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "f53d6610969273ce51a6853bc6b4c386cec5595d6f8a7134e9def6acad245728",
+        "reviewNote": "2026-09-29: Reviewed matching Korean and English prose cuts, retained examples and runtime trade-offs, and unchanged figure references."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-hc-mhc",
+    "order": 9.94,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-hc-mhc/00-one-or-many-streams",
+      "model-advanced-hc-mhc/01-widen-residual-stream",
+      "model-advanced-hc-mhc/02-read-mix-write",
+      "model-advanced-hc-mhc/03-repeated-residual-mixing",
+      "model-advanced-hc-mhc/04-constrained-residual-mixing"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-hc-mhc",
+        "title": "HC와 mHC: Residual 경로를 넓히고 연결하기",
+        "description": "여러 residual stream의 읽기·우회 혼합·쓰기를 같은 입력으로 추적하고, mHC가 반복 혼합에 제약을 두는 이유와 실행 비용을 살펴봅니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-hc-mhc",
+        "title": "HC and mHC: Widening and Connecting Residual Streams",
+        "description": "Trace reading, bypass mixing, and writing from the same input, then examine why mHC constrains repeated mixing and what the wider residual path costs.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "e64717543575738de90d8eeb35271c8ff02f2f4bd0af5b8210b1a04a54bd955d",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-gated-residual",
+    "order": 9.95,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-gated-residual/00-mhc-to-gr",
+      "model-advanced-gated-residual/01-normalize-and-read",
+      "model-advanced-gated-residual/02-scalar-write"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-gated-residual",
+        "title": "Gated Residual: 성분별로 읽고 원본에 나누어 쓰기",
+        "description": "여러 branch를 유지하는 Gated Residual에서 정규화와 성분별 읽기 gate, branch별 scalar 쓰기를 구분하고 하나의 수치 예시로 연결합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-gated-residual",
+        "title": "Gated Residual: Reading Components and Writing to Originals",
+        "description": "Follow one numerical example through branch normalization, componentwise read gates, and branchwise scalar writes in Gated Residual.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "7e6a9801594d125bb8ae76a740ad4013fd8bb458640c5ca125cc94e9f4b4ab8a",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-attention-residuals",
+    "order": 9.96,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-28",
+    "figureIds": [
+      "model-advanced-attention-residuals/01-position-versus-depth",
+      "model-advanced-attention-residuals/01b-weighted-read",
+      "model-advanced-attention-residuals/02-learned-depth-query",
+      "model-advanced-attention-residuals/03-block-sources",
+      "model-advanced-attention-residuals/04-residual-designs"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-attention-residuals",
+        "title": "Attention Residuals: 지나온 층의 출력을 선택해서 읽기",
+        "description": "과거 층의 새 출력을 보관하고 깊이별 비중으로 읽는 과정을 계산해 보고, 학습 Query와 Block 방식의 저장량·선택 단위 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-attention-residuals",
+        "title": "Attention Residuals: Selecting Outputs from Earlier Layers",
+        "description": "Calculate a weighted read over earlier layer outputs, derive its weights with a learned query, and examine the storage and selection trade-off of Block Attention Residuals.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "36943238a0a5245573c724b31455c9ccf7baa3d4512677feff89c88edfc3763e",
+        "reviewNote": "2026-09-28: Compared Korean and English paragraph flow, scope, numeric examples, MathML, emphasis, figure order, alt text and sources. Existing English figures match the shared inputs. GDN/KDA prerequisite links to the Korean draft with an explicit label."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-cross-layer-kv",
+    "order": 9.97,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-cross-layer-kv/01-six-layers-three-banks",
+      "model-advanced-cross-layer-kv/02-producer-then-consumer",
+      "model-advanced-cross-layer-kv/03-what-is-shared",
+      "model-advanced-cross-layer-kv/04-sharing-factor"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-cross-layer-kv",
+        "title": "층간 KV 공유: 앞선 층의 Key와 Value 재사용하기",
+        "description": "여섯 층의 KV 저장량을 비교하고, 새 토큰의 Key와 Value를 다음 층에서 재사용하는 순서와 저장·계산의 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-cross-layer-kv",
+        "title": "Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers",
+        "description": "Compare KV storage across six layers, follow a new token as its Keys and Values are reused by the next layer, and examine the trade-off between storage and computation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "8194ea10f57261b17e2439c718d1139525d4835acf1eaa7d5cf2ce8636c99e9b",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-yoco",
+    "order": 9.971,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-yoco/01-producers-and-readers",
+      "model-advanced-yoco/02-cross-attention-sources",
+      "model-advanced-yoco/03-new-token-through-both-halves",
+      "model-advanced-yoco/04-prefill-dependencies",
+      "model-advanced-yoco/05-cache-growth"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-yoco",
+        "title": "YOCO: 공통 KV를 만드는 층과 읽는 층 나누기",
+        "description": "앞부분의 공통 KV를 뒷부분이 읽는 구조와 새 토큰의 처리 순서를 따라가며, 첫 출력에 불필요한 prefill 계산을 생략하는 이유를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-yoco",
+        "title": "YOCO: Separating Layers That Produce and Read Shared KV",
+        "description": "Follow shared KV from early to late layers and trace new-token processing to understand why prefill can skip past computations unnecessary for the first output.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "233e3eacb2ab3a4fd063a8d438cb0d26e511cb2a4de3c028326999caf190c68b",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-ced",
+    "order": 9.972,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-09-29",
+    "figureIds": [
+      "model-advanced-ced/01-ed-and-ced-paths",
+      "model-advanced-ced/02-sequences-and-causality",
+      "model-advanced-ced/03-global-and-local-kv",
+      "model-advanced-ced/05-select-and-attend",
+      "model-advanced-ced/06-csa2-modes",
+      "model-advanced-ced/04-prefill-replay"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ced",
+        "title": "CED: 인과적 Encoder와 Decoder로 문맥 이어가기",
+        "description": "생성 경로와 global·local KV의 출처를 비교하고, sparse 선택과 세 재사용 모드, 시퀀스 압축률, prefill 재계산의 관계를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ced",
+        "title": "CED: Continuing Context with a Causal Encoder and Decoder",
+        "description": "Compare generation paths and the sources of global and local KV, then connect sparse selection, three reuse modes, sequence compression, and prefill replay.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "a4481df7966527902b11564851b520f11b4ad1b50d69ff5a1a3ed79949d1da90",
+        "reviewNote": "2026-09-30: Korean and English paragraphs, examples, math, figure order, alt text, and all bilingual desktop/mobile figures compared against the final Korean source."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-ngram-embedding",
+    "order": 9.973,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-11-23",
+    "figureIds": [
+      "model-advanced-ngram-embedding/01-suffix-token-groups",
+      "model-advanced-ngram-embedding/04-lookup-meets-context",
+      "model-advanced-ngram-embedding/05-vocabulary-and-hashing",
+      "model-advanced-ngram-embedding/02-address-and-learned-row",
+      "model-advanced-ngram-embedding/03-two-hashes-and-collisions"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-ngram-embedding",
+        "title": "N-gram 임베딩: 토큰 묶음의 표현 조회하기",
+        "description": "토큰 묶음의 끝 위치에 표현을 더하고 함께 학습하는 과정을 살펴본 뒤, 고정 크기 표의 주소 계산과 다중 해시로 충돌을 완화하는 방법을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-ngram-embedding",
+        "title": "N-gram Embeddings: Looking Up Representations of Token Groups",
+        "description": "Follow how a representation is added at the final position of a token group and learned with the model, then see how fixed-size tables use addresses and multiple hashes to mitigate collisions.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "d87ac9b125a5d51a2a0cccb9369bfbc9908e866099a239d483fad48fdbbb417d",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-engram",
+    "order": 9.974,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-11-23",
+    "figureIds": [
+      "model-advanced-engram/00-layer-map",
+      "model-advanced-engram/01-lookup-and-context",
+      "model-advanced-engram/02-context-gate-numbers",
+      "model-advanced-engram/03-convolution-and-residual",
+      "model-advanced-engram/04-input-versus-middle"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-engram",
+        "title": "Engram: 조회한 기억을 문맥에 맞게 사용하기",
+        "description": "토큰 묶음으로 조회한 벡터를 문맥 gate로 조절하고 residual에 결합하는 과정을 계산하며, 중간 층 배치와 조회·전송 중첩의 절충을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-engram",
+        "title": "Engram: Using Retrieved Memory in Context",
+        "description": "Calculate how a context gate controls a vector retrieved from token groups and adds it to the residual stream, then examine the trade-off between middle-layer placement and overlapping retrieval with compute.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "377aed838fa45ec86371946a3870e129014d75bc961c93698883dcae962df036",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-vision-encoder",
+    "order": 9.975,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-11-23",
+    "figureIds": [
+      "model-advanced-vision-encoder/01-pixels-and-channels",
+      "model-advanced-vision-encoder/02-patch-projection",
+      "model-advanced-vision-encoder/03-patches-and-position",
+      "model-advanced-vision-encoder/04-vision-contextualization",
+      "model-advanced-vision-encoder/05-learning-objectives",
+      "model-advanced-vision-encoder/06-output-representations"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-vision-encoder",
+        "title": "이미지를 벡터로: Patch와 Vision Encoder",
+        "description": "작은 RGB 이미지를 패치 벡터로 바꾸고 위치 정보와 attention으로 문맥화하는 과정을 따라가며, 시각 표현의 학습 목표와 출력 형태를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-vision-encoder",
+        "title": "From Images to Vectors: Patches and Vision Encoders",
+        "description": "Follow a small RGB image through patch projection, positional information, and attention, then examine vision learning objectives and output representations.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3d92884dadd708b4230237e8bd57615776023c37f86f0726ad707f894141bbb5",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "model-advanced-vision-language",
+    "order": 9.976,
+    "track": "shared",
+    "category": "model",
+    "date": "2026-11-23",
+    "figureIds": [
+      "model-advanced-vision-language/05-spatial-merge",
+      "model-advanced-vision-language/01-projector-width",
+      "model-advanced-vision-language/02-mixed-input-sequence",
+      "model-advanced-vision-language/03-text-generation-path",
+      "model-advanced-vision-language/04-connector-training"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "model-advanced-vision-language",
+        "title": "시각 표현을 언어 모델에 연결하기",
+        "description": "시각 토큰을 묶고 projector로 변환한 뒤 텍스트와 함께 입력하는 과정을 따라가며, 텍스트 생성과 연결부·인코더의 학습 범위를 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "model-advanced-vision-language",
+        "title": "Connecting Visual Representations to a Language Model",
+        "description": "Follow visual tokens as they are grouped, projected, and combined with text, then trace text generation and the training scope of the connector and vision encoder.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "081feb562954a0c7006b55bb0db32fc52e84c40f1559965feece6f1cf247df9c",
+        "reviewNote": "2026-09-30: Compared Korean and English paragraphs, examples, equations, claims, sources, and figure variants; verified localized image dimensions and hashes."
+      }
+    }
+  },
+  {
+    "articleId": "training-01-forward-backward",
+    "order": 51,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [
+      "training-01-forward-backward/01-training-cycle",
+      "training-01-forward-backward/02-next-token-distributions",
+      "training-01-forward-backward/03-cross-entropy",
+      "training-01-forward-backward/04-backward-flow",
+      "training-01-forward-backward/05-wgrad-xgrad",
+      "training-01-forward-backward/06-parameter-update"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "training-01-forward-backward",
+        "title": "학습 한 스텝: Forward에서 가중치 업데이트까지",
+        "description": "다음 토큰의 확률로 loss를 계산하고, backward에서 wgrad와 xgrad를 만든 뒤 optimizer가 가중치를 바꾸는 과정을 작은 수치와 실제 모델로 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-01-forward-backward",
+        "title": "One training step: from forward to a weight update",
+        "description": "Follow next-token probabilities into loss, separate wgrad and xgrad during backward, and see an optimizer change weights through small numerical examples and a real model.",
+        "published": true,
+        "sourceRevision": "638649a2d91e7b374765a972e79e900767ceea4e04f210ecad6e8d8d01aedc48",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
+  },
+  {
+    "articleId": "training-prep-01-repository-runpod",
+    "order": 49,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [],
+    "locales": {
+      "ko": {
+        "slug": "training-prep-01-repository-runpod",
+        "title": "학습 준비 1: 저장소와 RunPod 환경",
+        "description": "편별 학습 코드와 공통 실행 도구를 구분하고, 두 API 키로 GPU 실험을 실행한 뒤 로그·프로파일·결과를 회수하는 과정을 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-prep-01-repository-runpod",
+        "title": "Training preparation 1: the repository and RunPod environment",
+        "description": "Separate chapter-specific training code from the shared runner, then use two API keys to run GPU experiments and collect logs, profiles, and results.",
+        "published": true,
+        "sourceRevision": "98cea946862106f6be313f42984ab6c80f315857115ea00b275574472ff4b3e7",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
+  },
+  {
+    "articleId": "training-prep-02-data-preparation",
+    "order": 50,
+    "track": "training",
+    "category": null,
+    "date": "2026-10-05",
+    "figureIds": [
+      "training-prep-02-data-preparation/01-chunk-and-target",
+      "training-prep-02-data-preparation/02-best-fit-packing",
+      "training-prep-02-data-preparation/03-packed-attention"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "training-prep-02-data-preparation",
+        "title": "학습 준비 2: FineWeb에서 학습 배치까지",
+        "description": "FineWeb 문서를 학습·검증으로 나누고, 긴 문서의 독립 분할과 실행 시점 best-fit packing을 거쳐 padding 없는 입력과 다음 토큰 정답을 만드는 과정을 설명합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "training-prep-02-data-preparation",
+        "title": "Training preparation 2: from FineWeb to training batches",
+        "description": "Split FineWeb into training and validation documents, chunk long documents independently, and use runtime best-fit packing to build padding-free inputs and next-token targets.",
+        "published": true,
+        "sourceRevision": "73b0c5cd3d1ba8de8f0a2ce94f5001d3d750ee608b7cc2be44dd631987df9223",
+        "translationStatus": "reviewed",
+        "reviewNote": "2026-10-05: Korean and English paragraphs, numerical examples, code, MathML, figure order and alt text compared. Bilingual desktop/mobile figure assets preserve the approved diagrams; original file hashes verified separately."
+      }
+    }
+  },
+  {
+    "articleId": "deepseek-kv-cache",
+    "order": 201,
+    "track": "feature",
+    "category": null,
+    "date": "2026-10-18",
+    "figureIds": [
+      "deepseek-kv-cache/00-kv-per-token",
+      "deepseek-kv-cache/01-guide-v2",
+      "mla-flow/01-projections",
+      "mla-flow/02-attention",
+      "mla-flow/03-key-absorption",
+      "mla-flow/04-value-absorption",
+      "deepseek-kv-cache/02-guide-v32",
+      "dsa-flow/01-indexer-projections",
+      "dsa-flow/02-index-score",
+      "dsa-flow/03-sparse-attention",
+      "deepseek-kv-cache/03-guide-v4",
+      "hca-flow/01-weight-map",
+      "hca-flow/02-compression",
+      "hca-flow/03-visible-entries",
+      "hca-flow/04-attention",
+      "csa-flow/01-weight-map",
+      "csa-flow/02-overlap-compression",
+      "csa-flow/03-indexer",
+      "csa-flow/04-visible-entries",
+      "deepseek-kv-cache/04-guide-v41",
+      "csa2-flow/07-compression-span",
+      "csa2-flow/06-indexer-key-source",
+      "csa2-flow/01-three-modes",
+      "csa2-flow/04-layer-layout",
+      "csa2-flow/05-hierarchical-indexer",
+      "deepseek-kv-cache/06-ced-sources",
+      "deepseek-kv-cache/07-ced-prefill"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "deepseek-kv-cache",
+        "title": "DeepSeek의 KV 캐시: 토큰당 3.9 MB에서 890 B까지",
+        "description": "DeepSeek의 attention이 V2에서 V4.1까지 어떻게 바뀌었는지, 세대마다 토큰당 KV 캐시를 직접 계산하며 따라갑니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "deepseek-kv-cache",
+        "title": "DeepSeek's KV Cache: From 3.9 MB to 890 B per Token",
+        "description": "How DeepSeek's attention changed from V2 to V4.1, followed by working out the KV cache per token for each generation.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "3736dee550c1075b3af8f36912c62f440d433f8b4a08e57c8c58a0965e60cd2e",
+        "reviewNote": "2026-10-18: English draft reviewed against the final Korean draft in two Codex rounds (2026-10-15); release edits (closing sentence removed) applied to both; section, figure, note and caption order compared."
+      }
+    }
+  },
+  {
+    "articleId": "open-models-kv-cache",
+    "order": 202,
+    "track": "feature",
+    "category": null,
+    "date": "2026-11-23",
+    "figureIds": [
+      "open-models-kv-cache/00-overview",
+      "open-models-kv-cache/05-five-methods",
+      "open-models-kv-cache/06-timeline",
+      "open-models-kv-cache/07-layer-map",
+      "open-models-kv-cache/02-guide-swa",
+      "open-models-kv-cache/11-swa",
+      "open-models-kv-cache/01-guide-state",
+      "open-models-kv-cache/08-state-update",
+      "open-models-kv-cache/09-state-size",
+      "open-models-kv-cache/10-state-vs-attn",
+      "open-models-kv-cache/03-guide-sparse",
+      "open-models-kv-cache/12-selection",
+      "open-models-kv-cache/16-select-reuse",
+      "open-models-kv-cache/04-guide-share",
+      "open-models-kv-cache/13-sharing",
+      "open-models-kv-cache/14-request",
+      "open-models-kv-cache/15-access"
+    ],
+    "locales": {
+      "ko": {
+        "slug": "open-models-kv-cache",
+        "title": "모델마다 다른 KV 캐시: 여섯 오픈 모델은 이전 문맥을 어떻게 남기나",
+        "description": "GLM-5.3, Hy4-preview, MiMo-V2.6-Pro, Kimi K3, Qwen3.8-Flash-Next, DeepSeek V4.1-Flash를 토큰당 KV 캐시라는 같은 잣대로 비교하고, 그 차이를 만드는 다섯 방법과 남는 비용을 계산합니다.",
+        "published": true
+      },
+      "en": {
+        "slug": "open-models-kv-cache",
+        "title": "KV Cache Across Models: How Six Open Models Keep Earlier Context",
+        "description": "GLM-5.3, Hy4-preview, MiMo-V2.6-Pro, Kimi K3, Qwen3.8-Flash-Next, and DeepSeek V4.1-Flash compared by one yardstick, KV cache per token, along with the five methods behind the differences and the costs those methods leave behind.",
+        "published": true,
+        "translationStatus": "reviewed",
+        "sourceRevision": "b9b6ce837c7dcf91d12be794503c1b5e6f08434eb9eecab03870cefa51816f37",
+        "reviewNote": "2026-10-15: English draft reviewed against the Korean draft in two Codex rounds. 2026-10-19: numbers and structure brought in line with the revised Korean text (deployment-format sizes, five reader-review rounds); the English wording was not polished again after those edits."
       }
     }
   }

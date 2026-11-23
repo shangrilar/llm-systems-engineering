@@ -1,0 +1,286 @@
+{
+  "provenance": "one FP32 correctness step; not validation loss or a GPU benchmark",
+  "environment": {
+    "python": "3.12.8",
+    "torch": "2.8.0",
+    "transformers": "4.57.1",
+    "device": "cpu",
+    "threads": 4
+  },
+  "model": "HuggingFaceTB/SmolLM2-135M",
+  "revision": "93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "parameters": 134515008,
+  "text": "I like AI",
+  "generation": {
+    "prompt": "I like",
+    "next_id": 288,
+    "next_token": " to",
+    "text": "I like to"
+  },
+  "input_ids": [
+    57,
+    702,
+    5646,
+    0
+  ],
+  "positions": [
+    {
+      "position": 0,
+      "input_id": 57,
+      "input_token": "I",
+      "target_id": 702,
+      "target_token": "Ġlike",
+      "target_probability": 0.0012600490590557456,
+      "token_loss": 6.676604270935059,
+      "top5": [
+        {
+          "id": 5248,
+          "token": "'m",
+          "probability": 0.06720101833343506
+        },
+        {
+          "id": 744,
+          "token": "Ġam",
+          "probability": 0.03020183928310871
+        },
+        {
+          "id": 1510,
+          "token": "Ġthink",
+          "probability": 0.027113888412714005
+        },
+        {
+          "id": 1277,
+          "token": "Ġwant",
+          "probability": 0.02121761254966259
+        },
+        {
+          "id": 436,
+          "token": "Ġwas",
+          "probability": 0.020428726449608803
+        }
+      ],
+      "other_probability": 0.8338369131088257
+    },
+    {
+      "position": 1,
+      "input_id": 702,
+      "input_token": "Ġlike",
+      "target_id": 5646,
+      "target_token": "ĠAI",
+      "target_probability": 2.4697645130800083e-05,
+      "token_loss": 10.608802795410156,
+      "top5": [
+        {
+          "id": 288,
+          "token": "Ġto",
+          "probability": 0.2746799886226654
+        },
+        {
+          "id": 260,
+          "token": "Ġthe",
+          "probability": 0.09541553258895874
+        },
+        {
+          "id": 357,
+          "token": "Ġit",
+          "probability": 0.05821580812335014
+        },
+        {
+          "id": 451,
+          "token": "Ġthis",
+          "probability": 0.049809154123067856
+        },
+        {
+          "id": 338,
+          "token": "Ġthat",
+          "probability": 0.04085511341691017
+        }
+      ],
+      "other_probability": 0.48102444410324097
+    },
+    {
+      "position": 2,
+      "input_id": 5646,
+      "input_token": "ĠAI",
+      "target_id": 0,
+      "target_token": "<|endoftext|>",
+      "target_probability": 0.0008404251420870423,
+      "token_loss": 7.081603050231934,
+      "top5": [
+        {
+          "id": 28,
+          "token": ",",
+          "probability": 0.10203193873167038
+        },
+        {
+          "id": 30,
+          "token": ".",
+          "probability": 0.06338316947221756
+        },
+        {
+          "id": 61,
+          "token": "M",
+          "probability": 0.05768219754099846
+        },
+        {
+          "id": 284,
+          "token": "Ġand",
+          "probability": 0.05059422552585602
+        },
+        {
+          "id": 327,
+          "token": "Ġfor",
+          "probability": 0.035402681678533554
+        }
+      ],
+      "other_probability": 0.6909058094024658
+    },
+    {
+      "position": 3,
+      "input_id": 0,
+      "input_token": "<|endoftext|>",
+      "target_id": null,
+      "target_token": null,
+      "target_probability": null,
+      "token_loss": null,
+      "top5": [
+        {
+          "id": 504,
+          "token": "The",
+          "probability": 0.04096303880214691
+        },
+        {
+          "id": 1780,
+          "token": "What",
+          "probability": 0.0189173873513937
+        },
+        {
+          "id": 198,
+          "token": "Ċ",
+          "probability": 0.01688452810049057
+        },
+        {
+          "id": 788,
+          "token": "In",
+          "probability": 0.01605130359530449
+        },
+        {
+          "id": 2020,
+          "token": "How",
+          "probability": 0.015186809934675694
+        }
+      ],
+      "other_probability": 0.8919969350099564
+    }
+  ],
+  "loss": 8.122337341308594,
+  "valid_targets": 3,
+  "shapes": {
+    "input_ids": [
+      1,
+      4
+    ],
+    "logits": [
+      1,
+      4,
+      49152
+    ],
+    "X": [
+      1,
+      4,
+      1536
+    ],
+    "stored_weight": [
+      576,
+      1536
+    ],
+    "dY": [
+      1,
+      4,
+      576
+    ],
+    "dA": [
+      576,
+      1536
+    ],
+    "dX": [
+      1,
+      4,
+      1536
+    ]
+  },
+  "checks": {
+    "hf_ce_difference": 0.0,
+    "wgrad_max_error": 0.0,
+    "xgrad_max_error": 0.0,
+    "weight_unchanged_after_backward": true
+  },
+  "tracked_parameter": {
+    "parameter": "model.layers.0.mlp.down_proj.weight",
+    "index": [
+      507,
+      1365
+    ],
+    "before": 0.484375,
+    "after_backward": 0.484375,
+    "gradient": 0.3117007911205292,
+    "after_update": 0.4842745363712311,
+    "delta": -0.0001004636287689209,
+    "m": 0.031170079484581947,
+    "v": 9.715738997329026e-05
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "lr": 0.0001,
+    "weight_decay": 0.01
+  },
+  "linear_example": {
+    "X": [
+      [
+        1.0,
+        2.0
+      ]
+    ],
+    "W": [
+      [
+        1.0,
+        -1.0
+      ],
+      [
+        0.5,
+        2.0
+      ]
+    ],
+    "Y": [
+      [
+        2.0,
+        3.0
+      ]
+    ],
+    "dY": [
+      [
+        0.1,
+        -0.2
+      ]
+    ],
+    "dW": [
+      [
+        0.1,
+        -0.2
+      ],
+      [
+        0.2,
+        -0.4
+      ]
+    ],
+    "dX": [
+      [
+        0.30000000000000004,
+        -0.35000000000000003
+      ]
+    ],
+    "wgrad_max_error": 0.0,
+    "xgrad_max_error": 0.0
+  },
+  "code_sha256": "00a74965e150419d30d7aea11fbfbc0359e582cf6a5821a257ac4d414c08efa1"
+}

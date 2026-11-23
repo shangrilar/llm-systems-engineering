@@ -36,7 +36,7 @@ The two heads’ results are **concatenated at matching token positions.** Each 
 
 After the Attention result is added to the residual stream, RMSNorm is applied, followed by the MLP. **A dense MLP applies the same MLP to every token, while MoE selects which experts to use for each token.** Figure 3 shows the two structures side by side for a single token input x.
 
-[![The gated MLP on the left multiplies the Gate projection and SiLU result elementwise with the Up projection result, then applies the Down projection. MoE on the right sends the same input x to the experts selected by the Router and takes a weighted sum of their results. A shared expert result may also be added. Both structures produce d-dimensional outputs.](/images/model-summary/en/03-mlp-and-moe.png)](/images/model-summary/en/03-mlp-and-moe.png)
+[![The gated MLP on the left multiplies the Gate projection and SiLU result elementwise with the Up projection result, then applies the Down projection. MoE on the right sends the same input x to the experts selected by the Router and takes a weighted sum of their results. A shared expert result may also be added. Both structures produce d-dimensional outputs.](/images/model-summary/en/03-mlp-and-moe.png?v=9b2e1f8e792b)](/images/model-summary/en/03-mlp-and-moe.png?v=9b2e1f8e792b)
 
 The **gated MLP** on the left sends the same d-dimensional input to the Gate and Up projections. Each path produces an m-dimensional vector, and SiLU is applied on the Gate path. Multiplying matching components of the two results lets the Gate path’s values modulate the Up path’s components. The Down projection transforms this m-dimensional result back to d dimensions.
 
@@ -48,7 +48,7 @@ Some models also include a **shared expert**, shown by the dashed path. The shar
 
 Now let us look at the entire decoder block by token position. The three columns in Figure 4 are the paths for tokens 1, 2, and 3. **In the structure we have explored, Core Attention is where vectors from different tokens are compared and their information is combined.** The other stages compute within each token position.
 
-[![Three token paths run down side by side. Connections between tokens appear only inside Core Attention: token 1’s result uses token 1, token 2’s result uses tokens 1 and 2, and token 3’s result uses tokens 1, 2, and 3. The other operations work within each token position.](/images/model-summary/en/04-token-dependencies.png)](/images/model-summary/en/04-token-dependencies.png)
+[![Three token paths run down side by side. Connections between tokens appear only inside Core Attention: token 1’s result uses token 1, token 2’s result uses tokens 1 and 2, and token 3’s result uses tokens 1, 2, and 3. The other operations work within each token position.](/images/model-summary/en/04-token-dependencies.png?v=04e38d1d551b)](/images/model-summary/en/04-token-dependencies.png?v=04e38d1d551b)
 
 Before Core Attention, RMSNorm and the Q, K, and V projections compute separately for each token. RoPE also rotates each token’s Q and K using that token’s position. Core Attention then gathers Values within the range allowed by the causal mask: **token 1 gathers its own Value, token 2 gathers the Values of tokens 1 and 2, and token 3 gathers the Values of tokens 1, 2, and 3.** This is where connections from several tokens converge on a result at one position in the figure.
 

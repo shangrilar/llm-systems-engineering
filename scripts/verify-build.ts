@@ -13,7 +13,8 @@ for(const article of articles)
     if(!html.includes(`lang="${locale}"`))throw Error(`Wrong article language: ${path}`);
     if((html.match(/<h1\b/g)??[]).length!==1)throw Error(`Expected one title: ${path}`);
     if(!entry.published&&!html.includes(locale==='ko'?'초안':'Draft'))throw Error(`Missing draft notice: ${path}`);
-    for(const match of html.matchAll(/<img\b[^>]*\bsrc="(\/images\/[^"?#]+)"/g))
+    // Includes versioned URLs (?v=…) and responsive <source srcset>, as used by figure markup and <Annot>.
+    for(const match of html.matchAll(/\b(?:src|srcset|href)="(\/images\/[^"?#\s]+)(?:[?#][^"]*)?"/gi))
       if(!(await stat('dist'+match[1])).isFile())throw Error(`Missing article image: ${match[1]}`);
   }
 console.log(`${profile}: Korean/English article pages and images verified.`);

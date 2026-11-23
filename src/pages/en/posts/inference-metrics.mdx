@@ -18,7 +18,6 @@ Here we will use the times at which the client submits the request and receives 
 
 <figure class="article-figure">
   <a href="/images/inference-metrics/en/01-request-latency.png"><img src="/images/inference-metrics/en/01-request-latency.png" alt="The request is submitted at 0ms, tokens x0, x1, and x2 arrive at 100, 130, and 170ms, and the request ends at 180ms. TTFT is 100ms, ITLs are 30 and 40ms, TPOT is 35ms/token, and total request time is 180ms." /></a>
-  <figcaption>Figure 1. Different starting and ending points on the same request produce different latency metrics.</figcaption>
 </figure>
 
 <strong>TTFT (Time to First Token)</strong> is the time from submitting the request to receiving the first output token. In the figure, it is `100 − 0 = 100ms`. Since this measures the user's wait for the first answer, it can include queueing, input processing, and output delivery. The entire TTFT should therefore not be interpreted as prefill computation time.
@@ -47,7 +46,6 @@ Figure 2 shows a 10-second observation window separate from the earlier 180ms ex
 
 <figure class="article-figure">
   <a href="/images/inference-metrics/en/02-counting-throughput.png"><img src="/images/inference-metrics/en/02-counting-throughput.png" alt="Requests A, B, and C overlap and all complete within a 10-second observation window. They produce 3, 5, and 2 output tokens. Counting 3 completed requests gives 0.3 requests/s; counting 10 output tokens gives 1 token/s." /></a>
-  <figcaption>Figure 2. Divide completed requests and output tokens across requests by the same observation time.</figcaption>
 </figure>
 
 There are 3 check marks, meaning 3 completed requests. Request throughput is therefore `3 / 10 = 0.3 requests/s`. There are 3 output dots for A, 5 for B, and 2 for C, totaling 10, so output token throughput is `10 / 10 = 1 token/s`. The execution is the same, but changing what goes into the numerator produces a different metric.
@@ -64,7 +62,6 @@ A TPOT of 35ms/token does not mean that output always arrives every 35ms. In Fig
 
 <figure class="article-figure">
   <a href="/images/inference-metrics/en/03-average-and-gaps.png"><img src="/images/inference-metrics/en/03-average-and-gaps.png" alt="Two output streams span 70ms between their first and last tokens. The upper intervals are 35 and 35ms; the lower intervals are 5 and 65ms. Both have TPOT 35ms/token, but the lower stream has a 65ms gap without new output." /></a>
-  <figcaption>Figure 3. Even with the same TPOT, individual token intervals can reveal a long pause during generation.</figcaption>
 </figure>
 
 In both cases, the intervals sum to 70ms and there are 2 of them, so TPOT is identical. In the lower case, however, the user receives x1 and then experiences a long period without further output. <strong>The same average generation rate does not establish that output arrived steadily.</strong>
@@ -79,7 +76,6 @@ Figure 4 sorts the TTFTs of 20 requests from shortest to longest. Each bar repre
 
 <figure class="article-figure">
   <a href="/images/inference-metrics/en/04-request-latency-distribution.png"><img src="/images/inference-metrics/en/04-request-latency-distribution.png" alt="TTFT bars for 20 requests sorted from shortest to longest. The 10th value is 190ms, the 19th is 600ms, and the last is 1000ms. With a rank-rounding-up rule, p50 is 190ms and p95 is 600ms." /></a>
-  <figcaption>Figure 4. Sorting request latencies distinguishes the majority of requests from those that waited longer.</figcaption>
 </figure>
 
 A <strong>percentile</strong> examines the position corresponding to a particular proportion of these sorted values. p50 examines the 50% point, and p95 the 95% point. For this example, we will use `rank = ceil(proportion × number of requests)`, substituting 0.50 for p50 and 0.95 for p95.
@@ -98,7 +94,6 @@ Figure 5 sets two conditions for each request: TTFT at or below 1 second and TPO
 
 <figure class="article-figure">
   <a href="/images/inference-metrics/en/05-goodput-targets.png"><img src="/images/inference-metrics/en/05-goodput-targets.png" alt="Of 10 requests completed successfully within 10 seconds, requests A through H meet both TTFT at or below 1 second and TPOT at or below 50ms/token. I exceeds the TTFT target and J the TPOT target. Total throughput is 1 request/s, goodput is 0.8 requests/s, and target attainment is 80%." /></a>
-  <figcaption>Figure 5. Calculate goodput by counting only completed requests that meet every latency target.</figcaption>
 </figure>
 
 Ten requests completed successfully during the 10-second observation window, so total request throughput is `10 / 10 = 1 request/s`. Only 8, however, met both targets. The remaining 2 also completed, but one was late with its first response and the other exceeded the target for average output interval.

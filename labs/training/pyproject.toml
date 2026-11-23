@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-training-lab"
+version = "0.1.0"
+description = "Reproducible educational LLM pretraining experiments"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+worker = ["torch==2.8.0", "huggingface-hub==0.36.2", "fsspec==2025.3.0", "transformers==4.56.2", "wandb==0.21.3", "pydantic==2.11.9", "tokenizers==0.22.2", "numpy==2.0.2", "pyarrow==21.0.0"]
+
+[project.scripts]
+training-lab = "training_lab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["training_lab*"]

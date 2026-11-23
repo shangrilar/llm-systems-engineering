@@ -1,0 +1,75 @@
+---
+layout: ../../../layouts/Post.astro
+articleId: rl-18
+title: "Combining RL and OPD in a Training Strategy"
+description: "Starting with DeepSeek V4’s specialist training and OPD integration, we examine how to prepare a starting policy for RL and how MiMo MOPD² chooses teachers and contexts."
+date: 2026-09-27
+---
+
+import RLFigure from '../../../components/RLFigure.astro';
+
+The [previous article](/en/posts/rl-on-policy-distillation/) updated a student using teacher probabilities on student-generated contexts. We now ask where this training belongs in model development. Models that develop specialist capabilities through rewards can become teachers, or a student can first learn from a teacher and then improve through RL.
+
+Our central example is **DeepSeek V4’s domain specialization and capability integration through OPD**. After examining that structure, we will revisit pretraining and SFT as preparation for RL’s starting policy. We will then look at research placing OPD before RL and at MiMo MOPD², which chooses both teachers and the contexts where student generation begins. The goal is to trace which model learns what at each stage, rather than memorize a fixed sequence.
+
+## Develop specialists and integrate their capabilities into a student
+
+DeepSeek V4’s flow can be abbreviated as `pretraining → SFT → RL → OPD`. But this can look like one model following a single path throughout. The key is **branching into specialist models, then integrating capabilities by training a student with teacher information**.
+
+Starting from the pretrained base, domain models undergo SFT and GRPO. Their distributions then guide one student through OPD. The report describes this integration stage as replacing mixed RL, not eliminating RL from specialist training. [DeepSeek V4 §5.1](https://arxiv.org/html/2606.19348v1#S5.SS1)
+
+<RLFigure id="rl-18/01-specialists-to-student" alt="Domain-specific SFT and RL prepare specialist teachers from a pretrained model. Teachers provide probability information on student contexts, and OPD trains one student. Solid lines show model training; dashed lines carry teacher information." />
+
+The blue solid lines trace model training. Purple dashed lines carry probabilities from trained teachers to the student. This does not average teacher A’s and teacher B’s weights. The student produces its own responses and updates its weights using teacher distributions on those contexts.
+
+**Multi-teacher OPD (MOPD) means OPD using multiple teachers.** This broad structure leaves separate choices about which teacher handles a sample and how losses are weighted. The name alone does not imply that every teacher scores every prompt simultaneously.
+
+DeepSeek V4 uses full-vocabulary logit distillation here. This differs from Article 4’s Miles example, which adds a sampled token’s log-ratio signal to the advantage. **The goal of learning teacher distributions on student contexts remains, while the loss implementation can differ.** [DeepSeek V4 §5.1.2](https://arxiv.org/html/2606.19348v1#S5.SS1.SSS2)
+
+## Prepare a starting point that RL can learn from
+
+Why place pretraining and SFT earlier? Article 2’s update adjusts probabilities of tokens already generated. What a model can generate therefore determines what feedback it can learn from this time.
+
+Suppose the budget allows eight responses to one problem, with reward 1 for success and 0 for failure. One starting policy might produce eight failures in this batch. Another might produce a mixture of successes and failures. Both use eight attempts, but basic GRPO has different reward contrasts to work with.
+
+<RLFigure id="rl-18/02-starting-policy-and-feedback" alt="Eight responses are generated for the same prompt. If all rewards are zero, basic GRPO has zero group-relative signal. Mixed zero and one rewards allow different probability adjustments relative to the mean. These are hypothetical samples, not measured results." />
+
+On the left, subtracting the group mean of 0 from every reward still gives 0. On the right, successful responses score above the mean of 3/8 and unsuccessful ones below it. There is now material for Article 3’s relative comparison. An all-success group also offers no contrast for this basic relative reward term. Separate teacher signals or KL terms do not necessarily vanish.
+
+In his video, Daniel Han connects the chance of producing good answers to preparation through SFT and pretraining. A useful reading of this intuition is: **can a finite generation budget produce experience with useful feedback?** The figure illustrates this perspective with hypothetical samples, not measured before-and-after training results. [Video, 2:05:26–2:06:29](https://www.youtube.com/watch?v=uIiA6DquRiE&t=7526s)
+
+Pretraining develops language, knowledge, and generation patterns. SFT can teach task formats and behavior through demonstrations. For example, learning a tool-call format can change the opportunity to receive task rewards if every attempt previously failed to execute. This is one way to connect PT and SFT to RL, not their sole purpose. Nor does every RL setup require a separate SFT stage.
+
+From this perspective, RL **improves a policy using rewards for attempted behavior**, while OPD **improves a student using a teacher’s behavior distribution**. The intuition “explore solutions with RL, then learn those capabilities through OPD” helps explain specialist integration. But OPD also involves student generation, and RL can make existing behavior more reliable. The methods cannot be reduced entirely to exploration versus copying.
+
+## OPD can also come before RL
+
+OPD’s purpose in the first path was capability transfer and integration. If a student will continue learning from task rewards, another order becomes possible: **use the teacher-guided student as the starting point for RL**.
+
+<RLFigure id="rl-18/03-opd-before-after-rl" alt="One path transfers capabilities through student OPD after teacher RL and then evaluates the student. The other trains a student through OPD and then applies task-reward RL to that same student. RL trains different models in the two paths." />
+
+[RL Starts before RL](https://arxiv.org/abs/2609.28145) reports experiments where OPD-initialized students outperform direct RL and SFT-then-RL baselines under shared subsequent RL settings. We should read this as evidence to **evaluate distillation together with the training that follows**, not as a universally optimal order.
+
+The gain is not fully explained by higher initial accuracy: benefits can emerge with little immediate accuracy improvement, and pre-RL Pass@k does not fully predict them. The authors suggest alignment with the teacher distribution beyond top-1 agreement as a possible explanation, not an established causal mechanism.
+
+We should therefore evaluate OPD’s preparation effect after subsequent RL. The best checkpoint immediately after preparation need not be the best after further learning. In a practical comparison, match the initial model and subsequent RL conditions, and include preparation data, teacher computation, and time in the total cost.
+
+## Learn from multiple teachers and starting contexts
+
+After mixed RL, MiMo V2.6 uses **Multi-Prefix Multi-Teacher On-Policy Distillation (MOPD²)** to broaden capabilities. Besides choosing teachers, it chooses the prior conversation where student generation begins. It uses mixRL teachers for verifiable tasks and SFT teachers trained on high-quality synthetic demonstrations for open-domain tasks with difficult reward design. [MiMo V2.6 §5.6](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/main/MiMo_V2_6_technical_report.pdf)
+
+<RLFigure id="rl-18/04-multiple-teachers-and-prefixes" alt="MiMo MOPD² uses full student rollouts from a prompt and independent fresh turn 3 (y1) from h1 with P and two source turns, and fresh turn 4 (y2) from h2 with P and three source turns. An assigned teacher conditions on the same context to provide probability information, and the student is updated." />
+
+The left path is familiar: the student produces a full rollout from the prompt, with a suitable teacher providing supervision. The right path takes histories from teacher rollouts or SFT data. Each assistant-turn boundary supplies a complete history ending just before that turn.
+
+The figure groups the prior conversation into turn blocks. Each gray source turn includes an assistant response and the subsequent user input or tool observations, so each history ends just before the next assistant response. h₁ contains P and source turns 1–2; the student generates a fresh turn 3, y₁, from it. h₂ contains P and source turns 1–3; the student generates a fresh turn 4, y₂, from it. Blue blocks represent newly generated assistant responses.
+
+**The source turn 3 in h₂ is not the student’s newly generated y₁.** The two rows are independent starting contexts drawn from the prepared source history. The student can practice the next turn at different stages of a conversation without generating the entire conversation from the beginning.
+
+The assigned teacher conditions on `the same hᵢ + preceding student tokens in the new turn`. SFT data supply context rather than a fixed next answer to imitate. The starting history is external, but the new continuation is student-generated. The report motivates this as addressing SFT teachers’ limited coverage of histories after repeated student deviations. [MiMo V2.6 §5.6, Figure 13](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/blob/main/MiMo_V2_6_technical_report.pdf)
+
+## Turn a training strategy into an execution system
+
+We can now distinguish OPD’s position, teacher type, and the context where generation begins. DeepSeek integrates specialist capabilities; OPD→RL prepares a student for further training; MiMo broadens experience across domains and conversation starting points. These decisions determine which generation, scoring, and update operations must repeat.
+
+Execution requires student generation, task scoring or teacher probability computation, student backpropagation, and delivery of updated weights. Long agent tasks also involve tools and environments. The next article connects these operations through inference engines, training engines, trajectory transfer, and weight sync.
