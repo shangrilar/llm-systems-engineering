@@ -10,7 +10,7 @@ date: 2026-09-28
 
 이번 글의 Gated Residual(GR)도 여러 표현을 유지합니다. 달라지는 부분은 <strong>벡터의 성분마다 읽는 양을 조절하고, 새 결과를 원본 표현에 더하는 방식</strong>입니다. Gate가 있다는 이유만으로 이전 표현을 일정 비율 지우는 구조라고 이해하면 읽기와 쓰기를 혼동하기 쉽습니다. 두 경로를 구분한 다음 하나의 수치 예시를 끝까지 따라가겠습니다.
 
-여기서 GR은 [Qwen3.8-Flash-Next 보고서 §2.2](https://arxiv.org/html/2608.30320v1#S2.SS2)의 설계를 뜻합니다. 이름이 비슷한 모든 gated residual 변형을 하나의 규칙으로 묶지는 않겠습니다. 보고서의 구성은 4개 branch이며, 그림은 계산을 따라가기 쉽도록 2개로 줄였습니다. 이 글의 branch는 앞 글에서 여러 stream이라 부른, 같은 토큰의 표현을 이어 가는 경로입니다.
+여기서 GR은 [Qwen3.8-Flash-Next 보고서 §2.2](https://arxiv.org/html/2608.30320v1#S2.SS2)의 설계를 뜻합니다. 이름이 비슷한 모든 gated residual 변형을 하나의 규칙으로 묶지는 않겠습니다. 보고서의 구성은 4개 branch이며, 그림은 계산을 따라가기 쉽도록 2개로 줄였습니다. 이 글의 branch는 앞 글에서 stream이라 부른, 같은 토큰의 표현을 이어 가는 경로입니다.
 
 ## 우회 경로와 읽기 경로
 
@@ -30,11 +30,11 @@ mHC에서는 우회 경로의 <math><msub><mi>H</mi><mtext>res</mtext></msub></m
 
 <a href="/images/model-advanced-gated-residual/01-normalize-and-read.png?v=10cff2f1c586" id="figure-2"><picture><source width="720" height="2574" media="(max-width: 600px)" srcSet="/images/model-advanced-gated-residual/01-normalize-and-read-mobile.png?v=7d27aea90122" /><img width="2400" height="2118" src="/images/model-advanced-gated-residual/01-normalize-and-read.png?v=10cff2f1c586" alt="두 원본 branch [2,2]와 [4,−4]는 각자 RMSNorm을 거쳐 [1,1]과 [1,−1]이 된다. 두 정규화 벡터 모두 읽기 controller에 들어간다. 같은 정규화 값에 gate를 곱하는 경로를 별도 패널로 표시했다. 예시 gate [.8,.2]와 [.4,.6]을 성분별로 곱한 뒤 두 결과를 평균해 [.6,−.2]를 만든다." loading="lazy" /></picture></a>
 
-먼저 각 branch에 RMSNorm을 따로 적용합니다. 계산을 단순하게 하기 위해 학습되는 gain은 1, 작은 안정화 상수 ε는 생략하겠습니다. [2, 2]의 RMS는 √((4 + 4) / 2) = 2이므로 나눈 결과는 [1, 1]입니다. [4, −4]의 RMS는 4이므로 [1, −1]이 됩니다. 정규화는 두 branch를 하나로 합치는 연산이 아닙니다.
+먼저 각 branch에 RMSNorm을 따로 적용합니다. 계산을 단순하게 하기 위해 학습되는 gain은 1로 두고, 작은 안정화 상수 ε는 생략하겠습니다. [2, 2]의 RMS는 √((4 + 4) / 2) = 2이므로 나눈 결과는 [1, 1]입니다. [4, −4]의 RMS는 4이므로 [1, −1]이 됩니다. 정규화는 두 branch를 하나로 합치는 연산이 아닙니다.
 
 그림에서 R 위의 모자는 정규화된 값을 뜻합니다. 이후 읽기에서는 이 값들을 쓰지만, 원본 [2, 2]와 [4, −4]는 앞 그림의 우회 경로로 계속 전달됩니다. 나중에 새 출력을 더할 대상도 원본입니다.
 
-Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를 만듭니다. 이는 입력마다 계수를 계산하는 학습된 변환이며, 추론 중 controller의 가중치를 다시 학습하는 과정은 아닙니다. 보고서 식 (31)의 내부 투영은 그림의 controller 상자에 접어 두었습니다.
+Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를 만듭니다. 이는 입력마다 계수를 계산하는 학습된 변환이며, 추론 중 controller의 가중치를 다시 학습하는 과정은 아닙니다. 보고서 식 (31)의 내부 투영은 그림의 controller 상자 안에 넣어 따로 그리지 않았습니다.
 
 이번 입력에서 gate가 <math><msub><mi>G</mi><mn>1</mn></msub></math> = [0.8, 0.2], <math><msub><mi>G</mi><mn>2</mn></msub></math> = [0.4, 0.6]으로 나왔다고 가정하겠습니다. 이 값은 설명을 위해 정한 출력 예시이며, 위의 두 원본만 알면 별도의 가중치 없이 계산할 수 있는 수가 아닙니다.
 
@@ -43,7 +43,7 @@ Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를
 | 첫 번째 | [1, 1] | [0.8, 0.2] | [0.8, 0.2] |
 | 두 번째 | [1, −1] | [0.4, 0.6] | [0.4, −0.6] |
 
-여기서 성분끼리 곱하는 연산을 그림의 ⊙로 표시했습니다. 첫 branch의 첫 성분은 0.8배, 둘째 성분은 0.2배가 됩니다. 하나의 scalar를 벡터 전체에 곱할 때보다 읽는 양을 더 세밀하게 조절할 수 있습니다.
+성분끼리 곱하는 이 연산은 그림에서 ⊙로 표시했습니다. 첫 branch의 첫 성분은 0.8배, 둘째 성분은 0.2배가 됩니다. 하나의 scalar를 벡터 전체에 곱할 때보다 읽는 양을 더 세밀하게 조절할 수 있습니다.
 
 다음으로 두 결과를 더하고 branch 수 2로 나눕니다.
 
@@ -57,13 +57,13 @@ Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를
 
 읽은 값 x = [0.6, −0.2]를 F에 넣어 새 출력 y = [0.5, −0.25]가 나왔다고 가정하겠습니다. F 내부 계산은 이번 예시에서 다루지 않습니다. 이제 y를 각 원본에 얼마나 더할지 정합니다.
 
-그림 3에서는 읽기 gate와 별도의 쓰기 controller가 branch마다 하나의 scalar를 만듭니다. 이 controller도 정규화한 모든 branch를 입력으로 받습니다.
+그림 3에서는 읽기 gate와는 별도로, 쓰기 controller가 branch마다 하나의 scalar를 만듭니다. 이 controller도 정규화한 모든 branch를 입력으로 받습니다.
 
 <a href="/images/model-advanced-gated-residual/02-scalar-write.png?v=b650a9e5e9ce" id="figure-3"><picture><source width="720" height="2650" media="(max-width: 600px)" srcSet="/images/model-advanced-gated-residual/02-scalar-write-mobile.png?v=5c4455666593" /><img width="2400" height="2178" src="/images/model-advanced-gated-residual/02-scalar-write.png?v=b650a9e5e9ce" alt="읽기 결과 x에서 F가 예시 출력 y=[.5,-.25]를 만든다. 별도 controller는 정규화한 두 branch를 모두 보고 s1=1.2,s2=.4를 낸다. 첫 branch는 원래 [2,2]에 [.6,-.3]을 더해 [2.6,1.7]이 되고 둘째는 원래 [4,-4]에 [.2,-.1]을 더해 [4.2,-4.1]이 된다." loading="lazy" /></picture></a>
 
 [보고서 식 (33)–(34)](https://arxiv.org/html/2608.30320v1#S2.SS2)의 쓰기 계수는 sigmoid 결과에 2를 곱하므로 0과 2 사이입니다. 이번 예시에서는 <math><msub><mi>s</mi><mn>1</mn></msub></math> = 1.2, <math><msub><mi>s</mi><mn>2</mn></msub></math> = 0.4로 두겠습니다. 읽기에서는 성분마다 다른 gate를 썼지만, 쓰기에서는 branch 하나에 전달하는 y의 모든 성분에 같은 scalar가 곱해집니다.
 
-첫 branch에 쓸 값은 1.2×[0.5, −0.25] = [0.6, −0.3]입니다. 둘째에 쓸 값은 0.4×[0.5, −0.25] = [0.2, −0.1]입니다. 원본을 여기에 더하면 다음과 같습니다.
+첫 branch에 쓸 값은 1.2×[0.5, −0.25] = [0.6, −0.3]입니다. 둘째에 쓸 값은 0.4×[0.5, −0.25] = [0.2, −0.1]입니다. 이 값을 각 원본에 더하면 다음과 같습니다.
 
 | Branch | 보존된 원본 | 새 출력에 배율을 곱한 값 | 다음 branch |
 |---|---|---|---|
@@ -74,7 +74,7 @@ Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를
 
 <math display="block"><mrow><msubsup><mi>R</mi><mi>i</mi><mo>′</mo></msubsup><mo>=</mo><msub><mi>R</mi><mi>i</mi></msub><mo>+</mo><msub><mi>s</mi><mi>i</mi></msub><mi>y</mi></mrow></math>
 
-배율이 곱해지는 대상은 새 출력 y입니다. 원본 <math><msub><mi>R</mi><mi>i</mi></msub></math> 앞에는 그 배율이 붙지 않습니다. 따라서 <math><msub><mi>s</mi><mi>i</mi></msub></math>가 작으면 원본을 조금 남기는 것이 아니라, <strong>원본에 더할 새 기여가 작아집니다.</strong> 경계의 극한으로 배율이 0에 가까워지면 해당 branch는 원본에 가까운 값을 다음으로 넘깁니다.
+배율이 곱해지는 대상은 새 출력 y입니다. 원본 <math><msub><mi>R</mi><mi>i</mi></msub></math> 앞에는 그 배율이 붙지 않습니다. 따라서 <math><msub><mi>s</mi><mi>i</mi></msub></math>가 작으면 원본을 조금 남기는 것이 아니라, <strong>원본에 더할 새 기여가 작아집니다.</strong> 극단적인 경우로 배율이 0에 가까워지면 해당 branch는 원본에 가까운 값을 다음으로 넘깁니다.
 
 배율이 양수라고 branch의 모든 성분이 커지는 것도 아닙니다. 예시의 첫 branch 둘째 성분은 음수 기여 −0.3을 더해 2에서 1.7로 줄었습니다. 계수의 부호와 벡터 각 성분의 부호를 함께 보아야 합니다.
 
@@ -92,10 +92,10 @@ Controller는 모든 정규화 branch를 함께 보고 branch·성분별 gate를
 
 ## 세밀한 읽기의 비용과 의미
 
-GR은 여러 표현을 유지하는 용량과, 그중 무엇을 읽을지 정하는 유연성을 함께 사용합니다. 하나의 branch 안에서도 성분마다 배율을 달리할 수 있고, 원본 우회는 그대로 이어집니다. 그래서 “이전 층의 정보를 얼마나 전달하는가”만으로 요약하기보다는 <strong>이번 계산에 무엇을 읽고, 계산 결과를 얼마나 쓸 것인가</strong>로 나누어 보는 편이 좋습니다.
+GR은 여러 표현을 유지하는 용량과, 그중 무엇을 읽을지 정하는 유연성을 함께 갖춥니다. 하나의 branch 안에서도 성분마다 배율을 달리할 수 있고, 원본 우회는 그대로 이어집니다. 그래서 “이전 층의 정보를 얼마나 전달하는가”만으로 요약하기보다는 <strong>이번 계산에 무엇을 읽고, 계산 결과를 얼마나 쓸 것인가</strong>로 나누어 보는 편이 좋습니다.
 
-여러 branch를 유지하므로 저장과 메모리 접근 비용은 남습니다. Branch별 정규화와 gate를 만드는 controller에도 연산이 필요합니다. 우회 혼합 행렬을 없앴다는 이유만으로 모든 환경에서 mHC보다 빠르다고 결론낼 수는 없습니다. 실행 비용은 branch 수, 차원, 연산을 묶는 커널 구성과 학습·추론 단계에 따라 확인해야 합니다.
+여러 branch를 유지하므로 저장과 메모리 접근 비용은 남습니다. Branch별 정규화에도, gate를 만드는 controller에도 연산이 필요합니다. 우회 혼합 행렬을 없앴다는 이유만으로 모든 환경에서 mHC보다 빠르다고 결론낼 수는 없습니다. 실행 비용은 branch 수, 차원, 연산을 묶는 커널 구성과 학습·추론 단계에 따라 달라지므로 조건마다 확인해야 합니다.
 
-보고서의 안정성 논의는 [별도의 비교 실험 §3.3](https://arxiv.org/html/2608.30320v1#S3.SS3)에 근거합니다. 이번 수치 예시에서 gate가 값을 줄였다는 사실만으로 전체 모델의 학습 안정성을 증명한 것은 아닙니다. 구조를 이해하는 계산과 실제 학습 결과는 구별해야 합니다.
+보고서의 안정성 논의는 [별도의 비교 실험 §3.3](https://arxiv.org/html/2608.30320v1#S3.SS3)에 근거합니다. 이번 수치 예시에서 gate가 값을 줄였다는 사실만으로 전체 모델의 학습 안정성이 증명되는 것은 아닙니다. 구조를 이해하는 계산과 실제 학습 결과는 구별해야 합니다.
 
 [다음 글의 Attention Residuals](/posts/model-advanced-attention-residuals/)에서는 보관 방식이 바뀝니다. 몇 개의 branch를 계속 갱신하는 대신, 지나온 층이 만든 새 출력들을 보관하고 다음 층이 그중 무엇을 얼마나 읽을지 계산합니다.

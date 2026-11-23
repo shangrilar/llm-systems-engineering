@@ -34,7 +34,7 @@ SWA는 여기에 거리 제한을 추가합니다. 이 글에서는 **window 3�
 
 그림 1의 세로축은 Query의 토큰 위치, 가로축은 읽을 Key의 토큰 위치입니다. 헤드나 벡터 성분을 나타낸 축이 아닙니다. 한 행의 색칠된 칸은 그 Query가 읽는 위치를 뜻하며, 색의 진하기로 Attention 가중치를 표시한 것도 아닙니다. 파란 테두리의 마지막 행에서 Full causal은 여덟 칸, SWA는 세 칸을 읽습니다.
 
-읽을 위치를 정한 뒤의 계산은 익숙한 Attention과 같습니다. <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>과 선택된 세 Key로 점수를 계산하고, **그 세 위치에 대해 softmax를 적용한 뒤** 세 Value를 가중합합니다. 제외한 위치는 이 가중합에 참여하지 않습니다. 마스크로 표현한다면 제외할 위치의 점수에 softmax 전 음의 무한대를 적용해 가중치가 0이 되도록 합니다. 단순히 점수를 0으로 바꾸는 것은 softmax 이후에도 양의 가중치가 남으므로 다른 계산입니다.
+읽을 위치를 정한 뒤의 계산은 익숙한 Attention과 같습니다. <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>과 선택된 세 Key로 점수를 계산하고, **그 세 위치에 대해 softmax를 적용한 뒤** 세 Value를 가중합합니다. 제외한 위치는 이 가중합에 참여하지 않습니다. 마스크로 표현한다면 제외할 위치의 점수에 softmax 전 음의 무한대를 적용해 가중치가 0이 되도록 합니다. 점수를 단순히 0으로 바꾸면 softmax 이후에도 양의 가중치가 남으므로 다른 계산이 됩니다.
 
 여기서 고정된 것은 **어느 위치와 연결할지에 대한 규칙**입니다. 선택된 위치의 Attention 점수와 가중치는 Query와 Key의 내용에 따라 매번 달라집니다. 또한 SWA는 Full Attention의 결과를 그대로 유지하는 계산 재배치가 아닙니다. 읽을 정보를 제한하므로 출력도 달라질 수 있습니다.
 
@@ -61,7 +61,7 @@ SWA에서는 현재 위치에서 충분히 멀어진 토큰을 직접 읽을 수
 </AnnotPart>
 </Annot>
 
-왼쪽에서 현재 <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>은 <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>·<math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>·<math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>과 함께 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>을 읽습니다. 그림의 **anchor**는 이렇게 계속 읽을 수 있도록 지정한 위치를 뜻합니다. 첫 위치의 정보에 직접 접근하는 연결은 유지되지만, 그 사이의 모든 위치까지 읽는 것은 아닙니다. <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math>부터 <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>는 여전히 선택되지 않습니다.
+왼쪽에서 현재 <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>은 <math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>·<math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>·<math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>과 함께 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>을 읽습니다. 그림의 **anchor**는 이렇게 계속 읽을 수 있도록 지정한 위치를 뜻합니다. 첫 위치의 정보에 직접 접근하는 연결은 유지되지만, 첫 위치와 window 사이의 모든 위치까지 읽는 것은 아닙니다. <math aria-label="p1"><msub><mi>p</mi><mn>1</mn></msub></math>부터 <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>는 여전히 선택되지 않습니다.
 
 오른쪽의 **landmark**는 일정한 간격으로 지정한 위치를 뜻합니다. <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>이 읽는 위치는 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>·<math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>·<math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>·<math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>·<math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>, 총 다섯 개입니다. <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>를 처리할 때는 <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>가 window와 지정 위치 양쪽에 속하지만 한 번만 읽습니다. 두 규칙 모두 미래 위치는 제외하므로, <math aria-label="p3"><msub><mi>p</mi><mn>3</mn></msub></math>에서 아직 미래인 <math aria-label="p4"><msub><mi>p</mi><mn>4</mn></msub></math>를 읽는 연결은 생기지 않습니다.
 
@@ -73,14 +73,14 @@ SWA에서는 현재 위치에서 충분히 멀어진 토큰을 직접 읽을 수
 
 먼 위치를 직접 읽는 연결이 없는 순수 SWA에서는 window 밖의 정보가 전혀 전달되지 않을까요? 한 층에서 직접 읽는 범위와 **여러 층을 거친 뒤 영향을 받을 수 있는 입력 범위**는 다릅니다. 이전 층의 벡터에는 그 층에서 읽은 다른 위치의 정보도 반영되어 있기 때문입니다.
 
-다시 모든 Attention 층이 window 3을 사용하는 예시로 돌아가겠습니다. 그림 3의 가로축은 토큰 위치이고, 세로축은 모델의 층 깊이입니다. L0은 입력, L1부터 L3는 각 층을 통과한 표현을 나타냅니다. 위로 이동하는 것은 새로운 토큰을 생성하는 시간이 아니라, 모델의 다음 층으로 진행하는 과정입니다.
+모든 Attention 층이 window 3을 사용하는 예시로 다시 돌아가겠습니다. 그림 3의 가로축은 토큰 위치이고, 세로축은 모델의 층 깊이입니다. L0은 입력, L1부터 L3는 각 층을 통과한 표현을 나타냅니다. 그림에서 위로 올라가는 것은 새로운 토큰을 생성하며 시간이 흐른다는 뜻이 아니라, 모델의 다음 층으로 넘어간다는 뜻입니다.
 
 <Annot fig="model-advanced-local-sparse/03-depth-propagation" n={3} layout="side">
 <AnnotPart fig="model-advanced-local-sparse/03-depth-propagation" panels="1">
 
 **층을 지나며 전달되는 범위.** 한 층을 지날 때 정보는 오른쪽으로 최대 두 위치까지 옮겨 갑니다. 주황 경로 L0,p1 → L1,p3 → L2,p5 → L3,p7이 그 예입니다.
 
-**L3,p7에 닿는 입력.** 그래서 L3,p7은 입력 p1…p7의 영향을 받을 수 있지만 p0은 아직 닿지 못합니다. 간접 전달은 원래 KV를 직접 읽는 것과 같은 정보 보존을 보장하지 않습니다.
+**L3,p7에 닿는 입력.** 그래서 L3,p7은 입력 p1…p7의 영향을 받을 수 있지만 p0은 아직 닿지 못합니다. 간접으로 전달된 정보가 원래 KV를 직접 읽을 때만큼 보존된다는 보장은 없습니다.
 
 </AnnotPart>
 </Annot>
@@ -116,12 +116,12 @@ L1의 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>은 L0의 <m
 
 오른쪽은 현재 Query가 일부 위치만 선택하지만, 다음 Query가 다른 위치를 선택할 수 있는 경우입니다. 지금 <math aria-label="q7"><msub><mi>q</mi><mn>7</mn></msub></math>은 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>·<math aria-label="p5"><msub><mi>p</mi><mn>5</mn></msub></math>·<math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>만 읽더라도, 선택에 원래 KV가 필요한 이 예시에서는 나머지 위치도 보관합니다. **읽는 위치는 세 개지만 캐시에 있는 위치는 여덟 개**입니다. 내용에 따라 위치를 선택하는 구체적인 과정은 다음 편에서 살펴보겠습니다.
 
-그림 2의 고정 패턴도 규칙에 맞춰 보관해야 합니다. 첫 위치를 항상 읽는다면 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>의 KV는 window 밖으로 나가도 남겨야 하고, 일정 간격의 위치를 계속 읽는다면 해당 위치들도 남겨야 합니다. Sparse Attention이라는 이름만으로 캐시 크기를 정할 수는 없습니다.
+그림 2의 고정 패턴에서도 KV는 규칙에 맞춰 보관해야 합니다. 첫 위치를 항상 읽는다면 <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>의 KV는 window 밖으로 나가도 남겨야 하고, 일정 간격의 위치를 계속 읽는다면 해당 위치들도 남겨야 합니다. Sparse Attention이라는 이름만으로 캐시 크기를 정할 수는 없습니다.
 
 ## 연결을 줄였을 때 달라지는 것
 
 이번 편에서는 KV 벡터 자체의 크기 대신, Query가 읽는 위치를 바꿨습니다. SWA는 가까운 위치로 범위를 제한하고, 다른 고정 패턴은 일부 먼 위치를 추가합니다. 여러 층을 거치면 한 층의 window보다 넓은 입력 범위에서 정보를 받을 수 있지만, 직접 읽는 연결을 모두 유지하는 것과 같지는 않습니다.
 
-선택된 연결만 실제로 계산하는 구현에서는 Attention 점수와 Value 가중합에 필요한 연산을 줄일 수 있습니다. 반대로 전체 점수를 모두 계산한 뒤 마스크만 적용한다면 연결이 드물다는 이유만으로 그 계산을 생략한 것은 아닙니다. 실행 속도는 선택한 패턴을 커널이 얼마나 효율적으로 처리하는지에도 달려 있습니다.
+선택된 연결만 실제로 계산하는 구현에서는 Attention 점수와 Value 가중합에 필요한 연산을 줄일 수 있습니다. 반대로 전체 점수를 모두 계산한 뒤 마스크만 적용한다면, 연결이 드물더라도 그 계산을 생략한 것이 아닙니다. 실행 속도는 선택한 패턴을 커널이 얼마나 효율적으로 처리하는지에도 달려 있습니다.
 
 따라서 구조를 읽을 때는 **어떤 위치를 읽는지, 그 위치 수가 문맥 길이에 따라 어떻게 늘어나는지, 나중에 다시 읽을 KV를 얼마나 보관해야 하는지**를 함께 확인해야 합니다. 다음 편에서는 위치를 미리 지정하는 대신, 현재 Query와 토큰의 내용을 바탕으로 Indexer가 읽을 위치를 고르는 방식으로 넘어가겠습니다.

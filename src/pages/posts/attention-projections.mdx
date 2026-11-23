@@ -16,7 +16,7 @@ Attention은 크게 **Q·K·V projection → Core Attention → 출력 projectio
 
 지난 글처럼 입력 X의 **한 행은 토큰 하나의 벡터**입니다. 토큰 수가 T이고 모델 차원이 d라면 X는 T × d 형태입니다. 여기서는 기본적인 MHA(Multi-Head Attention)를 기준으로, Q·K·V 각각의 전체 차원이 d인 구성을 사용하겠습니다. 그림에서는 T = 3, d = 8이므로 X와 Q·K·V는 모두 3 × 8 형태입니다. 배치 축은 생략했습니다.
 
-Core Attention의 결과 H와 출력 projection을 거친 Y도 같은 T × d 형태입니다. **입출력의 형태는 같지만, 계산을 거치면서 각 성분의 값은 달라집니다.** 이번 글에서는 양쪽의 projection과 그 사이를 오가는 벡터의 형태에 집중하겠습니다.
+Core Attention의 결과 H와 출력 projection을 거친 Y도 같은 T × d 형태입니다. **입출력의 형태는 같지만, 계산을 거치면서 각 성분의 값은 달라집니다.** 이번 글에서는 양쪽의 projection과 그 사이를 지나는 벡터의 형태에 집중하겠습니다.
 
 이 세 단계 중 **토큰 사이의 정보를 결합하는 계산은 Core Attention에서 이루어집니다.** Q·K·V projection과 출력 projection은 각 토큰의 벡터에 독립적으로 적용됩니다. 출력 projection이 조합하는 것은 같은 토큰 위치의 여러 head 결과입니다.
 
@@ -38,7 +38,7 @@ Q, K, V는 각각 **Query, Key, Value**의 약자입니다. Query와 Key는 어�
 
 모델 차원이 d이고 head 수가 h일 때, 이 구성에서는 head 하나의 차원 dh가 `d / h`입니다. 그림에서는 d = 8, h = 2이므로 dh = 4입니다. Q의 앞 네 성분은 Head 1, 뒤 네 성분은 Head 2에 해당하며, K와 V도 같은 방식으로 구분합니다. 전체 토큰을 함께 보면 **T × d를 T × h × dh로 보는 것**입니다. `3 × 8`을 `3 × 2 × 4`로 나타내는 reshape이며, 이 구분 자체에 추가 행렬 곱은 없습니다.
 
-각 head는 입력 벡터의 d개 성분 전체를 사용하며, 서로 다른 가중치로 계산됩니다.
+각 head의 성분은 입력 벡터의 d개 성분 전체를 사용해, head마다 다른 가중치로 계산합니다.
 
 ## 출력 projection: 여러 head의 결과를 조합하기
 
@@ -46,7 +46,7 @@ Core Attention의 결과 H에는 각 토큰에 대한 여러 head의 결과가 �
 
 [![두 head의 결과가 담긴 H에 8행 8열 가중치 Wo를 곱해 출력 Y를 만듭니다. Wo의 위쪽 네 행과 아래쪽 네 행은 각각 입력 head에 대응합니다. Y는 같은 위치의 Residual 입력 R에 더해집니다.](/images/attention-projections/04-output-projection.png?v=6fe1d9e30284)](/images/attention-projections/04-output-projection.png?v=6fe1d9e30284)
 
-출력 projection은 `Y = H × Wo`로 계산합니다. H가 T × d이고 Wo가 d × d이므로 Y도 T × d입니다. 출력의 한 성분을 만들 때는 H의 한 행과 Wo의 열 하나 전체를 사용합니다. 따라서 **같은 토큰에 대해 계산된 여러 head의 결과 성분이 하나의 가중합에 함께 참여합니다.** 각 head가 모아 온 정보를 학습된 가중치로 조합해 새로운 벡터를 만드는 것입니다.
+출력 projection은 `Y = H × Wo`로 계산합니다. H가 T × d이고 Wo가 d × d이므로 Y도 T × d입니다. 출력의 한 성분을 만들 때는 H의 한 행과 Wo의 열 하나 전체를 사용합니다. 따라서 **같은 토큰에서 계산한 여러 head의 결과 성분이 하나의 가중합에 함께 들어갑니다.** 각 head가 모아 온 정보를 학습된 가중치로 조합해 새로운 벡터를 만드는 것입니다.
 
 Wo는 모든 토큰에 동일하게 적용됩니다. 이렇게 얻은 d차원 출력 Y를 같은 위치의 Residual 입력 R에 더하면, `R + Y`가 다음 단계로 이어집니다.
 

@@ -22,7 +22,7 @@ date: 2026-09-10
 
 ## Attention의 연산을 하나로 연결하기
 
-Attention의 입력에서는 **Q·K·V projection**으로 같은 토큰의 벡터를 세 가지 벡터로 변환합니다. Q와 K는 토큰 사이의 점수를 계산하는 데 사용하고, V는 그 점수에서 얻은 가중치에 따라 모을 정보를 담습니다. 그림 2는 앞선 글과 같은 MHA 구성으로, 토큰 수 T = 3, 모델 차원 d = 8, head 수 h = 2인 예시입니다.
+Attention의 입력 쪽에서는 **Q·K·V projection**으로 각 토큰의 벡터를 세 가지 벡터로 변환합니다. Q와 K는 토큰 사이의 점수를 계산하는 데 사용하고, V는 그 점수에서 얻은 가중치에 따라 모을 정보를 담습니다. 그림 2는 앞선 글과 같은 MHA 구성으로, 토큰 수 T = 3, 모델 차원 d = 8, head 수 h = 2인 예시입니다.
 
 [![3행 8열 입력에서 Q, K, V를 만든 뒤 두 head로 구분합니다. 각 head의 Q와 K에 RoPE를 적용하고, 점수 계산과 스케일링, Mask, Softmax, PV를 거칩니다. 두 head의 결과를 같은 토큰 위치끼리 이어 붙인 후 Output projection을 적용합니다.](/images/model-summary/02-attention-connected.png)](/images/model-summary/02-attention-connected.png)
 
@@ -50,7 +50,7 @@ Attention의 결과를 Residual stream에 더한 다음에는 RMSNorm을 거쳐 
 
 [![세 토큰의 경로가 나란히 내려갑니다. Core Attention에서만 토큰 사이 연결선이 생기며, 토큰 1의 결과에는 토큰 1, 토큰 2의 결과에는 토큰 1과 2, 토큰 3의 결과에는 토큰 1과 2와 3의 정보가 반영됩니다. 나머지 연산은 각 토큰 위치에서 진행합니다.](/images/model-summary/04-token-dependencies.png?v=943b4ffb5456)](/images/model-summary/04-token-dependencies.png?v=943b4ffb5456)
 
-Core Attention에 들어가기 전까지 RMSNorm과 Q·K·V projection은 토큰별로 계산합니다. RoPE도 각 토큰의 Q·K와 해당 위치를 사용해 회전합니다. 이후 Core Attention에서는 Causal mask가 허용하는 범위에 따라 **토큰 1은 자기 자신의 Value를, 토큰 2는 토큰 1·2의 Value를, 토큰 3은 토큰 1·2·3의 Value를 모읍니다.** 그림에서 여러 토큰의 연결선이 한 위치의 결과로 모이는 부분입니다.
+Core Attention에 들어가기 전까지 RMSNorm과 Q·K·V projection은 토큰별로 계산합니다. RoPE도 각 토큰의 Q·K와 해당 위치를 사용해 회전합니다. 이후 Core Attention에서는 Causal mask가 허용하는 범위에 따라 **토큰 1은 자기 자신의 Value를, 토큰 2는 토큰 1·2의 Value를, 토큰 3은 토큰 1·2·3의 Value를 모읍니다.** 그림에서는 여러 토큰의 연결선이 한 위치의 결과로 모이는 부분이 이 계산입니다.
 
 Core Attention 이후에도 서로 다른 토큰 위치의 결과를 합치지는 않습니다. Concat과 출력 projection은 **같은 토큰의 head 결과**를 조합하고, MoE의 Combine은 **같은 토큰의 expert 결과**를 조합합니다. Residual 덧셈도 같은 위치의 벡터끼리 더합니다. 이렇게 계산을 이어가면 블록의 끝에는 다시 각 토큰 위치에 대응하는 d차원 벡터가 남습니다.
 
