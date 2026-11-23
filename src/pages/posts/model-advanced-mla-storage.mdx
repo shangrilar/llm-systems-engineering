@@ -14,7 +14,7 @@ date: 2026-09-27
 
 ## 작은 벡터에서 헤드별 K·V 만들기
 
-한 층에서 현재 위치 <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>의 입력을 처리한다고 하겠습니다. 그림의 <math aria-label="p0"><mrow><msub><mi>p</mi><mi mathvariant="normal">0</mi></msub></mrow></math>부터 <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>까지 블록 하나는 각 위치의 **입력 벡터 전체**입니다. 이번 예시에서는 입력 차원을 8, 잠재 벡터 차원을 3, 헤드 수를 2로 두겠습니다. 각 헤드의 content Key와 Value는 두 성분씩 사용합니다. 앞선 글의 네 헤드 예시와 달리, 이번에는 두 헤드로 줄여 잠재 벡터와 투영의 관계를 살펴봅니다. 모든 차원과 숫자는 교육용입니다.
+한 층에서 현재 위치 <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>의 입력을 처리한다고 하겠습니다. 그림의 <math aria-label="p0"><mrow><msub><mi>p</mi><mi mathvariant="normal">0</mi></msub></mrow></math>부터 <math aria-label="p3"><mrow><msub><mi>p</mi><mi mathvariant="normal">3</mi></msub></mrow></math>까지의 블록은 각각 해당 위치의 **입력 벡터 전체**입니다. 이번 예시에서는 입력 차원을 8, 잠재 벡터 차원을 3, 헤드 수를 2로 두겠습니다. 각 헤드의 content Key와 Value는 두 성분씩 사용합니다. 앞선 글의 네 헤드 예시와 달리, 이번에는 두 헤드로 줄여 잠재 벡터와 투영의 관계를 살펴봅니다. 모든 차원과 숫자는 교육용입니다.
 
 <a href="/images/model-advanced-mla-storage/01-latent-projections.png?v=31de371481e3" id="figure-1"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/01-latent-projections-mobile.png?v=8979284446ef" /><img src="/images/model-advanced-mla-storage/01-latent-projections.png?v=31de371481e3" alt="p0부터 p3까지 각 블록은 입력 벡터 하나다. 현재 p3의 1×8 벡터를 W_D 8×3으로 투영해 c3=[1,2,3]을 얻었다고 가정한다. 동일한 잠재 벡터를 헤드 1과 2가 사용한다. 헤드별 Key와 Value 투영은 각각 3×2이며 출력은 헤드 1에서 [1,2], [4,2], 헤드 2에서 [2,3], [1,5]다." loading="lazy" /></picture></a>
 
@@ -30,7 +30,7 @@ date: 2026-09-27
 
 그림의 <math aria-label="uk1"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">1</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math>, <math aria-label="uk2"><mrow><msubsup><mi>U</mi><mi mathvariant="normal">2</mi><mi mathvariant="normal">K</mi></msubsup></mrow></math>는 전체 Key up-projection에서 각 헤드에 해당하는 출력 부분이고, Value 투영도 같은 방식으로 나눠 볼 수 있습니다. U는 잠재 표현을 여러 헤드의 표현으로 펼치는 up-projection을 뜻합니다. 그림에서 헤드별로 구분했다고 실제 구현에서도 행렬 곱을 반드시 따로 실행해야 하는 것은 아닙니다. 이 구성은 [DeepSeek-V2 논문의 공동 KV 압축](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS2)을 작은 행벡터 예시로 나타낸 것입니다. 논문의 열벡터 표기와는 가중치 행렬의 방향이 반대입니다.
 
-여기서 중요한 것은 **작은 공동 표현을 거치도록 모델을 학습한다는 점**입니다. 임의의 기존 모델에서 만든 K·V를 나중에 세 숫자로 바꾸고 언제나 원래 값으로 복원할 수 있다는 뜻이 아닙니다. 입력에서 잠재 벡터를 만드는 가중치와 잠재 벡터에서 K·V를 만드는 가중치가 함께 학습됩니다. 작은 잠재 차원은 저장량을 줄이는 동시에, 여러 헤드가 표현할 수 있는 K·V 사이에 제약을 줍니다.
+여기서 중요한 것은 **작은 공동 표현을 거치도록 모델을 학습한다는 점**입니다. 임의의 기존 모델에서 만든 K·V를 나중에 세 숫자로 바꾸고 언제나 원래 값으로 복원할 수 있다는 뜻이 아닙니다. 입력에서 잠재 벡터를 만드는 가중치와 잠재 벡터에서 K·V를 만드는 가중치가 함께 학습됩니다. 잠재 차원이 작으면 저장량이 줄어드는 동시에, 여러 헤드가 표현할 수 있는 K·V 사이에 제약이 생깁니다.
 
 ## 위치용 Key를 따로 저장하기
 
@@ -40,7 +40,7 @@ MLA는 content Key를 만드는 경로와 별도로 **위치용 Key**를 만듭�
 
 <a href="/images/model-advanced-mla-storage/02-cache-contents.png?v=3584f6662f52" id="figure-2"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/02-cache-contents-mobile.png?v=3466654bdd45" /><img src="/images/model-advanced-mla-storage/02-cache-contents.png?v=3584f6662f52" alt="현재 p3의 1×8 입력에서 두 경로가 갈라진다. W_D 8×3은 잠재 벡터 c3를, W_KR 8×2와 RoPE(3)은 위치용 Key k3R을 만든다. 두 행벡터의 3성분과 2성분을 캐시의 새 p3 행에 함께 저장한다. 앞선 p0,p1,p2 행은 그대로 남는다." loading="lazy" /></picture></a>
 
-왼쪽 경로는 앞에서 본 <math aria-label="wd"><mrow><msup><mi>W</mi><mi mathvariant="normal">D</mi></msup></mrow></math>를 거쳐 <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> = [1, 2, 3]을 만듭니다. 오른쪽 경로에서는 입력에 별도의 8×2 투영 <math aria-label="wk"><mrow><msup><mi>W</mi><mi mathvariant="normal">KR</mi></msup></mrow></math>를 적용한 뒤 현재 위치 3에 해당하는 RoPE를 적용합니다. 그 결과가 두 성분의 위치용 Key <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>입니다. 위첨자 R은 RoPE 경로를 구별합니다. 그림의 <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>와 <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>은 이 벡터의 두 성분을 나타내는 기호이며, 두 토큰 위치를 뜻하지 않습니다.
+왼쪽 경로는 앞에서 본 <math aria-label="wd"><mrow><msup><mi>W</mi><mi mathvariant="normal">D</mi></msup></mrow></math>를 거쳐 <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math> = [1, 2, 3]을 만듭니다. 오른쪽 경로에서는 입력에 별도의 8×2 투영 <math aria-label="wk"><mrow><msup><mi>W</mi><mi mathvariant="normal">KR</mi></msup></mrow></math>를 적용한 뒤 현재 위치 3에 해당하는 RoPE를 적용합니다. 그 결과가 두 성분의 위치용 Key <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>입니다. 위첨자 R은 RoPE 경로임을 나타냅니다. 그림의 <math aria-label="r0"><mrow><msub><mi>r</mi><mi mathvariant="normal">0</mi></msub></mrow></math>와 <math aria-label="r1"><mrow><msub><mi>r</mi><mi mathvariant="normal">1</mi></msub></mrow></math>은 이 벡터의 두 성분을 나타내는 기호이며, 두 토큰 위치를 뜻하지 않습니다.
 
 **위치용 Key는 토큰 위치마다 하나를 만들고, 같은 층의 모든 헤드가 공유합니다.** 헤드 1과 헤드 2를 위해 별도의 <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>를 두 개 저장하지 않습니다. 반면 다른 위치 <math aria-label="p2"><mrow><msub><mi>p</mi><mi mathvariant="normal">2</mi></msub></mrow></math>에는 그 위치의 입력과 회전으로 만든 별도의 위치용 Key가 필요합니다. 공유의 기준은 헤드이며, 여러 토큰 위치를 하나로 합치는 것은 아닙니다. [DeepSeek-V2 논문 §2.1.3](https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3)
 
@@ -52,7 +52,7 @@ MLA는 content Key를 만드는 경로와 별도로 **위치용 Key**를 만듭�
 
 ## Key·Value를 만드는 두 경로
 
-그림 1의 헤드별 투영과 그림 2의 위치 경로를 함께 보겠습니다. 그림 3은 **Key와 Value를 구성하는 관계**를 보여 줍니다. Query와 Attention 전체 계산을 나타내는 그림은 아닙니다.
+그림 1의 헤드별 투영과 그림 2의 위치 경로를 함께 보겠습니다. 그림 3은 **Key와 Value가 어떻게 구성되는지**를 보여 줍니다. Query와 Attention 전체 계산을 나타내는 그림은 아닙니다.
 
 <a href="/images/model-advanced-mla-storage/03-content-and-position.png?v=16d1d2a218d0" id="figure-3"><picture><source media="(max-width: 600px)" srcSet="/images/model-advanced-mla-storage/03-content-and-position-mobile.png?v=8a97484841ce" /><img src="/images/model-advanced-mla-storage/03-content-and-position.png?v=16d1d2a218d0" alt="p3에서 W_D로 c3=[1,2,3]을, 별도 W_KR과 RoPE(3)으로 위치용 Key [r0,r1]을 만든다. 두 벡터가 캐시 저장 대상이다. c3는 헤드별 U_K와 U_V에 투영된다. 헤드 1의 Key는 [1,2,r0,r1], Value는 [4,2]이고 헤드 2의 Key는 [2,3,r0,r1], Value는 [1,5]다. 위치 부분은 동일하며 Value에는 이어 붙이지 않는다." loading="lazy" /></picture></a>
 
@@ -65,9 +65,9 @@ MLA는 content Key를 만드는 경로와 별도로 **위치용 Key**를 만듭�
 
 두 부분을 성분별로 더하는 것이 아니라 **이어 붙입니다**. 따라서 Key의 차원은 content 두 성분과 위치 두 성분을 합친 4이고, Value는 잠재 벡터에서 투영한 두 성분 그대로입니다. Value 뒤에는 위치용 Key를 붙이지 않습니다.
 
-위치 부분이 같아도 전체 Key는 헤드마다 다를 수 있습니다. 앞쪽 content 부분이 서로 다른 투영으로 만들어지기 때문입니다. 또한 **공유하는 위치용 Key가 있다고 해서 위치에 대한 Attention 점수까지 모든 헤드에서 같아지는 것은 아닙니다.** 점수에는 Query도 관여하며, MLA의 위치 Query는 헤드별로 만듭니다. 다음 편에서는 Query의 content 부분과 위치 부분이 각각 어떤 Key와 계산되는지 연결하겠습니다.
+위치 부분이 같아도 전체 Key는 헤드마다 다를 수 있습니다. 앞쪽 content 부분이 서로 다른 투영으로 만들어지기 때문입니다. 또한 **공유하는 위치용 Key가 있다고 해서 위치에 대한 Attention 점수까지 모든 헤드에서 같아지는 것은 아닙니다.** 점수에는 Query도 관여하며, MLA의 위치 Query는 헤드별로 만듭니다. 다음 편에서는 Query의 content 부분과 위치 부분이 각각 어떤 Key와 계산되는지 살펴보겠습니다.
 
-캐시 저장 대상과 그림에 펼쳐 놓은 표현도 구별해야 합니다. 캐시에는 위쪽의 <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math>와 <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>를 저장합니다. 아래쪽의 헤드별 K·V는 그 작은 표현으로 어떤 Key와 Value를 나타내는지 보여 주기 위해 펼쳐 놓은 것입니다. 이후 토큰마다 과거의 모든 K·V를 반드시 이 형태로 복원해 저장하는 실행 절차를 뜻하지 않습니다.
+캐시 저장 대상과 그림에 펼쳐 놓은 표현도 구별해야 합니다. 캐시에는 위쪽의 <math aria-label="c3"><mrow><msub><mi>c</mi><mi mathvariant="normal">3</mi></msub></mrow></math>와 <math aria-label="k3r"><mrow><msubsup><mi>k</mi><mi mathvariant="normal">3</mi><mi mathvariant="normal">R</mi></msubsup></mrow></math>를 저장합니다. 아래쪽의 헤드별 K·V는 그 작은 표현으로 어떤 Key와 Value를 나타내는지 보여 주기 위해 펼쳐 놓은 것입니다. 이후 토큰을 처리할 때마다 과거의 모든 K·V를 반드시 이 형태로 복원해 저장한다는 뜻은 아닙니다.
 
 앞선 MQA와 비교하면 차이가 분명해집니다. MQA는 여러 Query가 완성된 K와 V를 공유합니다. MLA는 공동 잠재 표현에서 헤드별 content K·V를 만들고, RoPE를 위한 Key 부분을 별도로 공유합니다. 무엇을 공유하는지에 따라 헤드별 표현의 관계도 달라집니다.
 
@@ -91,9 +91,9 @@ MLA는 content Key를 만드는 경로와 별도로 **위치용 Key**를 만듭�
 - **GQA**는 KV 헤드 2개를 공유합니다. 토큰마다 2×(2+2) = 8성분이 추가되어, **32 → 40성분**이 됩니다.
 - **MLA**는 공동 잠재 벡터와 공유 위치용 Key를 저장합니다. 토큰마다 3+2 = 5성분이 추가되어, **20 → 25성분**이 됩니다.
 
-이 설정에서는 MHA, GQA, MLA 순서로 저장량과 토큰당 추가량이 작아집니다. GQA가 저장할 KV 헤드 수를 줄였다면, MLA는 헤드별 K·V를 만드는 공동 표현을 저장합니다. 그림은 두 글의 교육용 설정에서 저장하는 대상과 크기를 비교한 것입니다. 실제 모델의 절감률은 헤드 수와 각 차원에 따라 달라지며, 같은 품질을 내는 모델끼리의 성능 비교를 뜻하지는 않습니다.
+이 설정에서는 MHA, GQA, MLA 순서로 저장량과 토큰당 추가량이 작아집니다. GQA가 저장할 KV 헤드 수를 줄였다면, MLA는 헤드별 K·V를 만드는 공동 표현을 저장합니다. 그림은 두 글의 교육용 설정에서 저장하는 대상과 크기를 비교한 것입니다. 실제 모델의 절감률은 헤드 수와 각 차원에 따라 달라지며, 이 그림이 같은 품질을 내는 모델끼리의 성능 비교를 뜻하지는 않습니다.
 
-위 식과 그림은 캐시에 담는 값의 수를 나타냅니다. 메모리 크기로 바꾸려면 각 성분의 저장 바이트 수를 반영하고, 모델 전체에서는 층과 요청별 저장량을 더해야 합니다. 가중치, 임시 계산 공간, 메모리 정렬에 필요한 공간은 포함하지 않았습니다.
+위 식과 그림은 캐시에 담는 값의 수를 나타냅니다. 메모리 크기로 바꾸려면 각 성분의 저장 바이트 수를 반영하고, 모델 전체에서는 층별·요청별 저장량을 더해야 합니다. 가중치, 임시 계산 공간, 메모리 정렬에 필요한 공간은 포함하지 않았습니다.
 
 ## 작은 저장 표현과 남는 계산
 
