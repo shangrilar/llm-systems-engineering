@@ -54,6 +54,10 @@ New users who sign up through [my RunPod referral link](https://runpod.io?ref=6j
 - [Cross-Layer KV Sharing: Reusing Keys and Values from Earlier Layers](https://ai-systems-engineering.com/en/posts/model-advanced-cross-layer-kv/)
 - [YOCO: Separating Layers That Produce and Read Shared KV](https://ai-systems-engineering.com/en/posts/model-advanced-yoco/)
 - [CED: Continuing Context with a Causal Encoder and Decoder](https://ai-systems-engineering.com/en/posts/model-advanced-ced/)
+- [N-gram Embeddings: Looking Up Representations of Token Groups](https://ai-systems-engineering.com/en/posts/model-advanced-ngram-embedding/)
+- [Engram: Using Retrieved Memory in Context](https://ai-systems-engineering.com/en/posts/model-advanced-engram/)
+- [From Images to Vectors: Patches and Vision Encoders](https://ai-systems-engineering.com/en/posts/model-advanced-vision-encoder/)
+- [Connecting Visual Representations to a Language Model](https://ai-systems-engineering.com/en/posts/model-advanced-vision-language/)
 
 #### Hardware
 
