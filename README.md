@@ -124,3 +124,4 @@ New users who sign up through [my RunPod referral link](https://runpod.io?ref=6j
 ### Features
 
 - [DeepSeek's KV Cache: From 3.9 MB to 890 B per Token](https://ai-systems-engineering.com/en/posts/deepseek-kv-cache/)
+- [KV Cache Across Models: How Six Open Models Keep Earlier Context](https://ai-systems-engineering.com/en/posts/open-models-kv-cache/)
