@@ -124,3 +124,4 @@
 ### 특집
 
 - [DeepSeek의 KV 캐시: 토큰당 3.9 MB에서 890 B까지](https://ai-systems-engineering.com/posts/deepseek-kv-cache/)
+- [모델마다 다른 KV 캐시: 여섯 오픈 모델은 이전 문맥을 어떻게 남기나](https://ai-systems-engineering.com/posts/open-models-kv-cache/)
