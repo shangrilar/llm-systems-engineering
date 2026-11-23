@@ -10,20 +10,20 @@ export default {
   sources:[{label:'Engram §2.3, Eq. 5 and backbone integration',url:'https://arxiv.org/html/2601.07372v1#S2.SS3'}],
   panels(locale:Locale){
     const a=new Panel(locale,['A. 서로 다른 두 덧셈','A. Two distinct additions'],1630);
-    a.token(20,110,'Ṽ [T×d]',300,'orange',65);a.token(380,110,'H',130,'blue',65);
-    a.line(170,185,170,215,C.orange,2.5);a.path('M170 215 H10 V965 H122',C.orange,2.5,false,true);
-    a.arrow(170,215,170,265,C.orange);a.box(40,275,280,95,'RMSNorm','','orange');
+    a.token(40,110,'Ṽ [T×d]',280,'orange',65);a.token(380,110,'H',130,'blue',65);
+    a.line(180,185,180,215,C.orange,2.5);a.path('M180 215 H10 V965 H142',C.orange,2.5,false,true);
+    a.arrow(180,215,180,265,C.orange);a.box(40,275,280,95,'RMSNorm','','orange');
     a.arrow(180,380,180,435,C.orange);a.box(40,445,280,155,'Depthwise Conv1D',['causal · B에서 확대','Causal · Expanded in B'],'orange');
     a.arrow(180,610,180,670,C.orange);a.token(40,680,'SiLU',280,'orange',65);
-    a.path('M180 755 V835 H160 V930',C.orange,2.5,false,true);
-    a.circle(160,965,30,C.orangeFill,C.orange);a.text(160,974,'+',{size:29,anchor:'middle',width:40,color:C.orange});
-    a.text(205,967,['① 내부','① Internal'],{size:24,weight:600,width:150,color:C.orange});
-    a.arrow(160,1005,160,1060,C.orange);a.token(40,1070,'Y [T×d]',280,'orange',65);
-    a.arrow(160,1145,160,1220,C.orange);
-    a.path('M445 185 V1250 H198',C.blue,2.5,false,true);
-    a.circle(160,1250,30,C.blueFill,C.blue);a.text(160,1259,'+',{size:29,anchor:'middle',width:40,color:C.blue});
-    a.text(210,1197,['② H + Y','② H + Y'],{size:24,weight:600,width:200,color:C.blue});
-    a.arrow(160,1290,160,1350,C.blue);a.box(20,1360,320,190,['기존 Backbone','Standard backbone'],'Attention → MoE','blue');
+    a.arrow(180,755,180,930,C.orange);
+    a.circle(180,965,30,C.orangeFill,C.orange);a.text(180,974,'+',{size:29,anchor:'middle',width:40,color:C.orange});
+    a.text(225,967,['① 내부','① Internal'],{size:24,weight:600,width:150,color:C.orange});
+    a.arrow(180,1005,180,1060,C.orange);a.token(40,1070,'Y [T×d]',280,'orange',65);
+    a.arrow(180,1145,180,1220,C.orange);
+    a.path('M445 185 V1250 H218',C.blue,2.5,false,true);
+    a.circle(180,1250,30,C.blueFill,C.blue);a.text(180,1259,'+',{size:29,anchor:'middle',width:40,color:C.blue});
+    a.text(230,1197,['② H + Y','② H + Y'],{size:24,weight:600,width:200,color:C.blue});
+    a.arrow(180,1290,180,1350,C.blue);a.box(20,1360,320,190,['기존 Backbone','Standard backbone'],'Attention → MoE','blue');
     const b=new Panel(locale,['B. 간격을 두고 과거 읽기','B. Read history with gaps'],1630);
     b.box(20,110,480,120,'w = 4 · δ = N = 3',['네 시점 · 같은 성분 c','Four positions · Same component c'],'orange');
     b.text(260,300,'a_s = RMSNorm(Ṽ_s)',{size:25,weight:600,anchor:'middle',width:500});
@@ -39,16 +39,21 @@ export default {
     b.box(20,950,480,185,['Depthwise의 범위','What depthwise means'],['이 convolution은 같은 성분의 과거를 결합합니다. 다른 성분을 섞는 선은 없습니다.','This convolution combines history within each component. No cross-component links are drawn.'],'gray');
     b.box(20,1210,480,180,['Causal 경계','Causal boundary'],['현재 t까지 읽습니다. 시작 부분에서 부족한 과거는 padding으로 채웁니다.','Reads only up to t. Missing history near the sequence start is filled by padding.'],'gray');
 
-const c=new Panel(locale,['C. mHC에서는 branch별로 gate','C. mHC gates each branch separately'],820);
+const c=new Panel(locale,['C. mHC에서는 branch별로 gate','C. mHC gates each branch separately'],880);
 c.token(20,110,['공유 조회 표 → e','Shared lookup tables → e'],480,'teal',65);
-c.arrow(260,185,260,225,C.teal);c.token(20,235,'W_V → v (shared)',480,'teal',65);
+c.arrow(260,180,260,225,C.teal);c.token(100,235,'W_V → v (shared)',320,'teal',65);
+c.line(260,305,260,710,C.teal,2.5);
 for(let i=0;i<2;i++){
- const x=20+i*260;c.box(x,370,220,160,`Branch ${i+1}`,`h${i+1} ↔ W_K${i+1} e\n→ α${i+1}`,'blue');
- c.path(`M${i===0?25:495} 185 H${i===0?8:512} V350 H${x+110} V360`,C.teal,2,false,true);
- c.path(`M260 310 V665 H${i===0?250:270}`,C.teal,2,false,true);
- c.arrow(x+110,540,x+110,585,C.orange);c.box(x,595,220,145,`α${i+1} × v`,['conv 후 해당 H에 더함','Conv, then add to its H'],'orange');
+ const x=20+i*290,center=x+95;
+ c.box(x,370,190,160,`Branch ${i+1}`,`h${i+1} ↔ W_K${i+1} e\n→ α${i+1}`,'blue');
+ c.path(`M${i===0?80:440} 180 V205 H${i===0?8:512} V345 H${center} V360`,C.teal,2.5,false,true);
+ c.arrow(center,535,center,585,C.orange);
+ c.box(x,595,190,175,`α${i+1} × v`,['conv 후 해당 H에 더함','Conv, then add to its H'],'orange');
+ const branchY=i===0?645:710;
+ c.circle(260,branchY,3,C.teal,C.teal);
+ c.arrow(260,branchY,i===0?220:300,branchY,C.teal);
 }
-c.text(260,780,['2개 branch만 확대 · 실제 실험은 4개','Two branches shown · Four in the experiment'],{size:23,anchor:'middle',width:490});
+c.text(260,825,['2개 branch만 확대 · 실제 실험은 4개','Two branches shown · Four in the experiment'],{size:23,anchor:'middle',width:490});
 return [a,b,c];
   },
 } satisfies FigureSpec;

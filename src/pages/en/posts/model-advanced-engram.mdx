@@ -22,13 +22,13 @@ Inside Engram, one path determines the lookup address in advance from token IDs,
 
 ## Retrieving Memory from Token Groups
 
-Panel A of Figure 2 shows the original token IDs splitting into two paths. The blue path produces the current contextual state <math><msub><mi>h</mi><mtext>t</mtext></msub></math> through the existing embedding and backbone. The teal path converts them into lookup IDs, reads table rows, and produces <math><msub><mi>e</mi><mtext>t</mtext></msub></math>. Unlike the standard token embedding e(B) in the previous article, e here is **a vector retrieved by Engram**.
+Panel A of Figure 2 shows the complete flow: two inputs are prepared and combined by the context gate. B expands the lookup path outlined in A; C expands the context gate where the two inputs meet. The blue path produces the current contextual state <math><msub><mi>h</mi><mtext>t</mtext></msub></math> through the existing embedding and backbone. The teal path converts them into lookup IDs, reads table rows, and produces <math><msub><mi>e</mi><mtext>t</mtext></msub></math>. Unlike the standard token embedding e(B) in the previous article, e here is **a vector retrieved by Engram**.
 
-<a href="/images/model-advanced-engram/en/01-lookup-and-context.png?v=bcda99323e37" id="figure-2"><picture><source width="720" height="4812" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/01-lookup-and-context-mobile.png?v=de5a6384ed53" /><img width="2400" height="5584" src="/images/model-advanced-engram/en/01-lookup-and-context.png?v=bcda99323e37" alt="Original token IDs split into the standard embedding path and the canonical-ID lookup path. The retrieved vector is projected into a Key and Value, and the contextual hidden state produces a gate." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-engram/en/01-lookup-and-context.png?v=f3094d568135" id="figure-2"><picture><source width="720" height="5342" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/01-lookup-and-context-mobile.png?v=4b14fea15925" /><img width="2400" height="6112" src="/images/model-advanced-engram/en/01-lookup-and-context.png?v=f3094d568135" alt="Original token IDs split into the standard embedding path and the canonical-ID lookup path. The retrieved vector is projected into a Key and Value, and the contextual hidden state produces a gate." loading="lazy" /></picture></a>
 
 The canonical IDs used for lookup are predefined by grouping tokens whose text becomes identical after case or orthographic normalization. The transformation in [paper §2.2](https://arxiv.org/html/2601.07372v1#S2.SS2) applies only to the lookup path; the language model retains its original token IDs and embeddings.
 
-In panel B, if the last three tokens are A, B, C, the 2-gram is (B,C) and the 3-gram is (A,B,C). This reduced example has two hash heads per length, so it concatenates vectors read from four separate tables.
+Expanding the lookup process in B, when the last three tokens are A, B, C, the 2-gram is (B,C) and the 3-gram is (A,B,C). This reduced example has two hash heads per length, so it concatenates vectors read from four separate tables.
 
 The concatenated <math><msub><mi>e</mi><mtext>t</mtext></msub></math> has width <math><msub><mi>d</mi><mtext>mem</mtext></msub></math>, while the backbone state <math><msub><mi>h</mi><mtext>t</mtext></msub></math> has d dimensions. The <math><msub><mi>W</mi><mtext>K</mtext></msub></math> and <math><msub><mi>W</mi><mtext>V</mtext></msub></math> projections in panel C turn the retrieved vector into a d-dimensional Key and Value, respectively. In column-vector notation, each projection has shape [d × <math><msub><mi>d</mi><mtext>mem</mtext></msub></math>].
 
@@ -40,16 +40,11 @@ The [gate in paper §2.3](https://arxiv.org/html/2601.07372v1#S2.SS3) applies RM
 
 In Figure 3, the preceding contexts P and Q differ, but the last three tokens A, B, C are the same. With maximum length N=3, both cases retrieve the same (B,C) and (A,B,C) entries, so k and v are also the same. This teaching example changes only h, which reflects the longer context.
 
-<a href="/images/model-advanced-engram/en/02-context-gate-numbers.png?v=899e7848ff01" id="figure-3"><picture><source width="720" height="4090" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/02-context-gate-numbers-mobile.png?v=25757c70ff2d" /><img width="2400" height="3376" src="/images/model-advanced-engram/en/02-context-gate-numbers.png?v=899e7848ff01" alt="Both inputs end in ABC and have the same retrieved Key and Value, but their hidden states point in different directions, producing gates of about 0.8044 and 0.1956." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-engram/en/02-context-gate-numbers.png?v=9af7192916fc" id="figure-3"><picture><source width="720" height="1360" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/02-context-gate-numbers-mobile.png?v=09e3bc0b7dd3" /><img width="2400" height="2082" src="/images/model-advanced-engram/en/02-context-gate-numbers.png?v=9af7192916fc" alt="Both inputs end in ABC and have the same retrieved Key and Value, but their hidden states point in different directions, producing gates of about 0.8044 and 0.1956." loading="lazy" /></picture></a>
 
-Let d=2, k=[1,1], and v=[2,−1], changing only h from [1,1] in A to [−1,−1] in B. With the RMSNorm gain set to 1 and ε omitted, normalization leaves h and k unchanged in both cases.
+Let d=2, k=[1,1], and v=[2,−1], changing only h from [1,1] in context P to [−1,−1] in context Q. With the RMSNorm gain set to 1 and ε omitted, normalization leaves h and k unchanged in both cases.
 
-In A, the dot product of h and k is 1×1 + 1×1 = 2. In B, it is −1×1 + −1×1 = −2. Dividing by √2 gives scores of √2 and −√2. Substituting each score s into the sigmoid formula 1 / (1 + exp(−s)) gives approximately 0.8044 and 0.1956.
-
-| h | Gate α | Result αv |
-|---|---|---|
-| [1,1] | About 0.8044 | [1.6089, −0.8044] |
-| [−1,−1] | About 0.1956 | [0.3911, −0.1956] |
+In P, the dot product of h and k is 1×1 + 1×1 = 2. In Q, it is −1×1 + −1×1 = −2. Dividing by √2 gives scores of √2 and −√2. Substituting each score s into the sigmoid formula 1 / (1 + exp(−s)) gives approximately 0.8044 and 0.1956.
 
 The results were calculated using α before rounding. The two results have the same direction and component proportions, but differ in overall magnitude. **One scalar controls the entire Value**, so it does not apply a different coefficient to each component.
 
@@ -59,7 +54,7 @@ The results were calculated using α before rounding. The two results have the s
 
 Figure 4 shows how Ṽ[T×d], which collects the gated values across positions, returns to the backbone.
 
-<a href="/images/model-advanced-engram/en/03-convolution-and-residual.png?v=f26280467d9c" id="figure-4"><picture><source width="720" height="5826" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/03-convolution-and-residual-mobile.png?v=08310752990b" /><img width="2400" height="5564" src="/images/model-advanced-engram/en/03-convolution-and-residual.png?v=f26280467d9c" alt="The gated value passes through normalization, a depthwise causal convolution with spacing three, and SiLU. The original value is added back, and the result is added to the backbone hidden state." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-engram/en/03-convolution-and-residual.png?v=dd722f66618f" id="figure-4"><picture><source width="720" height="5902" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/03-convolution-and-residual-mobile.png?v=0c8867031dee" /><img width="2400" height="5686" src="/images/model-advanced-engram/en/03-convolution-and-residual.png?v=dd722f66618f" alt="The gated value passes through normalization, a depthwise causal convolution with spacing three, and SiLU. The original value is added back, and the result is added to the backbone hidden state." loading="lazy" /></picture></a>
 
 The first path applies RMSNorm, depthwise causal convolution, and SiLU to Ṽ in order. Engram then produces output Y by **adding the original Ṽ back to the transformed value**. The second addition **adds Y to the original backbone H**. The first bypass preserves the retrieved information, while the second preserves the existing contextual representation. H+Y is then fed into Attention and MoE.
 
@@ -73,7 +68,7 @@ Panel C shows the multiple residual branches of [mHC](/en/posts/model-advanced-h
 
 Figure 5 compares adding an N-gram representation at the input with adding it in a middle layer, as Engram does. Lookup can begin at a different time from when the representations are combined.
 
-<a href="/images/model-advanced-engram/en/04-input-versus-middle.png?v=8a8690260929" id="figure-5"><picture><source width="720" height="2342" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/04-input-versus-middle-mobile.png?v=a4b40874eaba" /><img width="2400" height="1914" src="/images/model-advanced-engram/en/04-input-versus-middle.png?v=8a8690260929" alt="Input fusion and middle-layer fusion are compared. A contextual hidden state sets the gate at the middle layer, while lookup and transfer based on known addresses can overlap preceding GPU computation." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-engram/en/04-input-versus-middle.png?v=931f7a488887" id="figure-5"><picture><source width="720" height="2342" media="(max-width: 600px)" srcSet="/images/model-advanced-engram/en/04-input-versus-middle-mobile.png?v=2d94de600298" /><img width="2400" height="1914" src="/images/model-advanced-engram/en/04-input-versus-middle.png?v=931f7a488887" alt="Input fusion and middle-layer fusion are compared. A contextual hidden state sets the gate at the middle layer, while lookup and transfer based on known addresses can overlap preceding GPU computation." loading="lazy" /></picture></a>
 
 When a representation is added at the input, subsequent layers learn how to use it. Combining it in a middle layer allows the gate to use h, which has gained context through preceding Attention. But the later the insertion, the more layers run without access to the retrieved information.
 

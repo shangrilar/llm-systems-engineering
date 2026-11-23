@@ -13,21 +13,30 @@ export default {
 panels(locale:Locale,mobile?:boolean){
 
 const p=new Panel(locale,['A. 위치별로 나란히 보기','A. Align features by position'],740);
-const xs=[75,245,415];
+const xs=[60,190,320];
 ['A','B','C'].forEach((t,i)=>{
- const x=xs[i]; p.token(x-60,110,t,120,'blue',55);p.arrow(x,175,x,205,C.blue);
- p.token(x-70,215,`e(${t})`,140,'blue',60);
- if(i>0)p.token(x-75,335,i===1?'g(A,B)':'g(B,C)',150,'teal',60);
- if(i===2)p.token(x-75,455,'g(A,B,C)',150,'teal',60);
- p.path(`M${x} 285 H${Math.max(2,x-82)} V595 H${x-25}`,C.blue,2,false,true);
- if(i>0)p.path(`M${x} 405 V${i===2?425:560} ${i===2?'H505 V595 H440':'V570'}`,C.teal,2,false,true);
- if(i===2)p.arrow(x,525,x,568,C.teal);
- p.circle(x,595,22,C.orangeFill,C.orange);p.text(x,603,'+',{size:25,anchor:'middle',width:35});
- p.arrow(x,625,x,660,C.blue);p.token(x-60,670,`x_${t}`,120,'blue',55);
+ const x=xs[i];
+ p.token(x-50,110,t,100,'blue',55);p.arrow(x,175,x,205,C.blue);
+ p.token(x-55,215,`e(${t})`,110,'blue',60);
+ if(i>0)p.token(x-60,335,i===1?'g(A,B)':'g(B,C)',120,'teal',60);
+ if(i===2)p.token(x-60,455,'g(A,B,C)',120,'teal',60);
+ if(i===0){
+  p.arrow(x,280,x,660,C.blue);
+ }else{
+  p.path(`M${x} 280 V305 H${x-65} V595 H${x-25}`,C.blue,2.5,false,true);
+  if(i===1)p.arrow(x,400,x,568,C.teal);
+  else{
+   p.path(`M${x} 400 V425 H390 V595 H${x+25}`,C.teal,2.5,false,true);
+   p.arrow(x,520,x,568,C.teal);
+  }
+  p.circle(x,595,22,C.orangeFill,C.orange);p.text(x,603,'+',{size:25,anchor:'middle',width:35});
+  p.arrow(x,625,x,660,C.blue);
+ }
+ p.token(x-50,670,`x_${t}`,100,'blue',55);
 });
-p.text(20,310,['단일 토큰','Single token'],{size:21,color:C.blue,width:180});
-p.text(20,430,['2개 묶음','2-token group'],{size:21,color:C.teal,width:180});
-p.text(20,550,['3개 묶음','3-token group'],{size:21,color:C.teal,width:180});
+p.text(410,locale==='en'?238:253,['단일 토큰','Single token'],{size:21,color:C.blue,width:110});
+p.text(410,locale==='en'?358:373,['2개 묶음','2-token group'],{size:21,color:C.teal,width:110});
+p.text(410,locale==='en'?478:493,['3개 묶음','3-token group'],{size:21,color:C.teal,width:110});
 const q=new Panel(locale,['B. (A,B)는 B에만 반영','B. (A,B) contributes at B'],740);
 q.token(50,110,'A',130,'gray',60);q.token(330,110,'B',130,'blue',60);
 q.path('M65 195 V220 H445 V195',C.teal,3);q.arrow(255,220,255,270,C.teal);

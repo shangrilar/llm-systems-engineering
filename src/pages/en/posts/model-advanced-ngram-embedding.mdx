@@ -14,7 +14,7 @@ N-gram embedding is **a path that uses a contiguous group of tokens as an addres
 
 Suppose three tokens A, B, and C arrive in order. These letters stand for arbitrary tokens; a token does not necessarily correspond to a whole word. e(B) is B's basic embedding, and g(A,B) is the representation retrieved for the bigram (A,B).
 
-<a href="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=b45092b01e60" id="figure-1"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups-mobile.png?v=344a033b0efe" /><img width="2400" height="1996" src="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=b45092b01e60" alt="The basic embedding remains at A, B, and C. Bigram AB contributes at B; bigram BC and trigram ABC contribute at C." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=e021fc6d466d" id="figure-1"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups-mobile.png?v=39bffaa4cde2" /><img width="2400" height="1996" src="/images/model-advanced-ngram-embedding/en/01-suffix-token-groups.png?v=e021fc6d466d" alt="The basic embedding remains at A, B, and C. Bigram AB contributes at B; bigram BC and trigram ABC contribute at C." loading="lazy" /></picture></a>
 
 At position B, we use B's basic representation e(B) together with the bigram representation g(A,B). At position C, we can use e(C), g(B,C), and g(A,B,C). The addition in the figure is an illustrative example of combining them at the input after matching their dimensions.
 

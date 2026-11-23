@@ -14,7 +14,7 @@ N-gram 임베딩은 **연속된 토큰 묶음을 주소로 삼아 학습된 벡�
 
 A, B, C라는 세 토큰이 차례로 들어온다고 하겠습니다. 여기서 문자는 임의의 토큰을 뜻하며, 반드시 단어 하나에 대응하지는 않습니다. e(B)는 B의 기본 임베딩, g(A,B)는 바이그램 (A,B)를 조회한 표현입니다.
 
-<a href="/images/model-advanced-ngram-embedding/01-suffix-token-groups.png?v=146a3eb4b6c3" id="figure-1"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/01-suffix-token-groups-mobile.png?v=c0b414e82a31" /><img width="2400" height="1996" src="/images/model-advanced-ngram-embedding/01-suffix-token-groups.png?v=146a3eb4b6c3" alt="기본 임베딩은 A, B, C 모두에서 유지된다. 바이그램 AB는 B, BC와 트라이그램 ABC는 C 위치에 반영된다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-ngram-embedding/01-suffix-token-groups.png?v=3de11e3e1118" id="figure-1"><picture><source width="720" height="2374" media="(max-width: 600px)" srcSet="/images/model-advanced-ngram-embedding/01-suffix-token-groups-mobile.png?v=96821c652456" /><img width="2400" height="1996" src="/images/model-advanced-ngram-embedding/01-suffix-token-groups.png?v=3de11e3e1118" alt="기본 임베딩은 A, B, C 모두에서 유지된다. 바이그램 AB는 B, BC와 트라이그램 ABC는 C 위치에 반영된다." loading="lazy" /></picture></a>
 
 B 위치에서는 B의 기본 표현 e(B)와 바이그램 표현 g(A,B)를 함께 사용합니다. C 위치에서는 e(C), g(B,C), g(A,B,C)를 사용할 수 있습니다. 그림의 덧셈은 차원을 맞춘 뒤 입력에서 결합하는 교육용 예시입니다.
 
