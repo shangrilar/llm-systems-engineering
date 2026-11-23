@@ -3,7 +3,7 @@ import {Panel,C,matrix,port,connector,type FigureSpec,type Locale} from '@llm-sy
 export default {
   articleId:'model-advanced-mqa-gqa',figureId:'02-mqa-different-outputs',number:'ma-01-02',
   eyebrow:['그림 2 · MQA','Figure 2 · MQA'],
-  title:['같은 KV를 읽어도 출력은 다릅니다','Shared KV, different outputs'],
+  title:['같은 KV라도 Query마다 따로 계산합니다','Shared KV, a separate computation per query'],
   subtitle:['Query와 출력은 네 개 · 공유하는 것은 한 묶음의 Key와 Value','Four queries and outputs · One shared set of keys and values'],
   caption:['네 Query는 한 묶음의 KV를 공유하며 각자의 출력을 만듭니다.','Four queries share one KV set and produce their own outputs.'],
   alt:['네 Query가 하나의 K 4×2와 V 4×2를 공유한다. 각 Query는 별도의 Attention을 거쳐 o1부터 o4까지 네 출력을 만든다.','Four queries share one 4×2 K and V set. Each query runs its own attention computation, producing outputs o1 through o4.'],

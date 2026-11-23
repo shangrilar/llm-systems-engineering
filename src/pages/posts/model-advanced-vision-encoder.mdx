@@ -3,7 +3,7 @@ layout: ../../layouts/Post.astro
 articleId: model-advanced-vision-encoder
 title: "이미지를 벡터로: Patch와 Vision Encoder"
 description: "작은 RGB 이미지를 패치 벡터로 바꾸고 위치 정보와 attention으로 문맥화하는 과정을 따라가며, 시각 표현의 학습 목표와 출력 형태를 설명합니다."
-date: 2026-09-29
+date: 2026-11-23
 ---
 
 텍스트 모델은 토큰을 벡터로 바꾼 뒤 attention과 FFN으로 처리했습니다. 이미지도 벡터열로 만들면 같은 종류의 계산에 연결할 수 있습니다. 다만 출발점은 정수 토큰 ID가 아니라 **공간 위치마다 색 값을 가진 픽셀 배열**입니다.

@@ -6,6 +6,9 @@ description: "Calculate a weighted read over earlier layer outputs, derive its w
 date: 2026-09-28
 ---
 
+import Annot from '../../../components/Annot.astro';
+import AnnotPart from '../../../components/AnnotPart.astro';
+
 [HC/mHC](/en/posts/model-advanced-hc-mhc/) and [Gated Residual](/en/posts/model-advanced-gated-residual/) maintained representations of the same token in multiple streams. Each layer read those representations, computed a result, and wrote it back to the streams. They did not retain a separate output from every earlier layer.
 
 Attention Residuals (AttnRes) starts with a different question: <strong>can we keep earlier layers' results separate and let the next layer choose what to read?</strong> It applies the idea of attention, which selects information across tokens, to connections along depth.
@@ -18,7 +21,7 @@ Let e be the embedding, and <math><msub><mi>f</mi><mn>1</mn></msub></math> and <
 
 A standard residual connection passes the combined representation of e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> into the next F. Full AttnRes stores those three vectors as separate sources: candidates for the read. The important difference in Figure 1 is not the number of arrows but <strong>what can be read separately when forming the next input</strong>.
 
-<a href="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=8a8572724041" id="figure-1"><picture><source width="720" height="2590" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01-position-versus-depth-mobile.png?v=5194cf5c42f0" /><img width="2400" height="2168" src="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=8a8572724041" alt="Left: F3 reads the cumulative e+f1+f2. Right: F3 reads a separately weighted sum of e,f1,f2. f3 is produced only after F3 executes." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=9b8a351471de" id="figure-1"><picture><source width="720" height="2590" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01-position-versus-depth-mobile.png?v=a31629cd1591" /><img width="2400" height="2168" src="/images/model-advanced-attention-residuals/en/01-position-versus-depth.png?v=9b8a351471de" alt="Left: F3 reads the cumulative e+f1+f2. Right: F3 reads a separately weighted sum of e,f1,f2. f3 is produced only after F3 executes." loading="lazy" /></picture></a>
 
 The right side weights e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> separately to form input <math><msub><mi>h</mi><mn>3</mn></msub></math>. Processing that input with <math><msub><mi>F</mi><mn>3</mn></msub></math> produces a fresh output <math><msub><mi>f</mi><mn>3</mn></msub></math>. Only subsequent computations can use <math><msub><mi>f</mi><mn>3</mn></msub></math> as a source. There is no cycle that reads an output before it has been computed.
 
@@ -34,7 +37,7 @@ Suppose one token has stored e = [2, 0, 0], <math><msub><mi>f</mi><mn>1</mn></ms
 
 Let the next layer read e, <math><msub><mi>f</mi><mn>1</mn></msub></math>, and <math><msub><mi>f</mi><mn>2</mn></msub></math> with weights 0.25, 0.5, and 0.25. We will derive those weights in the next section. First, consider the input they produce.
 
-<a href="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=256bd3765dac" id="figure-2"><picture><source width="720" height="2514" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01b-weighted-read-mobile.png?v=2d537a0b3ef6" /><img width="2400" height="2178" src="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=256bd3765dac" alt="Weighted contributions [.5,0,0],[0,2,0],[0,0,1.5] sum to [.5,2,1.5]. Changing weights to [.5,.25,.25] changes the result to [1,1,1.5]." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=6b826663d1db" id="figure-2"><picture><source width="720" height="2608" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/01b-weighted-read-mobile.png?v=6aa425438cbd" /><img width="2400" height="2242" src="/images/model-advanced-attention-residuals/en/01b-weighted-read.png?v=6b826663d1db" alt="Weighted contributions [.5,0,0],[0,2,0],[0,0,1.5] sum to [.5,2,1.5]. Changing weights to [.5,.25,.25] changes the result to [1,1,1.5]." loading="lazy" /></picture></a>
 
 Each weight multiplies an entire source vector.
 
@@ -56,7 +59,7 @@ We can now construct the earlier weights [0.25, 0.5, 0.25]. Each destination sub
 
 Figure 3 separates the path that computes scores from the path that mixes originals using the resulting weights. Sources are normalized with RMSNorm for scoring. The weighted sum uses their original values before normalization.
 
-<a href="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=7a1a584975cc" id="figure-3"><picture><source width="720" height="2502" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/02-learned-depth-query-mobile.png?v=7980a3e5623d" /><img width="2400" height="2098" src="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=7a1a584975cc" alt="RMSNorm maps the nonzero component of e=[2,0,0], f1=[0,4,0], f2=[0,0,6] to √3. With w=[0,ln2/√3,0], scores [0,ln2,0] yield softmax weights [.25,.5,.25]. Mixing the original sources gives h3=[.5,2,1.5]." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=bbf1b72a6f72" id="figure-3"><picture><source width="720" height="2502" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/02-learned-depth-query-mobile.png?v=e7b22ae5a069" /><img width="2400" height="2098" src="/images/model-advanced-attention-residuals/en/02-learned-depth-query.png?v=bbf1b72a6f72" alt="RMSNorm maps the nonzero component of e=[2,0,0], f1=[0,4,0], f2=[0,0,6] to √3. With w=[0,ln2/√3,0], scores [0,ln2,0] yield softmax weights [.25,.5,.25]. Mixing the original sources gives h3=[.5,2,1.5]." loading="lazy" /></picture></a>
 
 With gain one and ε omitted, the RMS of e = [2, 0, 0] is 2/√3. Dividing gives [√3, 0, 0]. The same calculation maps <math><msub><mi>f</mi><mn>1</mn></msub></math> and <math><msub><mi>f</mi><mn>2</mn></msub></math> to [0, √3, 0] and [0, 0, √3]. Normalization reduces the direct effect of the original magnitudes 2, 4, and 6 on the scores.
 
@@ -104,7 +107,23 @@ The four-versus-three comparison in the diagram concerns one small example at on
 
 The shared question across these three articles was how information is stored between layers and supplied to the next computation. Figure 5 compares the designs using the same three criteria: storage, reading, and updating.
 
-<a href="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" id="figure-5"><picture><source width="720" height="2986" media="(max-width: 600px)" srcSet="/images/model-advanced-attention-residuals/en/04-residual-designs-mobile.png?v=a77cef70b709" /><img width="2400" height="3174" src="/images/model-advanced-attention-residuals/en/04-residual-designs.png?v=a292643841fa" alt="Compare mHC, GR and AttnRes by storage, read and update. mHC writes into mixed bypasses; GR writes into original bypasses. AttnRes reads depth sources and appends fresh output." loading="lazy" /></picture></a>
+<Annot fig="model-advanced-attention-residuals/04-residual-designs" n={5} layout="stack">
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="1">
+
+**mHC.** Keeps several residual streams, reads them with one scalar per stream, and mixes the bypass with a constrained matrix. F’s output is written with one scalar per stream.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="2">
+
+**Gated Residual.** Reads with per-branch normalization and component-wise gated averages, and carries each original through unchanged. F’s output is added to the originals with one scalar per branch.
+
+</AnnotPart>
+<AnnotPart fig="model-advanced-attention-residuals/04-residual-designs" panels="3">
+
+**Attention Residuals.** Keeps earlier sublayers’ fresh outputs separately, reads them with attention over depth, and appends the new output to the list. The block variant updates a block sum instead of the list. The figure compares how information flows, not performance.
+
+</AnnotPart>
+</Annot>
 
 | Design | Stored unit | Read for the next computation | How fresh results are incorporated |
 |---|---|---|---|

@@ -16,7 +16,7 @@ date: 2026-09-19
 
 입력을 모델에 통과시키면 각 위치의 표현이 계산됩니다. [LM Head](/posts/embedding-to-lm-head/)는 이 표현으로 어휘에 속한 토큰들의 예측 점수인 logits를 만듭니다. 다음 토큰을 생성할 때는 **마지막 입력 위치의 점수**를 사용합니다. 여기서는 `p2` 위치의 점수로 첫 출력 `x0`를 선택합니다. 가장 점수가 높은 토큰을 고르거나, 점수로 만든 확률 분포에서 하나를 뽑을 수 있습니다.
 
-[![입력 p0 p1 p2로 x0를 선택하고, x0를 입력 문맥에 붙여 x1을 선택합니다. 이어 x1을 붙여 x2를 선택하며, 각 출력이 다음 실행의 입력으로 연결됩니다.](/images/inference-kv-cache/01-generation-loop.png)](/images/inference-kv-cache/01-generation-loop.png)
+[![입력 p0 p1 p2로 x0를 선택하고, x0를 입력 문맥에 붙여 x1을 선택합니다. 이어 x1을 붙여 x2를 선택하며, 각 출력이 다음 실행의 입력으로 연결됩니다.](/images/inference-kv-cache/01-generation-loop.png?v=e5022c8e7ad6)](/images/inference-kv-cache/01-generation-loop.png?v=e5022c8e7ad6)
 
 `x0`를 선택하면 다음 예측에 사용할 문맥은 `p0 p1 p2 x0`가 됩니다. 이 문맥으로 `x1`을 선택하고, 다시 `x1`을 붙여 `x2`를 선택합니다. 그림 오른쪽의 출력이 다음 줄의 입력으로 돌아가는 화살표가 이 반복을 보여줍니다. 다음에 어떤 토큰을 입력할지는 현재 토큰을 선택한 뒤에 정해집니다.
 
@@ -42,7 +42,7 @@ date: 2026-09-19
 
 이 성질은 각 층에서도 유지됩니다. 과거 위치의 Attention은 미래 위치를 보지 않고, 정규화와 MLP 같은 토큰별 연산도 미래 위치를 섞지 않습니다. 그래서 **각 층에서 이미 계산한 K/V를 보관**해 두면, 새 위치를 처리할 때 과거 위치의 계산을 다시 실행할 필요가 없습니다. [Transformers의 KV 재사용 설명](https://huggingface.co/docs/transformers/v4.57.0/en/cache_explanation#attention-matrices)
 
-[![처음에는 p0 p1 p2의 K/V를 각 층의 캐시에 저장합니다. 다음 실행은 x0의 Q/K/V를 새로 계산하고, Q는 저장된 과거 K/V와 현재 x0의 K/V를 함께 읽습니다. 이어 x1도 같은 방식으로 처리합니다.](/images/inference-kv-cache/03-kv-reuse.png)](/images/inference-kv-cache/03-kv-reuse.png)
+[![처음에는 p0 p1 p2의 K/V를 각 층의 캐시에 저장합니다. 다음 실행은 x0의 Q/K/V를 새로 계산하고, Q는 저장된 과거 K/V와 현재 x0의 K/V를 함께 읽습니다. 이어 x1도 같은 방식으로 처리합니다.](/images/inference-kv-cache/03-kv-reuse.png?v=732a1abb3af8)](/images/inference-kv-cache/03-kv-reuse.png?v=732a1abb3af8)
 
 그림은 모델 각 층의 Attention 부분을 펼친 것입니다. 둥근 칸은 입력·출력 토큰이고, K·V와 위치가 나뉘어 적힌 사각형은 저장된 계산 결과입니다. 주황색 경로는 새 K/V를 캐시에 추가하는 흐름, 초록색 경로는 Attention이 K/V를 읽는 흐름을 나타냅니다.
 

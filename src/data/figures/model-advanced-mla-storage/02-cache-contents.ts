@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-mla-storage',figureId:'02-cache-contents',number:'ma-02-02',
  eyebrow:['그림 2 · 실제 저장 항목','Figure 2 · Cache contents'],
  title:['잠재 벡터와 위치용 Key를 한 행에 저장하기','Store the latent and positional key together'],
- subtitle:['한 층 · 현재 위치 p₃ · 토큰당 3 + 2성분','One layer · Current position p₃ · 3 + 2 components per token'],
+ subtitle:['한 층 · 현재 위치 p₃ · 토큰당 3 + 2성분 · r₀, r₁은 위치용 Key의 성분(위치 번호 아님)','One layer · Current position p₃ · 3 + 2 components per token · r₀, r₁ are components of the positional key, not positions'],
  captionIn:'article',caption:['위치용 Key는 헤드 간 공유합니다. RoPE를 분리하는 이유와 계산 과정은 본문 및 다음 편에서 설명합니다.','The positional key is shared across heads. The text and next article explain why RoPE is separated.'],
  alt:['현재 p3의 1×8 입력에서 두 경로가 갈라진다. W_D 8×3은 잠재 벡터 c3를, W_KR 8×2와 RoPE(3)은 위치용 Key k3R을 만든다. 두 행벡터의 3성분과 2성분을 캐시의 새 p3 행에 함께 저장한다. 앞선 p0,p1,p2 행은 그대로 남는다.','The p3 input (1×8) splits into two paths. W_D (8×3) produces c3; W_KR (8×2) followed by RoPE(3) produces k3R. The three latent and two positional-key components enter the new p3 cache row. Existing p0–p2 rows remain.'],
  sources:[{label:'DeepSeek-V2 equations 14–19',url:'https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3'}],

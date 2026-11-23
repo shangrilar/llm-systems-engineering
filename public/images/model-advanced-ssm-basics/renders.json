@@ -1,0 +1,18 @@
+{
+ "01-state-through-time": {
+  "svg": "3978940b3ce6e291ffb67bfd1044ecf801aa3287b441a4d4e25adf2de04857ab",
+  "png": "38057fa28b33e108c81a9980caa90e9e0d322100f2f5a56fd2fe0b2a71be9cb0"
+ },
+ "01-state-through-time-mobile": {
+  "svg": "cb3c1565ab1188480b22ddde8c9fa9192174513d0937bcad4d0b24ce5b04b4bd",
+  "png": "d2fa5ec76559712d9a757167d6dfe898c7bc5435e19c524577d716642dc82392"
+ },
+ "04-fixed-coefficients": {
+  "svg": "ab5dfa98b559466fd8c0cf5122623f64e2a4f48859c7d3cfecfc3b752b35328e",
+  "png": "d29ea73a66b0037aafc02d98d3ab99daaa33f0231cd5d21d45281e76fa9172d0"
+ },
+ "04-fixed-coefficients-mobile": {
+  "svg": "14d2a11a1f18c06cc1be872a885e2a233f63cb6bf77318d073131cf15aae4e4d",
+  "png": "92020ddfcb7f1919c661cfaa7b7ade495112a6387628d4ffdcaf7972017674a3"
+ }
+}

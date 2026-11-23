@@ -6,7 +6,7 @@ description: "Explore how improving one operation affects whole-model execution 
 date: 2026-09-14
 ---
 
-In the [previous article](https://llm-systems-engineering.pages.dev/en/posts/flash-attention/), we explored how FlashAttention reduces the storage and rereading of large score and probability matrices. But a model does more than compute attention. Even after attention becomes faster, other operations such as the MLP and normalization still need to run. **The benefit of speeding up one operation must be checked in the execution time of the whole model.**
+In the [previous article](https://ai-systems-engineering.com/en/posts/flash-attention/), we explored how FlashAttention reduces the storage and rereading of large score and probability matrices. But a model does more than compute attention. Even after attention becomes faster, other operations such as the MLP and normalization still need to run. **The benefit of speeding up one operation must be checked in the execution time of the whole model.**
 
 This article uses a small example to show how much improving one part reduces the total time. We then explore why the main bottleneck can change during optimization, leading us to repeat improvements and measurements. Finally, we move beyond using the current GPU's resources efficiently to consider **using more resources according to execution goals and memory capacity.**
 

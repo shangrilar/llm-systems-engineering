@@ -1,0 +1,26 @@
+{
+ "01-producers-and-readers": {
+  "svg": "b4b687002a1f0ae4046766a6a003f825ddfe55ffefc6c7117f2b1f4c70047754",
+  "png": "5655ed87babee897340494a31309d550697306a3897d0922a7b98e2857934699"
+ },
+ "01-producers-and-readers-mobile": {
+  "svg": "182093f36eed4c485a2aab91374a1a22abe4356b6ac8a56ffa8c5efb761df5b7",
+  "png": "c64486a2ac8fde07dda8b1760d513fdf869628af75adb71e2c607e0a32e03a58"
+ },
+ "03-new-token-through-both-halves": {
+  "svg": "4ed4b0de2309dae6a0a208ff12daec6c526ef65d4825c2925002b48992c53637",
+  "png": "f3fe6d965286c4f3d7fc8f6d725793c6bf844888e3b477416e57927d6ca8023e"
+ },
+ "03-new-token-through-both-halves-mobile": {
+  "svg": "55b6a644dafb82fb6c22eeb882f2e556281b800fd8329bf9cb4db0cf8b954d01",
+  "png": "45fe462177071e976f5e87d3398d32ef6ba48d5269b50cf111729febee9eba7d"
+ },
+ "04-prefill-dependencies": {
+  "svg": "cebcc05e87c5602ce4e80add81e8ce09127455d02eeb393e43650bf68b35b9df",
+  "png": "785d30b1d6aaa8aad73496c2003bf2be595f2979cccd6ed929d5d3a07571b8a5"
+ },
+ "04-prefill-dependencies-mobile": {
+  "svg": "0d2deac204d76b3272a16e375decdfbdc2e3cefccebb6899192442146637cff4",
+  "png": "882078bc2f53ade8ca0ef2a2242473a317cae226d54632ecb6844f0d409b39d3"
+ }
+}

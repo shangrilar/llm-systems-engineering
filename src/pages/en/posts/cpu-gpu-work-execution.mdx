@@ -6,7 +6,7 @@ description: "Distinguish CPU requests from GPU execution, then use buffers, str
 date: 2026-09-17
 ---
 
-In the [previous article](https://llm-systems-engineering.pages.dev/en/posts/gpu-execution-and-warp-scheduling/), we looked at how a kernel's threads are grouped into blocks and warps and executed inside the GPU. This time, we will widen our view to the whole program. Once a kernel is ready to run on the GPU, who prepares its input and requests its execution? When can the next operation that needs its result begin?
+In the [previous article](https://ai-systems-engineering.com/en/posts/gpu-execution-and-warp-scheduling/), we looked at how a kernel's threads are grouped into blocks and warps and executed inside the GPU. This time, we will widen our view to the whole program. Once a kernel is ready to run on the GPU, who prepares its input and requests its execution? When can the next operation that needs its result begin?
 
 We will start by **distinguishing when the CPU requests work from when the GPU completes it**. First, we will connect the calling code on the CPU to the kernel body on the GPU and see where inputs and results are stored. Then we will look at how work is submitted in order and when the CPU needs to wait for results. Finally, we will place independent work in separate streams and connect operations that exchange results with the execution order they need.
 

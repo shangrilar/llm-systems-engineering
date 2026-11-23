@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 5","Figure 5"],
   title:["절대 위치로 회전하고, 상대 위치로 비교하기","Rotate by absolute position, compare by relative position"],
-  subtitle:["한 성분 쌍의 회전 속도: 한 칸당 30°","Rotation rate for one component pair: 30° per position"],
+  subtitle:["한 성분 쌍의 회전 속도: 한 칸당 30° · causal mask 적용 전의 내적 비교","Rotation rate for one component pair: 30° per position · dot products before the causal mask"],
   alt:["같은 q=[1,0],k=[1,1]을 위치 0/1과 위치 1/2로 각각 회전한다. 두 경우 위치 차이는 1, 벡터 사이각은 75도, 내적은 약 0.366이다.","Rotate the same q=[1,0] and k=[1,1] at positions 0/1 and 1/2. Both have position difference 1, angle 75 degrees and dot product approximately 0.366."],
   caption:["회전각은 설명용입니다. 실제 모델의 주파수 설정을 나타내지 않습니다.","Angles are illustrative, not a real model’s frequency settings."],
   sources:[],

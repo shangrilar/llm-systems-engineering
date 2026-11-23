@@ -1,6 +1,6 @@
 import {Panel,C,matrix,port,connector,type Bounds,type FigureSpec,type Locale} from '@llm-systems/viz';
 
-const box=(p:Panel,b:Bounds,label:readonly [string,string]|string,tone:'blue'|'teal'|'gray'|'orange'='blue')=>{
+const box=(p:Panel,b:Bounds,label:readonly [string,string]|string,tone:'blue'|'teal'|'gray'|'orange'|'purple'='blue')=>{
   p.box(b.x,b.y,b.width,b.height,label,'',tone);return b;
 };
 export default {
@@ -20,7 +20,7 @@ export default {
     const centers=[175,320,465];
     centers.forEach((cx,j)=>{
       const tone=j===0?'blue':'teal';
-      const projection=box(a,{x:cx-49,y:261,width:98,height:50},['× WQ','× WK','× WV'][j],tone);
+      const projection=box(a,{x:cx-49,y:261,width:98,height:50},['× WQ','× WK','× WV'][j],'purple');
       connector(a,[cx,236],port(projection,'top',.5,8),{tone:'orange'});
       a.circle(cx,236,3,C.orange,C.orange);
       connector(a,port(projection,'bottom',.5,8),[cx,360],{tone});
@@ -51,6 +51,7 @@ export default {
     c.text(328,190,'V1 [4×2]',{size:24,weight:600,color:C.teal,width:190});
     const k=matrix(c,70,219,Array.from({length:4},()=>[null,null]),{cellWidth:57,cellHeight:36,rowLabels:['p0','p1','p2','p3'],size:21,tone:r=>r===3?'orange':'teal'});
     const v=matrix(c,330,219,Array.from({length:4},()=>[null,null]),{cellWidth:57,cellHeight:36,size:21,tone:r=>r===3?'orange':'teal'});
+    c.text(12,690,['K1·V1의 행 = 토큰 위치 p0–p3 (1·2의 행은 head)','K1, V1 rows = token positions p0–p3 (rows in 1–2 are heads)'],{size:18,color:C.muted,width:500});
     const weights=box(c,{x:70,y:430,width:180,height:86},['점수 → softmax','Scores → softmax']);
     c.text(86,554,['가중치 4개','4 weights'],{size:22,color:C.blue,width:150});
     const sum=box(c,{x:324,y:430,width:178,height:86},['Value 가중합','Weighted values'],'teal');

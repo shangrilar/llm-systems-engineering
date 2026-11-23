@@ -3,7 +3,7 @@ layout: ../../../layouts/Post.astro
 articleId: model-advanced-ngram-embedding
 title: "N-gram Embeddings: Looking Up Representations of Token Groups"
 description: "Follow how a representation is added at the final position of a token group and learned with the model, then see how fixed-size tables use addresses and multiple hashes to mitigate collisions."
-date: 2026-09-29
+date: 2026-11-23
 ---
 
 [Basic token embeddings](/en/posts/embedding-to-lm-head/) read one row of a table using a single token ID. The same ID retrieves the same initial vector, and subsequent attention and FFN layers incorporate the surrounding context. Could short token combinations that often occur together have their own representations as well?

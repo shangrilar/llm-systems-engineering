@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 2","Figure 2"],
   title:["Q·K·V: 같은 입력, 서로 다른 가중치","Q, K and V: same input, different weights"],
-  subtitle:["X (T × d) × W (d × d) → Q, K, V 각각 T × d","X (T × d) × W (d × d) → Q, K and V each have shape T × d"],
+  subtitle:["X (T × d) × W (d × d) → Q, K, V 각각 T × d · W의 행 = 입력 성분, 열 = 출력 성분","X (T × d) × W (d × d) → Q, K and V each have shape T × d · W rows = input components, columns = output components"],
   alt:["X×Wq=Q, X×Wk=K, X×Wv=V의 세 행렬 곱을 나란한 행으로 보여준다. 각 입력은 3×8이고 가중치는 8×8이다. 출력의 열 1~4는 head 1, 5~8은 head 2다. 토큰 3의 행은 각 출력에서 같은 위치에 있다.","Three rows show X×Wq=Q, X×Wk=K and X×Wv=V. Each input is 3×8 and each weight matrix is 8×8. Columns 1–4 produce head 1 and columns 5–8 produce head 2. Token 3 stays in the same row in every output."],
   caption:["가중치의 점은 학습 가능한 값을 뜻합니다. 실제 수치와 bias는 생략했습니다.","Dots represent learned weights. Numerical values and biases are omitted."],
   sources:[],

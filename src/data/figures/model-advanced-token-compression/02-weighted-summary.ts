@@ -17,9 +17,9 @@ export default {
     p.text(130,390,['내용 투영 H Wᵤ','Content: H Wᵤ'],{size:24,weight:600,color:C.teal,anchor:'middle',width:235});
     p.text(390,390,['점수 투영 H Wₛ','Scores: H Wₛ'],{size:24,weight:600,color:C.purple,anchor:'middle',width:235});
     p.text(260,443,['학습되는 투영 행렬 · 아래는 예시 값','Learned projection matrices · Toy values'],{size:23,anchor:'middle',width:510});
-    p.text(130,492,'Wᵤ',{size:25,weight:600,color:C.teal,anchor:'middle',width:200});
+    p.text(130,492,'Wᵤ',{size:25,weight:600,color:C.purple,anchor:'middle',width:200});
     p.text(390,492,'Wₛ',{size:25,weight:600,color:C.purple,anchor:'middle',width:200});
-    matrix(p,44,517,[[2,0],[0,4]],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'teal'});
+    matrix(p,44,517,[[2,0],[0,4]],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'purple'});
     matrix(p,304,517,[['ln 3',0],[0,'ln 3']],{cellWidth:80,cellHeight:50,gap:10,size:25,tone:'purple'});
     p.arrow(130,647,130,692,C.teal);p.arrow(390,647,390,692,C.purple);
     p.text(130,733,['내용 U = H Wᵤ','Content U = H Wᵤ'],{size:23,weight:600,color:C.teal,anchor:'middle',width:240});
@@ -39,11 +39,11 @@ export default {
     matrix(q,304,165,[['0.75','0.25'],['0.25','0.75']],{cellWidth:80,cellHeight:54,gap:10,size:25,tone:'orange'});
     q.path('M130 300 V343 H225 V385',C.teal,2.5,false,true);
     q.path('M390 300 V343 H295 V385',C.orange,2.5,false,true);
-    q.token(95,405,['대응하는 성분끼리 곱하기','Elementwise multiply'],330,'orange',85);
+    q.token(95,405,['U ⊙ A · 성분끼리 곱하기','U ⊙ A · Elementwise multiply'],330,'orange',85);
     q.arrow(260,508,260,560,C.orange);
     matrix(q,175,603,[['1.5',0],[0,3]],{cellWidth:78,cellHeight:54,gap:10,size:25,tone:'orange',rowLabels:['p₀','p₁'],columnLabels:[['성분 1','C1'],['성분 2','C2']]});
     q.arrow(260,742,260,790,C.purple);
-    q.token(95,810,['위치 방향으로 합산 ↓','Sum across positions ↓'],330,'purple',65);
+    q.token(95,810,['Σ 위치 · 위치 방향 합산 ↓','Σ positions · Sum down ↓'],330,'purple',65);
     q.text(260,931,'[1.5 + 0, 0 + 3]',{size:27,anchor:'middle',width:490});
     q.arrow(260,961,260,1005,C.purple);
     q.text(105,1067,'c₀ =',{size:28,weight:600,color:C.purple,anchor:'end',width:100});

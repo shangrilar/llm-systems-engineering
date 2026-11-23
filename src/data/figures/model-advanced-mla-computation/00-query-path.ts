@@ -8,7 +8,7 @@ export default {
  articleId:'model-advanced-mla-computation',figureId:'00-query-path',number:'ma-03-00',layout:'wide',
  eyebrow:['그림 1 · 현재 토큰의 Query','Figure 1 · Queries for the current token'],
  title:['Query도 content와 위치 부분으로 나눕니다','Queries have content and position parts'],
- subtitle:['행벡터 · 교육용 차원 · 헤드 1·2 확대','Row vectors · Illustrative dimensions · Heads 1–2 shown'],
+ subtitle:['행벡터 · 교육용 차원 · 헤드 1·2 확대 · cᵠ는 Query용 잠재 벡터(KV 캐시의 cᴷⱽ와 별개) · 정규화 생략','Row vectors · Illustrative dimensions · Heads 1–2 shown · cᵠ is the query latent, separate from the cached cᴷⱽ · Normalization omitted'],
  captionIn:'article',
  caption:['Query 잠재 벡터 c^Q는 KV 캐시의 c와 별개의 표현입니다. 실제 MLA의 Query 저차원 경로를 교육용 차원으로 표시했습니다. 헤드별 투영은 전체 투영 행렬의 해당 출력 부분입니다.','The query latent c^Q is distinct from the cached KV latent c. This shows MLA’s low-rank query path with illustrative dimensions. Each head projection is its output slice of the full projection matrix.'],
  alt:['현재 위치 p3의 입력 벡터 1×8을 Wᴰ^Q 8×3으로 곱해 Query 잠재 벡터 c^Q 1×3을 만든다. 이를 각 헤드의 U^Q 3×2와 W^Qᴿ 3×2로 투영한다. 전자는 content Query, 후자는 RoPE(p3)를 거친 위치 Query가 된다. 두 Query 부분은 각각 1×2이며 모두 헤드별이다. 위치 Key는 2편처럼 헤드 간 공유한다.','The current p3 input vector (1×8) is multiplied by Wᴰ^Q (8×3) to produce a query latent c^Q (1×3). Each head projects it through U^Q (3×2) for the content query and W^Qᴿ (3×2), followed by RoPE(p3), for the position query. Both parts are 1×2 and head-specific. The position key remains shared across heads, as in Article 2.'],

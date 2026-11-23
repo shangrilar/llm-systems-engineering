@@ -30,7 +30,7 @@ export default {
   connector(b,[260,376],[260,414],{tone:'blue'});
   b.token(150,422,'sⱼ',220,'blue',54);
   connector(b,[260,484],[260,532],{tone:'blue'});
-  b.box(80,540,360,104,'scale · softmax',['전체 위치 j','Across all positions j'],'blue');
+  b.box(80,540,360,104,'scale · softmax',['s₀…s₃ 전체에 한 번에','Over s₀…s₃ at once'],'blue');
   connector(b,[260,652],[260,697],{tone:'blue'});
   b.token(80,705,'o₃,₁ = Σⱼ aⱼ vⱼ,₁',360,'orange',64);
   b.text(260,821,['출력 · 1×2','Output · 1×2'],{size:23,anchor:'middle',width:360,color:C.orange});

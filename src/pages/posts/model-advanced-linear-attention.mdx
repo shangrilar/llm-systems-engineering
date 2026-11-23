@@ -16,7 +16,7 @@ date: 2026-09-27
 
 그림 1의 오른쪽은 다른 방식입니다. 새 토큰이 들어올 때마다 일정한 크기의 행렬을 갱신합니다. 이 행렬을 <strong>상태 S</strong>라고 부르겠습니다. 그림은 한 층의 한 헤드를 보여 주며, 아래로 이어지는 행렬들은 서로 다른 시점에 같은 상태가 어떻게 바뀌는지를 나타냅니다. 모두 보관한다는 뜻이 아닙니다.
 
-<a href="/images/model-advanced-linear-attention/00-state-overview.png?v=96adce68ea17" id="figure-1"><picture><source width="720" height="2386" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00-state-overview-mobile.png?v=b9dd7716b872" /><img width="2400" height="2098" src="/images/model-advanced-linear-attention/00-state-overview.png?v=96adce68ea17" alt="왼쪽은 p₀,p₁,p₂를 처리할 때 토큰별 KV가 1,2,3행으로 증가한다. 오른쪽은 같은 입력마다 2×2 상태가 바뀌며 이전 상태가 다음 상태로 연결된다. 상태의 행은 Key 성분이고 열은 Value 성분이다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/00-state-overview.png?v=416eb47742cc" id="figure-1"><picture><source width="720" height="2434" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00-state-overview-mobile.png?v=946898eb2dd3" /><img width="2400" height="2098" src="/images/model-advanced-linear-attention/00-state-overview.png?v=416eb47742cc" alt="왼쪽은 p₀,p₁,p₂를 처리할 때 토큰별 KV가 1,2,3행으로 증가한다. 오른쪽은 같은 입력마다 2×2 상태가 바뀌며 이전 상태가 다음 상태로 연결된다. 상태의 행은 Key 성분이고 열은 Value 성분이다." loading="lazy" /></picture></a>
 
 왼쪽 KV 목록의 행은 토큰 위치입니다. 반면 오른쪽 상태의 행과 열은 벡터 성분에 대응합니다. <strong>상태의 한 행이 토큰 하나를 뜻하지 않습니다.</strong> 여러 토큰의 정보가 같은 칸에 더해지므로, 토큰이 늘어도 행렬의 크기는 바뀌지 않습니다.
 
@@ -32,7 +32,7 @@ date: 2026-09-27
 
 그림 2는 이 역할을 나누어 처리하는 방법입니다. <strong>Query와 Key를 각각 양수 성분으로 변환하고, 변환된 두 벡터의 내적을 점수로 사용합니다.</strong> 그리고 점수의 합으로 나누는 정규화는 따로 계산합니다.
 
-<a href="/images/model-advanced-linear-attention/00b-associative-computation.png?v=de9296af4f7c" id="figure-2"><picture><source width="720" height="3344" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00b-associative-computation-mobile.png?v=319a786a2af2" /><img width="2400" height="2782" src="/images/model-advanced-linear-attention/00b-associative-computation.png?v=de9296af4f7c" alt="위에서는 softmax의 지수 점수를 특징 벡터 내적으로 바꾼다. 아래에서는 같은 변환된 Q,K,V로 토큰 점수 행렬 3×3을 먼저 만드는 순서와 Key 성분×Value 성분 상태2×2를 먼저 만드는 순서를 비교한다. 상태값은 3,1;0,3이며 두 계산의 정규화 전 결과는 같다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/00b-associative-computation.png?v=9f8a27d4c95f" id="figure-2"><picture><source width="720" height="3392" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/00b-associative-computation-mobile.png?v=3a536abcd5fb" /><img width="2400" height="2782" src="/images/model-advanced-linear-attention/00b-associative-computation.png?v=9f8a27d4c95f" alt="위에서는 softmax의 지수 점수를 특징 벡터 내적으로 바꾼다. 아래에서는 같은 변환된 Q,K,V로 토큰 점수 행렬 3×3을 먼저 만드는 순서와 Key 성분×Value 성분 상태2×2를 먼저 만드는 순서를 비교한다. 상태값은 3,1;0,3이며 두 계산의 정규화 전 결과는 같다." loading="lazy" /></picture></a>
 
 그림의 변환을 특징 변환(feature map)이라고 부르며, 함수 φ로 표시합니다. 변환된 Query는 q̃ = φ(q), 변환된 Key는 k̃ = φ(k)입니다. 두 벡터를 합쳐서 한 번 변환하는 것이 아니라 <strong>각각 독립적으로 변환</strong>합니다. 입력에서 Q·K를 만드는 학습된 투영 이후에 적용하는 별도 단계입니다.
 
@@ -72,7 +72,7 @@ date: 2026-09-27
 
 Key와 Value끼리 내적해 유사도 하나를 구하는 것이 아닙니다. Key가 2×1 열벡터이고 Value의 전치가 1×2 행벡터라면, 둘을 곱한 결과는 2×2 행렬입니다. Key와 Value의 성분 수가 달라도 이 곱은 가능합니다. 내적이 대응하는 성분을 곱해 하나의 점수로 더한다면, 외적은 모든 성분 쌍을 곱해 행렬을 만듭니다. 그림 3은 <math aria-label="p_2"><msub><mi>p</mi><mn>2</mn></msub></math>의 외적입니다.
 
-<a href="/images/model-advanced-linear-attention/01-outer-product.png?v=56db7ed088f8" id="figure-3"><picture><source width="720" height="1262" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/01-outer-product-mobile.png?v=c7994bbea263" /><img width="2400" height="3380" src="/images/model-advanced-linear-attention/01-outer-product.png?v=56db7ed088f8" alt="p₂에서 나온 Key [1,0]과 Value [1,1]의 외적으로 [[1,1],[0,0]]을 만든다. 행은 Key 성분, 열은 Value 성분이다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/01-outer-product.png?v=4cc72ceda6ef" id="figure-3"><picture><source width="720" height="1310" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/01-outer-product-mobile.png?v=8a245572d531" /><img width="2400" height="3380" src="/images/model-advanced-linear-attention/01-outer-product.png?v=4cc72ceda6ef" alt="p₂에서 나온 Key [1,0]과 Value [1,1]의 외적으로 [[1,1],[0,0]]을 만든다. 행은 Key 성분, 열은 Value 성분이다." loading="lazy" /></picture></a>
 
 Key의 첫 번째 성분은 1이므로 첫 번째 행에는 Value 전체의 1배인 [1, 1]을 씁니다. Key의 두 번째 성분은 0이므로 두 번째 행에는 Value 전체의 0배인 [0, 0]을 씁니다. <strong>각 행에는 Value 전체를 해당 Key 성분만큼 곱한 값이 들어갑니다.</strong> 이 외적 하나의 행들은 서로 다른 내용을 담은 것이 아니라, 같은 Value를 서로 다른 배율로 기록한 것입니다.
 
@@ -86,7 +86,7 @@ Key가 [0.3, 0.7]이고 Value가 [1, 1]이라면 첫 행은 [0.3, 0.3], 둘째 �
 
 그림 4에서 주황색 행렬은 이번 토큰이 더하는 값이고, 초록색 행렬은 그때까지의 누적 상태입니다.
 
-<a href="/images/model-advanced-linear-attention/02-state-accumulation.png?v=07f44d7853e1" id="figure-4"><picture><source width="720" height="1750" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/02-state-accumulation-mobile.png?v=42f9082fabb1" /><img width="2400" height="5248" src="/images/model-advanced-linear-attention/02-state-accumulation.png?v=07f44d7853e1" alt="영 상태 S₀에 p₀의 외적 [[2,0],[0,0]], p₁의 외적 [[0,0],[0,3]], p₂의 외적 [[1,1],[0,0]]을 차례로 더한다. 최종 S₃는 [[3,1],[0,3]]이며 같은 2×2 상태가 시간에 따라 이어진다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/02-state-accumulation.png?v=276792511327" id="figure-4"><picture><source width="720" height="1750" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/02-state-accumulation-mobile.png?v=338ca76d007f" /><img width="2400" height="5248" src="/images/model-advanced-linear-attention/02-state-accumulation.png?v=276792511327" alt="영 상태 S₀에 p₀의 외적 [[2,0],[0,0]], p₁의 외적 [[0,0],[0,3]], p₂의 외적 [[1,1],[0,0]]을 차례로 더한다. 최종 S₃는 [[3,1],[0,3]]이며 같은 2×2 상태가 시간에 따라 이어진다." loading="lazy" /></picture></a>
 
 <math aria-label="p_0"><msub><mi>p</mi><mn>0</mn></msub></math>는 첫 행에 [2, 0]을 더합니다. <math aria-label="p_1"><msub><mi>p</mi><mn>1</mn></msub></math>는 둘째 행에 [0, 3]을 더합니다. 마지막 <math aria-label="p_2"><msub><mi>p</mi><mn>2</mn></msub></math>는 첫 행에 [1, 1]을 더하므로, <math aria-label="S_3"><msub><mi>S</mi><mn>3</mn></msub></math>의 첫 행은 [3, 1], 둘째 행은 [0, 3]입니다.
 
@@ -100,7 +100,7 @@ Key가 [0.3, 0.7]이고 Value가 [1, 1]이라면 첫 행은 [0.3, 0.3], 둘째 �
 
 그림 5의 왼쪽에서 결과는 1 × [3, 1] + 0 × [0, 3] = [3, 1]입니다. Query가 [0, 1]이면 둘째 행인 [0, 3]을 읽고, [1, 1]이면 두 행을 더한 [3, 4]를 읽습니다. 이 값들은 아직 정규화 전의 가중합입니다.
 
-<a href="/images/model-advanced-linear-attention/03-read-state.png?v=4e007cbd6ccc" id="figure-5"><picture><source width="720" height="1980" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/03-read-state-mobile.png?v=30b605fbfd2d" /><img width="2400" height="1732" src="/images/model-advanced-linear-attention/03-read-state.png?v=4e007cbd6ccc" alt="왼쪽은 S₃의 첫 행 [3,1]에 Query 성분1, 둘째 행[0,3]에0을 곱해 [3,1]을 읽는다. 오른쪽은 p₀,p₁,p₂의 Key와 Query의 내적1,0,1을 Value에 곱해 [2,0],[0,0],[1,1]을 더하고 같은 [3,1]을 얻는다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/03-read-state.png?v=63f7162da936" id="figure-5"><picture><source width="720" height="2028" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/03-read-state-mobile.png?v=188f60876f37" /><img width="2400" height="1732" src="/images/model-advanced-linear-attention/03-read-state.png?v=63f7162da936" alt="왼쪽은 S₃의 첫 행 [3,1]에 Query 성분1, 둘째 행[0,3]에0을 곱해 [3,1]을 읽는다. 오른쪽은 p₀,p₁,p₂의 Key와 Query의 내적1,0,1을 Value에 곱해 [2,0],[0,0],[1,1]을 더하고 같은 [3,1]을 얻는다." loading="lazy" /></picture></a>
 
 기록할 때는 Key의 각 성분만큼 Value를 행별로 곱해 놓았습니다. 읽을 때는 Query의 각 성분을 그 행에 다시 곱해 더합니다. <strong>Key는 기록 배율을, Query는 읽기 배율을 정합니다.</strong> 한 토큰의 기여를 따로 보면, 각 행에서 두 배율이 곱해지고 그 결과를 모두 더한 값이 Query와 Key의 내적입니다.
 
@@ -124,7 +124,7 @@ Key가 [0.3, 0.7]이고 Value가 [1, 1]이라면 첫 행은 [0.3, 0.3], 둘째 �
 
 그런데 토큰별 Key를 보관하지 않았다면 점수의 합은 어떻게 구할까요? Key의 합을 담는 벡터 z를 함께 누적하면 됩니다. 그림 6은 분자와 분모를 나란히 보여 줍니다.
 
-<a href="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=337bf43860f8" id="figure-6"><picture><source width="720" height="2538" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/04-normalization-and-memory-mobile.png?v=2b2b6eafd49d" /><img width="2400" height="2220" src="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=337bf43860f8" alt="왼쪽에서 p₀,p₁,p₂의 점수1,0,1을 더해 분모2를 얻고 Value 기여[2,0],[0,0],[1,1]을 더해 분자[3,1]을 얻는다. [3,1]을2로 나누면[1.5,0.5]다. 오른쪽에서 Key [1,0],[0,1],[1,0]을 더한 z₃=[2,1]을 q₂=[1,0]으로 읽어 같은 점수 합2를 계산한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=937c869492f5" id="figure-6"><picture><source width="720" height="2586" media="(max-width: 600px)" srcSet="/images/model-advanced-linear-attention/04-normalization-and-memory-mobile.png?v=8b0e93e39367" /><img width="2400" height="2220" src="/images/model-advanced-linear-attention/04-normalization-and-memory.png?v=937c869492f5" alt="왼쪽에서 p₀,p₁,p₂의 점수1,0,1을 더해 분모2를 얻고 Value 기여[2,0],[0,0],[1,1]을 더해 분자[3,1]을 얻는다. [3,1]을2로 나누면[1.5,0.5]다. 오른쪽에서 Key [1,0],[0,1],[1,0]을 더한 z₃=[2,1]을 q₂=[1,0]으로 읽어 같은 점수 합2를 계산한다." loading="lazy" /></picture></a>
 
 세 Key의 합인 <math aria-label="z_3"><msub><mi>z</mi><mn>3</mn></msub></math>는 [1, 0] + [0, 1] + [1, 0] = [2, 1]입니다. 여기에 <math aria-label="q_2"><msub><mi>q</mi><mn>2</mn></msub></math> = [1, 0]을 내적하면 1 × 2 + 0 × 1 = 2가 됩니다. Query와 각 Key의 내적을 모두 더한 값과 같습니다.
 

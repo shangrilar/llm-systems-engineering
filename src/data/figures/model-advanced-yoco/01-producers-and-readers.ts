@@ -10,7 +10,7 @@ export default {
   sources:[{label:'YOCO §2, self-decoder and cross-decoder',url:'https://arxiv.org/html/2405.05254v1#S2'}],
   panels(locale:Locale,mobile?:boolean){
     return [0].map(kind=>{
-      const p=new Panel(locale,kind===0?'YOCO':['B. CED · 재사용 그룹 하나','B. CED · One reuse group'],mobile?1900:1440,mobile?520:1104);
+      const p=new Panel(locale,kind===0?'YOCO':['B. CED · 재사용 그룹 하나','B. CED · One reuse group'],mobile?1500:1440,mobile?520:1104);
       for(let i=0;i<4;i++)p.token(20+i*126,120,`p${i}`,100,'blue',58);
       p.text(260,223,['하나의 생성열 · 인과적 처리','One generation sequence · Causal'],{size:24,weight:600,color:C.blue,anchor:'middle',width:510});
       p.arrow(135,240,135,285,C.blue);
@@ -18,7 +18,7 @@ export default {
       for(let l=0;l<2;l++){
         const y=295+l*190;
         p.box(10,y,250,125,kind===0?`Self-decoder ${l+1}`:`Causal encoder ${l+1}`,kind===0?['효율적 Self-attention','Efficient self-attention']:['앞 층의 표현 갱신','Update representations'],'blue');
-        p.box(310,y,200,125,`State ${l+1}`,['recurrent / local','recurrent / local'],'teal');
+        p.box(310,y,200,125,`State ${l+1}`,['recurrent 또는 local','recurrent or local'],'teal');
         p.arrow(300,y+40,270,y+40,C.teal);
         p.arrow(270,y+95,300,y+95,C.orange);
         p.arrow(135,y+135,135,y+180,C.blue);
@@ -39,8 +39,6 @@ export default {
       p.box(10,1175,250,135,kind===0?'Cross-decoder 4':'Decoder 4',['층 hidden → q₄ → 읽기','Layer hidden → q₄ → read'],'blue');
       p.path('M410 1140 V1242 H270',C.teal,2.5,false,true);
       p.arrow(135,1320,135,1360,C.blue);p.text(135,1400,['출력 표현','Output representation'],{size:24,weight:600,color:C.blue,anchor:'middle',width:260});
-      p.box(mobile?20:600,mobile?1510:560,480,250,kind===0?['하나의 global KV를 재사용','Reuse one global KV bank']:['그림은 global KV 경로만 표시','Only the global KV path is shown'],kind===0?['층별 상태: 고정 크기¹\nGlobal KV: 문맥 길이 T에 따라 증가\n청록: 읽기 · 주황: 갱신','Layer-local state: fixed size¹\nGlobal KV: grows with context T\nTeal: read · Orange: update']:['Encoder global KV와 각 층의 local KV도 남습니다. 세부 상태는 그림 3에서 구별합니다.','Encoder global KV and layer-local KV also remain. Figure 3 separates these states.'],'gray');
-      p.text(mobile?30:610,mobile?1830:875,['¹ 모델 크기와 local window 고정','¹ At fixed model size and local window'],{size:21,color:C.muted,width:460});
       return p;
     });
   },

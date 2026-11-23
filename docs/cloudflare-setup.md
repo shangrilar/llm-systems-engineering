@@ -15,3 +15,13 @@
 공식 문서:
 - https://developers.cloudflare.com/pages/framework-guides/deploy-an-astro-site/
 - https://developers.cloudflare.com/pages/configuration/preview-deployments/
+
+## Production domains
+
+- Blog: https://ai-systems-engineering.com (Pages project: `llm-systems-engineering`).
+- Public experiment artifacts: https://assets.ai-systems-engineering.com (R2 bucket: `systems-engineering`).
+- R2 initially stores publication-ready profiler traces and memory snapshots. Articles, lab code, and result summaries stay in GitHub. Private raw experiment files stay outside the public bucket.
+- `site.config.json` controls canonical URLs, sitemap URLs, and generated README links. Run `npm run sync:readme` after changing it.
+- R2 browser reads allow GET/HEAD from the production site, its Pages previews, and local development on port 4321. Uploads use separate credentials; CORS does not grant upload access.
+- Configure `R2_PUBLIC_BASE_URL=https://assets.ai-systems-engineering.com` in the ignored training `.env`. Never commit credentials.
+- Public artifact object names should contain a version or content hash. Set Cache-Control on each uploaded object; JSON traces require an assets-host Cache Rule to enable CDN caching.

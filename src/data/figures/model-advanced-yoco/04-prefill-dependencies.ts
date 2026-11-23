@@ -9,7 +9,7 @@ export default {
   alt:['계산 격자의 self1,self2 행은 p0부터 p3까지 네 칸 모두 실행한다. Cross3,Cross4 행은 p0부터 p2까지가 점선 생략 칸이고 p3만 읽기 계산한다. p3 결과로 x4를 선택한다. 별도 조건 카드가 과거 cross 출력의 global KV 생성 비의존성과 생성이 이어질 때 새 토큰 처리를 설명한다.','Self1 and Self2 execute all four columns p0–p3. Cross3 and Cross4 have dashed skipped cells at p0–p2 and active read cells only at p3. The p3 output selects x4. Separate notes explain the lack of global-KV dependence on past cross outputs and processing the selected token on the next step.'],
   sources:[{label:'YOCO §2.3, prefill early exit',url:'https://arxiv.org/html/2405.05254v1#S2.SS3'},{label:'DeepSeek-V4.1-Flash report §2.2 and §3.2.2',url:'https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/blob/main/DeepSeek_V41_Tech_Report.pdf'}],
   panels(locale:Locale,mobile?:boolean){
-    const p=new Panel(locale,['YOCO의 첫 출력 준비','YOCO: prepare the first output'],mobile?1520:1010,mobile?520:1104);
+    const p=new Panel(locale,['YOCO의 첫 출력 준비','YOCO: prepare the first output'],mobile?1030:1010,mobile?520:1104);
     p.text(330,139,'Prompt',{size:27,weight:600,color:C.blue,anchor:'middle',width:365});
     for(let c=0;c<4;c++)p.text(194+c*86,208,`p${c}`,{size:26,weight:600,color:c===3?C.teal:C.blue,anchor:'middle',width:80});
     const rows=[{name:'Self 1',y:240},{name:'Self 2',y:350},{name:'Cross 3',y:550},{name:'Cross 4',y:660}];
@@ -24,9 +24,6 @@ export default {
     p.text(260,487,['p0부터 p3까지의 global KV 준비 완료','Global KV for p0–p3 is ready'],{size:24,weight:600,color:C.teal,anchor:'middle',width:500});
     p.arrow(452,744,452,810,C.orange);p.token(400,820,'x₄',104,'orange', 60);
     p.text(260,943,['p3에서 전체 기억을 읽고 x₄ 선택','At p3, read all memory and select x₄'],{size:24,weight:600,color:C.orange,anchor:'middle',width:500});
-    const xx=mobile?20:600,yy=mobile?1035:210;
-    p.box(xx,yy,480,175,['생략 조건','When skipping is valid'],['과거 뒤층 출력이 이후 global KV 생성에 필요하지 않습니다.','Past late-layer outputs are not required to build later global KV.'],'gray');
-    p.box(xx,yy+215,480,233,['생성이 이어질 때','When generation continues'],['선택된 x₄는 다음 입력입니다. 그때 앞·뒤 층을 모두 지나며 새 KV를 추가합니다.','Selected x₄ is the next input. It then traverses both halves and adds new KV.'],'orange');
     return [p];
   },
 } satisfies FigureSpec;

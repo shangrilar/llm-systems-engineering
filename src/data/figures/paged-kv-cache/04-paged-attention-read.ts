@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 4","Figure 4"],
   title:["흩어진 KV로 Attention 계산하기","Compute attention over scattered KV"],
-  subtitle:["블록 테이블로 저장 위치를 찾고, 현재 Q와 같은 요청의 KV를 함께 사용합니다.","The block table locates storage; the current Q uses the KV of its own request."],
+  subtitle:["블록 테이블로 저장 위치를 찾고, 현재 Q와 같은 요청의 KV를 함께 사용합니다. 블록에서 제자리로 읽으며 연속 공간으로 복사하지 않습니다.","The block table locates storage; the current Q uses the KV of its own request. KV is read in place, not copied into contiguous memory."],
   alt:["B의 블록 테이블은 L0를 P3, L1을 P0, L2를 P5에 연결합니다. 현재 입력 위치 8의 Q는 P3의 4개, P0의 4개, P5의 1개 KV로 하나의 Attention 결과를 계산합니다. C의 KV, 빈 P2, P5의 미사용 칸은 제외합니다.","B maps L0 to P3, L1 to P0 and L2 to P5. Q at input position 8 uses 4 KV positions in P3, 4 in P0 and 1 in P5 to compute one attention result. C’s KV, free P2 and unused P5 slots are excluded."],
   caption:["현재 Q는 같은 요청의 유효한 KV 9개를 사용하며, 다른 요청과 미사용 칸은 제외합니다.","The current Q uses the same request's 9 valid KV positions, excluding other requests and unused slots."],
   sources:[],

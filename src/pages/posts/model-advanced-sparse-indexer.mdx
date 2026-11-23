@@ -16,7 +16,7 @@ date: 2026-09-27
 
 그림 1은 현재 위치 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>에서 여덟 위치 중 세 개를 고르는 예시입니다. <math aria-label="p0"><msub><mi>p</mi><mn>0</mn></msub></math>부터 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>까지는 토큰 위치이며, 헤드 번호가 아닙니다. <math aria-label="h7"><msub><mi>h</mi><mn>7</mn></msub></math>은 이 Attention 층에 들어온 현재 토큰의 벡터입니다. 같은 입력에서 선택용 Query와 본 Attention의 Query가 만들어지지만, 서로 다른 투영을 사용합니다.
 
-<a href="/images/model-advanced-sparse-indexer/01-index-selection.png?v=ca5e309a3c33" id="figure-1"><picture><source width="720" height="3058" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/01-index-selection-mobile.png?v=b67b86d31f6f" /><img width="2400" height="2584" src="/images/model-advanced-sparse-indexer/01-index-selection.png?v=ca5e309a3c33" alt="현재 입력에서 별도 투영으로 선택용 Query와 본 Query를 만든다. 위치별 선택용 Key와의 내적으로 점수를 구하고 상위 위치 0,4,7을 고른다. 본 Attention은 해당 위치의 별도 Key와 Value만 읽는다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-sparse-indexer/01-index-selection.png?v=bb66ac676b60" id="figure-1"><picture><source width="720" height="3154" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/01-index-selection-mobile.png?v=70e2115a8092" /><img width="2400" height="2584" src="/images/model-advanced-sparse-indexer/01-index-selection.png?v=bb66ac676b60" alt="현재 입력에서 별도 투영으로 선택용 Query와 본 Query를 만든다. 위치별 선택용 Key와의 내적으로 점수를 구하고 상위 위치 0,4,7을 고른다. 본 Attention은 해당 위치의 별도 Key와 Value만 읽는다." loading="lazy" /></picture></a>
 
 그림 왼쪽의 <math aria-label="q7i"><msubsup><mi>q</mi><mn>7</mn><mi>i</mi></msubsup></math>와 <math aria-label="kji"><msubsup><mi>k</mi><mi>j</mi><mi>i</mi></msubsup></math>는 각각 <strong>선택용 Query와 선택용 Key</strong>입니다. 위첨자 i는 인덱서용이라는 표시이며, 아래첨자는 토큰 위치입니다. 두 성분짜리 벡터로 계산을 따라갈 수 있도록 단순화했습니다. 선택용 Query는 [1, 0]이고, 위치 0의 선택용 Key는 [0.9, 0.2]입니다. 내적은 1 × 0.9 + 0 × 0.2 = 0.9가 됩니다.
 
@@ -32,7 +32,7 @@ date: 2026-09-27
 
 인덱서가 고른 위치는 이후에도 고정되어 있을까요? 같은 층에서 <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>을 처리한 뒤 다음 <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>을 처리하는 과정을 보겠습니다. 이전 위치의 선택용 Key와 본 KV는 유지하지만, 현재 입력에서 만드는 Query는 달라집니다. 새 위치의 Key와 KV도 캐시에 추가됩니다.
 
-<a href="/images/model-advanced-sparse-indexer/02-generation-selection.png?v=28557f050ad5" id="figure-2"><picture><source width="720" height="2478" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/02-generation-selection-mobile.png?v=2bdedda9918a" /><img width="2400" height="2118" src="/images/model-advanced-sparse-indexer/02-generation-selection.png?v=28557f050ad5" alt="p6에서는 후보0…6을 q6=[0,1]로 평가해1,3,6을 선택한다. p7의 Key와 KV를 추가한 뒤 q7=[1,0]으로 후보0…7을 평가하면0,4,7을 선택한다. p6의 미래 위치7은 후보에 없다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-sparse-indexer/02-generation-selection.png?v=9c4b4cc1ab25" id="figure-2"><picture><source width="720" height="2526" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/02-generation-selection-mobile.png?v=8c2346920a7e" /><img width="2400" height="2118" src="/images/model-advanced-sparse-indexer/02-generation-selection.png?v=9c4b4cc1ab25" alt="p6에서는 후보0…6을 q6=[0,1]로 평가해1,3,6을 선택한다. p7의 Key와 KV를 추가한 뒤 q7=[1,0]으로 후보0…7을 평가하면0,4,7을 선택한다. p6의 미래 위치7은 후보에 없다." loading="lazy" /></picture></a>
 
 <math aria-label="p6"><msub><mi>p</mi><mn>6</mn></msub></math>을 처리할 때는 위치 0부터 6까지만 후보입니다. 아직 미래인 위치 7은 후보에 들어가지 않습니다. 그림의 선택용 Query <math aria-label="q6i"><msubsup><mi>q</mi><mn>6</mn><mi>i</mi></msubsup></math>는 [0, 1]이므로, 각 선택용 Key의 두 번째 성분이 점수가 됩니다. 점수는 <strong>[0.2, 0.9, 0.1, 0.7, 0.3, 0.4, 0.8]</strong>이고, 위치 1·3·6이 선택됩니다.
 
@@ -48,7 +48,7 @@ date: 2026-09-27
 
 앞선 글과 같이 window 3을 현재 위치와 직전 두 위치로 정의하겠습니다. <math aria-label="p7"><msub><mi>p</mi><mn>7</mn></msub></math>에서는 위치 5·6·7입니다. 그림 3은 이 window와 인덱서가 고른 위치 0·4·7을 합칩니다.
 
-<a href="/images/model-advanced-sparse-indexer/03-indexer-window.png?v=0d130663fc00" id="figure-3"><picture><source width="720" height="2350" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/03-indexer-window-mobile.png?v=6e10520aff90" /><img width="2400" height="1976" src="/images/model-advanced-sparse-indexer/03-indexer-window.png?v=0d130663fc00" alt="현재 위치7에서 window는5,6,7을 항상 포함하고 indexer는0,4,7을 선택한다. 겹치는7을 한 번만 포함한0,4,5,6,7의 원래 KV를 본 Query와 Attention에 사용한다." loading="lazy" /></picture></a>
+<a href="/images/model-advanced-sparse-indexer/03-indexer-window.png?v=b26f07130067" id="figure-3"><picture><source width="720" height="2398" media="(max-width: 600px)" srcSet="/images/model-advanced-sparse-indexer/03-indexer-window-mobile.png?v=54995a1c0bbf" /><img width="2400" height="1976" src="/images/model-advanced-sparse-indexer/03-indexer-window.png?v=b26f07130067" alt="현재 위치7에서 window는5,6,7을 항상 포함하고 indexer는0,4,7을 선택한다. 겹치는7을 한 번만 포함한0,4,5,6,7의 원래 KV를 본 Query와 Attention에 사용한다." loading="lazy" /></picture></a>
 
 두 집합의 합집합은 위치 <strong>0·4·5·6·7</strong>입니다. 위치 7은 양쪽에 있지만 같은 원본 KV이므로 한 번만 읽습니다. 이렇게 합친 다섯 위치에 대해 본 Attention을 계산합니다. Window는 최근 세 위치가 빠지지 않게 하고, 인덱서는 내용에 따라 다른 위치에 접근할 수 있게 합니다.
 

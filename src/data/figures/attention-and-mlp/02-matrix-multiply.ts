@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 2","Figure 2"],
   title:["행렬 곱: 입력 성분들을 조합해 출력 만들기","Matrix multiplication: combine input components"],
-  subtitle:["가중치 행렬의 각 열이 출력 성분 하나를 만듭니다. 여기서는 d = 4, m = 8입니다.","Each weight-matrix column produces one output component. Here, d = 4 and m = 8."],
+  subtitle:["가중치 행렬의 각 열이 출력 성분 하나를 만듭니다. 여기서는 d = 4, m = 8입니다. · W의 행 = 입력 성분, 열 = 출력 성분","Each weight-matrix column produces one output component. Here, d = 4 and m = 8. · W rows = input components, columns = output components"],
   alt:["입력 [1,2,−1,0]과 4×8 가중치 행렬을 곱하면 [−2,1,0.5,−1,3,0,−0.5,2]가 된다. 세 번째 열 [2,−1,−0.5,1]과 세 번째 출력 0.5를 강조하고 네 곱의 합을 보여준다. 각 토큰에는 같은 행렬을 따로 적용한다.","Multiplying [1,2,-1,0] by the 4×8 matrix gives [-2,1,0.5,-1,3,0,-0.5,2]. Column 3, [2,-1,-0.5,1], and output component 3, 0.5, are highlighted along with the sum of four products. The same matrix applies independently at every token position."],
   caption:["입력과 가중치는 설명용 수치입니다. 다음 그림의 첫 선형 변환에 해당하며 bias는 생략했습니다.","Values are illustrative. This is the next figure’s first linear transformation, with bias omitted."],
   sources:[],

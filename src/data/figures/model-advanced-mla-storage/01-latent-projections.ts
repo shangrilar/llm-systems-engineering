@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-mla-storage',figureId:'01-latent-projections',number:'ma-02-01',
  eyebrow:['그림 1 · MLA의 공동 표현','Figure 1 · Joint latent representation'],
  title:['하나의 잠재 벡터에서 헤드별 K·V 만들기','Head-specific K and V from one latent'],
- subtitle:['한 층 · 행벡터 · 교육용 차원과 값','One layer · Row vectors · Illustrative dimensions and values'],
+ subtitle:['한 층 · 행벡터 · 교육용 차원과 값 · 가중치 모양 [입력 성분, 출력 성분]','One layer · Row vectors · Illustrative dimensions and values · Weights are [input, output]'],
  captionIn:'article',caption:['투영 행렬은 학습 가중치이며 헤드별 U는 전체 투영의 해당 출력 부분입니다.','Projection matrices are learned weights; each head uses its output slice of the full projection.'],
  alt:['p0부터 p3까지 각 블록은 입력 벡터 하나다. 현재 p3의 1×8 벡터를 W_D 8×3으로 투영해 c3=[1,2,3]을 얻었다고 가정한다. 동일한 잠재 벡터를 헤드 1과 2가 사용한다. 헤드별 Key와 Value 투영은 각각 3×2이며 출력은 헤드 1에서 [1,2], [4,2], 헤드 2에서 [2,3], [1,5]다.','Each p0–p3 block is one input vector. Suppose projecting the current p3 vector (1×8) through W_D (8×3) gives c3=[1,2,3]. Both heads use this latent. Each head has distinct 3×2 key and value projection slices, yielding [1,2] and [4,2] for Head 1, and [2,3] and [1,5] for Head 2.'],
  sources:[{label:'DeepSeek-V2 equations 9–11',url:'https://arxiv.org/html/2405.04434v5#S2.SS1.SSS2'}],

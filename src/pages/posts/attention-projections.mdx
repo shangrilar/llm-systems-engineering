@@ -24,7 +24,7 @@ Core Attention의 결과 H와 출력 projection을 거친 Y도 같은 T × d 형
 
 Q, K, V는 각각 **Query, Key, Value**의 약자입니다. Query와 Key는 어떤 토큰의 정보를 얼마나 반영할지 계산하는 데 사용하고, Value는 그 비중에 따라 모을 정보를 담습니다. 이 세 벡터는 모두 같은 입력에서 출발하지만 서로 다른 가중치로 계산합니다. 가중치 행렬을 Wq, Wk, Wv라고 하면 각각 `Q = X × Wq`, `K = X × Wk`, `V = X × Wv`입니다.
 
-[![동일한 3행 8열 입력 X에 서로 다른 8행 8열 가중치 Wq, Wk, Wv를 곱해 Q, K, V를 만듭니다. 입력과 출력의 세 번째 행을 강조하고, 가중치와 출력의 열은 두 head에 대응하는 색으로 구분합니다.](/images/attention-projections/02-qkv-projections.png)](/images/attention-projections/02-qkv-projections.png)
+[![동일한 3행 8열 입력 X에 서로 다른 8행 8열 가중치 Wq, Wk, Wv를 곱해 Q, K, V를 만듭니다. 입력과 출력의 세 번째 행을 강조하고, 가중치와 출력의 열은 두 head에 대응하는 색으로 구분합니다.](/images/attention-projections/02-qkv-projections.png?v=8a9dd75fd259)](/images/attention-projections/02-qkv-projections.png?v=8a9dd75fd259)
 
 이 예시에서 각 가중치 행렬은 d × d, 즉 8 × 8입니다. X의 한 행에 있는 여덟 성분과 가중치 행렬의 열 하나를 위치별로 곱한 뒤 더하면, 출력 성분 하나가 만들어집니다. 여덟 개의 열에 대해 계산하므로 출력도 여덟 성분입니다. **같은 X라도 Wq, Wk, Wv가 서로 다른 가중치이므로, Q·K·V는 서로 다르게 변환된 벡터가 됩니다.** 그림의 점은 학습 가능한 가중치를 나타내며, 실제 수치와 bias는 생략했습니다.
 
@@ -44,7 +44,7 @@ Q, K, V는 각각 **Query, Key, Value**의 약자입니다. Query와 Key는 어�
 
 Core Attention의 결과 H에는 각 토큰에 대한 여러 head의 결과가 함께 담겨 있습니다. 이 예시에서는 head마다 네 성분씩, 토큰 하나당 총 여덟 성분이므로 H도 입력과 같은 T × d, 즉 3 × 8 형태입니다.
 
-[![두 head의 결과가 담긴 H에 8행 8열 가중치 Wo를 곱해 출력 Y를 만듭니다. Wo의 위쪽 네 행과 아래쪽 네 행은 각각 입력 head에 대응합니다. Y는 같은 위치의 Residual 입력 R에 더해집니다.](/images/attention-projections/04-output-projection.png)](/images/attention-projections/04-output-projection.png)
+[![두 head의 결과가 담긴 H에 8행 8열 가중치 Wo를 곱해 출력 Y를 만듭니다. Wo의 위쪽 네 행과 아래쪽 네 행은 각각 입력 head에 대응합니다. Y는 같은 위치의 Residual 입력 R에 더해집니다.](/images/attention-projections/04-output-projection.png?v=6fe1d9e30284)](/images/attention-projections/04-output-projection.png?v=6fe1d9e30284)
 
 출력 projection은 `Y = H × Wo`로 계산합니다. H가 T × d이고 Wo가 d × d이므로 Y도 T × d입니다. 출력의 한 성분을 만들 때는 H의 한 행과 Wo의 열 하나 전체를 사용합니다. 따라서 **같은 토큰에 대해 계산된 여러 head의 결과 성분이 하나의 가중합에 함께 참여합니다.** 각 head가 모아 온 정보를 학습된 가중치로 조합해 새로운 벡터를 만드는 것입니다.
 

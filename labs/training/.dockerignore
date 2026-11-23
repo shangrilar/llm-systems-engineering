@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!requirements-worker.txt
+!training_lab/
+!training_lab/*.py
+!experiments/
+!experiments/*.json

@@ -2,7 +2,7 @@ import {Panel,C,type FigureSpec,type Locale} from '@llm-systems/viz';
 export default {
  articleId:'model-advanced-mamba-selective',figureId:'06-delta-retention',number:'mamba-06',eyebrow:['그림 2','Figure 2'],
  title:['Δ는 유지와 기록을 함께 조절합니다','Δ controls both retention and writing'],
- subtitle:['한 채널의 상태 성분 하나 · A = ln(0.5) < 0 · B = 1 · u = 2','One state component in one channel · A = ln(0.5) < 0 · B = 1 · u = 2'],captionIn:'article',
+ subtitle:['한 채널의 상태 성분 하나 · A = ln(0.5) < 0 · B = 1 · u = 2 · 교육용 계산 · B̄ = ΔB','One state component in one channel · A = ln(0.5) < 0 · B = 1 · u = 2 · Teaching calculation · B̄ = ΔB'],captionIn:'article',
  caption:['다른 값은 고정하고 Δ만 바꾼 교육용 예시. 막대의 길이는 같은 척도를 사용한다.','Illustrative example varying only Δ. All bars use the same scale.'],
  alt:['이전 상태2에서 Δ1은1을 남기고2를 기록한다. Δ2는0.5를 남기고4를 기록한다. A,B,u는 같고 Δ만 다르다.','From old state 2, Δ=1 retains 1 and writes 2; Δ=2 retains 0.5 and writes 4. A, B and u are held fixed.'],
  sources:[{label:'Mamba-1 step',url:'https://github.com/state-spaces/mamba/blob/v2.2.2/mamba_ssm/modules/mamba_simple.py#L219-L226'}],

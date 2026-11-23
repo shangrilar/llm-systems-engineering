@@ -5,7 +5,7 @@ export default {
   layout:'wide',screens:['desktop'],
   eyebrow:["그림 4","Figure 4"],
   title:["출력 projection: head 결과를 조합하기","Output projection: combine head outputs"],
-  subtitle:"H (T × d) × Wo (d × d) = Y (T × d)",
+  subtitle:["H (T × d) × Wo (d × d) = Y (T × d) · Wo의 행 = 입력(head별 구간), 열 = 출력 성분","H (T × d) × Wo (d × d) = Y (T × d) · Wo rows = inputs (one band per head), columns = output components"],
   alt:["붙어 있는 두 head의 결과 H는 3×8이다. 8×8 Wo의 앞 네 행과 뒤 네 행은 각 head에 대응한다. 행렬 곱으로 두 head 성분을 조합해 3×8 출력 Y를 만들고 Residual 입력 R에 더한다.","H contains the outputs of both heads and has shape 3×8. The first and last four rows of the 8×8 Wo correspond to the two heads. Multiplication combines head components into Y of shape 3×8, which is added to residual input R."],
   caption:["Wo의 색은 입력 head에 대응하는 행입니다. 실제 수치와 bias는 생략했습니다.","Colors in Wo mark rows for each input head. Values and biases are omitted."],
   sources:[],

@@ -3,7 +3,7 @@ export default {
  articleId:'model-advanced-mla-storage',figureId:'03-content-and-position',number:'ma-02-03',
  eyebrow:['그림 3 · Content와 위치 경로','Figure 3 · Content and position paths'],
  title:['Key·Value를 만드는 두 경로','Two paths for forming keys and values'],
- subtitle:['현재 p₃ · 행벡터 · 교육용 차원과 값','Current p₃ · Row vectors · Illustrative dimensions and values'],
+ subtitle:['현재 p₃ · 행벡터 · 교육용 차원과 값 · 위: 캐시 저장 대상 · 아래: 헤드별 표현 관계(따로 저장하지 않음)','Current p₃ · Row vectors · Illustrative values · Top: what is cached · Bottom: per-head relations (not stored separately)'],
  captionIn:'article',caption:['Key는 content와 위치 부분을 이어 붙인 표현입니다. 캐시에는 c₃와 k₃ᴿ만 저장하며, 펼친 헤드별 K·V는 구조를 설명하기 위한 표현입니다.','The key concatenates content and position. Only c₃ and k₃ᴿ are cached; expanded per-head K and V illustrate the structure.'],
  alt:['p3에서 W_D로 c3=[1,2,3]을, 별도 W_KR과 RoPE(3)으로 위치용 Key [r0,r1]을 만든다. 두 벡터가 캐시 저장 대상이다. c3는 헤드별 U_K와 U_V에 투영된다. 헤드 1의 Key는 [1,2,r0,r1], Value는 [4,2]이고 헤드 2의 Key는 [2,3,r0,r1], Value는 [1,5]다. 위치 부분은 동일하며 Value에는 이어 붙이지 않는다.','From p3, W_D produces c3=[1,2,3], while W_KR and RoPE(3) produce [r0,r1]. These two vectors are cached. Each head projects c3 through its U_K and U_V. Head 1 has key [1,2,r0,r1] and value [4,2]; Head 2 has key [2,3,r0,r1] and value [1,5]. Both keys share the positional part; values do not concatenate it.'],
  sources:[{label:'DeepSeek-V2 §2.1.3, equations 14–19',url:'https://arxiv.org/html/2405.04434v5#S2.SS1.SSS3'}],
